@@ -6,7 +6,7 @@
 <img src="https://github.com/Game-as-a-Service/Legends-of-The-Three-Kingdoms/blob/main/16pic_4554779_b.jpeg"> </a>
 
 # Practice Stack
-- Document driven design -- 落實文件驅動開發，清楚明瞭的規則文件。
+- Document Driven design -- 落實文件驅動開發，清楚明瞭的規則文件。
 - Event storming -- 同步認知，並清楚了解遊戲最重要的主要功能開發。
 - Example mapping -- 將各種需求與規則藉由User story依依列舉，並作為未來TDD開發的測試的參考範本。
 - OOAD -- 使用UML，需求分析並設計領域模型。
