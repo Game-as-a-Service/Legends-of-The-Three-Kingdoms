@@ -14,7 +14,7 @@
 - ATDD -- 驗收驅動開發，已使用者功能使用的角度寫e2e測試。
 - TDD -- 測試驅動開發，先寫測試再開發。
 - MVC -- 三層式架構
-- Clean Architectur -- 乾淨架構
+- Clean Architecture -- 乾淨架構
    
 # Tech Stack
 - 後端: Spring Boot (Java)
