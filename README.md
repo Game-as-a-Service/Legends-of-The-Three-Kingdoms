@@ -3,8 +3,7 @@
 # Intro your game
 三國殺是一款源自中國古代三國時期歷史和文化的桌上卡牌遊戲，通常需要3-8個玩家參與。每個玩家選擇一名三國時期的武將代表自己，並使用各種牌組合來攻擊其他玩家或防禦自己。遊戲中有各種不同的角色、技能和策略，需要玩家們在適當的時機做出明智的選擇，以獲取勝利。遊戲的玩法非常豐富，深受玩家們的喜愛。
 
-![image](picture or gif url)
-https://github.com/Game-as-a-Service/Legends-of-The-Three-Kingdoms/blob/main/16pic_4554779_b.jpeg
+<img src="https://github.com/Game-as-a-Service/Legends-of-The-Three-Kingdoms/blob/main/16pic_4554779_b.jpeg"> </a>
 
 # Practice Stack
 - Document driven design -- 落實文件驅動開發，清楚明瞭的規則文件。
