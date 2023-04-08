@@ -17,7 +17,7 @@
 - Clean Architecture -- 乾淨架構
    
 # Tech Stack
-- 後端: Spring Boot (Java)
+- 後端: JDK17 + spring boot 3 + maven
 - CICD: Docker, Jenkins
 - DB: 待決定
 - 前端: 待決定
