@@ -32,12 +32,16 @@ public class HelloWorldTest {
                 .andExpect(content().string(containsString("Hello, world!")));
     }
 
+    // Monarch
+    // Minister
+    // Rebel
+    // Traitors
     @Test
     public void shouldStartGame() throws Exception {
         // create game
 
         String requestBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\"},{\"id\":\"player-b\"},{\"id\":\"player-c\"},{\"id\":\"player-d\"}]}";
-        String responseBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\"},{\"id\":\"player-b\"},{\"id\":\"player-c\"},{\"id\":\"player-d\"}]}";
+        String responseBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\",\"role\":\"Monarch\"},{\"id\":\"player-b\",\"role\":\"Minister\"},{\"id\":\"player-c\",\"role\":\"Rebel\"},{\"id\":\"player-d\",\"role\":\"Traitor\"}]}";
 
         this.mockMvc.perform(post("/api/games")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -50,4 +54,5 @@ public class HelloWorldTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(responseBody));
     }
+
 }

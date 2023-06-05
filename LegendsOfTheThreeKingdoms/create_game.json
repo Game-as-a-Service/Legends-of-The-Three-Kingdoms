@@ -2,16 +2,20 @@
   "gameId": "my-id",
   "players": [
     {
-      "id": "player-a"
+      "id": "player-a",
+      "role": "Monarch"
     },
     {
-      "id": "player-b"
+      "id": "player-b",
+      "role": "Minister"
     },
     {
-      "id": "player-c"
+      "id": "player-c",
+      "role": "Rebel"
     },
     {
-      "id": "player-d"
+      "id": "player-d",
+      "role": "Traitor"
     }
   ]
 }
