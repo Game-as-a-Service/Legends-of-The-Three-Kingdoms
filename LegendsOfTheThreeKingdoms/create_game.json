@@ -1,0 +1,17 @@
+{
+  "gameId": "my-id",
+  "players": [
+    {
+      "id": "player-a"
+    },
+    {
+      "id": "player-b"
+    },
+    {
+      "id": "player-c"
+    },
+    {
+      "id": "player-d"
+    }
+  ]
+}
