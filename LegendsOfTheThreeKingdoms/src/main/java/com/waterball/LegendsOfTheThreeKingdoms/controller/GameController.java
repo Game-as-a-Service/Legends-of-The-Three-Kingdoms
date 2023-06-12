@@ -36,6 +36,7 @@ public class GameController {
             players.add(player);
         }
         game.setPlayers(players);
+        game.assignRoles();
 
         repository.save(game);
         return new ResponseEntity<GameDto>(convertToGameDto(game), HttpStatus.OK);
@@ -63,6 +64,7 @@ public class GameController {
         for (Player player : players) {
             PlayerDto playerDto = new PlayerDto();
             playerDto.setId(player.getId());
+            playerDto.setRole(player.getRole());
             playerDtos.add(playerDto);
         }
         return playerDtos;
