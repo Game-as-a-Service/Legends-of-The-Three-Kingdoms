@@ -27,8 +27,7 @@ public class Game {
     }
 
     public void assignRoles() {
-        // TODO fix it
-        String[] roles = new GameRoleAssignment().assignRoles(4);
+        Role[] roles = GameRoleAssignment.assignRoles(players.size());
         for (int i = 0; i < roles.length; i++) {
             players.get(i).setRole(roles[i]);
         }

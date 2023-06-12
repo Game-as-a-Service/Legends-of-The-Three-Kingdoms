@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
+import static org.assertj.core.api.InstanceOfAssertFactories.LOCAL_TIME;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,12 +16,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
+import java.util.Locale;
 
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class HelloWorldTest {
+public class GameControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -39,7 +40,6 @@ public class HelloWorldTest {
     @Test
     public void shouldStartGame() throws Exception {
         // create game
-
         String requestBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\"},{\"id\":\"player-b\"},{\"id\":\"player-c\"},{\"id\":\"player-d\"}]}";
         String responseBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\",\"role\":\"Monarch\"},{\"id\":\"player-b\",\"role\":\"Minister\"},{\"id\":\"player-c\",\"role\":\"Rebel\"},{\"id\":\"player-d\",\"role\":\"Traitor\"}]}";
 
