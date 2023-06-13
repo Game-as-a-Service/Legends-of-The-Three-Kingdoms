@@ -33,7 +33,6 @@ public class GameController {
         Game game = new Game();
         game.setGameId(gameDto.getGameId());
 
-
         List<PlayerDto> playerDtos = gameDto.getPlayers();
         List<Player> players = new ArrayList<>();
         for (PlayerDto playerDto : playerDtos) {
@@ -56,7 +55,7 @@ public class GameController {
     @GetMapping("/api/games/{gameId}/{playerId}/generals")
     public ResponseEntity<List<GeneralCardDto>> getGenerals(@PathVariable String gameId, @PathVariable String playerId) {
         Game game = repository.findGameById(gameId);
-        //牌堆 a b c d e f g h i j
+        //牌堆 a b c d ef g h i j
         GeneralCardDeck generalCardDeck = game.getGeneralCardDeck();
 
         //主公有三張固定的兩張隨幾 a、b、c + ? + ? || 假設主公抽 a 其他人的話可以抽剩下的 b c d e f g h i j
@@ -103,7 +102,6 @@ public class GameController {
             PlayerDto playerDto = new PlayerDto();
             playerDto.setId(player.getId());
             playerDto.setRole(player.getRole());
-            playerDto.setGeneralCard(player.getGeneralCard());
         return playerDto;
     }
 

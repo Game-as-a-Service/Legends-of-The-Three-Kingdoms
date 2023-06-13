@@ -40,7 +40,9 @@ public class Game {
     }
 
     public void setPlayerGeneral(String playerId, String generalId) {
-
+//        players.stream().findAny().filter(player -> {
+//            player.getId() == playerId
+//        })
     }
 
     public Player getPlayer(String playerId) {

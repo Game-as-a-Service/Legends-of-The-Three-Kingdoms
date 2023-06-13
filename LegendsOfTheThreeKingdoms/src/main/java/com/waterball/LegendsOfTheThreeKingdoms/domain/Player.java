@@ -14,5 +14,4 @@ public class Player {
     private String id;
     private String role;
     private GeneralCard generalCard;
-
 }

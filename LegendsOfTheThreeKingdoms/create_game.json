@@ -3,23 +3,22 @@
   "players": [
     {
       "id": "player-a",
-      "role": "Monarch",
-      "general": "a"
+      "role": "Monarch"
     },
     {
       "id": "player-b",
-      "role": "Minister",
-      "general": ""
+      "role": "Minister"
     },
     {
       "id": "player-c",
-      "role": "Rebel",
-      "general": ""
+      "role": "Rebel"
     },
     {
       "id": "player-d",
-      "role": "Traitor",
-      "general": ""
+      "role": "Traitor"
     }
   ]
+
 }
+
+

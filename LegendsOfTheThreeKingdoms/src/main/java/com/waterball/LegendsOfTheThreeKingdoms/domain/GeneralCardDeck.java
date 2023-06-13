@@ -15,7 +15,15 @@ public class GeneralCardDeck {
     private Stack<GeneralCard> generalStack = new Stack<>();
 
     public GeneralCardDeck() {
+        initGeneralCardDeck();
+    }
 
+    private void initGeneralCardDeck() {
+        generalStack.add(new GeneralCard("a","a"));
+        generalStack.add(new GeneralCard("b","b"));
+        generalStack.add(new GeneralCard("c","c"));
+        generalStack.add(new GeneralCard("d","d"));
+        generalStack.add(new GeneralCard("e","e"));
     }
 
     public List<GeneralCard> drawGeneralCards() {

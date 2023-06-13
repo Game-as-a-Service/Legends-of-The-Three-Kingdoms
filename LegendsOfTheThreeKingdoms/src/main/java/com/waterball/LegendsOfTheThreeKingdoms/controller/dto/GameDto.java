@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.dto;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCardDeck;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +17,4 @@ import java.util.List;
 public class GameDto implements Serializable {
     private String gameId;
     private List<PlayerDto> players;
-
 }

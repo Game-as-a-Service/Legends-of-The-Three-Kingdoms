@@ -17,7 +17,4 @@ import java.io.Serializable;
 public class PlayerDto implements Serializable {
     private String id;
     private String role;
-    private GameDto gameDto;
-    private GeneralCard generalCard;
-
 }

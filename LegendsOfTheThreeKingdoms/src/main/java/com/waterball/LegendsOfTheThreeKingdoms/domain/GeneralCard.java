@@ -13,5 +13,4 @@ public class GeneralCard {
 
     private String generalID;
     private String generalName;
-
 }
