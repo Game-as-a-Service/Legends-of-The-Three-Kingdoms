@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerDto;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 
 @SpringBootTest
@@ -31,6 +33,8 @@ public class HelloWorldTest {
 
     @Autowired
     private MockMvc mockMvc;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Test
     public void shouldReturnDefaultMessage() throws Exception {
@@ -47,9 +51,31 @@ public class HelloWorldTest {
     public void shouldStartGame() throws Exception {
         // create game
 
-        String requestBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\"},{\"id\":\"player-b\"},{\"id\":\"player-c\"},{\"id\":\"player-d\"}]}";
+
+        GameDto gameDto = new GameDto();
+        gameDto.setGameId("my-id");
+        List<PlayerDto> players = new ArrayList<>();
+        gameDto.setPlayers(players);
+        PlayerDto playerA = new PlayerDto();
+        playerA.setId("player-a");
+        players.add(playerA);
+        PlayerDto playerB = new PlayerDto();
+        playerB.setId("player-b");
+        players.add(playerB);
+        PlayerDto playerC = new PlayerDto();
+        playerC.setId("player-c");
+        players.add(playerC);
+        PlayerDto playerD = new PlayerDto();
+        playerD.setId("player-d");
+        players.add(playerD);
+
+        String requestBody = objectMapper.writeValueAsString(gameDto);
         String responseBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\",\"role\":\"Monarch\"},{\"id\":\"player-b\",\"role\":\"Minister\"},{\"id\":\"player-c\",\"role\":\"Rebel\"},{\"id\":\"player-d\",\"role\":\"Traitor\"}]}";
 
+
+        // Gson, Json
+        // GameDto           -> JSON content
+        // interface-adapter -> HTTP
         this.mockMvc.perform(post("/api/games")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
