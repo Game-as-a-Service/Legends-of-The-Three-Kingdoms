@@ -9,6 +9,7 @@ public class Game {
 
     private String gameId;
     private List<Player> players;
+    private GeneralCardDeck generalCardDeck = new GeneralCardDeck();
 
     public String getGameId() {
         return gameId;
@@ -32,5 +33,19 @@ public class Game {
         for (int i = 0; i < roles.length; i++) {
             players.get(i).setRole(roles[i]);
         }
+    }
+
+    public GeneralCardDeck getGeneralCardDeck() {
+        return generalCardDeck;
+    }
+
+    public void setPlayerGeneral(String playerId, String generalId) {
+//        players.stream().findAny().filter(player -> {
+//            player.getId() == playerId
+//        })
+    }
+
+    public Player getPlayer(String playerId) {
+        return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
     }
 }
