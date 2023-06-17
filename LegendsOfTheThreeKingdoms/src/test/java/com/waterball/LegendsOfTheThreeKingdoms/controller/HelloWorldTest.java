@@ -7,6 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 
@@ -53,6 +60,23 @@ public class HelloWorldTest {
         this.mockMvc.perform(get("/api/games/my-id")).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(responseBody));
+    }
+
+    @Test
+    public void testObjectMapper() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        GameDto gameDto = new GameDto();
+        gameDto.setGameId("my-first-game-id");
+
+        System.out.println(objectMapper.writeValueAsString(gameDto));
+
+        Path path = Paths.get("create_game.json");
+        String s = Files.readString(path);
+
+        GameDto gameDto1 = objectMapper.readValue(s, GameDto.class);
+        System.out.println(objectMapper.writeValueAsString(gameDto1));
+
     }
 
 }
