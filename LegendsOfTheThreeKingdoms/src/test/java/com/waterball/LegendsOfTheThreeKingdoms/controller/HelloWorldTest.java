@@ -51,8 +51,15 @@ public class HelloWorldTest {
     public void shouldStartGame() throws Exception {
         // create game
 
-        String requestBody = objectMapper.writeValueAsString(createInput());
-        String responseBody = objectMapper.writeValueAsString(createOutput());
+        String requestBody = objectMapper.writeValueAsString(
+                TestGameBuilder.newGame()
+                        .players(4)
+                        .build());
+
+        String responseBody = objectMapper.writeValueAsString(TestGameBuilder.newGame()
+                .players(4)
+                .withPlayerRoles("Monarch", "Minister", "Rebel", "Traitor")
+                .build());
 
 
         this.mockMvc.perform(post("/api/games")
@@ -67,49 +74,6 @@ public class HelloWorldTest {
                 .andExpect(content().string(responseBody));
     }
 
-    private static GameDto createInput() {
-        GameDto inputGameDto = new GameDto();
-        inputGameDto.setGameId("my-id");
-        List<PlayerDto> players = new ArrayList<>();
-        inputGameDto.setPlayers(players);
-        PlayerDto playerA = new PlayerDto();
-        playerA.setId("player-a");
-        players.add(playerA);
-        PlayerDto playerB = new PlayerDto();
-        playerB.setId("player-b");
-        players.add(playerB);
-        PlayerDto playerC = new PlayerDto();
-        playerC.setId("player-c");
-        players.add(playerC);
-        PlayerDto playerD = new PlayerDto();
-        playerD.setId("player-d");
-        players.add(playerD);
-        return inputGameDto;
-    }
-
-    private static GameDto createOutput() {
-        GameDto gameDto = new GameDto();
-        gameDto.setGameId("my-id");
-        List<PlayerDto> players = new ArrayList<>();
-        gameDto.setPlayers(players);
-        PlayerDto playerA = new PlayerDto();
-        playerA.setId("player-a");
-        playerA.setRole("Monarch");
-        players.add(playerA);
-        PlayerDto playerB = new PlayerDto();
-        playerB.setId("player-b");
-        playerB.setRole("Minister");
-        players.add(playerB);
-        PlayerDto playerC = new PlayerDto();
-        playerC.setId("player-c");
-        playerC.setRole("Rebel");
-        players.add(playerC);
-        PlayerDto playerD = new PlayerDto();
-        playerD.setId("player-d");
-        playerD.setRole("Traitor");
-        players.add(playerD);
-        return gameDto;
-    }
 
     @Test
     public void testObjectMapper() throws IOException {
