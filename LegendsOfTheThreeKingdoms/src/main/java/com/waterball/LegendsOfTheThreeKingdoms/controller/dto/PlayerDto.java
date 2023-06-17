@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.dto;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.RoleCard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +17,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class PlayerDto implements Serializable {
     private String id;
-    private String role;
+    private RoleCard role;
+    private GeneralCard generalCard;
 }

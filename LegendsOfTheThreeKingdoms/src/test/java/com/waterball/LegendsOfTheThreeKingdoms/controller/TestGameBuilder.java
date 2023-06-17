@@ -3,7 +3,9 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 import ch.qos.logback.classic.spi.LoggingEventVO;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerDto;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.RoleCard;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +43,14 @@ public class TestGameBuilder {
 
     public TestGameBuilder withPlayerRoles(String... roles) {
         for (int i = 0; i < roles.length; i++) {
-            this.players.get(i).setRole(roles[i]);
+            this.players.get(i).setRole(new RoleCard(roles[i]));
+        }
+        return this;
+    }
+
+    public TestGameBuilder withPlayerGeneral(String... playerGeneral) {
+        for (int i = 0; i < playerGeneral.length; i++) {
+            this.players.get(i).setGeneralCard(new GeneralCard(playerGeneral[i], playerGeneral[i]));
         }
         return this;
     }

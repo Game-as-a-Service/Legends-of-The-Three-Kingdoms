@@ -83,17 +83,13 @@ public class GameController {
         GameDto gameDto = new GameDto();
         gameDto.setGameId(gameId);
         gameDto.setPlayers(playerDtos);
-
         return gameDto;
     }
 
     private List<PlayerDto> convertToPlayerDtos(List<Player> players) {
         List<PlayerDto> playerDtos = new ArrayList<>();
         for (Player player : players) {
-            PlayerDto playerDto = new PlayerDto();
-            playerDto.setId(player.getId());
-            playerDto.setRole(player.getRole());
-            playerDtos.add(playerDto);
+            playerDtos.add(convertToPlayerDto(player));
         }
         return playerDtos;
     }
@@ -102,6 +98,7 @@ public class GameController {
             PlayerDto playerDto = new PlayerDto();
             playerDto.setId(player.getId());
             playerDto.setRole(player.getRole());
+            playerDto.setGeneralCard(player.getGeneralCard());
         return playerDto;
     }
 

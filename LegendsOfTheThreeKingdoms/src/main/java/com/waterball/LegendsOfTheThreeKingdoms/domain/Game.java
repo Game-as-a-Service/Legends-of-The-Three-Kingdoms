@@ -28,10 +28,9 @@ public class Game {
     }
 
     public void assignRoles() {
-        // TODO fix it
-        String[] roles = new GameRoleAssignment().assignRoles(4);
-        for (int i = 0; i < roles.length; i++) {
-            players.get(i).setRole(roles[i]);
+        List<RoleCard> roles = new GameRoleAssignment().assignRoles(4);
+        for (int i = 0; i < roles.size(); i++) {
+            players.get(i).setRole(roles.get(i));
         }
     }
 
@@ -40,9 +39,8 @@ public class Game {
     }
 
     public void setPlayerGeneral(String playerId, String generalId) {
-//        players.stream().findAny().filter(player -> {
-//            player.getId() == playerId
-//        })
+        Player player = players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
+        player.setGeneralCard(new GeneralCard(generalId, generalId));
     }
 
     public Player getPlayer(String playerId) {
