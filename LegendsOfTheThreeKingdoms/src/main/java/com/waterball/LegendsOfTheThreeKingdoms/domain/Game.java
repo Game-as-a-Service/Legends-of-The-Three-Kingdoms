@@ -9,6 +9,7 @@ public class Game {
 
     private String gameId;
     private List<Player> players;
+    private GeneralCardDeck generalCardDeck = new GeneralCardDeck();
 
     public String getGameId() {
         return gameId;
@@ -27,10 +28,22 @@ public class Game {
     }
 
     public void assignRoles() {
-        // TODO fix it
-        String[] roles = new GameRoleAssignment().assignRoles(4);
-        for (int i = 0; i < roles.length; i++) {
-            players.get(i).setRole(roles[i]);
+        List<RoleCard> roles = new GameRoleAssignment().assignRoles(4);
+        for (int i = 0; i < roles.size(); i++) {
+            players.get(i).setRole(roles.get(i));
         }
+    }
+
+    public GeneralCardDeck getGeneralCardDeck() {
+        return generalCardDeck;
+    }
+
+    public void setPlayerGeneral(String playerId, String generalId) {
+        Player player = players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
+        player.setGeneralCard(new GeneralCard(generalId, generalId));
+    }
+
+    public Player getPlayer(String playerId) {
+        return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
     }
 }

@@ -1,6 +1,5 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Player {
-    private String id;
-    private RoleCard role;
-    private GeneralCard generalCard;
+public class GeneralCard {
+
+    private String generalID;
+    private String generalName;
 }
