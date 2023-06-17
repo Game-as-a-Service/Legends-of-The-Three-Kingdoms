@@ -51,11 +51,27 @@ public class HelloWorldTest {
     public void shouldStartGame() throws Exception {
         // create game
 
+        String requestBody = objectMapper.writeValueAsString(createInput());
+        String responseBody = objectMapper.writeValueAsString(createOutput());
 
-        GameDto gameDto = new GameDto();
-        gameDto.setGameId("my-id");
+
+        this.mockMvc.perform(post("/api/games")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(content().string(responseBody));
+
+        // find the game
+        this.mockMvc.perform(get("/api/games/my-id")).andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(responseBody));
+    }
+
+    private static GameDto createInput() {
+        GameDto inputGameDto = new GameDto();
+        inputGameDto.setGameId("my-id");
         List<PlayerDto> players = new ArrayList<>();
-        gameDto.setPlayers(players);
+        inputGameDto.setPlayers(players);
         PlayerDto playerA = new PlayerDto();
         playerA.setId("player-a");
         players.add(playerA);
@@ -68,24 +84,31 @@ public class HelloWorldTest {
         PlayerDto playerD = new PlayerDto();
         playerD.setId("player-d");
         players.add(playerD);
+        return inputGameDto;
+    }
 
-        String requestBody = objectMapper.writeValueAsString(gameDto);
-        String responseBody = "{\"gameId\":\"my-id\",\"players\":[{\"id\":\"player-a\",\"role\":\"Monarch\"},{\"id\":\"player-b\",\"role\":\"Minister\"},{\"id\":\"player-c\",\"role\":\"Rebel\"},{\"id\":\"player-d\",\"role\":\"Traitor\"}]}";
-
-
-        // Gson, Json
-        // GameDto           -> JSON content
-        // interface-adapter -> HTTP
-        this.mockMvc.perform(post("/api/games")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(content().string(responseBody));
-
-        // find the game
-        this.mockMvc.perform(get("/api/games/my-id")).andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string(responseBody));
+    private static GameDto createOutput() {
+        GameDto gameDto = new GameDto();
+        gameDto.setGameId("my-id");
+        List<PlayerDto> players = new ArrayList<>();
+        gameDto.setPlayers(players);
+        PlayerDto playerA = new PlayerDto();
+        playerA.setId("player-a");
+        playerA.setRole("Monarch");
+        players.add(playerA);
+        PlayerDto playerB = new PlayerDto();
+        playerB.setId("player-b");
+        playerB.setRole("Minister");
+        players.add(playerB);
+        PlayerDto playerC = new PlayerDto();
+        playerC.setId("player-c");
+        playerC.setRole("Rebel");
+        players.add(playerC);
+        PlayerDto playerD = new PlayerDto();
+        playerD.setId("player-d");
+        playerD.setRole("Traitor");
+        players.add(playerD);
+        return gameDto;
     }
 
     @Test
