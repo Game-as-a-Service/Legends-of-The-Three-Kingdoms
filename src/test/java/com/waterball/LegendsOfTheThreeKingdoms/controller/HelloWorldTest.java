@@ -129,7 +129,7 @@ public class HelloWorldTest {
                 TestGameBuilder.newGame()
                         .players(4)
                         .withPlayerRoles("Monarch", "Minister", "Rebel", "Traitor")
-                        .withPlayerGeneral("a")
+                        .withPlayerGeneral("b")
                         .build());
 
         //產生遊戲
