@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 public class GameRoleAssignment {
 
     public List<RoleCard> assignRoles(int players) {
+        //TODO: 補上人數邏輯規則
         String[] strArray = new String[]{"Monarch", "Minister", "Rebel", "Traitor"};
         return Arrays.stream(strArray).map(role -> new RoleCard(role)).collect(Collectors.toList());
     }

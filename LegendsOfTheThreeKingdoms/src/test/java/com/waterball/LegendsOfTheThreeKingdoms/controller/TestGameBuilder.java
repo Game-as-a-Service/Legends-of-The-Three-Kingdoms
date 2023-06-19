@@ -1,25 +1,22 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
-import ch.qos.logback.classic.spi.LoggingEventVO;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerDto;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCard;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoleCard;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 public class TestGameBuilder {
 
     GameDto gameDto = new GameDto();
+    String gameId;
     List<PlayerDto> players = new ArrayList<>();
 
 
     public TestGameBuilder() {
-        this.gameDto.setGameId("my-id");
+        this.gameDto.setGameId(gameId);
         this.gameDto.setPlayers(players);
     }
 
@@ -31,19 +28,30 @@ public class TestGameBuilder {
         return gameDto;
     }
 
+    public TestGameBuilder withGameId(String gameId) {
+        gameDto.setGameId(gameId);
+        this.gameId = gameId;
+        return this;
+    }
+
     public TestGameBuilder players(int requiredPlayers) {
-        String[] players = {"player-a", "player-b", "player-c", "player-d"};
-        Arrays.stream(players).limit(requiredPlayers).map(id -> {
+        for (int i = 0; i < requiredPlayers; i++) {
             PlayerDto p = new PlayerDto();
-            p.setId(id);
-            return p;
-        }).forEach(this.players::add);
+            players.add(p);
+        }
         return this;
     }
 
     public TestGameBuilder withPlayerRoles(String... roles) {
         for (int i = 0; i < roles.length; i++) {
             this.players.get(i).setRole(new RoleCard(roles[i]));
+        }
+        return this;
+    }
+
+    public TestGameBuilder withPlayerId(String... ids) {
+        for (int i = 0; i < ids.length; i++) {
+            this.players.get(i).setId(ids[i]);
         }
         return this;
     }

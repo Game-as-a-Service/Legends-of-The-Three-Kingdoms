@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -58,7 +57,7 @@ public class GameController {
         //牌堆 a b c d ef g h i j
         GeneralCardDeck generalCardDeck = game.getGeneralCardDeck();
 
-        //主公有三張固定的兩張隨幾 a、b、c + ? + ? || 假設主公抽 a 其他人的話可以抽剩下的 b c d e f g h i j
+        //主公有三張固定的兩張隨機 劉備、曹操、孫權 + ? + ? || 假設主公抽 劉備，其他人的話可以抽剩下的武將牌(包含曹操與孫權)
         List<GeneralCardDto> generalCardDtoList = generalCardDeck.drawGeneralCards()
                 .stream().map(this::convertCardToGeneralDto).collect(Collectors.toList());
 
