@@ -1,10 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerDto;
-import com.waterball.LegendsOfTheThreeKingdoms.utils.GameRoleAssignment;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class Game {
@@ -30,9 +28,13 @@ public class Game {
     }
 
     public void assignRoles() {
-        List<RoleCard> roles = new GameRoleAssignment().assignRoles(4);
-        for (int i = 0; i < roles.size(); i++) {
-            players.get(i).setRole(roles.get(i));
+        if (players.size() < 4) {
+            throw new IllegalStateException("The number of players must bigger than 4.");
+        }
+        List<RoleCard> roleCards = Arrays.asList(RoleCard.ROLES.get(players.size()));
+        Collections.shuffle(roleCards, new Random(0));
+        for (int i = 0; i < roleCards.size(); i++) {
+            players.get(i).setRole(roleCards.get(i));
         }
     }
 
