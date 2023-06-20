@@ -4,6 +4,8 @@ import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerDto;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.GameRoleAssignment;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 public class Game {
 
@@ -40,7 +42,11 @@ public class Game {
 
     public void setPlayerGeneral(String playerId, String generalId) {
         Player player = players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
-        player.setGeneralCard(new GeneralCard(generalId, generalId));
+        int ind = IntStream.range(0, generalCardDeck.getGeneralStack().size())
+                        .filter(i -> generalCardDeck.getGeneralStack().get(i).getGeneralID().equals(generalId))
+                                .findFirst().orElseThrow();
+        GeneralCard generalCard = generalCardDeck.getGeneralStack().remove(ind);
+        player.setGeneralCard(generalCard);
     }
 
     public Player getPlayer(String playerId) {
