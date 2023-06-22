@@ -32,9 +32,6 @@ public class Game {
         if (players.size() < 4) {
             throw new IllegalStateException("The number of players must bigger than 4.");
         }
-        // TODO: use Arrays.asList(RoleCard.ROLES.get(players.size()) will fail the shouldStartGame test
-        //  roleCards is a modified array after shouldChooseGeneralByMonarch test finished
-        //  and we mock the shuffle in the shouldStartGame test, it use the modified array from shouldChooseGeneralByMonarch
         List<RoleCard> roleCards = Arrays.stream(RoleCard.ROLES.get(players.size())).collect(Collectors.toList());
         ShuffleWrapper.shuffle(roleCards);
         for (int i = 0; i < roleCards.size(); i++) {
