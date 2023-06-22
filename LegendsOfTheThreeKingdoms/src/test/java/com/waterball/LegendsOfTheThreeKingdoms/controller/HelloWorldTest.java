@@ -78,10 +78,7 @@ public class HelloWorldTest {
 
         try (MockedStatic<ShuffleWrapper> mockedStatic = Mockito.mockStatic(ShuffleWrapper.class)) {
             mockedStatic.when(() -> ShuffleWrapper.shuffle(Mockito.anyList()))
-                    .thenAnswer( invocation -> {
-                        List<RoleCard> arg0 = invocation.getArgument(0);
-                        return null;
-                    });
+                    .thenAnswer( invocation -> null);
 
             this.mockMvc.perform(post("/api/games")
                             .contentType(MediaType.APPLICATION_JSON)
