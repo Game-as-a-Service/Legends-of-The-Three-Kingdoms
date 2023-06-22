@@ -31,7 +31,6 @@ public class RoleCard {
                 new RoleCard(Role.TRAITOR.toString()),
                 new RoleCard(Role.REBEL.toString())
         });
-
     }};
 
 
