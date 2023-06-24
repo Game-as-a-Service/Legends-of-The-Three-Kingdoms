@@ -2,7 +2,6 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
@@ -17,11 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
@@ -57,7 +52,6 @@ public class GameTest {
     // Minister
     // Rebel
     // Traitors
-    @Test
     public void shouldStartGame() throws Exception {
         // create game
 
@@ -103,25 +97,19 @@ public class GameTest {
     // 玩家總共4人
 
     @Test
-    public void shouldChooseGeneralByMonarch() throws Exception {
+    public void happyPath() throws Exception {
+        shouldStartGame();
+        shouldChooseGeneralsByMonarch();
+        shouldChooseGeneralsByOthers();
+    }
 
-        // Given
-        // 玩家A為主公BCD為其他身份
-        // B,C,D 為其他身份
-        // A從武將牌堆抽兩張卡 + 三張固定武將卡，選擇武將
-        //「劉備」「曹操」「孫權」「x」「x」
-        String gameRequestBody = objectMapper.writeValueAsString(
-                TestGameBuilder.newGame()
-                        .withGameId("my-id")
-                        .players(4)
-                        .withPlayerId("player-a", "player-b", "player-c", "player-d")
-                        .build());
+    private void shouldChooseGeneralsByOthers() {
+    }
 
-        //產生遊戲
-        this.mockMvc.perform(post("/api/games")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(gameRequestBody));
+    private void shouldChooseGeneralsByMonarch() throws Exception {
+        // When 玩家A選劉備
 
+        // 拿到可以選的武將牌
         MvcResult result = this.mockMvc.perform(get("/api/games/my-id/player-a/generals")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -133,9 +121,6 @@ public class GameTest {
         assertEquals("曹操", generalCards.get(1).getGeneralName());
         assertEquals("劉備", generalCards.get(2).getGeneralName());
         assertEquals(5, generalCards.size());
-
-        // When 玩家A選劉備
-
         // 主公選一張
         this.mockMvc.perform(post("/api/games/my-id/player-a/general/general0")).andDo(print())
                 .andExpect(status().isOk());
