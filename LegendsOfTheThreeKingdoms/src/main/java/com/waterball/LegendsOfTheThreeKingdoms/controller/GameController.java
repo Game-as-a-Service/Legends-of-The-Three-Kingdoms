@@ -29,7 +29,7 @@ public class GameController {
 
     @PostMapping("/api/games")
     public ResponseEntity<GameDto> createGame(@RequestBody GameDto gameDto) {
-        Game game = new Game();
+        Game game = createGame();
         game.setGameId(gameDto.getGameId());
 
         List<PlayerDto> playerDtos = gameDto.getPlayers();
@@ -44,6 +44,10 @@ public class GameController {
 
         repository.save(game);
         return new ResponseEntity<GameDto>(convertToGameDto(game), HttpStatus.OK);
+    }
+
+    private static Game createGame() {
+        return new Game();
     }
 
     @GetMapping("/api/games/{gameId}")
