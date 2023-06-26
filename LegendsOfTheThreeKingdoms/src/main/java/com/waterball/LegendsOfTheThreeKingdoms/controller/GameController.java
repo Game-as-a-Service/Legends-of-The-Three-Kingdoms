@@ -4,10 +4,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerDto;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCard;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCardDeck;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.*;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,9 +59,15 @@ public class GameController {
         GeneralCardDeck generalCardDeck = game.getGeneralCardDeck();
 
         //主公有三張固定的兩張隨機 劉備、曹操、孫權 + ? + ? || 假設主公抽 劉備，其他人的話可以抽剩下的武將牌(包含曹操與孫權)
-        List<GeneralCardDto> generalCardDtoList = generalCardDeck.drawGeneralCards()
-                .stream().map(this::convertCardToGeneralDto).collect(Collectors.toList());
 
+        Player player = game.getPlayer(playerId);
+        int needCardCount = 3;
+        if (player.getRoleCard().getRole() == Role.MONARCH) {
+            needCardCount = 5;
+        }
+
+        List<GeneralCardDto> generalCardDtoList = generalCardDeck.drawGeneralCards(needCardCount)
+                .stream().map(this::convertCardToGeneralDto).collect(Collectors.toList());
         return ResponseEntity.ok(generalCardDtoList);
     }
 
@@ -100,7 +103,7 @@ public class GameController {
     private PlayerDto convertToPlayerDto(Player player) {
             PlayerDto playerDto = new PlayerDto();
             playerDto.setId(player.getId());
-            playerDto.setRole(player.getRole());
+            playerDto.setRoleCard(player.getRoleCard());
             playerDto.setGeneralCard(player.getGeneralCard());
         return playerDto;
     }
