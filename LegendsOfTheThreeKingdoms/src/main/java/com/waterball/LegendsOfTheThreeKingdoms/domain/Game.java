@@ -35,7 +35,7 @@ public class Game {
         List<RoleCard> roleCards = Arrays.stream(RoleCard.ROLES.get(players.size())).collect(Collectors.toList());
         ShuffleWrapper.shuffle(roleCards);
         for (int i = 0; i < roleCards.size(); i++) {
-            players.get(i).setRole(roleCards.get(i));
+            players.get(i).setRoleCard(roleCards.get(i));
         }
     }
 
@@ -45,10 +45,11 @@ public class Game {
 
     public void setPlayerGeneral(String playerId, String generalId) {
         Player player = getPlayer(playerId);
-        int ind = IntStream.range(0, generalCardDeck.getGeneralStack().size())
-                        .filter(i -> generalCardDeck.getGeneralStack().get(i).getGeneralID().equals(generalId))
-                                .findFirst().orElseThrow();
-        GeneralCard generalCard = generalCardDeck.getGeneralStack().remove(ind);
+       // int ind = IntStream.range(0, generalCardDeck.getGeneralStack().size())
+       //                 .filter(i -> generalCardDeck.getGeneralStack().get(i).getGeneralID().equals(generalId))
+       //                         .findFirst().orElseThrow();
+        GeneralCard generalCard = GeneralCard.generals.get(generalId);
+       // GeneralCard generalCard = generalCardDeck.getGeneralStack().remove(ind);
         player.setGeneralCard(generalCard);
     }
 

@@ -9,14 +9,12 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
-import java.io.Serializable;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class PlayerDto implements Serializable {
     private String id;
-    private RoleCard role;
+    private RoleCard roleCard;
     private GeneralCard generalCard;
 }

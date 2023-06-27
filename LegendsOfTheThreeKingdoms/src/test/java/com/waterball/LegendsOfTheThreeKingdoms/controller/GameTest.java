@@ -2,7 +2,6 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
@@ -17,11 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
@@ -57,7 +52,6 @@ public class GameTest {
     // Minister
     // Rebel
     // Traitors
-    @Test
     public void shouldStartGame() throws Exception {
         // create game
 
@@ -103,25 +97,16 @@ public class GameTest {
     // 玩家總共4人
 
     @Test
-    public void shouldChooseGeneralByMonarch() throws Exception {
+    public void happyPath() throws Exception {
+        shouldStartGame();
+        shouldChooseGeneralsByMonarch();
+        shouldChooseGeneralsByOthers();
+    }
 
-        // Given
-        // 玩家A為主公BCD為其他身份
-        // B,C,D 為其他身份
-        // A從武將牌堆抽兩張卡 + 三張固定武將卡，選擇武將
-        //「劉備」「曹操」「孫權」「x」「x」
-        String gameRequestBody = objectMapper.writeValueAsString(
-                TestGameBuilder.newGame()
-                        .withGameId("my-id")
-                        .players(4)
-                        .withPlayerId("player-a", "player-b", "player-c", "player-d")
-                        .build());
+    private void shouldChooseGeneralsByMonarch() throws Exception {
+        // When 玩家A選劉備
 
-        //產生遊戲
-        this.mockMvc.perform(post("/api/games")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(gameRequestBody));
-
+        // 拿到可以選的武將牌
         MvcResult result = this.mockMvc.perform(get("/api/games/my-id/player-a/generals")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -133,9 +118,6 @@ public class GameTest {
         assertEquals("曹操", generalCards.get(1).getGeneralName());
         assertEquals("劉備", generalCards.get(2).getGeneralName());
         assertEquals(5, generalCards.size());
-
-        // When 玩家A選劉備
-
         // 主公選一張
         this.mockMvc.perform(post("/api/games/my-id/player-a/general/general0")).andDo(print())
                 .andExpect(status().isOk());
@@ -146,6 +128,101 @@ public class GameTest {
         // 牌堆不能有 general0
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
                 .stream().filter(x -> x.getGeneralID().equals("general0"))
+                .count());
+    }
+
+    private void shouldChooseGeneralsByOthers() throws Exception {
+
+//        Given
+//        玩家A為主公 ，選擇了武將「劉備」
+//        B 為忠臣 可選武將牌「馬超」「趙雲」「黃月英」
+//        C 為反賊 可選武將牌「諸葛亮」 「黃忠」「魏延」
+//        D 為內奸 可選武將牌「司馬懿」「夏侯敦」「許褚」
+//
+//        When
+//        玩家 B 選武將 馬超
+//        玩家 C 選武將 諸葛亮
+//        玩家 D 選武將 司馬懿
+//
+//        Then
+//        玩家 B武將為 馬超
+//        玩家 C武將為 諸葛亮
+//        玩家 D武將為 司馬懿
+
+
+        // 玩家B拿到可以選的武將牌
+        MvcResult resultOfPlayerB = this.mockMvc.perform(get("/api/games/my-id/player-b/generals")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        String jsonResultOfPlayerB = resultOfPlayerB.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        List<GeneralCardDto> generalCards = objectMapper.readValue(jsonResultOfPlayerB, new TypeReference<List<GeneralCardDto>>() {
+        });
+        assertEquals("馬超", generalCards.get(0).getGeneralName());
+        assertEquals("趙雲", generalCards.get(1).getGeneralName());
+        assertEquals("黃月英", generalCards.get(2).getGeneralName());
+        assertEquals(3, generalCards.size());
+
+        // 玩家B選馬超
+        this.mockMvc.perform(post("/api/games/my-id/player-b/general/general1")).andDo(print())
+                .andExpect(status().isOk());
+
+        // Then 玩家B武將為馬超 ((玩家B general是 general1 is true)
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        assertEquals("general1", game.getPlayer("player-b").getGeneralCard().getGeneralID());
+        // 牌堆不能有 general1
+        assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
+                .stream().filter(x -> x.getGeneralID().equals("general1"))
+                .count());
+
+        //********************************* Round 2 ***************************************//
+
+        MvcResult resultOfPlayerC = this.mockMvc.perform(get("/api/games/my-id/player-c/generals")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        String jsonResultOfPlayerC = resultOfPlayerC.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        List<GeneralCardDto> generalCards2 = objectMapper.readValue(jsonResultOfPlayerC, new TypeReference<List<GeneralCardDto>>() {
+        });
+        assertEquals("諸葛亮", generalCards2.get(0).getGeneralName());
+        assertEquals("黃忠", generalCards2.get(1).getGeneralName());
+        assertEquals("魏延", generalCards2.get(2).getGeneralName());
+        assertEquals(3, generalCards2.size());
+
+        // 玩家C選諸葛亮
+        this.mockMvc.perform(post("/api/games/my-id/player-c/general/general18")).andDo(print())
+                .andExpect(status().isOk());
+
+        // Then 玩家C武將為諸葛亮 ((玩家C genera1是 general18 is true)
+        assertEquals("general18", game.getPlayer("player-c").getGeneralCard().getGeneralID());
+        // 牌堆不能有 general1
+        assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
+                .stream().filter(x -> x.getGeneralID().equals("general18"))
+                .count());
+
+        //********************************* Round 3 ***************************************//
+
+        MvcResult resultOfPlayerD = this.mockMvc.perform(get("/api/games/my-id/player-d/generals")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        String jsonResultOfPlayerD = resultOfPlayerD.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        List<GeneralCardDto> generalCards3 = objectMapper.readValue(jsonResultOfPlayerD, new TypeReference<List<GeneralCardDto>>() {
+        });
+        assertEquals("司馬懿", generalCards3.get(0).getGeneralName());
+        assertEquals("夏侯敦", generalCards3.get(1).getGeneralName());
+        assertEquals("許褚", generalCards3.get(2).getGeneralName());
+        assertEquals(3, generalCards3.size());
+
+        // 玩家D選司馬懿
+        this.mockMvc.perform(post("/api/games/my-id/player-d/general/general15")).andDo(print())
+                .andExpect(status().isOk());
+
+        // Then 玩家D武將為司馬懿 ((玩家D general是 general1 is true)
+        assertEquals("general15", game.getPlayer("player-d").getGeneralCard().getGeneralID());
+        // 牌堆不能有 general1
+        assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
+                .stream().filter(x -> x.getGeneralID().equals("general15"))
                 .count());
     }
 }

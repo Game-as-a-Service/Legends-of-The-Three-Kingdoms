@@ -45,7 +45,7 @@ public class TestGameBuilder {
 
     public TestGameBuilder withPlayerRoles(String... roles) {
         for (int i = 0; i < roles.length; i++) {
-            this.players.get(i).setRole(new RoleCard(Role.valueOf(roles[i].toUpperCase())));
+            this.players.get(i).setRoleCard(new RoleCard(Role.valueOf(roles[i].toUpperCase())));
         }
         return this;
     }

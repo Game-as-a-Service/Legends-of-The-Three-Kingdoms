@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Player {
     private String id;
-    private RoleCard role;
+    private RoleCard roleCard;
     private GeneralCard generalCard;
 }
