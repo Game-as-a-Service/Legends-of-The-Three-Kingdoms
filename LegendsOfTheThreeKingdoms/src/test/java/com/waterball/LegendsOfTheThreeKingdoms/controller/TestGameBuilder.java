@@ -57,9 +57,10 @@ public class TestGameBuilder {
         return this;
     }
 
+    //觀光景點
     public TestGameBuilder withPlayerGeneral(String... playerGeneral) {
         for (int i = 0; i < playerGeneral.length; i++) {
-            this.players.get(i).setGeneralCard(new GeneralCard(playerGeneral[i], playerGeneral[i]));
+            this.players.get(i).setGeneralCard(new GeneralCard(playerGeneral[i], playerGeneral[i], 1));
         }
         return this;
     }

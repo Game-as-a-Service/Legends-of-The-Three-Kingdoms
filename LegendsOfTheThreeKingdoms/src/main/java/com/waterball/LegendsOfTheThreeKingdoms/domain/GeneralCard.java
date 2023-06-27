@@ -16,6 +16,7 @@ public class GeneralCard {
 
     private String generalID;
     private String generalName;
+    private int healthPoint;
 
     public static final Map<String, GeneralCard> generals = new HashMap<>() {};
 }
