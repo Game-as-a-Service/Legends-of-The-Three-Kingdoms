@@ -4,7 +4,6 @@ import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Game {
 
@@ -55,6 +54,10 @@ public class Game {
 
     public Player getPlayer(String playerId) {
         return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
+    }
+
+    public void assignHpToPlayers() {
+        players.forEach(Player::setBloodCard);
     }
 }
 

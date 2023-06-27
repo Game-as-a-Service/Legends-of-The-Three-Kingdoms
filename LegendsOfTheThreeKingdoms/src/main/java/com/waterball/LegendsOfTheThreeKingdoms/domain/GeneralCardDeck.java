@@ -17,23 +17,18 @@ public class GeneralCardDeck {
     }
 
     private void initGeneralCardDeck() {
-        String general = "general";
-        GeneralName[] generalNames = GeneralName.values();
-        int cardId = 3;
-        //讓劉備,曹操,孫權在最上面
+        General[] generalNames = General.values();
         for (int i = generalNames.length - 1; i >= 3; i--) {
-            String generalID = general + cardId++;
-            GeneralCard generalCard = new GeneralCard(generalID, generalNames[i].getGeneralName());
+            GeneralCard generalCard = new GeneralCard(generalNames[i].getGeneralId(), generalNames[i].getGeneralName(), generalNames[i].getHealthPoint());
             generalStack.add(generalCard);
-            GeneralCard.generals.put(generalID, generalCard);
+            GeneralCard.generals.put(generalNames[i].getGeneralId(), generalCard);
         }
         ShuffleWrapper.shuffle(generalStack);
-        cardId = 0; //讓孫權,曹操,劉備 id 是 0 1 2
+        //讓劉備,曹操,孫權在最上面
         for (int i = 0; i < 3; i++) {
-            String generalID = general + cardId++;
-            GeneralCard generalCard = new GeneralCard(generalID, generalNames[i].getGeneralName());
+            GeneralCard generalCard = new GeneralCard(generalNames[i].getGeneralId(), generalNames[i].getGeneralName(), generalNames[i].getHealthPoint());
             generalStack.add(generalCard);
-            GeneralCard.generals.put(generalID, generalCard);
+            GeneralCard.generals.put(generalNames[i].getGeneralId(), generalCard);
         }
     }
 
@@ -51,44 +46,6 @@ public class GeneralCardDeck {
 
     private boolean isNotValid() {
         return generalStack.isEmpty();
-    }
-
-
-    public enum GeneralName {
-        劉備("劉備"),
-        曹操("曹操"),
-        孫權("孫權"),
-        關羽("關羽"),
-        張飛("張飛"),
-        馬超("馬超"),
-        趙雲("趙雲"),
-        黃月英("黃月英"),
-        諸葛亮("諸葛亮"),
-        黃忠("黃忠"),
-        魏延("魏延"),
-        司馬懿("司馬懿"),
-        夏侯敦("夏侯敦"),
-        許褚("許褚"),
-        郭嘉("郭嘉"),
-        甄姬("甄姬"),
-        張遼("張遼"),
-        甘寧("甘寧"),
-        呂蒙("呂蒙"),
-        黃蓋("黃蓋"),
-        大喬("大喬"),
-        周瑜("周瑜"),
-        孫尚香("孫尚香"),
-        陸遜("陸遜");
-
-
-        private final String generalName;
-        GeneralName(String generalName) {
-            this.generalName = generalName;
-        }
-
-        public String getGeneralName() {
-            return generalName;
-        }
     }
 
 }
