@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-public class  GameController {
+public class GameController {
 
     private final GameService gameService;
 
