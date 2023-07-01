@@ -1,7 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameDto;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerDto;
+import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
+import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoleCard;

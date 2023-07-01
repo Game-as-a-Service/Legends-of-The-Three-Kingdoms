@@ -18,5 +18,6 @@ public class GeneralCard {
     private String generalName;
     private int healthPoint;
 
-    public static final Map<String, GeneralCard> generals = new HashMap<>() {};
+    public static final Map<String, GeneralCard> generals = new HashMap<>() {
+    };
 }

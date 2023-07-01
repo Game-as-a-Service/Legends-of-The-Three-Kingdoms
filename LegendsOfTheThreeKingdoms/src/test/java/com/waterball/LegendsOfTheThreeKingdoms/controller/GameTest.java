@@ -2,11 +2,10 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GeneralCardDto;
+import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -149,7 +148,7 @@ public class GameTest {
 
     private void shouldChooseGeneralsByOthers() throws Exception {
 
-/*
+        /*
         Given
         玩家A為主公 ，選擇了武將「劉備」
         B 為忠臣 可選武將牌「馬超」「趙雲」「黃月英」
