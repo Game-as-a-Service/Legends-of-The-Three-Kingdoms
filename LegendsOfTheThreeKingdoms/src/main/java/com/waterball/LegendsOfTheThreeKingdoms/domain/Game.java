@@ -27,6 +27,14 @@ public class Game {
         this.players = players;
     }
 
+    public Player getPlayer(String playerId) {
+        return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
+    }
+
+    public GeneralCardDeck getGeneralCardDeck() {
+        return generalCardDeck;
+    }
+
     public void assignRoles() {
         if (players.size() < 4) {
             throw new IllegalStateException("The number of players must bigger than 4.");
@@ -38,26 +46,17 @@ public class Game {
         }
     }
 
-    public GeneralCardDeck getGeneralCardDeck() {
-        return generalCardDeck;
-    }
-
     public void setPlayerGeneral(String playerId, String generalId) {
         Player player = getPlayer(playerId);
-       // int ind = IntStream.range(0, generalCardDeck.getGeneralStack().size())
-       //                 .filter(i -> generalCardDeck.getGeneralStack().get(i).getGeneralID().equals(generalId))
-       //                         .findFirst().orElseThrow();
         GeneralCard generalCard = GeneralCard.generals.get(generalId);
-       // GeneralCard generalCard = generalCardDeck.getGeneralStack().remove(ind);
         player.setGeneralCard(generalCard);
-    }
-
-    public Player getPlayer(String playerId) {
-        return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
     }
 
     public void assignHpToPlayers() {
         players.forEach(Player::setBloodCard);
+    }
+
+    public void assignHandCardToPlayers() {
     }
 }
 

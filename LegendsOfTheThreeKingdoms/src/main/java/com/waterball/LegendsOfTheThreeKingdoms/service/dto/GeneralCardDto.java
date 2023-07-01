@@ -1,9 +1,10 @@
-package com.waterball.LegendsOfTheThreeKingdoms.controller.dto;
+package com.waterball.LegendsOfTheThreeKingdoms.service.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 
 @Data
 @Builder
