@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.in;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -54,6 +55,17 @@ public class GameTest {
         shouldChooseGeneralsByMonarch();
         shouldChooseGeneralsByOthers();
         shouldInitialHP();
+        shouldDealCardToPlayers();
+    }
+
+    private void shouldDealCardToPlayers() {
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        game.assignHandCardToPlayers();
+
+        assertEquals(4, game.getPlayer("player-a").getHandSize());
+        assertEquals(4, game.getPlayer("player-b").getHandSize());
+        assertEquals(4, game.getPlayer("player-c").getHandSize());
+        assertEquals(4, game.getPlayer("player-d").getHandSize());
     }
 
     public void shouldInitialHP(){
@@ -64,7 +76,6 @@ public class GameTest {
         assertEquals(4, game.getPlayer("player-b").getHP());
         assertEquals(3, game.getPlayer("player-c").getHP());
         assertEquals(3, game.getPlayer("player-d").getHP());
-
     }
 
     public void shouldStartGame() throws Exception {

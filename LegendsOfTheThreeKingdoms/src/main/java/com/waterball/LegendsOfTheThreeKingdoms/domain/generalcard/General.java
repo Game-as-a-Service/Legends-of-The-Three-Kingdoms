@@ -1,4 +1,4 @@
-package com.waterball.LegendsOfTheThreeKingdoms.domain;
+package com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard;
 
 public enum General {
     劉備("劉備",4, "SHU001"),

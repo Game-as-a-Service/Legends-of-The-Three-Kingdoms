@@ -1,5 +1,10 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
@@ -28,6 +33,7 @@ public class GameService {
         for (PlayerDto playerDto : playerDtos) {
             Player player = new Player();
             player.setId(playerDto.getId());
+            player.setHand(new Hand());
             players.add(player);
         }
         game.setPlayers(players);
@@ -36,7 +42,7 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    private static Game createGame() {
+    private Game createGame() {
         return new Game();
     }
 
@@ -91,6 +97,7 @@ public class GameService {
         playerDto.setId(player.getId());
         playerDto.setRoleCard(player.getRoleCard());
         playerDto.setGeneralCard(player.getGeneralCard());
+        playerDto.setHand(player.getHand());
         return playerDto;
     }
 

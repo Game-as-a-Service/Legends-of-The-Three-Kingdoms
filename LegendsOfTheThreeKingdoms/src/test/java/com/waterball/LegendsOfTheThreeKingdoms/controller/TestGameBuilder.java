@@ -1,10 +1,11 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.GeneralCard;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Role;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.RoleCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ public class TestGameBuilder {
     public TestGameBuilder players(int requiredPlayers) {
         for (int i = 0; i < requiredPlayers; i++) {
             PlayerDto p = new PlayerDto();
+            p.setHand(new Hand());
             players.add(p);
         }
         return this;

@@ -1,9 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.builders;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import lombok.experimental.UtilityClass;
-
-import java.util.ArrayList;
 
 @UtilityClass
 public class Players {
