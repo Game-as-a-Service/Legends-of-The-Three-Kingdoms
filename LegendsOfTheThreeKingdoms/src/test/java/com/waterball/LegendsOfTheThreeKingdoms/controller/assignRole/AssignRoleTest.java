@@ -1,8 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.assignRole;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.RoleCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import static java.util.Arrays.asList;
 public class AssignRoleTest {
 
     @Test
-    void GivenFourPlayers_WhenAssignRole_ThenOneMonarchOneMinisterOneRebelOneTraitors() {
+    void givenFourPlayers_WhenAssignRole_ThenOneMonarchOneMinisterOneRebelOneTraitors() {
         //Given
         var game = new Game();
         List<Player> players = asList(
@@ -42,7 +42,7 @@ public class AssignRoleTest {
     }
 
     @Test
-    void GivenThreePlayers_WhenAssignRoles_ThenThrowException() {
+    void givenThreePlayers_WhenAssignRoles_ThenThrowException() {
         //Given
         var game = new Game();
         List<Player> players = asList(
@@ -58,7 +58,7 @@ public class AssignRoleTest {
     }
 
     @Test
-    void GivenFourPlayers_WhenAssignRole_EveryOneShouldHaveOne() {
+    void givenFourPlayers_WhenAssignRole_EveryOneShouldHaveOne() {
         //Given
         int playersNum = 4;
         var game = new Game();

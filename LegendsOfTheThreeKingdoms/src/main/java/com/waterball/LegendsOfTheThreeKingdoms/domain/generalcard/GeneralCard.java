@@ -1,4 +1,4 @@
-package com.waterball.LegendsOfTheThreeKingdoms.domain;
+package com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.waterball.LegendsOfTheThreeKingdoms.domain;
+package com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard;
 
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import lombok.Data;

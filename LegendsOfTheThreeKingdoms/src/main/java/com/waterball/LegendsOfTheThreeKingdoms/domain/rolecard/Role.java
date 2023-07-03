@@ -1,4 +1,4 @@
-package com.waterball.LegendsOfTheThreeKingdoms.domain;
+package com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard;
 
 public enum Role {
     MONARCH("Monarch"),

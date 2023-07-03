@@ -1,5 +1,12 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
 import java.util.*;
@@ -10,7 +17,7 @@ public class Game {
     private String gameId;
     private List<Player> players;
     private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
-
+    private Deck deck = new Deck();
     public String getGameId() {
         return gameId;
     }
@@ -53,10 +60,19 @@ public class Game {
     }
 
     public void assignHpToPlayers() {
-        players.forEach(Player::setBloodCard);
+        players.forEach(p -> {
+            int healthPoint = p.getRoleCard().getRole().equals(Role.MONARCH) ? 1 : 0;
+            p.setBloodCard(new BloodCard(p.getGeneralCard().getHealthPoint() + healthPoint));
+        });
     }
 
     public void assignHandCardToPlayers() {
+        deck.shuffle();
+        players.forEach(player -> {
+            player.getHand().setCards(deck.deal(4));
+        });
     }
+
+
 }
 
