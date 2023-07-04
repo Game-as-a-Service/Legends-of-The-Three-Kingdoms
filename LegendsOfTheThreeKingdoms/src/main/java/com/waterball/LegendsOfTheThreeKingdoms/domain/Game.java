@@ -34,6 +34,10 @@ public class Game {
         this.players = players;
     }
 
+    public void setDeck(Deck deck) {
+        this.deck = deck;
+    }
+
     public Player getPlayer(String playerId) {
         return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
     }
@@ -67,12 +71,14 @@ public class Game {
     }
 
     public void assignHandCardToPlayers() {
-        deck.shuffle();
         players.forEach(player -> {
             player.getHand().setCards(deck.deal(4));
         });
     }
 
-
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
 

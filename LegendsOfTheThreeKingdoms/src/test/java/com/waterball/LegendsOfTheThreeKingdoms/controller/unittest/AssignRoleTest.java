@@ -1,9 +1,9 @@
-package com.waterball.LegendsOfTheThreeKingdoms.controller.assignRole;
+package com.waterball.LegendsOfTheThreeKingdoms.controller.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,9 +36,7 @@ public class AssignRoleTest {
         Assertions.assertTrue(
                 game.getPlayers().stream().map(Player::getRoleCard)
                         .collect(Collectors.toSet())
-                        .equals(
-                                roleCards
-                        ));
+                        .equals(roleCards));
     }
 
     @Test
@@ -60,7 +58,6 @@ public class AssignRoleTest {
     @Test
     void givenFourPlayers_WhenAssignRole_EveryOneShouldHaveOne() {
         //Given
-        int playersNum = 4;
         var game = new Game();
         List<Player> players = asList(
                 Players.defaultPlayer("player-a"),
