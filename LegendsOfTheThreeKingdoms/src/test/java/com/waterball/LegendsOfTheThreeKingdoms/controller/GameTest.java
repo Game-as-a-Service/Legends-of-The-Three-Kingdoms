@@ -66,6 +66,10 @@ public class GameTest {
         assertEquals(4, game.getPlayer("player-b").getHandSize());
         assertEquals(4, game.getPlayer("player-c").getHandSize());
         assertEquals(4, game.getPlayer("player-d").getHandSize());
+
+        // ATDD
+        //assertEquals(4, game.getPlayer("player-d").getHand().getCards());
+
     }
 
     public void shouldInitialHP(){
