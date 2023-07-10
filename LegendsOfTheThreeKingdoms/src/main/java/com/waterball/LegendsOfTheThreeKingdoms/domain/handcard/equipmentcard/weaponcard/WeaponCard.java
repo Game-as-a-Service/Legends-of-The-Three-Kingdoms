@@ -3,4 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.equipmentcard.we
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.equipmentcard.EquipmentCard;
 
 public class WeaponCard extends EquipmentCard {
+    public WeaponCard(String name) {
+        super(name);
+    }
 }

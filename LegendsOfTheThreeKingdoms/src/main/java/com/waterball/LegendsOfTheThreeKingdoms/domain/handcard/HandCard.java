@@ -1,6 +1,12 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard;
 
 
-public abstract class HandCard {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@Data
+@AllArgsConstructor
+public abstract class HandCard {
+    protected String name;
 }

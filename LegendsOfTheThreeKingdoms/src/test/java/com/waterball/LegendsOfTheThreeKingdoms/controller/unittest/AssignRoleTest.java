@@ -33,10 +33,8 @@ public class AssignRoleTest {
 
         // then
         Set<RoleCard> roleCards = Arrays.stream(RoleCard.ROLES.get(4)).collect(Collectors.toSet());
-        Assertions.assertTrue(
-                game.getPlayers().stream().map(Player::getRoleCard)
-                        .collect(Collectors.toSet())
-                        .equals(roleCards));
+        Assertions.assertEquals(game.getPlayers().stream().map(Player::getRoleCard)
+                .collect(Collectors.toSet()), roleCards);
     }
 
     @Test
@@ -76,5 +74,4 @@ public class AssignRoleTest {
         Assertions.assertTrue(game.getPlayer("player-c").getRoleCard() != null);
         Assertions.assertTrue(game.getPlayer("player-d").getRoleCard() != null);
     }
-
 }
