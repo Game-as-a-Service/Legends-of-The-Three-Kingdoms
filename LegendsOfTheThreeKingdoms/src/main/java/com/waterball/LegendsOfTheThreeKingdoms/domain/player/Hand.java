@@ -22,4 +22,8 @@ public class Hand {
     public int size() {
         return cards.size();
     }
+
+    public void addCardToHand(List<HandCard> cards){
+        this.cards.addAll(cards);
+    }
 }

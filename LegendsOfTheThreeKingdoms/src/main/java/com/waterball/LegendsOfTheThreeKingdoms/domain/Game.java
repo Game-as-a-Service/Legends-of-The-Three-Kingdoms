@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
@@ -18,6 +19,8 @@ public class Game {
     private List<Player> players;
     private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
     private Deck deck = new Deck();
+    private Graveyard graveyard = new Graveyard();
+
     public String getGameId() {
         return gameId;
     }
@@ -79,6 +82,25 @@ public class Game {
     @Override
     public String toString() {
         return super.toString();
+    }
+
+    public void drawCardToPlayer(String playerId) {
+        Player player = getPlayer(playerId);
+        refreshDeckWhenCardsNumLessThen(2);
+        player.getHand().addCardToHand(deck.deal(2));
+    }
+
+    
+    private void refreshDeckWhenCardsNumLessThen(int requiredCardNum) {
+        if(isDeckLessThanCardNum(requiredCardNum)) deck.add(graveyard.getGraveYardCards());
+    }
+
+    private boolean isDeckLessThanCardNum(int requiredCardNum) {
+        return deck.isDeckLessThanCardNum(requiredCardNum);
+    }
+
+    public void setGraveyard(Graveyard graveyard) {
+        this.graveyard = graveyard;
     }
 }
 

@@ -56,6 +56,13 @@ public class GameTest {
         shouldChooseGeneralsByOthers();
         shouldInitialHP();
         shouldDealCardToPlayers();
+        shouldDrawCardToPlayer();
+    }
+
+    private void shouldDrawCardToPlayer() {
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        game.drawCardToPlayer("player-a");
+        assertEquals(6, game.getPlayer("player-a").getHandSize());
     }
 
     private void shouldDealCardToPlayers() {
@@ -66,10 +73,6 @@ public class GameTest {
         assertEquals(4, game.getPlayer("player-b").getHandSize());
         assertEquals(4, game.getPlayer("player-c").getHandSize());
         assertEquals(4, game.getPlayer("player-d").getHandSize());
-
-        // ATDD
-        //assertEquals(4, game.getPlayer("player-d").getHand().getCards());
-
     }
 
     public void shouldInitialHP(){

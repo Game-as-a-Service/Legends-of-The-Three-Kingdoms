@@ -1,14 +1,11 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Peach;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Stack;
 import java.util.List;
@@ -30,13 +27,24 @@ public class Deck {
         shuffle();
     }
 
-    public void shuffle(){
+
+
+
+    public void shuffle() {
         ShuffleWrapper.shuffle(cardDeck);
     }
 
-    public List<HandCard> deal(int number){
+    public List<HandCard> deal(int number) {
         return Stream.generate(cardDeck::pop)
                 .limit(number)
                 .collect(Collectors.toList());
+    }
+
+    public boolean isDeckLessThanCardNum(int requiredCardNum) {
+        return cardDeck.size() < requiredCardNum;
+    }
+
+    public void add(List<HandCard> handCards) {
+        cardDeck.addAll(handCards);
     }
 }
