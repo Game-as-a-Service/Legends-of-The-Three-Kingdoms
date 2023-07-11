@@ -28,4 +28,7 @@ public class Player {
         return hand.size();
     }
 
+    public void playCard(String cardId) {
+        hand.playCard(cardId);
+    }
 }

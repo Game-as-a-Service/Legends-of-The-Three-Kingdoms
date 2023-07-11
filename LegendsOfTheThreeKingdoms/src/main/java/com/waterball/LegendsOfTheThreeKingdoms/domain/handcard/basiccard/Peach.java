@@ -4,4 +4,6 @@ public class Peach extends BasicCard {
     public Peach() {
         super("桃");
     }
+    @Override
+    public String getCardId(){return "P";}
 }

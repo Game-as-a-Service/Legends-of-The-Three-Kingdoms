@@ -11,7 +11,8 @@ import java.util.Objects;
 
 public class BasicCard extends HandCard {
 
-    public BasicCard(String name) {
-        super(name);
+    public BasicCard(String name, String id) {
+        super(name, id);
     }
+
 }

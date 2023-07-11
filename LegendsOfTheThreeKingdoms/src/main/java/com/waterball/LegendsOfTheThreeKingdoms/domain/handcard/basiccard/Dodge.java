@@ -6,4 +6,7 @@ public class Dodge extends BasicCard {
     public Dodge() {
         super("閃");
     }
+
+    @Override
+    public String getCardId(){return "D";}
 }

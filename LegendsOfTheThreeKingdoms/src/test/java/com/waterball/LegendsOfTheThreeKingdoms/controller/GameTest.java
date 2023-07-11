@@ -2,10 +2,15 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Peach;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -17,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
@@ -57,6 +63,37 @@ public class GameTest {
         shouldInitialHP();
         shouldDealCardToPlayers();
         shouldDrawCardToPlayer();
+        shouldPlayedCard();
+    }
+
+    private void shouldPlayedCard() throws Exception {
+       /*
+        Given
+        輪到 A 玩家出牌
+        A 玩家手牌有殺x2, 閃x2, 桃x2
+        B 玩家在 A 玩家的攻擊距離
+
+        When
+        A 玩家對 B 玩家出殺
+
+        Then
+        A 玩家出殺成功
+        A 玩家手牌有殺x1, 閃x2, 桃x2
+         */
+        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-a",
+                                  "targetPlayerId": "player-b",
+                                  "cardId": "K"
+                                }"""))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        assertEquals(5, game.getPlayer("player-a").getHandSize());
+        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(),new Dodge(), new Dodge(), new Peach(), new Peach()), game.getPlayer("player-a").getHand().getCards()));
+
     }
 
     private void shouldDrawCardToPlayer() {

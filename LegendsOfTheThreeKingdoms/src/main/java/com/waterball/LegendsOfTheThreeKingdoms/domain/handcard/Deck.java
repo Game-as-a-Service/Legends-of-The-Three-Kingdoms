@@ -27,9 +27,6 @@ public class Deck {
         shuffle();
     }
 
-
-
-
     public void shuffle() {
         ShuffleWrapper.shuffle(cardDeck);
     }
