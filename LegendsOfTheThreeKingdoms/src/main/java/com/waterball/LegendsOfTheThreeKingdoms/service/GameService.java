@@ -51,6 +51,20 @@ public class GameService {
         return convertToGameDto(game);
     }
 
+    public PlayerDto playCard(String gameId, String playerId, String cardId, String targetPlayerId) {
+        //查
+        Game game = repository.findGameById(gameId);
+        Player player = game.getPlayer(playerId);
+        //改
+        player.playCard(cardId);
+//        HandCard playedCard = player.playCard(cardId);
+//        playedCard.effect(game.getPlayer(targetPlayerId));
+        //存
+        repository.save(game);
+        //推
+        return convertToPlayerDto(player);
+    }
+
     public PlayerDto chooseGeneral(String gameId, String playerId, String generalId) {
         Game game = repository.findGameById(gameId);
         game.setPlayerGeneral(playerId, generalId);

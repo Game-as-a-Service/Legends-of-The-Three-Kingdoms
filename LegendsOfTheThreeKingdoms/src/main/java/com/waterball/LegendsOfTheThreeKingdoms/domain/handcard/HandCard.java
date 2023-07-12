@@ -9,4 +9,7 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 public abstract class HandCard {
     protected String name;
+    protected String id;
+
+    public String getCardId(){return "";}
 }
