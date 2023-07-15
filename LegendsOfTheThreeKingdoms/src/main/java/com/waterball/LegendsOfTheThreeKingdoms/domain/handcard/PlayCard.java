@@ -2,7 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard;
 
 public enum PlayCard {
     SSA001("SSA001","決鬥", Suit.SPADE, Rank.ACE),
-    EES2002("ES2002","雌雄雙股劍", Suit.SPADE, Rank.TWO),
+    ES2002("ES2002","雌雄雙股劍", Suit.SPADE, Rank.TWO),
     SS3003("SS3003","過河拆橋", Suit.SPADE, Rank.THREE),
     SS4004("SS4004","過河拆橋", Suit.SPADE, Rank.FOUR),
     ES5005("ES5005","青龍偃月刀", Suit.SPADE, Rank.FIVE),
