@@ -26,12 +26,6 @@ public class GameController {
         return ResponseEntity.ok(new GameResponse(game));
     }
 
-    @PostMapping("/api/games/{gameId}/player:playCard")
-    public ResponseEntity<PlayerResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
-        PlayerDto playerDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId());
-        return ResponseEntity.ok(new PlayerResponse(playerDto));
-    }
-
     @GetMapping("/api/games/{gameId}")
     public ResponseEntity<GameResponse> getGame(@PathVariable String gameId) {
         return ResponseEntity.ok(new GameResponse(gameService.getGame(gameId)));
@@ -47,6 +41,12 @@ public class GameController {
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
     public ResponseEntity<PlayerResponse> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
         return ResponseEntity.ok(new PlayerResponse(gameService.chooseGeneral(gameId, playerId, generalId)));
+    }
+
+    @PostMapping("/api/games/{gameId}/player:playCard")
+    public ResponseEntity<PlayerResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
+        PlayerDto playerDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId());
+        return ResponseEntity.ok(new PlayerResponse(playerDto));
     }
 
 }

@@ -25,8 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.in;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -85,14 +85,14 @@ public class GameTest {
                         .content("""
                                 { "playerId": "player-a",
                                   "targetPlayerId": "player-b",
-                                  "cardId": "K"
+                                  "cardId": "BS8008"
                                 }"""))
                 .andExpect(status().isOk())
                 .andReturn();
 
         Game game = inMemoryGameRepository.findGameById("my-id");
         assertEquals(5, game.getPlayer("player-a").getHandSize());
-        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(),new Dodge(), new Dodge(), new Peach(), new Peach()), game.getPlayer("player-a").getHand().getCards()));
+        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BS8008),new Peach(BH4030), new Peach(BH4030), new Dodge(BHK039), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
 
     }
 

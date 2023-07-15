@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
+import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 
 public class AssignHandCardToPlayers {
@@ -52,10 +53,10 @@ public class AssignHandCardToPlayers {
         Stack<HandCard> stack = new Stack<>();
 
         for (int i = 0; i < 8; i++) {
-            stack.push(new Dodge());
+            stack.push(new Dodge(BHK039));
         }
         for (int i = 0; i < 8; i++) {
-            stack.push(new Kill());
+            stack.push(new Kill(BHJ037));
         }
         var deck = new Deck(stack);
         game.setDeck(deck);
@@ -64,9 +65,9 @@ public class AssignHandCardToPlayers {
         game.assignHandCardToPlayers();
 
         // then
-        Assertions.assertEquals(game.getPlayer("player-a").getHand().getCards(), Arrays.asList(new Kill(), new Kill(), new Kill(), new Kill()));
-        Assertions.assertEquals(game.getPlayer("player-b").getHand().getCards(), Arrays.asList(new Kill(), new Kill(), new Kill(), new Kill()));
-        Assertions.assertEquals(game.getPlayer("player-c").getHand().getCards(), Arrays.asList(new Dodge(), new Dodge(), new Dodge(), new Dodge()));
-        Assertions.assertEquals(game.getPlayer("player-d").getHand().getCards(), Arrays.asList(new Dodge(), new Dodge(), new Dodge(), new Dodge()));
+        Assertions.assertEquals(game.getPlayer("player-a").getHand().getCards(), Arrays.asList(new Kill(BHJ037), new Kill(BHJ037), new Kill(BHJ037), new Kill(BHJ037)));
+        Assertions.assertEquals(game.getPlayer("player-b").getHand().getCards(), Arrays.asList(new Kill(BHJ037), new Kill(BHJ037), new Kill(BHJ037), new Kill(BHJ037)));
+        Assertions.assertEquals(game.getPlayer("player-c").getHand().getCards(), Arrays.asList(new Dodge(BHK039), new Dodge(BHK039), new Dodge(BHK039), new Dodge(BHK039)));
+        Assertions.assertEquals(game.getPlayer("player-d").getHand().getCards(), Arrays.asList(new Dodge(BHK039), new Dodge(BHK039), new Dodge(BHK039), new Dodge(BHK039)));
     }
 }

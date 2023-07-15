@@ -1,9 +1,10 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard;
+
 public class Peach extends BasicCard {
-    public Peach() {
-        super("桃");
+
+    public Peach(PlayCard playCard) {
+        super(playCard);
     }
-    @Override
-    public String getCardId(){return "P";}
 }

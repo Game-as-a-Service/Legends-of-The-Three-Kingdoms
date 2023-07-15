@@ -30,7 +30,7 @@ public class Hand {
 
     public void playCard(String cardId) {
         cards.remove(cards.stream()
-                .filter(card -> "K".equals(card.getCardId()))
+                .filter(card -> cardId.equals(card.getId()))
                 .findFirst().get());
     }
 }

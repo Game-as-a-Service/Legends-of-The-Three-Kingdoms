@@ -1,9 +1,11 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard;
+
 public class Kill extends BasicCard {
-    public Kill() {
-        super("殺");
+
+    public Kill(PlayCard playCard) {
+        super(playCard);
     }
-    @Override
-    public String getCardId(){return "K";}
+
 }
