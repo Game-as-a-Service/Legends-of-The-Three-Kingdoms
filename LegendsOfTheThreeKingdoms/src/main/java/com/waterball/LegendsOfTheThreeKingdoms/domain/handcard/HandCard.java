@@ -9,4 +9,10 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 public abstract class HandCard {
     protected String name;
+    protected String id;
+
+    public HandCard(PlayCard playCard) {
+        this.name = playCard.getCardName();
+        this.id = playCard.getCardId();
+    }
 }

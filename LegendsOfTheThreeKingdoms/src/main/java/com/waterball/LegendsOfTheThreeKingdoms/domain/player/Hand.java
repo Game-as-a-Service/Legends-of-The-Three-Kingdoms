@@ -19,11 +19,18 @@ public class Hand {
     public void setCards(List<HandCard> cards) {
         this.cards = cards;
     }
+
     public int size() {
         return cards.size();
     }
 
-    public void addCardToHand(List<HandCard> cards){
+    public void addCardToHand(List<HandCard> cards) {
         this.cards.addAll(cards);
+    }
+
+    public void playCard(String cardId) {
+        cards.remove(cards.stream()
+                .filter(card -> cardId.equals(card.getId()))
+                .findFirst().get());
     }
 }

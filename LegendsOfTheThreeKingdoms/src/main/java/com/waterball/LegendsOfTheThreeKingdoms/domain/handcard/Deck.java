@@ -20,15 +20,12 @@ public class Deck {
 
     public Deck() {
         IntStream.range(0, 8).forEach(i -> {
-            cardDeck.add(new Kill());
-            cardDeck.add(new Peach());
-            cardDeck.add(new Dodge());
+            cardDeck.add(new Kill(PlayCard.BS8008));
+            cardDeck.add(new Peach(PlayCard.BH4030));
+            cardDeck.add(new Dodge(PlayCard.BHK039));
         });
         shuffle();
     }
-
-
-
 
     public void shuffle() {
         ShuffleWrapper.shuffle(cardDeck);

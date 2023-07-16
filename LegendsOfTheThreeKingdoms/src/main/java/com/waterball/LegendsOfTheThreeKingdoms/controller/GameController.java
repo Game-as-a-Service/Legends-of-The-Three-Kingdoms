@@ -1,12 +1,10 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GeneralCardResponse;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerResponse;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
+import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +41,12 @@ public class GameController {
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
     public ResponseEntity<PlayerResponse> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
         return ResponseEntity.ok(new PlayerResponse(gameService.chooseGeneral(gameId, playerId, generalId)));
+    }
+
+    @PostMapping("/api/games/{gameId}/player:playCard")
+    public ResponseEntity<PlayerResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
+        PlayerDto playerDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId());
+        return ResponseEntity.ok(new PlayerResponse(playerDto));
     }
 
 }

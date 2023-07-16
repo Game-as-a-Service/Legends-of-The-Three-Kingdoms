@@ -11,9 +11,8 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import java.util.*;
-
+import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 
 public class DrawCardToPlayer {
@@ -36,7 +35,7 @@ public class DrawCardToPlayer {
         //Given
         var game = new Game();
         Player player = Players.defaultPlayer("player-a");
-        player.getHand().addCardToHand(Arrays.asList(new Kill()));;
+        player.getHand().addCardToHand(Arrays.asList(new Kill(BH0036)));;
         List<Player> players = asList(player);
         game.setPlayers(players);
         Deck deck = new Deck(new Stack());
@@ -48,7 +47,7 @@ public class DrawCardToPlayer {
         game.drawCardToPlayer("player-a");
 
         //Then
-        Assertions.assertEquals(Arrays.asList(new Kill(), new EightDiagrams(), new EightDiagrams()), game.getPlayer("player-a").getHand().getCards());
+        Assertions.assertEquals(Arrays.asList(new Kill(BH0036), new EightDiagrams(), new EightDiagrams()), game.getPlayer("player-a").getHand().getCards());
 
     }
 
@@ -72,9 +71,9 @@ public class DrawCardToPlayer {
         Game game = new Game();
         Deck deck = new Deck(new Stack<>());
         Graveyard graveyard = new Graveyard();
-        graveyard.add(Arrays.asList(new Kill(), new Kill()));
+        graveyard.add(Arrays.asList(new Kill(BH0036), new Kill(BH0036)));
         Player player = Players.defaultPlayer("player-a");
-        player.getHand().addCardToHand(Arrays.asList(new Dodge()));
+        player.getHand().addCardToHand(Arrays.asList(new Dodge(BHK039)));
         List<Player> players = asList(
                 player);
 
@@ -84,7 +83,7 @@ public class DrawCardToPlayer {
 
         game.drawCardToPlayer("player-a");
 
-        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(),new Kill(),new Dodge()), game.getPlayer("player-a").getHand().getCards()));
+        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BH0036),new Kill(BH0036),new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
 
         Assertions.assertTrue(deck.isDeckLessThanCardNum(1));
         Assertions.assertTrue(graveyard.isEmpty());
