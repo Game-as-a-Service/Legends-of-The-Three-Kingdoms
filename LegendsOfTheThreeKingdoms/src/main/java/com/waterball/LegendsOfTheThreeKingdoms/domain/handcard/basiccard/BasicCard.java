@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 import java.util.Objects;
 
 
-public class BasicCard extends HandCard {
-
-
+public abstract class BasicCard extends HandCard {
     public BasicCard(PlayCard playCard) {
         super(playCard);
     }

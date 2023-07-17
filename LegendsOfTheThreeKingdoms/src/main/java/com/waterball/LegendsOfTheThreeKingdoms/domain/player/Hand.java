@@ -28,9 +28,14 @@ public class Hand {
         this.cards.addAll(cards);
     }
 
-    public void playCard(String cardId) {
-        cards.remove(cards.stream()
+    public HandCard getCard(String cardId) {
+        return cards.stream()
                 .filter(card -> cardId.equals(card.getId()))
-                .findFirst().get());
+                .findFirst().get();
+    }
+
+    public HandCard playCard(String cardId) {
+        HandCard handCard = getCard(cardId);
+        return cards.remove(cards.indexOf(handCard));
     }
 }

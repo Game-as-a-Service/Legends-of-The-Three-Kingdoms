@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard;
 
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,4 +16,6 @@ public abstract class HandCard {
         this.name = playCard.getCardName();
         this.id = playCard.getCardId();
     }
+
+    public abstract void effect(Player player);
 }

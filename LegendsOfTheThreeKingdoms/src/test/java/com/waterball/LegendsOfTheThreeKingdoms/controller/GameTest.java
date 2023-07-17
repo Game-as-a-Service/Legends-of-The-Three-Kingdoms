@@ -79,6 +79,7 @@ public class GameTest {
         Then
         A 玩家出殺成功
         A 玩家手牌有殺x1, 閃x2, 桃x2
+        A
          */
         this.mockMvc.perform(post("/api/games/my-id/player:playCard")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +94,7 @@ public class GameTest {
         Game game = inMemoryGameRepository.findGameById("my-id");
         assertEquals(5, game.getPlayer("player-a").getHandSize());
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BS8008),new Peach(BH4030), new Peach(BH4030), new Dodge(BHK039), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
-
+        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
     }
 
     private void shouldDrawCardToPlayer() {
