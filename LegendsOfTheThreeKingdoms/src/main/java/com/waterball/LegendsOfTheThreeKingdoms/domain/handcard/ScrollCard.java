@@ -1,6 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard;
 
-public class ScrollCard extends HandCard {
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
+
+public abstract class ScrollCard extends HandCard {
     public ScrollCard(PlayCard playCard) {
         super(playCard);
     }

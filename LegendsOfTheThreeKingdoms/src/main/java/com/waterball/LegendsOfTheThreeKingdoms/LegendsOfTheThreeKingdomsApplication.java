@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class LegendsOfTheThreeKingdomsApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(LegendsOfTheThreeKingdomsApplication.class, args);
-
 	}
 
 }

@@ -3,7 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.equipmentcard.ar
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.equipmentcard.EquipmentCard;
 
-public class ArmorCard extends EquipmentCard {
+public abstract class ArmorCard extends EquipmentCard {
 
     public ArmorCard(PlayCard playCard) {
         super(playCard);

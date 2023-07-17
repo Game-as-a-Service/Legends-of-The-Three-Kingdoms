@@ -4,6 +4,8 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
@@ -20,6 +22,7 @@ public class Game {
     private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
     private Deck deck = new Deck();
     private Graveyard graveyard = new Graveyard();
+    private SeatingChart seatingChart;
 
     public String getGameId() {
         return gameId;
@@ -35,6 +38,7 @@ public class Game {
 
     public void setPlayers(List<Player> players) {
         this.players = players;
+        seatingChart = new SeatingChart(players);
     }
 
     public void setDeck(Deck deck) {
@@ -101,6 +105,24 @@ public class Game {
 
     public void setGraveyard(Graveyard graveyard) {
         this.graveyard = graveyard;
+    }
+
+    public void playerPlayCard(String playerId, String cardId, String targetPlayerId) {
+        Player player = getPlayer(playerId);
+        Player targetPlayer = getPlayer(targetPlayerId);
+        if (!isWithinDistance(player, targetPlayer)) {
+            throw new IllegalStateException("Players are not within range.");
+        }
+        HandCard handCard = player.playCard(cardId);
+        handCard.effect(targetPlayer);
+    }
+
+    private boolean isWithinDistance(Player player, Player targetPlayer) {
+        // 攻擊距離 >= 基礎距離(座位表) + 逃走距離
+        int dist = seatingChart.calculateDistance(player, targetPlayer);
+        int escapeDist = targetPlayer.judgeEscapeDistance();
+        int attackDist = player.judgeAttackDistance();
+        return attackDist >= dist + escapeDist;
     }
 }
 

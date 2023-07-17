@@ -44,9 +44,9 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/player:playCard")
-    public ResponseEntity<PlayerResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
-        PlayerDto playerDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId());
-        return ResponseEntity.ok(new PlayerResponse(playerDto));
+    public ResponseEntity<GameResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
+        GameDto gameDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId());
+        return ResponseEntity.ok(new GameResponse(gameDto));
     }
 
 }
