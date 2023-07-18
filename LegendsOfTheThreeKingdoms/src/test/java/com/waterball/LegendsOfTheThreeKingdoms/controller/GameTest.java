@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Phase;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Peach;
@@ -57,13 +58,41 @@ public class GameTest {
 
     @Test
     public void happyPath() throws Exception {
-        shouldStartGame();
+        shouldCreateGame();
         shouldChooseGeneralsByMonarch();
         shouldChooseGeneralsByOthers();
         shouldInitialHP();
         shouldDealCardToPlayers();
         shouldDrawCardToPlayer();
         shouldPlayedCard();
+        shouldPlayerFinishRound();
+    }
+
+    private void shouldPlayerFinishRound() throws Exception {
+        /*
+        Given
+        現在是 A 玩家的出牌階段
+
+        When
+        A 玩家結束出牌
+
+        Then
+        A 玩家進入棄牌階段
+        */
+
+        this.mockMvc.perform(post("/api/games/my-id/player:finishRound")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                "playerId": "player-a"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        assertEquals(Phase.Discard ,game.getCurrentRoundPhase("player-a"));
+
     }
 
     private void shouldPlayedCard() throws Exception {
@@ -123,8 +152,7 @@ public class GameTest {
         assertEquals(3, game.getPlayer("player-d").getHP());
     }
 
-    public void shouldStartGame() throws Exception {
-        // create game
+    public void shouldCreateGame() throws Exception {
 
         // Monarch
         // Minister
