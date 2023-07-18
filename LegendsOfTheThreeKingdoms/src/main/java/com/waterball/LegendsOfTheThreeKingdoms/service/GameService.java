@@ -2,7 +2,6 @@ package com.waterball.LegendsOfTheThreeKingdoms.service;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
@@ -116,4 +115,9 @@ public class GameService {
         return cardDto;
     }
 
+    public GameDto finishRound(String gameId, String playerId) {
+        Game game = repository.findGameById(gameId);
+        game.setDiscardRoundPhase(playerId);
+        return convertToGameDto(game);
+    }
 }

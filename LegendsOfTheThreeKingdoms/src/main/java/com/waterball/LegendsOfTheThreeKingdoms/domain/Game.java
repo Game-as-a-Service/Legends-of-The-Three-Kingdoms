@@ -5,7 +5,6 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDec
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
@@ -23,6 +22,7 @@ public class Game {
     private Deck deck = new Deck();
     private Graveyard graveyard = new Graveyard();
     private SeatingChart seatingChart;
+    private Round currentRound;
 
     public String getGameId() {
         return gameId;
@@ -77,10 +77,12 @@ public class Game {
         });
     }
 
+    //連 websocket Server 做好狀態推給前端 ?
     public void assignHandCardToPlayers() {
         players.forEach(player -> {
             player.getHand().setCards(deck.deal(4));
         });
+        currentRound = new Round(players.get(0));
     }
 
     @Override
@@ -94,9 +96,8 @@ public class Game {
         player.getHand().addCardToHand(deck.deal(2));
     }
 
-    
     private void refreshDeckWhenCardsNumLessThen(int requiredCardNum) {
-        if(isDeckLessThanCardNum(requiredCardNum)) deck.add(graveyard.getGraveYardCards());
+        if (isDeckLessThanCardNum(requiredCardNum)) deck.add(graveyard.getGraveYardCards());
     }
 
     private boolean isDeckLessThanCardNum(int requiredCardNum) {
@@ -123,6 +124,17 @@ public class Game {
         int escapeDist = targetPlayer.judgeEscapeDistance();
         int attackDist = player.judgeAttackDistance();
         return attackDist >= dist + escapeDist;
+    }
+
+    public void setDiscardRoundPhase(String playerId) {
+        if (currentRound == null || !playerId.equals(currentRound.getCurrentPlayer().getId())) {
+            throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
+        }
+        currentRound.setPhase(Phase.Discard);
+    }
+
+    public Phase getCurrentRoundPhase(String playerId) {
+        return currentRound.getPhase();
     }
 }
 
