@@ -25,6 +25,8 @@ public class SeatingChart {
         return Math.min(distanceClockwise, distanceCounterClockwise);
     }
 
-
-
+    public Player getNextPlayer(Player player) {
+        int seat = (players.indexOf(player)+1) % players.size();
+        return players.get(seat);
+    }
 }
