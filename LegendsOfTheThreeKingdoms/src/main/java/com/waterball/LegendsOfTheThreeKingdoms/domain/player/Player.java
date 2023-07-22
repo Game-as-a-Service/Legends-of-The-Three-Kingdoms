@@ -55,4 +55,12 @@ public class Player {
     public int judgeAttackDistance() {
         return 1;
     }
+
+    public boolean hasAnyDelayScrollCard() {
+        return false;
+    }
+
+    public boolean handCardSizeBiggerThanHP() {
+        return false;
+    }
 }

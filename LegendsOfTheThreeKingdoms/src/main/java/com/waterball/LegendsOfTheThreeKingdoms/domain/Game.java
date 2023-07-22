@@ -94,6 +94,7 @@ public class Game {
         Player player = getPlayer(playerId);
         refreshDeckWhenCardsNumLessThen(2);
         player.getHand().addCardToHand(deck.deal(2));
+        currentRound.setPhase(Phase.Action);
     }
 
     private void refreshDeckWhenCardsNumLessThen(int requiredCardNum) {
@@ -133,8 +134,31 @@ public class Game {
         currentRound.setPhase(Phase.Discard);
     }
 
-    public Phase getCurrentRoundPhase(String playerId) {
+    public Phase getCurrentRoundPhase() {
         return currentRound.getPhase();
+    }
+
+    public Player getCurrentRoundPlayer() {
+        return currentRound.getCurrentPlayer();
+    }
+
+    public void judgePlayerShouldDelay() {
+        Player player = currentRound.getCurrentPlayer();
+        if (!player.hasAnyDelayScrollCard()){
+            currentRound.setPhase(Phase.Drawing);
+        }
+    }
+
+    public void judgePlayerShouldDiscardCard() {
+        Player player = currentRound.getCurrentPlayer();
+        if (!currentRound.getPhase().equals(Phase.Discard)){
+            throw new RuntimeException();
+        }
+        if (player.handCardSizeBiggerThanHP()){
+            //TODO: 玩家選擇要丟的牌
+        }
+        Player nextPlayer = seatingChart.getNextPlayer(player);
+        currentRound = new Round(nextPlayer);
     }
 }
 

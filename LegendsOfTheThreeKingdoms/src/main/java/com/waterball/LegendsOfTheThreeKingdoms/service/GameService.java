@@ -82,6 +82,12 @@ public class GameService {
                 .stream().map(this::convertCardToGeneralDto).collect(Collectors.toList());
     }
 
+    public GameDto finishAction(String gameId, String playerId) {
+        Game game = repository.findGameById(gameId);
+        game.setDiscardRoundPhase(playerId);
+        return convertToGameDto(game);
+    }
+
     private GameDto convertToGameDto(Game game) {
         String gameId = game.getGameId();
         List<PlayerDto> playerDtos = convertToPlayerDtos(game.getPlayers());
@@ -113,11 +119,5 @@ public class GameService {
         cardDto.setGeneralID(card.getGeneralID());
         cardDto.setGeneralName(card.getGeneralName());
         return cardDto;
-    }
-
-    public GameDto finishRound(String gameId, String playerId) {
-        Game game = repository.findGameById(gameId);
-        game.setDiscardRoundPhase(playerId);
-        return convertToGameDto(game);
     }
 }

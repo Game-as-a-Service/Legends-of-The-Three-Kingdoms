@@ -19,6 +19,7 @@ public class Deck {
     private Stack<HandCard> cardDeck = new Stack<>();
 
     public Deck() {
+        // TODO: Enum values should be used instead of hard-coded values.
         IntStream.range(0, 8).forEach(i -> {
             cardDeck.add(new Kill(PlayCard.BS8008));
             cardDeck.add(new Peach(PlayCard.BH4030));

@@ -49,10 +49,10 @@ public class GameController {
         return ResponseEntity.ok(new GameResponse(gameDto));
     }
 
-    @PostMapping("/api/games/{gameId}/player:finishRound")
-    public ResponseEntity<GameResponse> finishRound(@PathVariable String gameId, @RequestBody FinishRoundRequest finishRoundRequest) {
+    @PostMapping("/api/games/{gameId}/player:finishAction")
+    public ResponseEntity<GameResponse> finishAction(@PathVariable String gameId, @RequestBody FinishRoundRequest finishRoundRequest) {
 
-        GameDto gameDto = gameService.finishRound(gameId, finishRoundRequest.getPlayerId());
+        GameDto gameDto = gameService.finishAction(gameId, finishRoundRequest.getPlayerId());
         return ResponseEntity.ok(new GameResponse(gameDto));
     }
 }
