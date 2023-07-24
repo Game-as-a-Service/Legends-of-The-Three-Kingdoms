@@ -33,4 +33,8 @@ public class Graveyard {
     public boolean isEmpty(){
         return graveYardDeck.isEmpty();
     }
+
+    public int size(){
+        return graveYardDeck.size();
+    }
 }

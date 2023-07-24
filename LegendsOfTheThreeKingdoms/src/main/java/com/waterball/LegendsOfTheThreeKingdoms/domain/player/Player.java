@@ -10,6 +10,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -23,7 +26,7 @@ public class Player {
     private boolean isShowKill;
 
     public void setBloodCard(BloodCard bloodCard) {
-       this.bloodCard = bloodCard;
+        this.bloodCard = bloodCard;
     }
 
     public int getHP() {
@@ -60,7 +63,13 @@ public class Player {
         return false;
     }
 
-    public boolean handCardSizeBiggerThanHP() {
-        return false;
+    public boolean isHandCardSizeBiggerThanHP() {
+        return getHandSize() > getHP();
+    }
+
+    public List<HandCard> discardCards(List<String> cardIds) {
+        return cardIds.stream()
+                .map(id -> hand.playCard(id))
+                .collect(Collectors.toList());
     }
 }

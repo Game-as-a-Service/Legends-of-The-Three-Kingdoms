@@ -120,4 +120,10 @@ public class GameService {
         cardDto.setGeneralName(card.getGeneralName());
         return cardDto;
     }
+
+    public GameDto discardCard(String gameId, List<String> cardIds) {
+        Game game = repository.findGameById(gameId);
+        game.playerDiscardCard(cardIds);
+        return convertToGameDto(game);
+    }
 }

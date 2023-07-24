@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
@@ -43,6 +44,8 @@ public class DrawCardToPlayer {
             deck.add(Arrays.asList(new EightDiagrams(), new EightDiagrams()));
         }
         game.setDeck(deck);
+        game.setCurrentRound(new Round(player));
+
         //When
         game.drawCardToPlayer("player-a");
 
@@ -68,6 +71,7 @@ public class DrawCardToPlayer {
             """)
     @Test
     public void givenEmptyZeroAndDiscardDeckHaveTwo_WhenPlayerDrawCard_ThenPlayerHaveThreeCards() {
+        // given
         Game game = new Game();
         Deck deck = new Deck(new Stack<>());
         Graveyard graveyard = new Graveyard();
@@ -80,11 +84,13 @@ public class DrawCardToPlayer {
         game.setDeck(deck);
         game.setPlayers(players);
         game.setGraveyard(graveyard);
+        game.setCurrentRound(new Round(player));
 
+        // when
         game.drawCardToPlayer("player-a");
 
+        // then
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BH0036),new Kill(BH0036),new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
-
         Assertions.assertTrue(deck.isDeckLessThanCardNum(1));
         Assertions.assertTrue(graveyard.isEmpty());
     }
