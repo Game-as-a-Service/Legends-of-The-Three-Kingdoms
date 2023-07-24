@@ -3,15 +3,15 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Phase;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Peach;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
+import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static org.hamcrest.Matchers.containsString;
@@ -60,25 +61,76 @@ public class GameTest {
 
     @Test
     public void happyPath() throws Exception {
+        // initial game
         shouldCreateGame();
         shouldChooseGeneralsByMonarch();
         shouldChooseGeneralsByOthers();
         shouldInitialHP();
         shouldDealCardToPlayers();
-        shouldJudgementPhase();
 
-        // Round 1
+        // Round 1 hp-0 本人
+        shouldJudgementPhase();
         shouldDrawCardToPlayer();
         shouldPlayerAPlayedCard("player-b");
         shouldPlayerFinishAction();
-        shouldPlayerDiscardCard();
+        shouldPlayerADiscardCard();
 
-        //Round 2
-//        shouldDrawCardToPlayer();
-//        shouldPlayedCard();
-//        shouldPlayerFinishAction();
-//        shouldPlayerDiscardCard();
+        //Round 2 hp-1
+        shouldJudgementPhase();
+        shouldDrawCardToPlayer();
+        shouldPlayerBPlayedCard("player-a");
+        shouldPlayerFinishAction();
+        shouldPlayerBDiscardCard();
 
+        //Round 3 hp-0 距離太遠 直接棄牌
+        //Round 4 hp-1
+        //Round 5 hp-0 本人
+//        {
+//            Round 3: player A, player B, card kill,
+//            Round 4: player C, player B, card kill
+//        }
+
+        //Round 6 hp-1
+        //Round 7 hp-0 距離太遠
+        //Round 8 hp-1
+        //Round 9 hp-0 本人
+        //Round 10 hp-1
+    }
+
+    private void shouldPlayerBPlayedCard(String targetPlayerId) throws Exception {
+        /*
+        Given
+        輪到 B 玩家出牌
+        B 玩家手牌有殺x2, 閃x2, 桃x2
+        A 玩家在 B 玩家的攻擊距離
+
+        When
+        B 玩家對 A 玩家出殺
+
+        Then
+        B 玩家出殺成功
+        A 玩家hp = 3
+        B 玩家手牌剩五張
+        */
+        Game game = inMemoryGameRepository.findGameById("my-id");
+
+        Player currentRoundPlayer = game.getCurrentRoundPlayer();
+        List<HandCard> cards = currentRoundPlayer.getHand().getCards();
+        String cardId = cards.stream().filter(card -> card instanceof Kill).findFirst().get().getId();
+
+        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                { "playerId": "%s",
+                                  "targetPlayerId": "%s",
+                                  "cardId": "%s"
+                                }""", currentRoundPlayer.getId(), targetPlayerId, cardId)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        game = inMemoryGameRepository.findGameById("my-id");
+        assertEquals(5, game.getPlayer(currentRoundPlayer.getId()).getHandSize());
+        assertEquals(4, game.getPlayer(targetPlayerId).getBloodCard().getHp());
     }
 
     public void shouldCreateGame() throws Exception {
@@ -117,7 +169,23 @@ public class GameTest {
                     .andExpect(status().isOk())
                     .andExpect(content().string(responseBody));
         }
+
+        Stack<HandCard> stack = new Stack<>();
+
+        Arrays.stream(values())
+                .filter(x -> x.getCardName().equals("閃"))
+                .map(Dodge::new)
+                .forEach(stack::push);
+
+        Arrays.stream(values())
+                .filter(x -> x.getCardName().equals("殺"))
+                .map(Kill::new)
+                .forEach(stack::push);
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        game.setDeck(new Deck(stack));
     }
+
     private void shouldChooseGeneralsByMonarch() throws Exception {
 
         /*
@@ -330,13 +398,12 @@ public class GameTest {
                                 { "playerId": "%s",
                                   "targetPlayerId": "%s",
                                   "cardId": "%s"
-                                }""", currentRoundPlayer.getId(),targetPlayerId, cardId)))
+                                }""", currentRoundPlayer.getId(), targetPlayerId, cardId)))
                 .andExpect(status().isOk())
                 .andReturn();
-
         game = inMemoryGameRepository.findGameById("my-id");
         assertEquals(5, game.getPlayer("player-a").getHandSize());
-        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BS8008), new Peach(BH4030), new Peach(BH4030), new Dodge(BHK039), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
+        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BD0088), new Kill(BD9087), new Kill(BD8086), new Kill(BC5057), new Kill(BC4056)), game.getPlayer("player-a").getHand().getCards()));
         assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
     }
 
@@ -351,23 +418,24 @@ public class GameTest {
         Then
         A 玩家進入棄牌階段
         */
-
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        String currentPlayerId = game.getCurrentRoundPlayer().getId();
         this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
+                        .content(String.format("""
                                 {
-                                "playerId": "player-a"
+                                "playerId": "%s"
                                 }
-                                """))
+                                """, currentPlayerId)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Game game = inMemoryGameRepository.findGameById("my-id");
+
         assertEquals(Phase.Discard, game.getCurrentRoundPhase());
 
     }
 
-    private void shouldPlayerDiscardCard() {
+    private void shouldPlayerADiscardCard() {
 
     /*
        Given
@@ -390,6 +458,45 @@ public class GameTest {
         game.judgePlayerShouldDiscardCard();
         // then
         assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
-        assertEquals("player-b",game.getCurrentRoundPlayer().getId());
+        assertEquals("player-b", game.getCurrentRoundPlayer().getId());
+    }
+
+    private void shouldPlayerBDiscardCard() throws Exception {
+    /*
+       Given
+           B玩家進入棄牌階段(Discard)
+           B體力3
+           B玩家手牌有殺x5
+
+           When
+           系統進行棄牌判斷
+           B回合棄BD6084,BCJ076
+
+           Then
+           B玩家剩BC0075,BC3055,BC2054
+           換C玩家回合
+           C Phase 是判斷階段
+
+    */
+        // given
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        // when
+        game.judgePlayerShouldDiscardCard(); //true
+
+        this.mockMvc.perform(post("/api/games/my-id/player:discardCards")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                ["%s", "%s"]
+                                """, "BD6084", "BCJ076")))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // then
+        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals("player-c", game.getCurrentRoundPlayer().getId());
+        assertEquals(3, game.getPlayer("player-b").getHandSize());
+        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BC0075), new Kill(BC3055), new Kill(BC2054)), game.getPlayer("player-b").getHand().getCards()));
+        assertEquals(2, game.getGraveyard().size());
+
     }
 }

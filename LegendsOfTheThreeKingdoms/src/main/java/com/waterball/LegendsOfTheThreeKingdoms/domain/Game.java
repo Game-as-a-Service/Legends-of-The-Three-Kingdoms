@@ -11,7 +11,8 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Game {
@@ -34,6 +35,14 @@ public class Game {
 
     public List<Player> getPlayers() {
         return players;
+    }
+
+    public Graveyard getGraveyard() {
+        return graveyard;
+    }
+
+    public void setCurrentRound(Round currentRound) {
+        this.currentRound = currentRound;
     }
 
     public void setPlayers(List<Player> players) {
@@ -144,19 +153,35 @@ public class Game {
 
     public void judgePlayerShouldDelay() {
         Player player = currentRound.getCurrentPlayer();
-        if (!player.hasAnyDelayScrollCard()){
+        if (!player.hasAnyDelayScrollCard()) {
             currentRound.setPhase(Phase.Drawing);
         }
     }
 
     public void judgePlayerShouldDiscardCard() {
         Player player = currentRound.getCurrentPlayer();
-        if (!currentRound.getPhase().equals(Phase.Discard)){
+        if (!currentRound.getPhase().equals(Phase.Discard)) {
             throw new RuntimeException();
         }
-        if (player.handCardSizeBiggerThanHP()){
-            //TODO: 玩家選擇要丟的牌
+        if (player.isHandCardSizeBiggerThanHP()) {
+            //TODO: 通知玩家需要棄牌
+            //TODO: 玩家選擇要丟的牌，通知玩家棄牌，回傳棄牌Event。
+        } else {
+            goNextRound(player);
         }
+    }
+
+    public void playerDiscardCard(List<String> cardIds) {
+        Player player = currentRound.getCurrentPlayer();
+        int needToDiscardSize = player.getHandSize() - player.getHP();
+        if (cardIds.size() < needToDiscardSize) throw new RuntimeException();
+        // todo 判斷這個玩家是否有這些牌
+        List<HandCard> discardCards = player.discardCards(cardIds);
+        graveyard.add(discardCards);
+        goNextRound(player);
+    }
+
+    private void goNextRound(Player player) {
         Player nextPlayer = seatingChart.getNextPlayer(player);
         currentRound = new Round(nextPlayer);
     }
