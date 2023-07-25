@@ -93,6 +93,6 @@ public class PlayKillCardTest {
         assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(
                 new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
-        assertTrue(playerA.isShowKill());
+        assertTrue(game.getCurrentRound().isShowKill());
     }
 }

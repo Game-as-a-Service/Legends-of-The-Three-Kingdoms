@@ -23,7 +23,6 @@ public class Player {
     private RoleCard roleCard;
     private GeneralCard generalCard;
     private BloodCard bloodCard;
-    private boolean isShowKill;
 
     public void setBloodCard(BloodCard bloodCard) {
         this.bloodCard = bloodCard;
@@ -38,12 +37,6 @@ public class Player {
     }
 
     public HandCard playCard(String cardId) {
-        HandCard handCard = hand.getCard(cardId);
-        if (handCard instanceof Kill && isShowKill) {
-            throw new IllegalStateException("Player already played Kill Card");
-        } else if (handCard instanceof Kill) {
-            setShowKill(true);
-        }
         return hand.playCard(cardId);
     }
 

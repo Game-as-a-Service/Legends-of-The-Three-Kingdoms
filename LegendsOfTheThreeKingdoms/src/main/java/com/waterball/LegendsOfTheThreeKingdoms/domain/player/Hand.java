@@ -33,7 +33,7 @@ public class Hand {
                 .filter(card -> cardId.equals(card.getId()))
                 .findFirst().get();
     }
-
+//這邊的排是不是本來就棄掉了? 要改測資
     public HandCard playCard(String cardId) {
         HandCard handCard = getCard(cardId);
         return cards.remove(cards.indexOf(handCard));
