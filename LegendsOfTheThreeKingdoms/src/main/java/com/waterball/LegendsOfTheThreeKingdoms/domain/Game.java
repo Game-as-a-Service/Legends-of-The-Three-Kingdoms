@@ -41,6 +41,10 @@ public class Game {
         return graveyard;
     }
 
+    public Round getCurrentRound() {
+        return currentRound;
+    }
+
     public void setCurrentRound(Round currentRound) {
         this.currentRound = currentRound;
     }
@@ -124,8 +128,12 @@ public class Game {
         if (!isWithinDistance(player, targetPlayer)) {
             throw new IllegalStateException("Players are not within range.");
         }
-        HandCard handCard = player.playCard(cardId);
-        handCard.effect(targetPlayer);
+
+        if (currentRound.checkPlayedCardIsValid(cardId)) {
+            HandCard handCard = player.playCard(cardId);
+            handCard.effect(targetPlayer);
+            graveyard.add(handCard);
+        }
     }
 
     private boolean isWithinDistance(Player player, Player targetPlayer) {
@@ -184,6 +192,8 @@ public class Game {
     private void goNextRound(Player player) {
         Player nextPlayer = seatingChart.getNextPlayer(player);
         currentRound = new Round(nextPlayer);
+
     }
+
 }
 

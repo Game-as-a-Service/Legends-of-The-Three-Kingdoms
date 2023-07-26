@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
@@ -85,6 +86,7 @@ public class PlayKillCardTest {
         List<Player> players = asList(
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId());
 
         //When Then
@@ -93,6 +95,6 @@ public class PlayKillCardTest {
         assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(
                 new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
-        assertTrue(playerA.isShowKill());
+        assertTrue(game.getCurrentRound().isShowKill());
     }
 }

@@ -22,6 +22,10 @@ public class Graveyard {
         graveYardDeck.addAll(playedCards);
     }
 
+    public void add(HandCard playedCard) {
+        graveYardDeck.add(playedCard);
+    }
+
     public List<HandCard> getGraveYardCards() {
         shuffle();
         ArrayList<HandCard> graveYardCars = new ArrayList<>();
