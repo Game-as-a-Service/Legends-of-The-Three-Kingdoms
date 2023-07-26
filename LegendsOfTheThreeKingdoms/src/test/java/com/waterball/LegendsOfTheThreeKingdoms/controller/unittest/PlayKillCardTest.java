@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
@@ -85,6 +86,7 @@ public class PlayKillCardTest {
         List<Player> players = asList(
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId());
 
         //When Then
