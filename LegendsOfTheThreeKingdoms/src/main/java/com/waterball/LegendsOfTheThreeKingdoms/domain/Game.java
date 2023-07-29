@@ -6,6 +6,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
@@ -87,6 +88,7 @@ public class Game {
         players.forEach(p -> {
             int healthPoint = p.getRoleCard().getRole().equals(Role.MONARCH) ? 1 : 0;
             p.setBloodCard(new BloodCard(p.getGeneralCard().getHealthPoint() + healthPoint));
+            p.setHealthStatus(HealthStatus.ALIVE);
         });
     }
 
@@ -133,6 +135,13 @@ public class Game {
             HandCard handCard = player.playCard(cardId);
             handCard.effect(targetPlayer);
             graveyard.add(handCard);
+            judgementHealthStatus(targetPlayer);
+        }
+    }
+
+    private static void judgementHealthStatus(Player targetPlayer) {
+        if (targetPlayer.getHP() <= 0) {
+            targetPlayer.setHealthStatus(HealthStatus.DYING);
         }
     }
 
@@ -145,7 +154,7 @@ public class Game {
     }
 
     public void setDiscardRoundPhase(String playerId) {
-        if (currentRound == null || !playerId.equals(currentRound.getCurrentPlayer().getId())) {
+        if (currentRound == null || !playerId.equals(currentRound.getCurrentRoundPlayer().getId())) {
             throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
         }
         currentRound.setPhase(Phase.Discard);
@@ -156,18 +165,18 @@ public class Game {
     }
 
     public Player getCurrentRoundPlayer() {
-        return currentRound.getCurrentPlayer();
+        return currentRound.getCurrentRoundPlayer();
     }
 
     public void judgePlayerShouldDelay() {
-        Player player = currentRound.getCurrentPlayer();
+        Player player = currentRound.getCurrentRoundPlayer();
         if (!player.hasAnyDelayScrollCard()) {
             currentRound.setPhase(Phase.Drawing);
         }
     }
 
     public void judgePlayerShouldDiscardCard() {
-        Player player = currentRound.getCurrentPlayer();
+        Player player = currentRound.getCurrentRoundPlayer();
         if (!currentRound.getPhase().equals(Phase.Discard)) {
             throw new RuntimeException();
         }
@@ -180,7 +189,7 @@ public class Game {
     }
 
     public void playerDiscardCard(List<String> cardIds) {
-        Player player = currentRound.getCurrentPlayer();
+        Player player = currentRound.getCurrentRoundPlayer();
         int needToDiscardSize = player.getHandSize() - player.getHP();
         if (cardIds.size() < needToDiscardSize) throw new RuntimeException();
         // todo 判斷這個玩家是否有這些牌

@@ -9,15 +9,15 @@ import lombok.Data;
 @Data
 public class Round {
     private Phase phase;
-    private Player currentPlayer;
+    private Player currentRoundPlayer;
     private boolean isShowKill;
 
-    public Round (Player currentPlayer) {
+    public Round (Player currentRoundPlayer) {
         this.phase = Phase.Judgement;
-        this.currentPlayer = currentPlayer;
+        this.currentRoundPlayer = currentRoundPlayer;
     }
     public boolean checkPlayedCardIsValid(String cardId){
-        HandCard handCard = currentPlayer.getHand().getCard(cardId);
+        HandCard handCard = currentRoundPlayer.getHand().getCard(cardId);
         if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");
         } else if (handCard instanceof Kill) {
