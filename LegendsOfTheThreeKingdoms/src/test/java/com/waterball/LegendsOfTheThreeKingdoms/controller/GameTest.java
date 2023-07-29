@@ -99,46 +99,11 @@ public class GameTest {
         //Round 10 hp-1
         playerBTakeTurnRound10(5, 4, 0);
 
+        // playerA 瀕臨死亡
         shouldPlayerAHealthStatusDying();
 
     }
-
-    private void shouldPlayerAHealthStatusDying() {
-        /*  Given(ATDD)
-            A 玩家 HP = 0
-            A 玩家 狀態 alive
-
-            When
-            系統判定已瀕臨死亡
-
-            Then
-            A 玩家狀態為dying
-        */
-
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        assertEquals(HealthStatus.DYING, game.getPlayer("player-a").getHealthStatus());
-    }
-
-    private void playerBTakeTurnRound10(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldJudgementPhase();
-        shouldDrawCardToPlayer(expectHandSize);
-        shouldPlayerBPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
-    }
-
-    private void playerATakeTurnRound9() throws Exception {
-        shouldJudgementPhase();
-        shouldDrawCardToPlayer(5);
-        shouldPlayerFinishAction();
-        shouldPlayerADiscardCardRound9();
-    }
-
-    private void playerDTakeTurnRound8(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldJudgementPhase();
-        shouldDrawCardToPlayer(expectHandSize);
-        shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
-        shouldPlayerFinishAction();
-        shouldPlayerDDiscardCardRound8();
-    }
+    
 
     public void shouldCreateGame() throws Exception {
 
@@ -815,6 +780,14 @@ public class GameTest {
         assertEquals(18, game.getGraveyard().size());
     }
 
+    private void playerDTakeTurnRound8(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
+        shouldJudgementPhase();
+        shouldDrawCardToPlayer(expectHandSize);
+        shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
+        shouldPlayerFinishAction();
+        shouldPlayerDDiscardCardRound8();
+    }
+
     private void shouldPlayerDDiscardCardRound8() throws Exception {
        /*
        Given
@@ -856,6 +829,13 @@ public class GameTest {
         assertEquals(20, game.getGraveyard().size());
     }
 
+    private void playerATakeTurnRound9() throws Exception {
+        shouldJudgementPhase();
+        shouldDrawCardToPlayer(5);
+        shouldPlayerFinishAction();
+        shouldPlayerADiscardCardRound9();
+    }
+
     private void shouldPlayerADiscardCardRound9() throws Exception {
     /*
        Given
@@ -895,44 +875,27 @@ public class GameTest {
         assertEquals(24, game.getGraveyard().size());
     }
 
-
-    private void shouldPlayerBDiscardCardRound10() throws Exception {
-        /*
-       Given
-           B 玩家進入棄牌階段(Discard)
-           B 體力3
-           B 玩家手牌有殺x4
-
-           When
-           系統進行棄牌判斷
-           B 回合棄前 1 張
-
-           Then
-           B 玩家剩 3 張手牌
-           換 C 玩家回合
-           C Phase 是判斷階段
-    */
-        // given
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        // when 因為這邊不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
-        List<HandCard> cards = game.getPlayer("player-b").getHand().getCards();
-        List<String> ids = cards.stream()
-                .skip(Math.max(0, cards.size() - 1))
-                .map(HandCard::getId)
-                .map(id -> "\"" + id + "\"")
-                .toList();
-        this.mockMvc.perform(post("/api/games/my-id/player:discardCards")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids.toString()))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        // then
-        assertEquals(3, game.getPlayer("player-b").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
-        assertEquals("player-c", game.getCurrentRoundPlayer().getId());
-        assertEquals(26, game.getGraveyard().size());
+    private void playerBTakeTurnRound10(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
+        shouldJudgementPhase();
+        shouldDrawCardToPlayer(expectHandSize);
+        shouldPlayerBPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
     }
+
+    private void shouldPlayerAHealthStatusDying() {
+        /*  Given(ATDD)
+            A 玩家 HP = 0
+            A 玩家 狀態 alive
+
+            When
+            系統判定已瀕臨死亡
+
+            Then
+            A 玩家狀態為dying
+        */
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        assertEquals(HealthStatus.DYING, game.getPlayer("player-a").getHealthStatus());
+    }
+
 
 }
