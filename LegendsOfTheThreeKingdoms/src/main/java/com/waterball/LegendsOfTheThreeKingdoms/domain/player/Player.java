@@ -23,6 +23,11 @@ public class Player {
     private RoleCard roleCard;
     private GeneralCard generalCard;
     private BloodCard bloodCard;
+    private HealthStatus healthStatus;
+
+    public void setHealthStatus(HealthStatus healthStatus) {
+        this.healthStatus = healthStatus;
+    }
 
     public void setBloodCard(BloodCard bloodCard) {
         this.bloodCard = bloodCard;
@@ -64,5 +69,9 @@ public class Player {
         return cardIds.stream()
                 .map(id -> hand.playCard(id))
                 .collect(Collectors.toList());
+    }
+
+    public HealthStatus getHealthStatus() {
+        return healthStatus;
     }
 }
