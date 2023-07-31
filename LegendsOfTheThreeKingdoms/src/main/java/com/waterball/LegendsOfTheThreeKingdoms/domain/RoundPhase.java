@@ -1,6 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
-public enum Phase {
+public enum RoundPhase {
 
     Judgement("Judgement"),
     Drawing("Drawing"),
@@ -9,7 +9,7 @@ public enum Phase {
 
     private final String phaseName;
 
-    Phase(String c) {
+    RoundPhase(String c) {
         this.phaseName = c;
     }
 }

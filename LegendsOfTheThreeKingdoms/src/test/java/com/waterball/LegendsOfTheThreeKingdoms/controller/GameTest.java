@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Phase;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
@@ -102,8 +102,11 @@ public class GameTest {
         // playerA 瀕臨死亡
         shouldPlayerAHealthStatusDying();
 
+        // 詢問A要是否要出桃
+        shouldPlayerARequestPeach();
+
     }
-    
+
 
     public void shouldCreateGame() throws Exception {
 
@@ -307,7 +310,7 @@ public class GameTest {
         Game game = inMemoryGameRepository.findGameById("my-id");
         game.assignHandCardToPlayers();
 
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals(4, game.getPlayer("player-a").getHandSize());
         assertEquals(4, game.getPlayer("player-b").getHandSize());
         assertEquals(4, game.getPlayer("player-c").getHandSize());
@@ -341,14 +344,14 @@ public class GameTest {
         // when
         game.judgePlayerShouldDelay();
         // then
-        assertEquals(Phase.Drawing, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Drawing, game.getCurrentRoundPhase());
     }
 
     private void shouldDrawCardToPlayer(int expectHandSize) {
         Game game = inMemoryGameRepository.findGameById("my-id");
         String playerId = game.getCurrentRoundPlayer().getId();
         game.drawCardToPlayer(playerId);
-        assertEquals(Phase.Action, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Action, game.getCurrentRoundPhase());
         assertEquals(expectHandSize, game.getPlayer(playerId).getHandSize());
     }
 
@@ -411,7 +414,7 @@ public class GameTest {
                 .andReturn();
 
 
-        assertEquals(Phase.Discard, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Discard, game.getCurrentRoundPhase());
 
     }
 
@@ -437,7 +440,7 @@ public class GameTest {
         // when
         game.judgePlayerShouldDiscardCard();
         // then
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-b", game.getCurrentRoundPlayer().getId());
     }
 
@@ -521,7 +524,7 @@ public class GameTest {
 
 
         // then
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-c", game.getCurrentRoundPlayer().getId());
         assertEquals(3, game.getPlayer("player-b").getHandSize());
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BC0075), new Kill(BC3055), new Kill(BC2054)), game.getPlayer("player-b").getHand().getCards()));
@@ -570,7 +573,7 @@ public class GameTest {
 
         // then
         assertEquals(3, game.getPlayer("player-c").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-d", game.getCurrentRoundPlayer().getId());
         assertEquals(7, game.getGraveyard().size());
     }
@@ -636,7 +639,7 @@ public class GameTest {
 
         // then
         assertEquals(3, game.getPlayer("player-d").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-a", game.getCurrentRoundPlayer().getId());
         assertEquals(10, game.getGraveyard().size());
     }
@@ -682,7 +685,7 @@ public class GameTest {
 
         // then
         assertEquals(3, game.getPlayer("player-a").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-b", game.getCurrentRoundPlayer().getId());
         assertEquals(14, game.getGraveyard().size());
     }
@@ -729,7 +732,7 @@ public class GameTest {
 
         // then
         assertEquals(3, game.getPlayer("player-b").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-c", game.getCurrentRoundPlayer().getId());
         assertEquals(16, game.getGraveyard().size());
     }
@@ -775,7 +778,7 @@ public class GameTest {
 
         // then
         assertEquals(3, game.getPlayer("player-c").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-d", game.getCurrentRoundPlayer().getId());
         assertEquals(18, game.getGraveyard().size());
     }
@@ -824,7 +827,7 @@ public class GameTest {
 
         // then
         assertEquals(3, game.getPlayer("player-d").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-a", game.getCurrentRoundPlayer().getId());
         assertEquals(20, game.getGraveyard().size());
     }
@@ -870,7 +873,7 @@ public class GameTest {
 
         // then
         assertEquals(1, game.getPlayer("player-a").getHandSize());
-        assertEquals(Phase.Judgement, game.getCurrentRoundPhase());
+        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-b", game.getCurrentRoundPlayer().getId());
         assertEquals(24, game.getGraveyard().size());
     }
@@ -891,10 +894,46 @@ public class GameTest {
 
             Then
             A 玩家狀態為dying
+            Active Player 為 A 玩家
         */
 
         Game game = inMemoryGameRepository.findGameById("my-id");
         assertEquals(HealthStatus.DYING, game.getPlayer("player-a").getHealthStatus());
+
+        Player playerA = game.getPlayer("player-a");
+        assertEquals(playerA, game.getActivePlayer());
+
+
+    }
+
+    private void shouldPlayerARequestPeach() throws Exception {
+        /*Given(ATDD)
+        A 玩家 HP = 0
+        A 玩家 狀態dying
+
+        When
+        A 玩家不出桃
+
+        Then
+        Active player 為 B 玩家
+        * */
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+
+        String playerId = game.getActivePlayer().getId();
+
+        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                { "playerId": "%s",
+                                  "targetPlayerId": "%s",
+                                  "cardId": "",
+                                  "playType": "skip"
+                                }""", playerId, playerId)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals("player-b", game.getActivePlayer().getId());
     }
 
 

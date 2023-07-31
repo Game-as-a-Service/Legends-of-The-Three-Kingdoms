@@ -8,12 +8,13 @@ import lombok.Data;
 
 @Data
 public class Round {
-    private Phase phase;
+    private RoundPhase roundPhase;
     private Player currentRoundPlayer;
+    private Player activePlayer;
     private boolean isShowKill;
 
     public Round (Player currentRoundPlayer) {
-        this.phase = Phase.Judgement;
+        this.roundPhase = RoundPhase.Judgement;
         this.currentRoundPlayer = currentRoundPlayer;
     }
     public boolean checkPlayedCardIsValid(String cardId){

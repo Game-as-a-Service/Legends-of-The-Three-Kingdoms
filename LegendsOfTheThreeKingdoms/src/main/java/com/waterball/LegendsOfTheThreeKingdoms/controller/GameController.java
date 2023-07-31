@@ -4,7 +4,6 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +44,7 @@ public class GameController {
 
     @PostMapping("/api/games/{gameId}/player:playCard")
     public ResponseEntity<GameResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
-        GameDto gameDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId());
+        GameDto gameDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId(), playRequest.getPlayType());
         return ResponseEntity.ok(new GameResponse(gameDto));
     }
 

@@ -13,4 +13,5 @@ public class PlayCardRequest {
     private String playerId;
     private String targetPlayerId;
     private String cardId;
+    private String playType; //skip
 }
