@@ -51,9 +51,9 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    public GameDto playCard(String gameId, String playerId, String cardId, String targetPlayerId) {
+    public GameDto playCard(String gameId, String playerId, String cardId, String targetPlayerId, String playType) {
         Game game = repository.findGameById(gameId);
-        game.playerPlayCard(playerId, cardId, targetPlayerId);
+        game.playerPlayCard(playerId, cardId, targetPlayerId, playType);
         repository.save(game);
         return convertToGameDto(game);
     }

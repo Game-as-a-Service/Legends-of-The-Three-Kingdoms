@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GamePhase;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
@@ -25,6 +26,7 @@ public class Game {
     private Graveyard graveyard = new Graveyard();
     private SeatingChart seatingChart;
     private Round currentRound;
+    private GamePhase gamePhase;
 
     public String getGameId() {
         return gameId;
@@ -109,7 +111,7 @@ public class Game {
         Player player = getPlayer(playerId);
         refreshDeckWhenCardsNumLessThen(2);
         player.getHand().addCardToHand(deck.deal(2));
-        currentRound.setPhase(Phase.Action);
+        currentRound.setRoundPhase(RoundPhase.Action);
     }
 
     private void refreshDeckWhenCardsNumLessThen(int requiredCardNum) {
@@ -125,12 +127,30 @@ public class Game {
     }
 
     public void playerPlayCard(String playerId, String cardId, String targetPlayerId) {
+        playerPlayCard(playerId, cardId, targetPlayerId, "");
+    }
+
+    public void playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
+        if (gamePhase == GamePhase.GeneralDying) {
+            if ("skip".equals(playType)) {
+                // TODO 所有人的輪過一次，死亡結算。
+                currentRound.setActivePlayer(seatingChart.getNextPlayer(getActivePlayer()));
+                gamePhase.execute(this);
+            } else {
+                // TODO
+                // 玩家補血
+                // gamePhase 切換成 回合狀態;
+                // activePlayer = null;
+                // gamePhase.execute(this);
+            }
+            return;
+        }
+
         Player player = getPlayer(playerId);
         Player targetPlayer = getPlayer(targetPlayerId);
         if (!isWithinDistance(player, targetPlayer)) {
             throw new IllegalStateException("Players are not within range.");
         }
-
         if (currentRound.checkPlayedCardIsValid(cardId)) {
             HandCard handCard = player.playCard(cardId);
             handCard.effect(targetPlayer);
@@ -139,9 +159,12 @@ public class Game {
         }
     }
 
-    private static void judgementHealthStatus(Player targetPlayer) {
+    private void judgementHealthStatus(Player targetPlayer) {
         if (targetPlayer.getHP() <= 0) {
             targetPlayer.setHealthStatus(HealthStatus.DYING);
+            currentRound.setActivePlayer(targetPlayer);
+            gamePhase = GamePhase.GeneralDying;
+            gamePhase.execute(this);
         }
     }
 
@@ -157,11 +180,11 @@ public class Game {
         if (currentRound == null || !playerId.equals(currentRound.getCurrentRoundPlayer().getId())) {
             throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
         }
-        currentRound.setPhase(Phase.Discard);
+        currentRound.setRoundPhase(RoundPhase.Discard);
     }
 
-    public Phase getCurrentRoundPhase() {
-        return currentRound.getPhase();
+    public RoundPhase getCurrentRoundPhase() {
+        return currentRound.getRoundPhase();
     }
 
     public Player getCurrentRoundPlayer() {
@@ -171,13 +194,13 @@ public class Game {
     public void judgePlayerShouldDelay() {
         Player player = currentRound.getCurrentRoundPlayer();
         if (!player.hasAnyDelayScrollCard()) {
-            currentRound.setPhase(Phase.Drawing);
+            currentRound.setRoundPhase(RoundPhase.Drawing);
         }
     }
 
     public void judgePlayerShouldDiscardCard() {
         Player player = currentRound.getCurrentRoundPlayer();
-        if (!currentRound.getPhase().equals(Phase.Discard)) {
+        if (!currentRound.getRoundPhase().equals(RoundPhase.Discard)) {
             throw new RuntimeException();
         }
         if (player.isHandCardSizeBiggerThanHP()) {
@@ -204,5 +227,13 @@ public class Game {
 
     }
 
+    public void askActivePlayerPlayPeachCard() {
+        // TODO 通知玩家要出桃
+    }
+
+
+    public Player getActivePlayer() {
+        return currentRound.getActivePlayer();
+    }
 }
 
