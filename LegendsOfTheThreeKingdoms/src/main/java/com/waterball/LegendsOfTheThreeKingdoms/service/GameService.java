@@ -60,7 +60,7 @@ public class GameService {
 
     public PlayerDto chooseGeneral(String gameId, String playerId, String generalId) {
         Game game = repository.findGameById(gameId);
-        game.setPlayerGeneral(playerId, generalId);
+        game.choosePlayerGeneral(playerId, generalId);
         repository.save(game);
         return convertToPlayerDto(game.getPlayer(playerId));
     }

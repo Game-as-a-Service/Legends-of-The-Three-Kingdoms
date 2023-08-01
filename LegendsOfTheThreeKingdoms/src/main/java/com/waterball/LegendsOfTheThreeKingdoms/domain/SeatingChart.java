@@ -26,7 +26,12 @@ public class SeatingChart {
     }
 
     public Player getNextPlayer(Player player) {
-        int seat = (players.indexOf(player)+1) % players.size();
+        int seat = (players.indexOf(player) + 1) % players.size();
+        return players.get(seat);
+    }
+
+    public Player getPrePlayer(Player player) {
+        int seat = (players.indexOf(player) - 1 + players.size()) % players.size();
         return players.get(seat);
     }
 }

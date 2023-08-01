@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GamePhase;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GeneralDying;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
@@ -27,6 +28,10 @@ public class Game {
     private SeatingChart seatingChart;
     private Round currentRound;
     private GamePhase gamePhase;
+
+    public GamePhase getGamePhase() {
+        return gamePhase;
+    }
 
     public String getGameId() {
         return gameId;
@@ -80,7 +85,7 @@ public class Game {
         }
     }
 
-    public void setPlayerGeneral(String playerId, String generalId) {
+    public void choosePlayerGeneral(String playerId, String generalId) {
         Player player = getPlayer(playerId);
         GeneralCard generalCard = GeneralCard.generals.get(generalId);
         player.setGeneralCard(generalCard);
@@ -133,7 +138,13 @@ public class Game {
     public void playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         if (gamePhase == GamePhase.GeneralDying) {
             if ("skip".equals(playType)) {
-                // TODO 所有人的輪過一次，死亡結算。
+                Player dyingPlayer = ((GeneralDying) gamePhase.getAction()).getDyingPlayer();
+                if (getActivePlayer() == seatingChart.getPrePlayer(dyingPlayer)) {
+                    dyingPlayer.setHealthStatus(HealthStatus.DEATH);
+                    playerDeadSettlement();
+                    // TODO 死亡結算。
+                    return;
+                }
                 currentRound.setActivePlayer(seatingChart.getNextPlayer(getActivePlayer()));
                 gamePhase.execute(this);
             } else {
@@ -159,11 +170,20 @@ public class Game {
         }
     }
 
+    private void playerDeadSettlement() {
+        Player deathPlayer = ((GeneralDying) gamePhase.getAction()).getDyingPlayer();
+        if (deathPlayer.getRoleCard().getRole().equals(Role.MONARCH)) {
+            gamePhase = GamePhase.GameOver;
+            // TODO 宣告反賊獲勝
+        }
+    }
+
     private void judgementHealthStatus(Player targetPlayer) {
         if (targetPlayer.getHP() <= 0) {
             targetPlayer.setHealthStatus(HealthStatus.DYING);
             currentRound.setActivePlayer(targetPlayer);
             gamePhase = GamePhase.GeneralDying;
+            ((GeneralDying) gamePhase.getAction()).setPlayer(targetPlayer);
             gamePhase.execute(this);
         }
     }
