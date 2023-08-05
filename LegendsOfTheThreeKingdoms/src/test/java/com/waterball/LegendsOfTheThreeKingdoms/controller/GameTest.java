@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GamePhase;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GameOver;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
@@ -34,6 +34,7 @@ import java.util.Stack;
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -1036,7 +1037,7 @@ public class GameTest {
                 .andReturn();
 
         assertEquals(HealthStatus.DEATH, game.getPlayer("player-a").getHealthStatus());
-        assertEquals(GamePhase.GameOver, game.getGamePhase());
+        assertTrue(game.getGamePhase() instanceof GameOver);
     }
 
     private void shouldPlayerDeadSettlement() {
@@ -1054,7 +1055,7 @@ public class GameTest {
         *
         * */
         Game game = inMemoryGameRepository.findGameById("my-id");
-        assertEquals(GamePhase.GameOver, game.getGamePhase());
+        assertTrue(game.getGamePhase() instanceof GameOver);
         assertEquals(game.getWinners(), List.of(game.getPlayer("player-c"))); // player-c = 反賊
 
     }

@@ -6,9 +6,14 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 
 import java.util.List;
 
-public class GameOver implements GamePhaseAction {
+public class GameOver extends GamePhase {
+
+    public GameOver(Game game) {
+        super(game);
+    }
+
     @Override
-    public void execute(Game game) {
+    public void execute() {
         List<Player> players = game.getPlayers();
 
         List<Player> winners = players.stream().filter(player ->
@@ -16,4 +21,5 @@ public class GameOver implements GamePhaseAction {
         ).toList();
         game.setWinners(winners);
     }
+
 }
