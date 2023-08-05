@@ -25,4 +25,5 @@ public enum GamePhase {
     public GamePhaseAction getAction() {
         return action;
     }
+
 }

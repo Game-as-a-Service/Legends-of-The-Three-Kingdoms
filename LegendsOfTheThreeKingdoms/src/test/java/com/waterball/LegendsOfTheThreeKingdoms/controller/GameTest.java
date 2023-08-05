@@ -120,117 +120,6 @@ public class GameTest {
 
     }
 
-    private void shouldPlayerDeadSettlement() {
-        /*
-        * Given(TDD)
-            B 玩家 HP = 0
-            B玩家 狀態dying
-
-            When
-            系統結算
-
-            Then
-            Game Phase 遊戲結束
-            印出獲勝玩家名字
-        *
-        * */
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        Assertions.assertEquals(GamePhase.GameOver, game.getGamePhase());
-
-    }
-
-    private void shouldPlayerDRequestPeach() throws Exception {
-        /*Given(ATDD)
-        A 玩家 HP = 0
-        A 玩家 狀態dying
-
-        When
-        D 玩家不出桃
-
-        Then
-        A 玩家狀態為 death
-        * */
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        String playerId = game.getActivePlayer().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "",
-                                  "cardId": "",
-                                  "playType": "skip"
-                                }""", playerId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals(HealthStatus.DEATH, game.getPlayer("player-a").getHealthStatus());
-        assertEquals(GamePhase.GameOver, game.getGamePhase());
-    }
-
-    private void shouldPlayerCRequestPeach() throws Exception {
-        /*Given(ATDD)
-        A 玩家 HP = 0
-        A 玩家 狀態dying
-
-        When
-        C 玩家不出桃
-
-        Then
-        Active player 為 D 玩家
-        * */
-
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        String playerId = game.getActivePlayer().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "",
-                                  "cardId": "",
-                                  "playType": "skip"
-                                }""", playerId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals("player-d", game.getActivePlayer().getId());
-    }
-
-    private void shouldPlayerBRequestPeach() throws Exception {
-
-        /*Given(ATDD)
-        A 玩家 HP = 0
-        A 玩家 狀態dying
-
-        When
-        B 玩家不出桃
-
-        Then
-        Active player 為 C 玩家
-        * */
-
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        String playerId = game.getActivePlayer().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "",
-                                  "cardId": "",
-                                  "playType": "skip"
-                                }""", playerId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals("player-c", game.getActivePlayer().getId());
-    }
-
-
     public void shouldCreateGame() throws Exception {
 
         // Monarch
@@ -1059,5 +948,115 @@ public class GameTest {
         assertEquals("player-b", game.getActivePlayer().getId());
     }
 
+    private void shouldPlayerBRequestPeach() throws Exception {
+
+        /*Given(ATDD)
+        A 玩家 HP = 0
+        A 玩家 狀態dying
+
+        When
+        B 玩家不出桃
+
+        Then
+        Active player 為 C 玩家
+        * */
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+
+        String playerId = game.getActivePlayer().getId();
+
+        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                { "playerId": "%s",
+                                  "targetPlayerId": "",
+                                  "cardId": "",
+                                  "playType": "skip"
+                                }""", playerId)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals("player-c", game.getActivePlayer().getId());
+    }
+
+    private void shouldPlayerCRequestPeach() throws Exception {
+        /*Given(ATDD)
+        A 玩家 HP = 0
+        A 玩家 狀態dying
+
+        When
+        C 玩家不出桃
+
+        Then
+        Active player 為 D 玩家
+        * */
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+
+        String playerId = game.getActivePlayer().getId();
+
+        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                { "playerId": "%s",
+                                  "targetPlayerId": "",
+                                  "cardId": "",
+                                  "playType": "skip"
+                                }""", playerId)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals("player-d", game.getActivePlayer().getId());
+    }
+
+    private void shouldPlayerDRequestPeach() throws Exception {
+        /*Given(ATDD)
+        A 玩家 HP = 0
+        A 玩家 狀態dying
+
+        When
+        D 玩家不出桃
+
+        Then
+        A 玩家狀態為 death
+        * */
+        Game game = inMemoryGameRepository.findGameById("my-id");
+
+        String playerId = game.getActivePlayer().getId();
+
+        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                { "playerId": "%s",
+                                  "targetPlayerId": "",
+                                  "cardId": "",
+                                  "playType": "skip"
+                                }""", playerId)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(HealthStatus.DEATH, game.getPlayer("player-a").getHealthStatus());
+        assertEquals(GamePhase.GameOver, game.getGamePhase());
+    }
+
+    private void shouldPlayerDeadSettlement() {
+        /*
+        * Given(TDD)
+            A 玩家 HP = 0
+            A玩家 狀態dead
+
+            When
+            系統結算
+
+            Then
+            Game Phase 遊戲結束
+            player-c 是反賊是贏家
+        *
+        * */
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        assertEquals(GamePhase.GameOver, game.getGamePhase());
+        assertEquals(game.getWinners(), List.of(game.getPlayer("player-c"))); // player-c = 反賊
+
+    }
 
 }

@@ -29,6 +29,16 @@ public class Game {
     private Round currentRound;
     private GamePhase gamePhase;
 
+    private List<Player> winners;
+
+    public List<Player> getWinners() {
+        return winners;
+    }
+
+    public void setWinners(List<Player> winners) {
+        this.winners = winners;
+    }
+
     public GamePhase getGamePhase() {
         return gamePhase;
     }
@@ -174,7 +184,8 @@ public class Game {
         Player deathPlayer = ((GeneralDying) gamePhase.getAction()).getDyingPlayer();
         if (deathPlayer.getRoleCard().getRole().equals(Role.MONARCH)) {
             gamePhase = GamePhase.GameOver;
-            // TODO 宣告反賊獲勝
+            gamePhase.execute(this);
+            // TODO 主動推反賊獲勝訊息給前端
         }
     }
 

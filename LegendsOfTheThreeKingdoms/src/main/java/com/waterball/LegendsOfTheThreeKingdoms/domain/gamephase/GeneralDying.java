@@ -3,7 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 
-public class GeneralDying implements GamePhaseAction{
+public class GeneralDying implements GamePhaseAction {
 
     private Player DyingPlayer;
 
