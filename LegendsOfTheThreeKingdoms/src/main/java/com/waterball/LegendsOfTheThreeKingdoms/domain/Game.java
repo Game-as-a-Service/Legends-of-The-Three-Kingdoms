@@ -1,7 +1,9 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GameOver;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GamePhase;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GeneralDying;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Normal;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
@@ -28,6 +30,20 @@ public class Game {
     private SeatingChart seatingChart;
     private Round currentRound;
     private GamePhase gamePhase;
+
+    private List<Player> winners;
+
+    public SeatingChart getSeatingChart() {
+        return seatingChart;
+    }
+
+    public List<Player> getWinners() {
+        return winners;
+    }
+
+    public void setWinners(List<Player> winners) {
+        this.winners = winners;
+    }
 
     public GamePhase getGamePhase() {
         return gamePhase;
@@ -105,6 +121,7 @@ public class Game {
             player.getHand().setCards(deck.deal(4));
         });
         currentRound = new Round(players.get(0));
+        this.enterPhase(new Normal(this));
     }
 
     @Override
@@ -136,59 +153,29 @@ public class Game {
     }
 
     public void playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
-        if (gamePhase == GamePhase.GeneralDying) {
-            if ("skip".equals(playType)) {
-                Player dyingPlayer = ((GeneralDying) gamePhase.getAction()).getDyingPlayer();
-                if (getActivePlayer() == seatingChart.getPrePlayer(dyingPlayer)) {
-                    dyingPlayer.setHealthStatus(HealthStatus.DEATH);
-                    playerDeadSettlement();
-                    // TODO 死亡結算。
-                    return;
-                }
-                currentRound.setActivePlayer(seatingChart.getNextPlayer(getActivePlayer()));
-                gamePhase.execute(this);
-            } else {
-                // TODO
-                // 玩家補血
-                // gamePhase 切換成 回合狀態;
-                // activePlayer = null;
-                // gamePhase.execute(this);
-            }
-            return;
-        }
-
-        Player player = getPlayer(playerId);
-        Player targetPlayer = getPlayer(targetPlayerId);
-        if (!isWithinDistance(player, targetPlayer)) {
-            throw new IllegalStateException("Players are not within range.");
-        }
-        if (currentRound.checkPlayedCardIsValid(cardId)) {
-            HandCard handCard = player.playCard(cardId);
-            handCard.effect(targetPlayer);
-            graveyard.add(handCard);
-            judgementHealthStatus(targetPlayer);
-        }
+        gamePhase.execute(playerId,cardId,targetPlayerId,playType);
     }
 
-    private void playerDeadSettlement() {
-        Player deathPlayer = ((GeneralDying) gamePhase.getAction()).getDyingPlayer();
+    public void playerDeadSettlement() {
+        Player deathPlayer = currentRound.getDyingPlayer();
         if (deathPlayer.getRoleCard().getRole().equals(Role.MONARCH)) {
-            gamePhase = GamePhase.GameOver;
-            // TODO 宣告反賊獲勝
+            this.enterPhase(new GameOver(this));
+            gamePhase.execute();
+            // TODO 主動推反賊獲勝訊息給前端
         }
     }
 
-    private void judgementHealthStatus(Player targetPlayer) {
+    public void judgementHealthStatus(Player targetPlayer) {
         if (targetPlayer.getHP() <= 0) {
             targetPlayer.setHealthStatus(HealthStatus.DYING);
             currentRound.setActivePlayer(targetPlayer);
-            gamePhase = GamePhase.GeneralDying;
-            ((GeneralDying) gamePhase.getAction()).setPlayer(targetPlayer);
-            gamePhase.execute(this);
+            currentRound.setDyingPlayer(targetPlayer);
+            this.enterPhase(new GeneralDying(this));
+            askActivePlayerPlayPeachCard();
         }
     }
 
-    private boolean isWithinDistance(Player player, Player targetPlayer) {
+    public boolean isWithinDistance(Player player, Player targetPlayer) {
         // 攻擊距離 >= 基礎距離(座位表) + 逃走距離
         int dist = seatingChart.calculateDistance(player, targetPlayer);
         int escapeDist = targetPlayer.judgeEscapeDistance();
@@ -254,6 +241,15 @@ public class Game {
 
     public Player getActivePlayer() {
         return currentRound.getActivePlayer();
+    }
+    public Player getPrePlayer(Player player){
+        return seatingChart.getPrePlayer(player);
+    }
+    public Player getNextPlayer(Player player){
+        return seatingChart.getNextPlayer(player);
+    }
+    public void enterPhase(GamePhase gamePhase){
+        this.gamePhase = gamePhase;
     }
 }
 

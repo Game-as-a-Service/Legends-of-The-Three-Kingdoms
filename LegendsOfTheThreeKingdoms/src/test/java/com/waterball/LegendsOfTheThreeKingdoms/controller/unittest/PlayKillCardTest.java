@@ -3,6 +3,8 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller.unittest;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GamePhase;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Normal;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Peach;
@@ -49,6 +51,7 @@ public class PlayKillCardTest {
         List<Player> players = asList(
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
+        game.enterPhase(new Normal(game));
 
         //Todo 補上自訂義的 Exception
         assertThrows(IllegalStateException.class,
@@ -87,6 +90,7 @@ public class PlayKillCardTest {
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
         game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId());
 
         //When Then

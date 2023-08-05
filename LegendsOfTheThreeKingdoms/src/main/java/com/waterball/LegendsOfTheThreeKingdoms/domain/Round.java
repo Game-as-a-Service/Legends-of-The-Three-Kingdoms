@@ -11,6 +11,7 @@ public class Round {
     private RoundPhase roundPhase;
     private Player currentRoundPlayer;
     private Player activePlayer;
+    private Player dyingPlayer;
     private boolean isShowKill;
 
     public Round (Player currentRoundPlayer) {

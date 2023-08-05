@@ -2,27 +2,22 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 
-public enum GamePhase {
-    GeneralDying("GeneralDying", new GeneralDying()),
-    GameOver("GameOver", new GameOver());
+public abstract class GamePhase {
+    protected Game game;
 
-    private final String phaseName;
-    private final GamePhaseAction action;
-
-    GamePhase(String phaseName, GamePhaseAction action) {
-        this.phaseName = phaseName;
-        this.action = action;
+    public GamePhase(Game game) {
+        this.game = game;
     }
 
-    public void execute(Game game) {
-        action.execute(game);
+    public void execute(String playerId, String cardId, String targetPlayerId, String playType) {
+        throw new UnsupportedOperationException("Method not implemented for this class");
     }
 
-    public String getPhaseName() {
-        return phaseName;
+    public void execute() {
+        throw new UnsupportedOperationException("Method not implemented for this class");
     }
 
-    public GamePhaseAction getAction() {
-        return action;
+    public void exit() {
+        game.enterPhase(new Normal(game));
     }
 }
