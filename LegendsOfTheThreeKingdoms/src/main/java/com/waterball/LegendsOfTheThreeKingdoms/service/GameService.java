@@ -88,7 +88,7 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    private GameDto convertToGameDto(Game game) {
+    public GameDto convertToGameDto(Game game) {
         String gameId = game.getGameId();
         List<PlayerDto> playerDtos = convertToPlayerDtos(game.getPlayers());
         GameDto gameDto = new GameDto();

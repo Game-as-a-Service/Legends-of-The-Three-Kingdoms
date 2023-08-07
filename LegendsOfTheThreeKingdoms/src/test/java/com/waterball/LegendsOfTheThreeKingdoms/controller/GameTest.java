@@ -16,20 +16,29 @@ import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static org.hamcrest.Matchers.containsString;
@@ -42,9 +51,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class GameTest {
+
+    @Value(value = "${local.server.port}")
+    private int port;
+    private WebSocketStompClient stompClient;
+    private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+
+    @BeforeEach
+    public void setUp() {
+        WebSocketClient webSocketClient = new StandardWebSocketClient();
+        this.stompClient = new WebSocketStompClient(webSocketClient);
+        this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,13 +75,6 @@ public class GameTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-
-    @Test
-    public void shouldReturnDefaultMessage() throws Exception {
-        this.mockMvc.perform(get("/api/hello")).andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Hello, world!")));
-    }
 
     @Test
     public void happyPath() throws Exception {
@@ -319,9 +333,13 @@ public class GameTest {
         assertEquals(3, game.getPlayer("player-d").getHP());
     }
 
+    // 推播 所有玩家的武將 && 主公
     private void shouldDealCardToPlayers() {
         Game game = inMemoryGameRepository.findGameById("my-id");
         game.assignHandCardToPlayers();
+
+        final CountDownLatch latch = new CountDownLatch(1); // 創建一個計數閥門，用於同步確保WebSocket的訊息處理完畢再繼續進行
+        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
 
         assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals(4, game.getPlayer("player-a").getHandSize());
