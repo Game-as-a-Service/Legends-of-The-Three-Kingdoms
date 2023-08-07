@@ -25,5 +25,4 @@ public class GameResponse implements Serializable {
                 .map(PlayerResponse::new)
                 .collect(Collectors.toList());
     }
-
 }
