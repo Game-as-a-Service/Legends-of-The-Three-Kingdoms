@@ -2,8 +2,12 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.Presenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
+import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +18,9 @@ import java.util.stream.Collectors;
 public class GameController {
 
     private final GameService gameService;
+
+    @Autowired
+    private WebSocketController webSocketController;
 
     public GameController(GameService gameService) {
         this.gameService = gameService;
@@ -38,8 +45,14 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
-    public ResponseEntity<PlayerResponse> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
-        return ResponseEntity.ok(new PlayerResponse(gameService.chooseGeneral(gameId, playerId, generalId)));
+    public ResponseEntity<GeneralCardPresenter.GeneralCardViewModel> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
+        GeneralCardPresenter generalCardPresenter = new GeneralCardPresenter();
+        GameDto gameDto = gameService.chooseGeneral(gameId, playerId, generalId,generalCardPresenter);
+//        PlayerDto playerDto = gameDto.getPlayers().stream().filter(player -> playerId.equals(player.getId())).findFirst().get();
+        webSocketController.pushGeneralsCardEvent(gameDto);
+        return ResponseEntity.ok(generalCardPresenter.present());
+//        return convertToPlayerDto(game.getPlayer(playerId));
+//        return ResponseEntity.ok(new PlayerResponse(playerDto));
     }
 
     @PostMapping("/api/games/{gameId}/player:playCard")

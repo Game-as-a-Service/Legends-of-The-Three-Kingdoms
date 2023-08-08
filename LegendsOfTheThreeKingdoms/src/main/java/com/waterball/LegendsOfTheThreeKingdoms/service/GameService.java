@@ -1,10 +1,13 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.Presenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
@@ -58,11 +61,13 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    public PlayerDto chooseGeneral(String gameId, String playerId, String generalId) {
+    public GameDto chooseGeneral(String gameId, String playerId, String generalId, GeneralCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        game.choosePlayerGeneral(playerId, generalId);
+        GameDto gameDto = convertToGameDto(game.choosePlayerGeneral(playerId, generalId));
         repository.save(game);
-        return convertToPlayerDto(game.getPlayer(playerId));
+        presenter.renderGame(gameDto);
+        return gameDto;
+//        return convertToPlayerDto(game.getPlayer(playerId));
     }
 
     public List<GeneralCardDto> getGenerals(String gameId, String playerId) {
@@ -126,4 +131,9 @@ public class GameService {
         game.playerDiscardCard(cardIds);
         return convertToGameDto(game);
     }
+
+    public interface Presenter<T> {
+        T present();
+    }
+
 }

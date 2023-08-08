@@ -38,6 +38,5 @@ public class HelloWorldController {
                 Player.builder().id("player-d").build()));
 
         return new GameResponse(gameService.convertToGameDto(game));
-
     }
 }

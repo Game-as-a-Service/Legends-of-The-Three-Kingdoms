@@ -101,10 +101,11 @@ public class Game {
         }
     }
 
-    public void choosePlayerGeneral(String playerId, String generalId) {
+    public Game choosePlayerGeneral(String playerId, String generalId) {
         Player player = getPlayer(playerId);
         GeneralCard generalCard = GeneralCard.generals.get(generalId);
         player.setGeneralCard(generalCard);
+        return this;
     }
 
     public void assignHpToPlayers() {
