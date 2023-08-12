@@ -5,6 +5,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDec
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
@@ -26,24 +27,16 @@ public class GameService {
     }
 
     public GameDto startGame(GameDto gameDto) {
-        Game game = createGame();
-        game.setGameId(gameDto.getGameId());
-        List<PlayerDto> playerDtos = gameDto.getPlayers();
-        List<Player> players = new ArrayList<>();
-        for (PlayerDto playerDto : playerDtos) {
-            Player player = new Player();
-            player.setId(playerDto.getId());
-            player.setHand(new Hand());
-            players.add(player);
-        }
-        game.setPlayers(players);
+        Game game = createGame(gameDto);
         game.assignRoles();
         repository.save(game);
         return convertToGameDto(game);
     }
 
-    private Game createGame() {
-        return new Game();
+    private Game createGame(GameDto gameDto) {
+        List<PlayerDto> playerDtos = gameDto.getPlayers();
+        List<Player> players = convertToPlayers(playerDtos);
+        return new Game(gameDto.getGameId(), players);
     }
 
     public GameDto getGame(String gameId) {
@@ -58,11 +51,12 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    public PlayerDto chooseGeneral(String gameId, String playerId, String generalId) {
+    public void chooseGeneral(String gameId, String playerId, String generalId, GeneralCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        game.choosePlayerGeneral(playerId, generalId);
+        GameDto gameDto = convertToGameDto(game.choosePlayerGeneral(playerId, generalId));
+        PlayerDto chooseGeneralPlayer = convertToPlayerDto(game.getPlayer(playerId));
         repository.save(game);
-        return convertToPlayerDto(game.getPlayer(playerId));
+        presenter.renderGame(gameDto, chooseGeneralPlayer);
     }
 
     public List<GeneralCardDto> getGenerals(String gameId, String playerId) {
@@ -94,6 +88,7 @@ public class GameService {
         GameDto gameDto = new GameDto();
         gameDto.setGameId(gameId);
         gameDto.setPlayers(playerDtos);
+        gameDto.setGamePhaseState(game.getGamePhase().getClass().getName());
         return gameDto;
     }
 
@@ -105,6 +100,14 @@ public class GameService {
         return playerDtos;
     }
 
+    private List<Player> convertToPlayers(List<PlayerDto> playerDtos) {
+        List<Player> players = new ArrayList<>();
+        for (PlayerDto playerDto : playerDtos) {
+            players.add(convertToPlayer(playerDto));
+        }
+        return players;
+    }
+
     private PlayerDto convertToPlayerDto(Player player) {
         PlayerDto playerDto = new PlayerDto();
         playerDto.setId(player.getId());
@@ -112,6 +115,15 @@ public class GameService {
         playerDto.setGeneralCard(player.getGeneralCard());
         playerDto.setHand(player.getHand());
         return playerDto;
+    }
+
+    private Player convertToPlayer(PlayerDto playerDto) {
+        Player player = new Player();
+        player.setId(playerDto.getId());
+        player.setRoleCard(playerDto.getRoleCard());
+        player.setGeneralCard(playerDto.getGeneralCard());
+        player.setHand(playerDto.getHand());
+        return player;
     }
 
     private GeneralCardDto convertCardToGeneralDto(GeneralCard card) {
@@ -126,4 +138,9 @@ public class GameService {
         game.playerDiscardCard(cardIds);
         return convertToGameDto(game);
     }
+
+    public interface Presenter<T> {
+        T present();
+    }
+
 }

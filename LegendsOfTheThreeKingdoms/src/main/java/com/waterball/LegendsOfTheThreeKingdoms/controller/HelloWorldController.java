@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Initial;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,8 @@ public class HelloWorldController {
                 Player.builder().id("player-c").build(),
                 Player.builder().id("player-d").build()));
 
-        return new GameResponse(gameService.convertToGameDto(game));
+        game.enterPhase(new Initial(game));
 
+        return new GameResponse(gameService.convertToGameDto(game));
     }
 }

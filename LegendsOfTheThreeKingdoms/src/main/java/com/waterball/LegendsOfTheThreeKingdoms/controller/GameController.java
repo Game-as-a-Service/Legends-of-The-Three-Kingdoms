@@ -2,9 +2,13 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +18,12 @@ import java.util.stream.Collectors;
 public class GameController {
 
     private final GameService gameService;
+
+    @Autowired
+    private WebSocketService webSocketService;
+
+    @Autowired
+    private SimpMessagingTemplate template;
 
     public GameController(GameService gameService) {
         this.gameService = gameService;
@@ -38,8 +48,11 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
-    public ResponseEntity<PlayerResponse> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
-        return ResponseEntity.ok(new PlayerResponse(gameService.chooseGeneral(gameId, playerId, generalId)));
+    public ResponseEntity<GeneralCardPresenter.GeneralCardViewModel> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
+        GeneralCardPresenter generalCardPresenter = new GeneralCardPresenter();
+        gameService.chooseGeneral(gameId, playerId, generalId, generalCardPresenter);
+        webSocketService.pushGeneralsCardEvent(generalCardPresenter);
+        return ResponseEntity.ok(generalCardPresenter.present());
     }
 
     @PostMapping("/api/games/{gameId}/player:playCard")

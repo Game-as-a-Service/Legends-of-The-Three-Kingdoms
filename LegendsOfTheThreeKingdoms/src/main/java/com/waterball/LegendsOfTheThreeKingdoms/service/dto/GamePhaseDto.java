@@ -1,20 +1,12 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
-
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GameDto {
-    private String gameId;
-    private PlayerDto activePlayer;
-    private List<PlayerDto> players;
+public class GamePhaseDto {
     private String gamePhaseState;
 }

@@ -1,15 +1,13 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GameOver;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GamePhase;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GeneralDying;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Normal;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
@@ -32,6 +30,16 @@ public class Game {
     private GamePhase gamePhase;
 
     private List<Player> winners;
+
+    public Game(String gameId, List<Player> players) {
+        setGameId(gameId);
+        setPlayers(players);
+        enterPhase(new Initial(this));
+    }
+
+    public Game() {
+
+    }
 
     public SeatingChart getSeatingChart() {
         return seatingChart;
@@ -101,10 +109,11 @@ public class Game {
         }
     }
 
-    public void choosePlayerGeneral(String playerId, String generalId) {
+    public Game choosePlayerGeneral(String playerId, String generalId) {
         Player player = getPlayer(playerId);
         GeneralCard generalCard = GeneralCard.generals.get(generalId);
         player.setGeneralCard(generalCard);
+        return this;
     }
 
     public void assignHpToPlayers() {
@@ -118,6 +127,7 @@ public class Game {
     //連 websocket Server 做好狀態推給前端 ?
     public void assignHandCardToPlayers() {
         players.forEach(player -> {
+            player.setHand(new Hand());
             player.getHand().setCards(deck.deal(4));
         });
         currentRound = new Round(players.get(0));

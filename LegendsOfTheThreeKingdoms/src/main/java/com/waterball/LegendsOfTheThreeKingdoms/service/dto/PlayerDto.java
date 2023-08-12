@@ -18,6 +18,4 @@ public class PlayerDto {
     private RoleCard roleCard;
     private GeneralCard generalCard;
     private Hand hand;
-
-
 }
