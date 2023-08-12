@@ -1,5 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
@@ -12,34 +14,34 @@ import java.util.List;
 
 public class TestGameBuilder {
 
-    GameDto gameDto = new GameDto();
+    GameResponse gameResponse = new GameResponse();
     String gameId;
-    List<PlayerDto> players = new ArrayList<>();
+
+    List<PlayerResponse> players = new ArrayList<>();
 
 
     public TestGameBuilder() {
-        this.gameDto.setGameId(gameId);
-        this.gameDto.setPlayers(players);
+        this.gameResponse.setGameId(gameId);
+        this.gameResponse.setPlayers(players);
     }
 
     public static TestGameBuilder newGame() {
         return new TestGameBuilder();
     }
 
-    public GameDto build() {
-        return gameDto;
+    public GameResponse build() {
+        return gameResponse;
     }
 
     public TestGameBuilder withGameId(String gameId) {
-        gameDto.setGameId(gameId);
+        gameResponse.setGameId(gameId);
         this.gameId = gameId;
         return this;
     }
 
     public TestGameBuilder players(int requiredPlayers) {
         for (int i = 0; i < requiredPlayers; i++) {
-            PlayerDto p = new PlayerDto();
-            p.setHand(new Hand());
+            PlayerResponse p = new PlayerResponse();
             players.add(p);
         }
         return this;
@@ -58,6 +60,7 @@ public class TestGameBuilder {
         }
         return this;
     }
+
 
     //觀光景點
     public TestGameBuilder withPlayerGeneral(String... playerGeneral) {

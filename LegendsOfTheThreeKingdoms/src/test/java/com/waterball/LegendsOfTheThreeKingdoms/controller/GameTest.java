@@ -2,7 +2,6 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
@@ -18,6 +17,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -44,7 +44,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -66,11 +68,40 @@ public class GameTest {
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
 
+    final BlockingQueue<GeneralCardPresenter.GeneralCardViewModel> blockingQueue = new LinkedBlockingQueue<>();
+
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
+        //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
         WebSocketClient webSocketClient = new StandardWebSocketClient();
         this.stompClient = new WebSocketStompClient(webSocketClient);
         this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+        setupClientSubscribe();
+    }
+
+    private void setupClientSubscribe() throws Exception {
+        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
+
+        StompSessionHandler handler = new HelloWorldTest.TestSessionHandler(failure) {
+            @Override
+            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
+                session.subscribe("/topic/generalCardEvent", new StompFrameHandler() {  // 訂閱伺服器的 "/topic/greetings" 路徑的訊息
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
+                        return GeneralCardPresenter.GeneralCardViewModel.class;
+                    }
+
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        GeneralCardPresenter.GeneralCardViewModel gameResponse = (GeneralCardPresenter.GeneralCardViewModel) payload;
+                        System.err.println("*************** handleFrame ***************");
+                        blockingQueue.add(gameResponse);
+                    }
+                });
+            }
+        };
+        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingDom", this.headers, handler, this.port);
+
     }
 
     @Autowired
@@ -90,7 +121,6 @@ public class GameTest {
         shouldChooseGeneralsByOthers();
         shouldInitialHP();
         shouldDealCardToPlayers();
-//        shouldBroadCastGeneralCardEvent();
 
         // Round 1 hp-0 playerA 君主本人
         playerATakeTurnRound1();
@@ -141,6 +171,7 @@ public class GameTest {
         shouldPlayerDeadSettlement();
 
     }
+
 
     public void shouldCreateGame() throws Exception {
 
@@ -233,6 +264,11 @@ public class GameTest {
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
                 .stream().filter(x -> x.getGeneralID().equals("SHU001"))
                 .count());
+
+        // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
+        GeneralCardPresenter.GeneralCardViewModel viewModel = blockingQueue.poll(3, TimeUnit.SECONDS);
+        assertNotNull(viewModel);
+        assertEquals("SHU001", viewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
     }
 
     private void shouldChooseGeneralsByOthers() throws Exception {
@@ -345,9 +381,6 @@ public class GameTest {
         Game game = inMemoryGameRepository.findGameById("my-id");
         game.assignHandCardToPlayers();
 
-        final CountDownLatch latch = new CountDownLatch(1); // 創建一個計數閥門，用於同步確保WebSocket的訊息處理完畢再繼續進行
-        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
-
         assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals(4, game.getPlayer("player-a").getHandSize());
         assertEquals(4, game.getPlayer("player-b").getHandSize());
@@ -355,44 +388,6 @@ public class GameTest {
         assertEquals(4, game.getPlayer("player-d").getHandSize());
     }
 
-    private void shouldBroadCastGeneralCardEvent() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1); // 創建一個計數閥門，用於同步確保WebSocket的訊息處理完畢再繼續進行
-        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
-
-        StompSessionHandler handler = new HelloWorldTest.TestSessionHandler(failure) {
-            @Override
-            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe("/topic/generalCardEvent", new StompFrameHandler() {  // 訂閱伺服器的 "/topic/greetings" 路徑的訊息
-                    @Override
-                    public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
-                        return GeneralCardPresenter.GeneralCardViewModel.class;
-                    }
-
-                    @Override
-                    public void handleFrame(StompHeaders headers, Object payload) {
-                        GeneralCardPresenter.GeneralCardViewModel gameResponse = (GeneralCardPresenter.GeneralCardViewModel) payload;
-                        try {
-                            assertEquals("player-a", gameResponse.getPlayers().get(0).getId());
-                        } catch (Throwable t) {
-                            failure.set(t); // 儲存異常
-                        } finally {
-                            session.disconnect();
-                            latch.countDown(); // 計數閥門的數值減1，如果數值為0，則讓等待的測試方法繼續執行
-                        }
-                    }
-                });
-            }
-        };
-        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingDom", this.headers, handler, this.port);
-
-        if (latch.await(3, TimeUnit.SECONDS)) {
-            if (failure.get() != null) {
-                throw new AssertionError("", failure.get());
-            }
-        } else {
-            fail("HelloWorld not received");
-        }
-    }
 
     private void playerATakeTurnRound1() throws Exception {
         shouldJudgementPhase();
