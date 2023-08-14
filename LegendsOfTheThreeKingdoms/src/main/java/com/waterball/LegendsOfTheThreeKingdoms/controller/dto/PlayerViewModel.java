@@ -15,13 +15,13 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PlayerResponse implements Serializable {
+public class PlayerViewModel implements Serializable {
     private String id;
     private RoleCard roleCard;
     private GeneralCard generalCard;
     private Hand hand;
 
-    public PlayerResponse(PlayerDto player) {
+    public PlayerViewModel(PlayerDto player) {
         id = player.getId();
         roleCard = player.getRoleCard();
         generalCard = player.getGeneralCard();

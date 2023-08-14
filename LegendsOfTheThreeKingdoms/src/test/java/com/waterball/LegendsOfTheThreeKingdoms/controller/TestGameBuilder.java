@@ -1,10 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerResponse;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
@@ -17,7 +14,7 @@ public class TestGameBuilder {
     GameResponse gameResponse = new GameResponse();
     String gameId;
 
-    List<PlayerResponse> players = new ArrayList<>();
+    List<PlayerViewModel> players = new ArrayList<>();
 
 
     public TestGameBuilder() {
@@ -41,7 +38,7 @@ public class TestGameBuilder {
 
     public TestGameBuilder players(int requiredPlayers) {
         for (int i = 0; i < requiredPlayers; i++) {
-            PlayerResponse p = new PlayerResponse();
+            PlayerViewModel p = new PlayerViewModel();
             players.add(p);
         }
         return this;

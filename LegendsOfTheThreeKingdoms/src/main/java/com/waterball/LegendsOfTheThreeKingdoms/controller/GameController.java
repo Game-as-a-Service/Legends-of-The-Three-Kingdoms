@@ -3,7 +3,6 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ public class GameController {
     private final GameService gameService;
 
     @Autowired
-    private WebSocketService webSocketService;
+    private WebSocketBroadCast webSocketService;
 
     @Autowired
     private SimpMessagingTemplate template;
