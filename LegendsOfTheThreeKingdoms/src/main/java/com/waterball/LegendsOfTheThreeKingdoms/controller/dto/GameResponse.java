@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class GameResponse implements Serializable {
     private String gameId;
-    private List<PlayerResponse> players;
+    private List<PlayerViewModel> players;
 
     public GameResponse(GameDto game) {
         gameId = game.getGameId();
         players = game.getPlayers()
                 .stream()
-                .map(PlayerResponse::new)
+                .map(PlayerViewModel::new)
                 .collect(Collectors.toList());
     }
 }

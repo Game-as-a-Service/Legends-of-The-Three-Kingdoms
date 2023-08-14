@@ -14,7 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 public class GameDto {
     private String gameId;
-    private PlayerDto activePlayer;
     private List<PlayerDto> players;
     private String gamePhaseState;
 }

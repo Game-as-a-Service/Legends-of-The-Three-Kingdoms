@@ -28,7 +28,7 @@ public class MonarchGeneralCardPresenter implements GameService.Presenter<Monarc
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class MonarchGeneralViewModel implements ViewModel{
+    public static class MonarchGeneralViewModel{
         private String message;
     }
 }

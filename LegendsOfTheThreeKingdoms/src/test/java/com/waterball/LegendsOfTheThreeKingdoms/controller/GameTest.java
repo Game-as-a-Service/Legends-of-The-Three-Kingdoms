@@ -17,7 +17,6 @@ import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -27,11 +26,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandler;
+import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -45,7 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,41 +64,10 @@ public class GameTest {
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
 
-    final BlockingQueue<GeneralCardPresenter.GeneralCardViewModel> blockingQueue = new LinkedBlockingQueue<>();
+    final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
-        WebSocketClient webSocketClient = new StandardWebSocketClient();
-        this.stompClient = new WebSocketStompClient(webSocketClient);
-        this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-        setupClientSubscribe();
-    }
-
-    private void setupClientSubscribe() throws Exception {
-        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
-
-        StompSessionHandler handler = new HelloWorldTest.TestSessionHandler(failure) {
-            @Override
-            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe("/topic/generalCardEvent", new StompFrameHandler() {  // 訂閱伺服器的 "/topic/greetings" 路徑的訊息
-                    @Override
-                    public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
-                        return GeneralCardPresenter.GeneralCardViewModel.class;
-                    }
-
-                    @Override
-                    public void handleFrame(StompHeaders headers, Object payload) {
-                        GeneralCardPresenter.GeneralCardViewModel gameResponse = (GeneralCardPresenter.GeneralCardViewModel) payload;
-                        System.err.println("*************** handleFrame ***************");
-                        blockingQueue.add(gameResponse);
-                    }
-                });
-            }
-        };
-        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingDom", this.headers, handler, this.port);
-
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private MockMvc mockMvc;
@@ -110,8 +75,54 @@ public class GameTest {
     @Autowired
     private InMemoryGameRepository inMemoryGameRepository;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @BeforeEach
+    public void setUp() throws Exception {
+        //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
+        WebSocketClient webSocketClient = new StandardWebSocketClient();
+        this.stompClient = new WebSocketStompClient(webSocketClient);
+        this.stompClient.setMessageConverter(new StringMessageConverter());
+        map.computeIfAbsent("player-a", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-b", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-c", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-d", k -> new LinkedBlockingQueue<>());
+        setupClientSubscribe("my-id", "player-a");
+        setupClientSubscribe("my-id", "player-b");
+        setupClientSubscribe("my-id", "player-c");
+        setupClientSubscribe("my-id", "player-d");
+    }
 
+    private void setupClientSubscribe(String gameId, String playerId) throws Exception {
+        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
+
+        StompSessionHandler handler = new HelloWorldTest.TestSessionHandler(failure) {
+            @Override
+            public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
+                throw new RuntimeException("Failure in WebSocket handling", exception);
+            }
+
+            @Override
+            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
+                session.subscribe(String.format("/topic/generalCardEvent/%s", gameId), new StompFrameHandler() {  // 訂閱伺服器的 "/topic/greetings" 路徑的訊息
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
+                        System.err.println("*************** getPayloadType ***************");
+                        return String.class;
+                    }
+
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        System.err.println("*************** handleFrame ***************");
+                        try {
+                            map.computeIfAbsent(playerId, k -> new LinkedBlockingQueue<>()).add((String) payload);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        };
+        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingDom", this.headers, handler, this.port);
+    }
 
     @Test
     public void happyPath() throws Exception {
@@ -224,6 +235,13 @@ public class GameTest {
 
         Game game = inMemoryGameRepository.findGameById("my-id");
         game.setDeck(new Deck(stack));
+
+        // ATDD MonarchGeneralCardPresenter?
+        // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
+//        MonarchGeneralCardPresenter.MonarchGeneralViewModel viewModel = blockingQueue.poll(3, TimeUnit.SECONDS);
+//        assertNotNull(viewModel);
+//        assertEquals("SHU001", viewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
+
     }
 
     private void shouldChooseGeneralsByMonarch() throws Exception {
@@ -266,10 +284,19 @@ public class GameTest {
                 .count());
 
         // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
-        GeneralCardPresenter.GeneralCardViewModel viewModel = blockingQueue.poll(3, TimeUnit.SECONDS);
-        assertNotNull(viewModel);
-        assertEquals("SHU001", viewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
+        game.getPlayers().forEach(player -> {
+            try {
+                String generalCardEvent = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
+                assertNotNull(generalCardEvent);
+                GeneralCardPresenter.GeneralCardViewModel generalCardViewModel = objectMapper.readValue(generalCardEvent, GeneralCardPresenter.GeneralCardViewModel.class);
+                assertEquals("SHU001", generalCardViewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
+                assertEquals("generalCardEvent", generalCardViewModel.getName());
+            } catch (Exception e) {
+                fail("WebSocket operation did not complete in time");
+            }
+        });
     }
+
 
     private void shouldChooseGeneralsByOthers() throws Exception {
 
