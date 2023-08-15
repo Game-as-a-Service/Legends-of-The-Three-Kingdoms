@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class GameController {
     private final GameService gameService;
 
     @Autowired
-    private WebSocketBroadCast webSocketService;
+    private WebSocketBroadCast webSocketBroadCast;
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -30,7 +31,10 @@ public class GameController {
 
     @PostMapping("/api/games")
     public ResponseEntity<GameResponse> createGame(@RequestBody GameRequest gameRequest) {
-        GameDto game = gameService.startGame(GameRequest.convertToGameDto(gameRequest));
+        CreateGamePresenter createGamePresenter = new CreateGamePresenter();
+        GameDto game = gameService.startGame(GameRequest.convertToGameDto(gameRequest),createGamePresenter);
+        //TODO 與主公抽牌的UseCase一起推播給前端
+        webSocketBroadCast.pushCreateGameEvent(createGamePresenter);
         return ResponseEntity.ok(new GameResponse(game));
     }
 
@@ -50,7 +54,7 @@ public class GameController {
     public ResponseEntity<GeneralCardPresenter.GeneralCardViewModel> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
         GeneralCardPresenter generalCardPresenter = new GeneralCardPresenter();
         gameService.chooseGeneral(gameId, playerId, generalId, generalCardPresenter);
-        webSocketService.pushGeneralsCardEvent(generalCardPresenter);
+        webSocketBroadCast.pushGeneralsCardEvent(generalCardPresenter);
         return ResponseEntity.ok(generalCardPresenter.present());
     }
 

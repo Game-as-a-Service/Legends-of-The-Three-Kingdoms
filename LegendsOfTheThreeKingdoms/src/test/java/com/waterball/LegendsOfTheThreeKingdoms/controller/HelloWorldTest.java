@@ -44,7 +44,7 @@ public class HelloWorldTest {
         StompSessionHandler handler = new TestSessionHandler(failure) {
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe("/topic/greetings", new StompFrameHandler() {  // 訂閱伺服器的 "/topic/greetings" 路徑的訊息
+                session.subscribe("/websocket/greetings", new StompFrameHandler() {  // 訂閱伺服器的 "/topic/greetings" 路徑的訊息
                     @Override
                     public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
                         return GameResponse.class;

@@ -13,7 +13,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic");  // 啟用一個簡單的message broker，並設定"/topic"前綴，該前綴的目的地會被視為可以被訂閱的目的地
+        config.enableSimpleBroker("/websocket");  // 啟用一個簡單的message broker，並設定"/topic"前綴，該前綴的目的地會被視為可以被訂閱的目的地
         config.setApplicationDestinationPrefixes("/api");  // 設定"/api"前綴，該前綴的目的地會被視為需要服務器處理的消息
     }
 
