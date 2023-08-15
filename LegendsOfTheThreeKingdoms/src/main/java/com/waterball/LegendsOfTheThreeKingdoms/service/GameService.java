@@ -2,10 +2,10 @@ package com.waterball.LegendsOfTheThreeKingdoms.service;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
@@ -26,11 +26,13 @@ public class GameService {
         this.repository = repository;
     }
 
-    public GameDto startGame(GameDto gameDto) {
+    public GameDto startGame(GameDto gameDto, CreateGamePresenter presenter) {
         Game game = createGame(gameDto);
         game.assignRoles();
         repository.save(game);
-        return convertToGameDto(game);
+        GameDto returnGameDto = convertToGameDto(game);
+        presenter.renderGame(returnGameDto);
+        return returnGameDto;
     }
 
     private Game createGame(GameDto gameDto) {

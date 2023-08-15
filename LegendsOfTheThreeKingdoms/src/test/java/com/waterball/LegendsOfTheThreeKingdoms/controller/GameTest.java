@@ -1,6 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
@@ -12,6 +14,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
@@ -102,7 +105,7 @@ public class GameTest {
 
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe(String.format("/topic/generalCardEvent/%s", gameId), new StompFrameHandler() {  // 訂閱伺服器的 "/topic/greetings" 路徑的訊息
+                session.subscribe(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", gameId, playerId), new StompFrameHandler() {  // 訂閱伺服器的 "/websocket/legendsOfTheThreeKingdoms/gameId/playerId" 路徑的訊息
                     @Override
                     public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
                         System.err.println("*************** getPayloadType ***************");
@@ -238,10 +241,29 @@ public class GameTest {
 
         // ATDD MonarchGeneralCardPresenter?
         // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
-//        MonarchGeneralCardPresenter.MonarchGeneralViewModel viewModel = blockingQueue.poll(3, TimeUnit.SECONDS);
-//        assertNotNull(viewModel);
-//        assertEquals("SHU001", viewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
+        String playerAGeneralEvent = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        assertNotNull(playerAGeneralEvent);
+        CreateGamePresenter.CreateGameViewModel generalCardViewModelA = objectMapper.readValue(playerAGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
+        assertNotNull(generalCardViewModelA);
+        assertEquals("請選擇武將", generalCardViewModelA.getMessage());
 
+        String playerBGeneralEvent = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        assertNotNull(playerBGeneralEvent);
+        CreateGamePresenter.CreateGameViewModel generalCardViewModelB = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
+        assertNotNull(generalCardViewModelB);
+        assertEquals("請等待主公選擇武將", generalCardViewModelB.getMessage());
+
+        String playerCGeneralEvent = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        assertNotNull(playerCGeneralEvent);
+        CreateGamePresenter.CreateGameViewModel generalCardViewModelC = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
+        assertNotNull(generalCardViewModelC);
+        assertEquals("請等待主公選擇武將", generalCardViewModelC.getMessage());
+
+        String playerDGeneralEvent = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        assertNotNull(playerDGeneralEvent);
+        CreateGamePresenter.CreateGameViewModel generalCardViewModelD = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
+        assertNotNull(generalCardViewModelD);
+        assertEquals("請等待主公選擇武將", generalCardViewModelD.getMessage());
     }
 
     private void shouldChooseGeneralsByMonarch() throws Exception {
@@ -287,12 +309,16 @@ public class GameTest {
         game.getPlayers().forEach(player -> {
             try {
                 String generalCardEvent = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
-                assertNotNull(generalCardEvent);
                 GeneralCardPresenter.GeneralCardViewModel generalCardViewModel = objectMapper.readValue(generalCardEvent, GeneralCardPresenter.GeneralCardViewModel.class);
+                assertNotNull(generalCardEvent);
                 assertEquals("SHU001", generalCardViewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
                 assertEquals("generalCardEvent", generalCardViewModel.getName());
-            } catch (Exception e) {
-                fail("WebSocket operation did not complete in time");
+            } catch (InterruptedException e) {
+                fail("***** generalCardEvent WebSocet failed. *****", e);
+            } catch (JsonMappingException e) {
+                fail("***** generalCardEvent JsonMappingException. *****", e);
+            } catch (JsonProcessingException e) {
+                fail("***** generalCardEvent JsonProcessingException *****", e);
             }
         });
     }
