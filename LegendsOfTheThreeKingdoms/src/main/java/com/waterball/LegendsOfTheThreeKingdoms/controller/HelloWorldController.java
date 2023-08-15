@@ -26,7 +26,7 @@ public class HelloWorldController {
     private GameService gameService;
 
     @MessageMapping("/hello")
-    @SendTo("/topic/greetings")
+    @SendTo("/websocket/greetings")
     public GameResponse sayHello(String message) throws Exception {
 
         Game game = new Game();
