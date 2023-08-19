@@ -1,11 +1,10 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -26,14 +24,18 @@ public class GameService {
         this.repository = repository;
     }
 
-    public GameDto startGame(GameDto gameDto, CreateGamePresenter presenter) {
+    public GameDto startGame(GameDto gameDto, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getGeneralCardPresenter) {
         Game game = createGame(gameDto);
         game.assignRoles();
+        // TODO game.getMonarchCanChooseGeneralIds() 改CA時會回傳Domain Event
+        List<GeneralCard> generalCards = game.getMonarchCanChooseGeneralCards();
         repository.save(game);
         GameDto returnGameDto = convertToGameDto(game);
-        presenter.renderGame(returnGameDto);
+        createGamePresenter.renderGame(game);
+        getGeneralCardPresenter.renderGame(generalCards, game.getGameId(), game.getMonarchPlayerId());
         return returnGameDto;
     }
+
 
     private Game createGame(GameDto gameDto) {
         List<PlayerDto> playerDtos = gameDto.getPlayers();
@@ -59,23 +61,6 @@ public class GameService {
         PlayerDto chooseGeneralPlayer = convertToPlayerDto(game.getPlayer(playerId));
         repository.save(game);
         presenter.renderGame(gameDto, chooseGeneralPlayer);
-    }
-
-    public List<GeneralCardDto> getGenerals(String gameId, String playerId) {
-        Game game = repository.findGameById(gameId);
-        //牌堆 a b c d ef g h i j
-        GeneralCardDeck generalCardDeck = game.getGeneralCardDeck();
-
-        //主公有三張固定的兩張隨機 劉備、曹操、孫權 + ? + ? || 假設主公抽 劉備，其他人的話可以抽剩下的武將牌(包含曹操與孫權)
-
-        Player player = game.getPlayer(playerId);
-        int needCardCount = 3;
-        if (player.getRoleCard().getRole() == Role.MONARCH) {
-            needCardCount = 5;
-        }
-
-        return generalCardDeck.drawGeneralCards(needCardCount)
-                .stream().map(this::convertCardToGeneralDto).collect(Collectors.toList());
     }
 
     public GameDto finishAction(String gameId, String playerId) {
@@ -128,7 +113,7 @@ public class GameService {
         return player;
     }
 
-    private GeneralCardDto convertCardToGeneralDto(GeneralCard card) {
+    public GeneralCardDto convertCardToGeneralDto(GeneralCard card) {
         GeneralCardDto cardDto = new GeneralCardDto();
         cardDto.setGeneralID(card.getGeneralID());
         cardDto.setGeneralName(card.getGeneralName());
@@ -144,5 +129,6 @@ public class GameService {
     public interface Presenter<T> {
         T present();
     }
+
 
 }

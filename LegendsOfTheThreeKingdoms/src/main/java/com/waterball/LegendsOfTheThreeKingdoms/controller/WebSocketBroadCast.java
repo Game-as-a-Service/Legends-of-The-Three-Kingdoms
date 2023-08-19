@@ -2,8 +2,9 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,6 @@ import java.util.List;
 
 @Component
 public class WebSocketBroadCast {
-
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
@@ -44,4 +44,14 @@ public class WebSocketBroadCast {
         }
     }
 
+    public void pushGetGeneralCardEvent(GetGeneralCardPresenter presenter) {
+        GetGeneralCardPresenter.GetGeneralCardViewModel getGeneralCardViewModel = presenter.present();
+        try {
+            String generalCardMessage = objectMapper.writeValueAsString(getGeneralCardViewModel);
+            messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", getGeneralCardViewModel.getGameId(), getGeneralCardViewModel.getPlayerId()), generalCardMessage);
+        } catch (JsonProcessingException e) {
+            System.err.println("****************** pushGetGeneralCardEvent ");
+            e.printStackTrace();
+        }
+    }
 }

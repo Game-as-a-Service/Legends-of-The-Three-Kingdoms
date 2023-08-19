@@ -14,6 +14,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -93,6 +94,13 @@ public class Game {
     public Player getPlayer(String playerId) {
         return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
     }
+    public String getMonarchPlayerId() {
+        return players.stream()
+                .filter(p -> Role.MONARCH.equals(p.getRoleCard().getRole()))
+                .findFirst()
+                .map(Player::getId)
+                .orElseThrow(IllegalArgumentException::new);
+    }
 
     public GeneralCardDeck getGeneralCardDeck() {
         return generalCardDeck;
@@ -107,6 +115,10 @@ public class Game {
         for (int i = 0; i < roleCards.size(); i++) {
             players.get(i).setRoleCard(roleCards.get(i));
         }
+    }
+    public List<GeneralCard> getMonarchCanChooseGeneralCards() {
+        GeneralCardDeck generalCardDeck = getGeneralCardDeck();
+        return new ArrayList<>(generalCardDeck.drawGeneralCards(5));
     }
 
     public Game choosePlayerGeneral(String playerId, String generalId) {

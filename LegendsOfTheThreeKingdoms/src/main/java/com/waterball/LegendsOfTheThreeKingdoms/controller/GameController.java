@@ -1,9 +1,13 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.FinishRoundRequest;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayCardRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +16,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 public class GameController {
@@ -32,9 +35,10 @@ public class GameController {
     @PostMapping("/api/games")
     public ResponseEntity<GameResponse> createGame(@RequestBody GameRequest gameRequest) {
         CreateGamePresenter createGamePresenter = new CreateGamePresenter();
-        GameDto game = gameService.startGame(GameRequest.convertToGameDto(gameRequest),createGamePresenter);
-        //TODO 與主公抽牌的UseCase一起推播給前端
+        GetGeneralCardPresenter getGeneralCardPresenter = new GetGeneralCardPresenter();
+        GameDto game = gameService.startGame(GameRequest.convertToGameDto(gameRequest), createGamePresenter, getGeneralCardPresenter);
         webSocketBroadCast.pushCreateGameEvent(createGamePresenter);
+        webSocketBroadCast.pushGetGeneralCardEvent(getGeneralCardPresenter);
         return ResponseEntity.ok(new GameResponse(game));
     }
 
@@ -43,12 +47,6 @@ public class GameController {
         return ResponseEntity.ok(new GameResponse(gameService.getGame(gameId)));
     }
 
-    @GetMapping("/api/games/{gameId}/{playerId}/generals")
-    public ResponseEntity<List<GeneralCardResponse>> getGenerals(@PathVariable String gameId, @PathVariable String playerId) {
-        List<GeneralCardResponse> generalCardResponses = gameService.getGenerals(gameId, playerId)
-                .stream().map(GeneralCardResponse::new).collect(Collectors.toList());
-        return ResponseEntity.ok(generalCardResponses);
-    }
 
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
     public ResponseEntity<GeneralCardPresenter.GeneralCardViewModel> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
@@ -72,7 +70,7 @@ public class GameController {
 
     @PostMapping("/api/games/{gameId}/player:discardCards")
     public ResponseEntity<GameResponse> discardCards(@PathVariable String gameId, @RequestBody List<String> cardIds) {
-        GameDto gameDto = gameService.discardCard(gameId,cardIds);
+        GameDto gameDto = gameService.discardCard(gameId, cardIds);
         return ResponseEntity.ok(new GameResponse(gameDto));
     }
 }

@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service.dto;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
