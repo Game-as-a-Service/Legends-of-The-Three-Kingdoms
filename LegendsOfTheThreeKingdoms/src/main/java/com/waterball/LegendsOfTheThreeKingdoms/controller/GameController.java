@@ -6,7 +6,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayCardRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
@@ -38,7 +38,7 @@ public class GameController {
         GetGeneralCardPresenter getGeneralCardPresenter = new GetGeneralCardPresenter();
         GameDto game = gameService.startGame(GameRequest.convertToGameDto(gameRequest), createGamePresenter, getGeneralCardPresenter);
         webSocketBroadCast.pushCreateGameEvent(createGamePresenter);
-        webSocketBroadCast.pushGetGeneralCardEvent(getGeneralCardPresenter);
+        webSocketBroadCast.pushMonarchGeneralCardsEvent(getGeneralCardPresenter);
         return ResponseEntity.ok(new GameResponse(game));
     }
 
@@ -47,12 +47,11 @@ public class GameController {
         return ResponseEntity.ok(new GameResponse(gameService.getGame(gameId)));
     }
 
-
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
-    public ResponseEntity<GeneralCardPresenter.GeneralCardViewModel> chooseGeneral(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
-        GeneralCardPresenter generalCardPresenter = new GeneralCardPresenter();
-        gameService.chooseGeneral(gameId, playerId, generalId, generalCardPresenter);
-        webSocketBroadCast.pushGeneralsCardEvent(generalCardPresenter);
+    public ResponseEntity<MonarchGeneralCardPresenter.MonarchGeneralCardViewModel> chooseGeneralByMonatch(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
+        MonarchGeneralCardPresenter generalCardPresenter = new MonarchGeneralCardPresenter();
+        gameService.monarchChooseGeneral(gameId, playerId, generalId, generalCardPresenter);
+        webSocketBroadCast.pushMonarchChooseGeneralsCardEvent(generalCardPresenter);
         return ResponseEntity.ok(generalCardPresenter.present());
     }
 

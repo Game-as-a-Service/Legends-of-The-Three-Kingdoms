@@ -128,6 +128,14 @@ public class Game {
         return this;
     }
 
+    public Game monarchChoosePlayerGeneral(String playerId, String generalId) {
+        Player player = getPlayer(playerId);
+        if (!player.getRoleCard().getRole().equals(Role.MONARCH)) {
+            throw new RuntimeException(String.format("Player Id %s not MONARCH.", playerId));
+        }
+        return choosePlayerGeneral(playerId, generalId);
+    }
+
     public void assignHpToPlayers() {
         players.forEach(p -> {
             int healthPoint = p.getRoleCard().getRole().equals(Role.MONARCH) ? 1 : 0;

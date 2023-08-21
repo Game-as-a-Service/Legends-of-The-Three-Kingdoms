@@ -1,10 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
@@ -17,10 +15,9 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,14 +32,12 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
@@ -57,7 +52,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -238,7 +232,6 @@ public class GameTest {
         assertEquals(Role.REBEL,game.getPlayer("player-c").getRoleCard().getRole());
         assertEquals(Role.TRAITOR,game.getPlayer("player-d").getRoleCard().getRole());
 
-        // ATDD MonarchGeneralCardPresenter?
         // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
         String playerAGeneralEvent = map.get("player-a").poll(5, TimeUnit.SECONDS);
         assertNotNull(playerAGeneralEvent);
@@ -305,16 +298,14 @@ public class GameTest {
 
         // WebSocket 推播給前端資訊
         // 主公選擇的腳色全部人都可以知道
-        // 主公
         game.getPlayers().forEach(player -> {
             try {
                 String generalCardEvent = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
-                GeneralCardPresenter.GeneralCardViewModel generalCardViewModel = objectMapper.readValue(generalCardEvent, GeneralCardPresenter.GeneralCardViewModel.class);
+                MonarchGeneralCardPresenter.MonarchGeneralCardViewModel generalCardViewModel = objectMapper.readValue(generalCardEvent, MonarchGeneralCardPresenter.MonarchGeneralCardViewModel.class);
                 assertNotNull(generalCardEvent);
-                assertEquals("SHU001", generalCardViewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
-                assertEquals("generalCardEvent", generalCardViewModel.getName());
-
-
+                assertEquals("主公 player-a 已選擇 劉備",generalCardViewModel.getMessage());
+                assertEquals("SHU001", generalCardViewModel.getMonarchGeneralCard().getGeneralID());
+                assertEquals("MonarchGeneralCardEvent", generalCardViewModel.getName());
             } catch (InterruptedException e) {
                 fail("***** generalCardEvent WebSocet failed. *****", e);
             } catch (JsonMappingException e) {
@@ -323,6 +314,11 @@ public class GameTest {
                 fail("***** generalCardEvent JsonProcessingException *****", e);
             }
         });
+
+        // PlayerB打主公選擇角色的API
+        // 期望400 Bad Request
+        this.mockMvc.perform(post("/api/games/my-id/player-b/general/SHU001")).andDo(print())
+                .andExpect(status().is4xxClientError());
     }
 
 
@@ -373,9 +369,10 @@ public class GameTest {
         game.getPlayers().forEach(player -> {
             try {
                 String generalCardEvent = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
-                GeneralCardPresenter.GeneralCardViewModel generalCardViewModel = objectMapper.readValue(generalCardEvent, GeneralCardPresenter.GeneralCardViewModel.class);
+                MonarchGeneralCardPresenter.MonarchGeneralCardViewModel generalCardViewModel = objectMapper.readValue(generalCardEvent, MonarchGeneralCardPresenter.MonarchGeneralCardViewModel.class);
                 assertNotNull(generalCardEvent);
-                assertEquals("SHU001", generalCardViewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
+//                assertEquals("SHU001", generalCardViewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
+                assertEquals("SHU001", generalCardViewModel.getMonarchGeneralCard().getGeneralID());
                 assertEquals("generalCardEvent", generalCardViewModel.getName());
             } catch (InterruptedException e) {
                 fail("***** generalCardEvent WebSocet failed. *****", e);

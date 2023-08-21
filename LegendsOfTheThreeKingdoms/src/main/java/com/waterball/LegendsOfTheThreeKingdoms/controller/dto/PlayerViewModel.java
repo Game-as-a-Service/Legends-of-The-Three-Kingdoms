@@ -18,13 +18,9 @@ import java.io.Serializable;
 public class PlayerViewModel implements Serializable {
     private String id;
     private RoleCard roleCard;
-    private GeneralCard generalCard;
-    private Hand hand;
 
     public PlayerViewModel(PlayerDto player) {
         id = player.getId();
         roleCard = player.getRoleCard();
-        generalCard = player.getGeneralCard();
-        hand = player.getHand();
     }
 }

@@ -7,7 +7,6 @@ import java.util.List;
 public class SeatingChart {
 
     private List<Player> players;
-    private int head;
 
     public SeatingChart(List<Player> players) {
         this.players = players;

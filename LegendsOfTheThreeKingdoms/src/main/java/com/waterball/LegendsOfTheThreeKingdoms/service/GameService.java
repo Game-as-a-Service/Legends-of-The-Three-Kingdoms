@@ -2,7 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.service;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
@@ -55,9 +55,9 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    public void chooseGeneral(String gameId, String playerId, String generalId, GeneralCardPresenter presenter) {
+    public void monarchChooseGeneral(String gameId, String playerId, String generalId, MonarchGeneralCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        GameDto gameDto = convertToGameDto(game.choosePlayerGeneral(playerId, generalId));
+        GameDto gameDto = convertToGameDto(game.monarchChoosePlayerGeneral(playerId, generalId));
         PlayerDto chooseGeneralPlayer = convertToPlayerDto(game.getPlayer(playerId));
         repository.save(game);
         presenter.renderGame(gameDto, chooseGeneralPlayer);
