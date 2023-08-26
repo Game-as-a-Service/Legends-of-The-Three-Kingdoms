@@ -1,5 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.AssignRoleEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.CreateGameEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
@@ -94,6 +97,7 @@ public class Game {
     public Player getPlayer(String playerId) {
         return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
     }
+
     public String getMonarchPlayerId() {
         return players.stream()
                 .filter(p -> Role.MONARCH.equals(p.getRoleCard().getRole()))
@@ -106,7 +110,7 @@ public class Game {
         return generalCardDeck;
     }
 
-    public void assignRoles() {
+    public List<DomainEvent> assignRoles() {
         if (players.size() < 4) {
             throw new IllegalStateException("The number of players must bigger than 4.");
         }
@@ -115,7 +119,10 @@ public class Game {
         for (int i = 0; i < roleCards.size(); i++) {
             players.get(i).setRoleCard(roleCards.get(i));
         }
+        AssignRoleEvent assignRoleEvent = new AssignRoleEvent();
+        return List.of(assignRoleEvent);
     }
+
     public List<GeneralCard> getMonarchCanChooseGeneralCards() {
         GeneralCardDeck generalCardDeck = getGeneralCardDeck();
         return new ArrayList<>(generalCardDeck.drawGeneralCards(5));
@@ -183,7 +190,7 @@ public class Game {
     }
 
     public void playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
-        gamePhase.execute(playerId,cardId,targetPlayerId,playType);
+        gamePhase.execute(playerId, cardId, targetPlayerId, playType);
     }
 
     public void playerDeadSettlement() {
@@ -272,13 +279,16 @@ public class Game {
     public Player getActivePlayer() {
         return currentRound.getActivePlayer();
     }
-    public Player getPrePlayer(Player player){
+
+    public Player getPrePlayer(Player player) {
         return seatingChart.getPrePlayer(player);
     }
-    public Player getNextPlayer(Player player){
+
+    public Player getNextPlayer(Player player) {
         return seatingChart.getNextPlayer(player);
     }
-    public void enterPhase(GamePhase gamePhase){
+
+    public void enterPhase(GamePhase gamePhase) {
         this.gamePhase = gamePhase;
     }
 }

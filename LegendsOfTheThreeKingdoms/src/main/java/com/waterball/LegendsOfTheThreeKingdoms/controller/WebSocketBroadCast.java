@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
@@ -22,11 +23,10 @@ public class WebSocketBroadCast {
         List<CreateGamePresenter.CreateGameViewModel> createGameViewModels = presenter.present();
         createGameViewModels.forEach(viewModel -> {
             try {
-                String createGameMessage = objectMapper.writeValueAsString(viewModel);
-                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", viewModel.getGameId(), viewModel.getPlayerId()), createGameMessage);
+                String createGameJson = objectMapper.writeValueAsString(viewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", viewModel.getGameId(), viewModel.getPlayerId()), createGameJson);
             } catch (JsonProcessingException e) {
-                System.err.println("****************** pushCreateGameEvent ");
-                e.printStackTrace();
+                throw new RuntimeException("推播createGameEvent錯誤");
             }
         });
     }
@@ -47,7 +47,7 @@ public class WebSocketBroadCast {
             MonarchGeneralCardPresenter.MonarchGeneralCardViewModel generalCardViewModel = presenter.present();
             String generalCardMessage = objectMapper.writeValueAsString(generalCardViewModel);
             generalCardViewModel.getPlayerIdList().forEach(playerId ->
-                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", generalCardViewModel.getGameId(), playerId), generalCardMessage)
+                    messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", generalCardViewModel.getGameId(), playerId), generalCardMessage)
             );
         } catch (Exception e) {
             System.err.println("****************** pushGeneralsCardEvent ");

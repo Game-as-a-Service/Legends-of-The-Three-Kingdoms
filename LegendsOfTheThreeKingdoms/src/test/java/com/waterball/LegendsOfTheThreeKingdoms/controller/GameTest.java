@@ -2,7 +2,10 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
@@ -17,6 +20,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
@@ -38,6 +42,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
@@ -192,11 +197,7 @@ public class GameTest {
         // Traitors
 
         String requestBody = objectMapper.writeValueAsString(
-                TestGameBuilder.newGame()
-                        .withGameId("my-id")
-                        .players(4)
-                        .withPlayerId("player-a", "player-b", "player-c", "player-d")
-                        .build());
+                new GameRequest("my-id",List.of("player-a","player-b", "player-c", "player-d")));
 
 
         try (MockedStatic<ShuffleWrapper> mockedStatic = Mockito.mockStatic(ShuffleWrapper.class)) {
@@ -232,22 +233,9 @@ public class GameTest {
         assertEquals(Role.REBEL,game.getPlayer("player-c").getRoleCard().getRole());
         assertEquals(Role.TRAITOR,game.getPlayer("player-d").getRoleCard().getRole());
 
-        // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
-        String playerAGeneralEvent = map.get("player-a").poll(5, TimeUnit.SECONDS);
-        assertNotNull(playerAGeneralEvent);
-        CreateGamePresenter.CreateGameViewModel generalCardViewModelA = objectMapper.readValue(playerAGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
-        assertNotNull(generalCardViewModelA);
-        assertEquals("請選擇武將", generalCardViewModelA.getMessage());
+        // WebSocket 推播給前端資訊 (主公)
+        checkPlayerAGetCreateGameEvent();
 
-        // WebSocket 推播給前端資訊 (主公選擇可以選擇的武將牌)
-        String monarchGetGeneralCardsEvent = map.get("player-a").poll(5,TimeUnit.SECONDS);
-        assertNotNull(monarchGetGeneralCardsEvent);
-        GetGeneralCardPresenter.GetGeneralCardViewModel monarchGetGeneralViewModel = objectMapper.readValue(monarchGetGeneralCardsEvent,GetGeneralCardPresenter.GetGeneralCardViewModel.class);
-        assertNotNull(monarchGetGeneralViewModel);
-        assertEquals("孫權", monarchGetGeneralViewModel.getGeneralList().get(0).getGeneralName());
-        assertEquals("曹操", monarchGetGeneralViewModel.getGeneralList().get(1).getGeneralName());
-        assertEquals("劉備", monarchGetGeneralViewModel.getGeneralList().get(2).getGeneralName());
-        assertEquals(5, monarchGetGeneralViewModel.getGeneralList().size());
 
         String playerBGeneralEvent = map.get("player-b").poll(5, TimeUnit.SECONDS);
         assertNotNull(playerBGeneralEvent);
@@ -266,6 +254,36 @@ public class GameTest {
         CreateGamePresenter.CreateGameViewModel generalCardViewModelD = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelD);
         assertEquals("請等待主公選擇武將", generalCardViewModelD.getMessage());
+    }
+
+    private void checkPlayerAGetCreateGameEvent() throws InterruptedException, JsonProcessingException {
+        String createGameViewModel = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        assertNotNull(createGameViewModel);
+
+        ArrayList<CreateGamePresenter.SeatViewModel> seats = new ArrayList<>();
+        seats.add(new CreateGamePresenter.SeatViewModel("player-a","MONARCH"));
+        seats.add(new CreateGamePresenter.SeatViewModel("player-b",""));
+        seats.add(new CreateGamePresenter.SeatViewModel("player-c",""));
+        seats.add(new CreateGamePresenter.SeatViewModel("player-d",""));
+
+        CreateGamePresenter.CreateGameViewModel createGameViewModelOfMonarch = objectMapper.readValue(createGameViewModel, CreateGamePresenter.CreateGameViewModel.class);
+
+        assertNotNull(createGameViewModelOfMonarch);
+        assertTrue(createGameViewModelOfMonarch.getData().getSeats().equals(seats));
+        assertEquals("my-id",createGameViewModelOfMonarch.getGameId());
+        assertEquals("createGameEvent",createGameViewModelOfMonarch.getEvent());
+        assertEquals("請選擇武將", createGameViewModelOfMonarch.getMessage());
+
+        // WebSocket 推播給前端資訊 (主公選擇可以選擇的武將牌)
+        String monarchGetGeneralCardsEvent = map.get("player-a").poll(5,TimeUnit.SECONDS);
+        assertNotNull(monarchGetGeneralCardsEvent);
+        GetGeneralCardPresenter.GetGeneralCardViewModel monarchGetGeneralViewModel = objectMapper.readValue(monarchGetGeneralCardsEvent,GetGeneralCardPresenter.GetGeneralCardViewModel.class);
+
+        assertNotNull(monarchGetGeneralViewModel);
+        assertEquals("孫權", monarchGetGeneralViewModel.getGeneralList().get(0).getGeneralName());
+        assertEquals("曹操", monarchGetGeneralViewModel.getGeneralList().get(1).getGeneralName());
+        assertEquals("劉備", monarchGetGeneralViewModel.getGeneralList().get(2).getGeneralName());
+        assertEquals(5, monarchGetGeneralViewModel.getGeneralList().size());
     }
 
     private void shouldChooseGeneralsByMonarch() throws Exception {

@@ -1,5 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.CreateGameEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
@@ -11,6 +13,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.*;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.events.Event;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,23 +27,34 @@ public class GameService {
         this.repository = repository;
     }
 
-    public GameDto startGame(GameDto gameDto, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getGeneralCardPresenter) {
-        Game game = createGame(gameDto);
-        game.assignRoles();
-        // TODO game.getMonarchCanChooseGeneralIds() 改CA時會回傳Domain Event
-        List<GeneralCard> generalCards = game.getMonarchCanChooseGeneralCards();
+    public GameDto  startGame(GameDto gameDto, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getGeneralCardPresenter) {
+
+        // 創建遊戲
+        List<DomainEvent> createGameEvent = createGame(gameDto);
+        // 分配角色
+        Game game = repository.findGameById(gameDto.getGameId());
+        // 改
+        List<DomainEvent> assignRolesEvent = game.assignRoles();
+        // 存
         repository.save(game);
+        // 推
         GameDto returnGameDto = convertToGameDto(game);
         createGamePresenter.renderGame(game);
+
+
+        List<GeneralCard> generalCards = game.getMonarchCanChooseGeneralCards();
         getGeneralCardPresenter.renderGame(generalCards, game.getGameId(), game.getMonarchPlayerId());
+
         return returnGameDto;
     }
 
 
-    private Game createGame(GameDto gameDto) {
+    private List<DomainEvent> createGame(GameDto gameDto) {
         List<PlayerDto> playerDtos = gameDto.getPlayers();
         List<Player> players = convertToPlayers(playerDtos);
-        return new Game(gameDto.getGameId(), players);
+        Game game = new Game(gameDto.getGameId(), players);
+        repository.save(game);
+        return List.of(new CreateGameEvent(game.getGameId(),game.getSeatingChart().getPlayers()));
     }
 
     public GameDto getGame(String gameId) {

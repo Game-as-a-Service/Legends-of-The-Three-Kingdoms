@@ -11,6 +11,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -33,13 +34,13 @@ public class GameController {
     }
 
     @PostMapping("/api/games")
-    public ResponseEntity<GameResponse> createGame(@RequestBody GameRequest gameRequest) {
+    public ResponseEntity createGame(@RequestBody GameRequest gameRequest) {
         CreateGamePresenter createGamePresenter = new CreateGamePresenter();
         GetGeneralCardPresenter getGeneralCardPresenter = new GetGeneralCardPresenter();
-        GameDto game = gameService.startGame(GameRequest.convertToGameDto(gameRequest), createGamePresenter, getGeneralCardPresenter);
+        gameService.startGame(GameRequest.convertToGameDto(gameRequest), createGamePresenter, getGeneralCardPresenter);
         webSocketBroadCast.pushCreateGameEvent(createGamePresenter);
         webSocketBroadCast.pushMonarchGeneralCardsEvent(getGeneralCardPresenter);
-        return ResponseEntity.ok(new GameResponse(game));
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @GetMapping("/api/games/{gameId}")
