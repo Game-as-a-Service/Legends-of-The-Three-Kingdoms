@@ -1,19 +1,19 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.CreateGameEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.*;
-import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.events.Event;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class GameService {
         this.repository = repository;
     }
 
-    public GameDto  startGame(GameDto gameDto, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getGeneralCardPresenter) {
+    public GameDto startGame(GameDto gameDto, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getMonarchGeneralCardPresenter) {
 
         // 創建遊戲
         List<DomainEvent> createGameEvent = createGame(gameDto);
@@ -41,9 +41,11 @@ public class GameService {
         GameDto returnGameDto = convertToGameDto(game);
         createGamePresenter.renderGame(game);
 
+        // 主公抽可選擇的武將牌
+        GetMonarchGeneralCardsEvent event = game.getMonarchCanChooseGeneralCards();
 
-        List<GeneralCard> generalCards = game.getMonarchCanChooseGeneralCards();
-        getGeneralCardPresenter.renderGame(generalCards, game.getGameId(), game.getMonarchPlayerId());
+        // 推播給主公
+        getMonarchGeneralCardPresenter.renderGame(event, game.getGameId(), game.getMonarchPlayerId());
 
         return returnGameDto;
     }
@@ -69,7 +71,7 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    public void monarchChooseGeneral(String gameId, String playerId, String generalId, MonarchGeneralCardPresenter presenter) {
+    public void monarchChooseGeneral(String gameId, String playerId, String generalId, MonarchChooseGeneralCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
         GameDto gameDto = convertToGameDto(game.monarchChoosePlayerGeneral(playerId, generalId));
         PlayerDto chooseGeneralPlayer = convertToPlayerDto(game.getPlayer(playerId));

@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class MonarchGeneralCardPresenter implements GameService.Presenter<MonarchGeneralCardPresenter.MonarchGeneralCardViewModel> {
+public class MonarchChooseGeneralCardPresenter implements GameService.Presenter<MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel> {
 
-    private MonarchGeneralCardViewModel viewModel;
+    private MonarchChooseGeneralCardViewModel viewModel;
 
     public void renderGame(GameDto game, PlayerDto chooseGeneralPlayer) {
         List<PlayerDto> players = game.getPlayers();
@@ -27,17 +27,17 @@ public class MonarchGeneralCardPresenter implements GameService.Presenter<Monarc
 
         // 主公選擇完畢: 推送主公選擇的武將
 
-        viewModel = new MonarchGeneralCardViewModel("MonarchGeneralCardEvent", game.getGameId(), monarchViewModel, playerIdList, gamePhaseState, String.format("主公 %s 已選擇 %s", chooseGeneralPlayer.getId(), generalCard.getGeneralName()), generalCard);
+        viewModel = new MonarchChooseGeneralCardViewModel("MonarchGeneralCardEvent", game.getGameId(), monarchViewModel, playerIdList, gamePhaseState, String.format("主公 %s 已選擇 %s", chooseGeneralPlayer.getId(), generalCard.getGeneralName()), generalCard);
     }
 
-    public MonarchGeneralCardViewModel present() {
+    public MonarchChooseGeneralCardViewModel present() {
         return viewModel;
     }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class MonarchGeneralCardViewModel {
+    public static class MonarchChooseGeneralCardViewModel {
         private String name;
         private String gameId;
         private PlayerViewModel monarchPlayer;

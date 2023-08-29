@@ -6,8 +6,8 @@ import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayCardRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +36,10 @@ public class GameController {
     @PostMapping("/api/games")
     public ResponseEntity createGame(@RequestBody GameRequest gameRequest) {
         CreateGamePresenter createGamePresenter = new CreateGamePresenter();
-        GetGeneralCardPresenter getGeneralCardPresenter = new GetGeneralCardPresenter();
-        gameService.startGame(GameRequest.convertToGameDto(gameRequest), createGamePresenter, getGeneralCardPresenter);
-        webSocketBroadCast.pushCreateGameEvent(createGamePresenter);
-        webSocketBroadCast.pushMonarchGeneralCardsEvent(getGeneralCardPresenter);
+        GetGeneralCardPresenter getMonarchGeneralCardPresenter = new GetGeneralCardPresenter();
+        gameService.startGame(GameRequest.convertToGameDto(gameRequest), createGamePresenter, getMonarchGeneralCardPresenter);
+        webSocketBroadCast.pushCreateGameEventToAllPlayers(createGamePresenter);
+        webSocketBroadCast.pushMonarchGetGeneralCardsEvent(getMonarchGeneralCardPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -49,8 +49,8 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
-    public ResponseEntity<MonarchGeneralCardPresenter.MonarchGeneralCardViewModel> chooseGeneralByMonatch(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
-        MonarchGeneralCardPresenter generalCardPresenter = new MonarchGeneralCardPresenter();
+    public ResponseEntity<MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel> chooseGeneralByMonatch(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
+        MonarchChooseGeneralCardPresenter generalCardPresenter = new MonarchChooseGeneralCardPresenter();
         gameService.monarchChooseGeneral(gameId, playerId, generalId, generalCardPresenter);
         webSocketBroadCast.pushMonarchChooseGeneralsCardEvent(generalCardPresenter);
         return ResponseEntity.ok(generalCardPresenter.present());

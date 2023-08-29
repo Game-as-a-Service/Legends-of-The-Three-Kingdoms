@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.AssignRoleEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.CreateGameEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
@@ -15,6 +16,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
 import java.util.ArrayList;
@@ -123,9 +125,10 @@ public class Game {
         return List.of(assignRoleEvent);
     }
 
-    public List<GeneralCard> getMonarchCanChooseGeneralCards() {
+    public GetMonarchGeneralCardsEvent getMonarchCanChooseGeneralCards() {
         GeneralCardDeck generalCardDeck = getGeneralCardDeck();
-        return new ArrayList<>(generalCardDeck.drawGeneralCards(5));
+        List<GeneralCard> generalCards = generalCardDeck.drawGeneralCards(5);
+        return new GetMonarchGeneralCardsEvent(generalCards);
     }
 
     public Game choosePlayerGeneral(String playerId, String generalId) {

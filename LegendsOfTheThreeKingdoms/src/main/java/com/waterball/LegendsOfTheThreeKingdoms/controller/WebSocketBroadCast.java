@@ -1,10 +1,9 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,7 +18,7 @@ public class WebSocketBroadCast {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void pushCreateGameEvent(CreateGamePresenter presenter) {
+    public void pushCreateGameEventToAllPlayers(CreateGamePresenter presenter) {
         List<CreateGamePresenter.CreateGameViewModel> createGameViewModels = presenter.present();
         createGameViewModels.forEach(viewModel -> {
             try {
@@ -31,7 +30,7 @@ public class WebSocketBroadCast {
         });
     }
 
-    public void pushMonarchGeneralCardsEvent(GetGeneralCardPresenter presenter) {
+    public void pushMonarchGetGeneralCardsEvent(GetGeneralCardPresenter presenter) {
         GetGeneralCardPresenter.GetGeneralCardViewModel getGeneralCardViewModel = presenter.present();
         try {
             String generalCardMessage = objectMapper.writeValueAsString(getGeneralCardViewModel);
@@ -42,9 +41,9 @@ public class WebSocketBroadCast {
         }
     }
 
-    public void pushMonarchChooseGeneralsCardEvent(MonarchGeneralCardPresenter presenter) {
+    public void pushMonarchChooseGeneralsCardEvent(MonarchChooseGeneralCardPresenter presenter) {
         try {
-            MonarchGeneralCardPresenter.MonarchGeneralCardViewModel generalCardViewModel = presenter.present();
+            MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel generalCardViewModel = presenter.present();
             String generalCardMessage = objectMapper.writeValueAsString(generalCardViewModel);
             generalCardViewModel.getPlayerIdList().forEach(playerId ->
                     messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", generalCardViewModel.getGameId(), playerId), generalCardMessage)

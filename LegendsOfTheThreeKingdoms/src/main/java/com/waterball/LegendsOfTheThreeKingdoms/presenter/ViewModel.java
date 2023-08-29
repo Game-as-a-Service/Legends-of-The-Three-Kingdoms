@@ -2,6 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
 public abstract class ViewModel<T> {
     protected String event;
+
     protected T data;
     protected String message;
 

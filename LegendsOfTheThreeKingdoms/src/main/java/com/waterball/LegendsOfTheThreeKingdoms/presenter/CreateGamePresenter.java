@@ -44,11 +44,9 @@ public class CreateGamePresenter implements GameService.Presenter<List<CreateGam
         public String getPlayerId(){
             return playerId;
         }
-
         public void setGameId(String gameId) {
             this.gameId = gameId;
         }
-
         public void setPlayerId(String playerId) {
             this.playerId = playerId;
         }
@@ -63,11 +61,9 @@ public class CreateGamePresenter implements GameService.Presenter<List<CreateGam
         public CreateGameDataViewModel(List<SeatViewModel> seats) {
             this.seats = seats;
         }
-
         public List<SeatViewModel> getSeats() {
             return seats;
         }
-
         public void setSeats(List<SeatViewModel> seats) {
             this.seats = seats;
         }
