@@ -1,50 +1,87 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerViewModel;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetGeneralCardByOthersEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.MonarchChooseGeneralCardEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+
+import static com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel.getEvent;
+import static com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel.getEvents;
 
 @RequiredArgsConstructor
 public class MonarchChooseGeneralCardPresenter implements GameService.Presenter<MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel> {
 
     private MonarchChooseGeneralCardViewModel viewModel;
+    private List<GetGeneralCardByOthersViewModel> generalCardByOtherViewModels;
 
-    public void renderGame(GameDto game, PlayerDto chooseGeneralPlayer) {
-        List<PlayerDto> players = game.getPlayers();
-        PlayerViewModel monarchViewModel = new PlayerViewModel(chooseGeneralPlayer);
-        List<String> playerIdList = players.stream().map(PlayerDto::getId).collect(Collectors.toList());
-        String gamePhaseState = game.getGamePhaseState();
-        GeneralCard generalCard = chooseGeneralPlayer.getGeneralCard();
 
-        // 主公選擇完畢: 推送主公選擇的武將
+    public void renderEvents(List<DomainEvent> events) {
+        Optional<MonarchChooseGeneralCardEvent> monarchChooseGeneralCardEvent = getEvent(events, MonarchChooseGeneralCardEvent.class);
+        viewModel = monarchChooseGeneralCardEvent
+                .map(e -> new MonarchChooseGeneralCardViewModel(e.getGameId(), e.getPlayerIds(), "MonarchGeneralChosenEvent", new MonarchChooseGeneralDataViewModel(e.getGeneralCard().getGeneralID()), e.getMessage()))
+                .orElse(null);
+        String gameId = viewModel.gameId;
 
-        viewModel = new MonarchChooseGeneralCardViewModel("MonarchGeneralCardEvent", game.getGameId(), monarchViewModel, playerIdList, gamePhaseState, String.format("主公 %s 已選擇 %s", chooseGeneralPlayer.getId(), generalCard.getGeneralName()), generalCard);
+        List<GetGeneralCardByOthersEvent> getGeneralCardByOthersEvent = getEvents(events, GetGeneralCardByOthersEvent.class);
+
+        generalCardByOtherViewModels = getGeneralCardByOthersEvent
+                .stream()
+                .map(e -> new GetGeneralCardByOthersViewModel(gameId, e.getPlayerId(), "getGeneralCardEventByOthers", e.getGeneralCardsList().stream().map(generalCard -> generalCard.getGeneralID()).toList(), e.getMessage()))
+                .toList();
     }
 
+    @Override
     public MonarchChooseGeneralCardViewModel present() {
         return viewModel;
     }
 
+    public List<GetGeneralCardByOthersViewModel> presentGeneralCardByOthers(){
+        return generalCardByOtherViewModels;
+    }
+
+
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MonarchChooseGeneralCardViewModel {
-        private String name;
+    public static class MonarchChooseGeneralCardViewModel extends ViewModel<MonarchChooseGeneralDataViewModel> {
         private String gameId;
-        private PlayerViewModel monarchPlayer;
-        private List<String> playerIdList;
-        private String gamePhase;
-        private String message;
-        private GeneralCard monarchGeneralCard;
+        private List<String> playerIds;
+
+        public MonarchChooseGeneralCardViewModel(String gameId, List<String> playerIds, String event, MonarchChooseGeneralDataViewModel data, String message) {
+            super(event, data, message);
+            this.gameId = gameId;
+            this.playerIds = playerIds;
+        }
+
     }
+
+    @Data
+    @NoArgsConstructor
+    public static class GetGeneralCardByOthersViewModel extends ViewModel<List<String>> {
+        private String gameId;
+        private String playerId;
+
+        public GetGeneralCardByOthersViewModel(String gameId, String playerId, String event, List<String> data, String message) {
+            super(event, data, message);
+            this.gameId = gameId;
+            this.playerId = playerId;
+        }
+
+        public int size() {
+            return data.size();
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class MonarchChooseGeneralDataViewModel {
+        String monarchGeneralCard;
+    }
+
 }
 

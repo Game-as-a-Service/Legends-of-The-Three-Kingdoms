@@ -49,12 +49,13 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
-    public ResponseEntity<MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel> chooseGeneralByMonatch(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
-        MonarchChooseGeneralCardPresenter generalCardPresenter = new MonarchChooseGeneralCardPresenter();
-        gameService.monarchChooseGeneral(gameId, playerId, generalId, generalCardPresenter);
-        webSocketBroadCast.pushMonarchChooseGeneralsCardEvent(generalCardPresenter);
-        return ResponseEntity.ok(generalCardPresenter.present());
+    public ResponseEntity chooseGeneralByMonarch(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
+        MonarchChooseGeneralCardPresenter monarchChooseGeneralCardPresenter = new MonarchChooseGeneralCardPresenter();
+        gameService.monarchChooseGeneral(gameId, playerId, generalId, monarchChooseGeneralCardPresenter);
+        webSocketBroadCast.pushMonarchChooseGeneralsCardEvent(monarchChooseGeneralCardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
+
 
     @PostMapping("/api/games/{gameId}/player:playCard")
     public ResponseEntity<GameResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {

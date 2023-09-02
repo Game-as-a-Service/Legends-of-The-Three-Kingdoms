@@ -56,7 +56,7 @@ public class GameService {
         List<Player> players = convertToPlayers(playerDtos);
         Game game = new Game(gameDto.getGameId(), players);
         repository.save(game);
-        return List.of(new CreateGameEvent(game.getGameId(),game.getSeatingChart().getPlayers()));
+        return List.of(new CreateGameEvent(game.getGameId(), game.getSeatingChart().getPlayers()));
     }
 
     public GameDto getGame(String gameId) {
@@ -73,10 +73,9 @@ public class GameService {
 
     public void monarchChooseGeneral(String gameId, String playerId, String generalId, MonarchChooseGeneralCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        GameDto gameDto = convertToGameDto(game.monarchChoosePlayerGeneral(playerId, generalId));
-        PlayerDto chooseGeneralPlayer = convertToPlayerDto(game.getPlayer(playerId));
+        List<DomainEvent> events = game.monarchChoosePlayerGeneral(playerId, generalId);
         repository.save(game);
-        presenter.renderGame(gameDto, chooseGeneralPlayer);
+        presenter.renderEvents(events);
     }
 
     public GameDto finishAction(String gameId, String playerId) {
@@ -144,6 +143,7 @@ public class GameService {
 
     public interface Presenter<T> {
         T present();
+
     }
 
 

@@ -1,9 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.AssignRoleEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.CreateGameEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
@@ -131,19 +128,28 @@ public class Game {
         return new GetMonarchGeneralCardsEvent(generalCards);
     }
 
-    public Game choosePlayerGeneral(String playerId, String generalId) {
-        Player player = getPlayer(playerId);
-        GeneralCard generalCard = GeneralCard.generals.get(generalId);
-        player.setGeneralCard(generalCard);
-        return this;
-    }
-
-    public Game monarchChoosePlayerGeneral(String playerId, String generalId) {
+    public List<DomainEvent> monarchChoosePlayerGeneral(String playerId, String generalId) {
         Player player = getPlayer(playerId);
         if (!player.getRoleCard().getRole().equals(Role.MONARCH)) {
             throw new RuntimeException(String.format("Player Id %s not MONARCH.", playerId));
         }
-        return choosePlayerGeneral(playerId, generalId);
+        GeneralCard generalCard = GeneralCard.generals.get(generalId);
+        player.setGeneralCard(generalCard);
+        DomainEvent monarchChooseGeneralCardEvent = new MonarchChooseGeneralCardEvent(generalCard, String.format("主公已選擇 %s", generalCard.getGeneralName()), gameId, players.stream().map(Player::getId).collect(Collectors.toList()));
+
+        List<DomainEvent> getGeneralCardEventByOthers = getOtherCanChooseGeneralCards();
+        getGeneralCardEventByOthers.add(monarchChooseGeneralCardEvent);
+
+        return getGeneralCardEventByOthers;
+    }
+
+    private List<DomainEvent> getOtherCanChooseGeneralCards() {
+        return players.stream()
+                .filter(p -> !p.getRoleCard().getRole().equals(Role.MONARCH))
+                .map(p -> {
+                    List<GeneralCard> generalCards = generalCardDeck.drawGeneralCards(3);
+                  return new GetGeneralCardByOthersEvent(p.getId(), generalCards);
+             }).collect(Collectors.toList());
     }
 
     public void assignHpToPlayers() {
