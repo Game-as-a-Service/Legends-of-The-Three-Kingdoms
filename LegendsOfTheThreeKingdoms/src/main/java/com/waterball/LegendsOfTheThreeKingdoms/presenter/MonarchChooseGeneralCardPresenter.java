@@ -61,6 +61,7 @@ public class MonarchChooseGeneralCardPresenter implements GameService.Presenter<
 
     @Data
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class GetGeneralCardByOthersViewModel extends ViewModel<List<String>> {
         private String gameId;
         private String playerId;
@@ -77,8 +78,8 @@ public class MonarchChooseGeneralCardPresenter implements GameService.Presenter<
     }
 
     @Data
-    @AllArgsConstructor
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class MonarchChooseGeneralDataViewModel {
         String monarchGeneralCard;
     }

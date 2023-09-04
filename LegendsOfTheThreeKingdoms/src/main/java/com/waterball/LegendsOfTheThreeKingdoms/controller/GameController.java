@@ -6,6 +6,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayCardRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.FindGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
@@ -37,15 +38,18 @@ public class GameController {
     public ResponseEntity createGame(@RequestBody GameRequest gameRequest) {
         CreateGamePresenter createGamePresenter = new CreateGamePresenter();
         GetGeneralCardPresenter getMonarchGeneralCardPresenter = new GetGeneralCardPresenter();
-        gameService.startGame(GameRequest.convertToGameDto(gameRequest), createGamePresenter, getMonarchGeneralCardPresenter);
+        gameService.startGame(gameRequest.toUseCaseRequest(), createGamePresenter, getMonarchGeneralCardPresenter);
         webSocketBroadCast.pushCreateGameEventToAllPlayers(createGamePresenter);
         webSocketBroadCast.pushMonarchGetGeneralCardsEvent(getMonarchGeneralCardPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @GetMapping("/api/games/{gameId}")
-    public ResponseEntity<GameResponse> getGame(@PathVariable String gameId) {
-        return ResponseEntity.ok(new GameResponse(gameService.getGame(gameId)));
+    public ResponseEntity findGameById(@RequestParam String playerId, @PathVariable String gameId){
+        FindGamePresenter findGamePresenter = new FindGamePresenter();
+        gameService.findGameById(gameId, playerId, findGamePresenter);
+        webSocketBroadCast.pushFindGameEvent(findGamePresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
@@ -55,7 +59,6 @@ public class GameController {
         webSocketBroadCast.pushMonarchChooseGeneralsCardEvent(monarchChooseGeneralCardPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
-
 
     @PostMapping("/api/games/{gameId}/player:playCard")
     public ResponseEntity<GameResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {

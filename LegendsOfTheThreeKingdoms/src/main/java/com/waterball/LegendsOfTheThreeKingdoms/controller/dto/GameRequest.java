@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.dto;
 
+import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
 import lombok.AllArgsConstructor;
@@ -33,5 +34,9 @@ public class GameRequest implements Serializable {
         gameDto.setGameId(gameId);
         gameDto.setPlayers(playerDtos);
         return gameDto;
+    }
+
+    public GameService.CreateGameRequest toUseCaseRequest() {
+        return new GameService.CreateGameRequest(this.gameId,this.getPlayers());
     }
 }

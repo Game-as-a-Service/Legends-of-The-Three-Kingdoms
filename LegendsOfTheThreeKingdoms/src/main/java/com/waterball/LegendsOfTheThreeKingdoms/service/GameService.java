@@ -1,22 +1,24 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.CreateGameEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.FindGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -27,18 +29,22 @@ public class GameService {
         this.repository = repository;
     }
 
-    public GameDto startGame(GameDto gameDto, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getMonarchGeneralCardPresenter) {
-
+    public void startGame(CreateGameRequest createGameRequest, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getMonarchGeneralCardPresenter) {
         // 創建遊戲
-        List<DomainEvent> createGameEvent = createGame(gameDto);
-        // 分配角色
-        Game game = repository.findGameById(gameDto.getGameId());
+        List<Player> players = createGameRequest.getPlayers().stream().map(playerId -> {
+            Player player = new Player();
+            player.setId(playerId);
+            return player;
+        }).collect(Collectors.toList());
+
         // 改
-        List<DomainEvent> assignRolesEvent = game.assignRoles();
+        Game game = new Game(createGameRequest.getGameId(), players);
+        game.assignRoles();
+
         // 存
         repository.save(game);
+
         // 推
-        GameDto returnGameDto = convertToGameDto(game);
         createGamePresenter.renderGame(game);
 
         // 主公抽可選擇的武將牌
@@ -47,21 +53,18 @@ public class GameService {
         // 推播給主公
         getMonarchGeneralCardPresenter.renderGame(event, game.getGameId(), game.getMonarchPlayerId());
 
-        return returnGameDto;
     }
 
-
-    private List<DomainEvent> createGame(GameDto gameDto) {
-        List<PlayerDto> playerDtos = gameDto.getPlayers();
-        List<Player> players = convertToPlayers(playerDtos);
-        Game game = new Game(gameDto.getGameId(), players);
-        repository.save(game);
-        return List.of(new CreateGameEvent(game.getGameId(), game.getSeatingChart().getPlayers()));
-    }
-
-    public GameDto getGame(String gameId) {
+    public void monarchChooseGeneral(String gameId, String playerId, String generalId, MonarchChooseGeneralCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        return convertToGameDto(game);
+        List<DomainEvent> events = game.monarchChoosePlayerGeneral(playerId, generalId);
+        repository.save(game);
+        presenter.renderEvents(events);
+    }
+
+    public void findGameById(String gameId, String playerId, FindGamePresenter presenter) {
+        Game game = repository.findGameById(gameId);
+        presenter.renderGame(game, playerId);
     }
 
     public GameDto playCard(String gameId, String playerId, String cardId, String targetPlayerId, String playType) {
@@ -71,12 +74,6 @@ public class GameService {
         return convertToGameDto(game);
     }
 
-    public void monarchChooseGeneral(String gameId, String playerId, String generalId, MonarchChooseGeneralCardPresenter presenter) {
-        Game game = repository.findGameById(gameId);
-        List<DomainEvent> events = game.monarchChoosePlayerGeneral(playerId, generalId);
-        repository.save(game);
-        presenter.renderEvents(events);
-    }
 
     public GameDto finishAction(String gameId, String playerId) {
         Game game = repository.findGameById(gameId);
@@ -102,13 +99,6 @@ public class GameService {
         return playerDtos;
     }
 
-    private List<Player> convertToPlayers(List<PlayerDto> playerDtos) {
-        List<Player> players = new ArrayList<>();
-        for (PlayerDto playerDto : playerDtos) {
-            players.add(convertToPlayer(playerDto));
-        }
-        return players;
-    }
 
     private PlayerDto convertToPlayerDto(Player player) {
         PlayerDto playerDto = new PlayerDto();
@@ -119,21 +109,6 @@ public class GameService {
         return playerDto;
     }
 
-    private Player convertToPlayer(PlayerDto playerDto) {
-        Player player = new Player();
-        player.setId(playerDto.getId());
-        player.setRoleCard(playerDto.getRoleCard());
-        player.setGeneralCard(playerDto.getGeneralCard());
-        player.setHand(playerDto.getHand());
-        return player;
-    }
-
-    public GeneralCardDto convertCardToGeneralDto(GeneralCard card) {
-        GeneralCardDto cardDto = new GeneralCardDto();
-        cardDto.setGeneralID(card.getGeneralID());
-        cardDto.setGeneralName(card.getGeneralName());
-        return cardDto;
-    }
 
     public GameDto discardCard(String gameId, List<String> cardIds) {
         Game game = repository.findGameById(gameId);
@@ -143,8 +118,14 @@ public class GameService {
 
     public interface Presenter<T> {
         T present();
-
     }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateGameRequest {
+        private String gameId;
+        private List<String> players;
+    }
 
 }

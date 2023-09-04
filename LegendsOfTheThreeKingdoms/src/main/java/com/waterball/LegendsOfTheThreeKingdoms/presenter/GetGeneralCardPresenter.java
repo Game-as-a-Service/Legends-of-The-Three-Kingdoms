@@ -25,6 +25,9 @@ public class GetGeneralCardPresenter implements GameService.Presenter<GetGeneral
         return viewModel;
     }
 
+
+    @Data
+    @NoArgsConstructor
     public static class GetGeneralCardViewModel extends ViewModel<List<String>> {
         private String gameId;
         private String playerId;
@@ -35,21 +38,6 @@ public class GetGeneralCardPresenter implements GameService.Presenter<GetGeneral
             this.playerId = playerId;
         }
 
-        public String getGameId() {
-            return gameId;
-        }
-
-        public String getPlayerId() {
-            return playerId;
-        }
-
-        public void setGameId(String gameId) {
-            this.gameId = gameId;
-        }
-
-        public void setPlayerId(String playerId) {
-            this.playerId = playerId;
-        }
     }
 
 }

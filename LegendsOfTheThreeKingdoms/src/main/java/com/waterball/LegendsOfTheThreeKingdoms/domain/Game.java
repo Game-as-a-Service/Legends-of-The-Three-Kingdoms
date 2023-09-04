@@ -109,7 +109,7 @@ public class Game {
         return generalCardDeck;
     }
 
-    public List<DomainEvent> assignRoles() {
+    public void assignRoles() {
         if (players.size() < 4) {
             throw new IllegalStateException("The number of players must bigger than 4.");
         }
@@ -118,8 +118,6 @@ public class Game {
         for (int i = 0; i < roleCards.size(); i++) {
             players.get(i).setRoleCard(roleCards.get(i));
         }
-        AssignRoleEvent assignRoleEvent = new AssignRoleEvent();
-        return List.of(assignRoleEvent);
     }
 
     public GetMonarchGeneralCardsEvent getMonarchCanChooseGeneralCards() {

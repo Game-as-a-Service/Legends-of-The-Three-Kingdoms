@@ -15,11 +15,9 @@ public class GameOver extends GamePhase {
     @Override
     public void execute() {
         List<Player> players = game.getPlayers();
-
         List<Player> winners = players.stream().filter(player ->
                 player.getRoleCard().getRole().equals(Role.REBEL)
         ).toList();
         game.setWinners(winners);
     }
-
 }

@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.FindGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,10 +58,19 @@ public class WebSocketBroadCast {
                 String json = objectMapper.writeValueAsString(getGeneralCardByOthersViewModel);
                 messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", getGeneralCardByOthersViewModel.getGameId(), getGeneralCardByOthersViewModel.getPlayerId()), json);
             }
-
-
         } catch (Exception e) {
             System.err.println("****************** pushGeneralsCardEvent ");
+            e.printStackTrace();
+        }
+    }
+
+    public void pushFindGameEvent(FindGamePresenter presenter) {
+        FindGamePresenter.FindGameViewModel findGameViewModel = presenter.present();
+        try {
+            String findGameJson = objectMapper.writeValueAsString(findGameViewModel);
+            messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", findGameViewModel.getGameId(), findGameViewModel.getPlayerId()), findGameJson);
+        } catch (Exception e){
+            System.err.println("****************** pushFindGameEvent ");
             e.printStackTrace();
         }
     }

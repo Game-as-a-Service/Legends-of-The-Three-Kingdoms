@@ -16,6 +16,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.FindGamePresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
@@ -52,6 +53,7 @@ import java.util.stream.Collectors;
 
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -131,11 +133,15 @@ public class GameTest {
     public void happyPath() throws Exception {
         // initial game
         shouldCreateGame();
+
         shouldChooseGeneralsByMonarch();
+
         shouldGetGeneralCardsByOthers();
 
         shouldChooseGeneralsByOthers();
+
         shouldInitialHP();
+
         shouldDealCardToPlayers();
 
         // Round 1 hp-0 playerA 君主本人
@@ -198,7 +204,6 @@ public class GameTest {
         String requestBody = objectMapper.writeValueAsString(
                 new GameRequest("my-id", List.of("player-a", "player-b", "player-c", "player-d")));
 
-
         try (MockedStatic<ShuffleWrapper> mockedStatic = Mockito.mockStatic(ShuffleWrapper.class)) {
             mockedStatic.when(() -> ShuffleWrapper.shuffle(Mockito.anyList()))
                     .thenAnswer(invocation -> null);
@@ -206,10 +211,6 @@ public class GameTest {
             this.mockMvc.perform(post("/api/games")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
-                    .andExpect(status().isOk());
-
-            // find the game
-            this.mockMvc.perform(get("/api/games/my-id")).andDo(print())
                     .andExpect(status().isOk());
         }
 
@@ -235,7 +236,6 @@ public class GameTest {
         // WebSocket 推播給前端資訊 (主公)
         checkPlayerAGetCreateGameEvent();
 
-
         String playerBGeneralEvent = map.get("player-b").poll(5, TimeUnit.SECONDS);
         assertNotNull(playerBGeneralEvent);
         CreateGamePresenter.CreateGameViewModel generalCardViewModelB = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
@@ -253,6 +253,13 @@ public class GameTest {
         CreateGamePresenter.CreateGameViewModel generalCardViewModelD = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelD);
         assertEquals("請等待主公選擇武將", generalCardViewModelD.getMessage());
+
+        // find the game
+        this.mockMvc.perform(get("/api/games/my-id?playerId=player-a")).andDo(print())
+                .andExpect(status().isOk());
+
+        // WebSocket 推播給前端資訊
+        checkGetGameEvent();
     }
 
     private void checkPlayerAGetCreateGameEvent() throws InterruptedException, JsonProcessingException {
@@ -288,6 +295,17 @@ public class GameTest {
         assertEquals("SHU002", monarchGetGeneralViewModel.getData().get(3));
         assertEquals("SHU003", monarchGetGeneralViewModel.getData().get(4));
         assertEquals(5, monarchGetGeneralViewModel.getData().size());
+    }
+
+    private void checkGetGameEvent() throws InterruptedException, JsonProcessingException {
+        String findGameViewModelMessage = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        FindGamePresenter.FindGameViewModel findGameViewModel = objectMapper.readValue(findGameViewModelMessage, FindGamePresenter.FindGameViewModel.class);
+        assertNotNull(findGameViewModelMessage);
+        assertEquals("", findGameViewModel.getMessage());
+        assertEquals("player-a", findGameViewModel.getData().getSeats().get(0).getId());
+        assertEquals("player-b", findGameViewModel.getData().getSeats().get(1).getId());
+        assertEquals("player-c", findGameViewModel.getData().getSeats().get(2).getId());
+        assertEquals("player-d", findGameViewModel.getData().getSeats().get(3).getId());
     }
 
     private void shouldChooseGeneralsByMonarch() throws Exception{
