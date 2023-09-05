@@ -2,10 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.FindGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -64,12 +61,25 @@ public class WebSocketBroadCast {
         }
     }
 
+    public void pushInitialEndEvent(InitialEndPresenter presenter) {
+        List<InitialEndPresenter.InitialEndViewModel> initialEndViewModels = presenter.present();
+        try {
+            for (InitialEndPresenter.InitialEndViewModel initialEndViewModel : initialEndViewModels) {
+                String initialEndJson = objectMapper.writeValueAsString(initialEndViewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", initialEndViewModel.getGameId(), initialEndViewModel.getPlayerId()), initialEndJson);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushInitialEndEvent ");
+            e.printStackTrace();
+        }
+    }
+
     public void pushFindGameEvent(FindGamePresenter presenter) {
         FindGamePresenter.FindGameViewModel findGameViewModel = presenter.present();
         try {
             String findGameJson = objectMapper.writeValueAsString(findGameViewModel);
             messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", findGameViewModel.getGameId(), findGameViewModel.getPlayerId()), findGameJson);
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("****************** pushFindGameEvent ");
             e.printStackTrace();
         }

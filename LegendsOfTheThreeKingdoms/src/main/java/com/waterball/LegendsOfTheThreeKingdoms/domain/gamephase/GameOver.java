@@ -10,6 +10,7 @@ public class GameOver extends GamePhase {
 
     public GameOver(Game game) {
         super(game);
+        this.phaseName  = "GameOver";
     }
 
     @Override

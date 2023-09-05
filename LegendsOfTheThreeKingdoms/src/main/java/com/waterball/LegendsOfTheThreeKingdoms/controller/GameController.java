@@ -1,14 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.FinishRoundRequest;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayCardRequest;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.FindGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +46,19 @@ public class GameController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PostMapping("/api/games/{gameId}/{playerId}/general/{generalId}")
-    public ResponseEntity chooseGeneralByMonarch(@PathVariable String gameId, @PathVariable String playerId, @PathVariable String generalId) {
+    @PostMapping("/api/games/{gameId}/player:monarchChooseGeneral")
+    public ResponseEntity chooseGeneralByMonarch(@PathVariable String gameId, @RequestBody ChooseGeneralRequest request) {
         MonarchChooseGeneralCardPresenter monarchChooseGeneralCardPresenter = new MonarchChooseGeneralCardPresenter();
-        gameService.monarchChooseGeneral(gameId, playerId, generalId, monarchChooseGeneralCardPresenter);
+        gameService.monarchChooseGeneral(gameId, request.toMonarchChooseGeneralRequest(), monarchChooseGeneralCardPresenter);
         webSocketBroadCast.pushMonarchChooseGeneralsCardEvent(monarchChooseGeneralCardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:otherChooseGeneral")
+    public ResponseEntity chooseGeneralByOthers(@PathVariable String gameId, @RequestBody ChooseGeneralRequest request) {
+        InitialEndPresenter initialEndPresenter = new InitialEndPresenter();
+        gameService.othersChoosePlayerGeneral(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter);
+        webSocketBroadCast.pushInitialEndEvent(initialEndPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

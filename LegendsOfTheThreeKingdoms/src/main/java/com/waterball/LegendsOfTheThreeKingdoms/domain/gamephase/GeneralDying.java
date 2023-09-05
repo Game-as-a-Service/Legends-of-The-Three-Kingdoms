@@ -9,6 +9,7 @@ public class GeneralDying extends GamePhase {
 
     public GeneralDying(Game game) {
         super(game);
+        this.phaseName  = "GeneralDying";
     }
 
     @Override

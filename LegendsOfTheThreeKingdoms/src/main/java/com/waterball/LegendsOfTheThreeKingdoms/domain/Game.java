@@ -13,16 +13,15 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Game {
-
     private String gameId;
     private List<Player> players;
     private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
@@ -31,7 +30,6 @@ public class Game {
     private SeatingChart seatingChart;
     private Round currentRound;
     private GamePhase gamePhase;
-
     private List<Player> winners;
 
     public Game(String gameId, List<Player> players) {
@@ -141,13 +139,57 @@ public class Game {
         return getGeneralCardEventByOthers;
     }
 
+    public List<DomainEvent> othersChoosePlayerGeneral(String playerId, String generalId) {
+        Player player = getPlayer(playerId);
+        GeneralCard generalCard = GeneralCard.generals.get(generalId);
+        player.setGeneralCard(generalCard);
+
+        if (players.stream().anyMatch(currentPlayer -> currentPlayer.getGeneralCard() == null)) {
+            return Collections.emptyList();
+        }
+
+        assignHpToPlayers();
+        assignHandCardToPlayers();
+        currentRound = new Round(players.get(0));
+        this.enterPhase(new Normal(this));
+
+        RoundEvent roundEvent = new RoundEvent(
+                currentRound.getRoundPhase().toString(),
+                currentRound.getCurrentRoundPlayer().getId(),
+                Optional.ofNullable(currentRound.getActivePlayer()).map(activeplayer->activeplayer.getId()).orElse(""),
+                Optional.ofNullable(currentRound.getDyingPlayer()).map(dyingPlayer->dyingPlayer.getId()).orElse(""),
+                currentRound.isShowKill()
+        );
+
+        List<PlayerEvent> playerEvents = players.stream().map(p ->
+                new PlayerEvent(p.getId(),
+                        p.getGeneralCard().getGeneralID(),
+                        p.getRoleCard().getRole().getRole(),
+                        p.getHP(),
+                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList())),
+                        Collections.emptyList(),
+                        Collections.emptyList())).toList();
+
+        DomainEvent initialEndEvent = new InitialEndEvent(gameId, playerEvents, roundEvent, this.getGamePhase().getPhaseName());
+        return List.of(initialEndEvent);
+    }
+
+    /*
+     private String id;
+        private String generalId;
+        private String roleId;
+        private int hp;
+        private HandEvent hand;
+        private List<String> equipments;
+        private List<String> delayScrolls;
+     */
     private List<DomainEvent> getOtherCanChooseGeneralCards() {
         return players.stream()
                 .filter(p -> !p.getRoleCard().getRole().equals(Role.MONARCH))
                 .map(p -> {
                     List<GeneralCard> generalCards = generalCardDeck.drawGeneralCards(3);
-                  return new GetGeneralCardByOthersEvent(p.getId(), generalCards);
-             }).collect(Collectors.toList());
+                    return new GetGeneralCardByOthersEvent(p.getId(), generalCards);
+                }).collect(Collectors.toList());
     }
 
     public void assignHpToPlayers() {
@@ -164,8 +206,6 @@ public class Game {
             player.setHand(new Hand());
             player.getHand().setCards(deck.deal(4));
         });
-        currentRound = new Round(players.get(0));
-        this.enterPhase(new Normal(this));
     }
 
     @Override

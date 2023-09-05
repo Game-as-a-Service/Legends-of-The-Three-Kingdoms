@@ -1,13 +1,11 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.ChooseGeneralRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.FindGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GetGeneralCardPresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.MonarchChooseGeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.PlayerDto;
@@ -55,9 +53,16 @@ public class GameService {
 
     }
 
-    public void monarchChooseGeneral(String gameId, String playerId, String generalId, MonarchChooseGeneralCardPresenter presenter) {
+    public void monarchChooseGeneral(String gameId, MonarchChooseGeneralRequest request, MonarchChooseGeneralCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        List<DomainEvent> events = game.monarchChoosePlayerGeneral(playerId, generalId);
+        List<DomainEvent> events = game.monarchChoosePlayerGeneral(request.getPlayerId(), request.getGeneralId());
+        repository.save(game);
+        presenter.renderEvents(events);
+    }
+
+    public void othersChoosePlayerGeneral(String gameId, MonarchChooseGeneralRequest request, InitialEndPresenter presenter) {
+        Game game = repository.findGameById(gameId);
+        List<DomainEvent> events = game.othersChoosePlayerGeneral(request.getPlayerId(), request.getGeneralId());
         repository.save(game);
         presenter.renderEvents(events);
     }
@@ -128,4 +133,19 @@ public class GameService {
         private List<String> players;
     }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MonarchChooseGeneralRequest {
+        private String playerId;
+        private String generalId;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OthersChooseGeneralRequest {
+        private String playerId;
+        private String generalId;
+    }
 }
