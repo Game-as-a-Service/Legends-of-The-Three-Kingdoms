@@ -92,17 +92,20 @@ public class InitialEndPresenter implements GameService.Presenter<List<InitialEn
     private List<PlayerDataViewModel> hiddenRoleInformationByPlayer(List<PlayerDataViewModel> viewModels, String playerId) {
         List<PlayerDataViewModel> playerDataViewModels = new ArrayList<>();
 
-        for (int i = 0; i < viewModels.size(); i++) {
-            PlayerDataViewModel viewModel = viewModels.get(i);
+        for (PlayerDataViewModel viewModel : viewModels){
+            playerDataViewModels.add(PlayerDataViewModel.deepCopy(viewModel));
+        }
+
+        for (int i = 0; i < playerDataViewModels.size(); i++) {
+            PlayerDataViewModel viewModel = playerDataViewModels.get(i);
             if (!viewModel.getId().equals(playerId)) {
-                if (!viewModel.getRoleId().equals(Role.MONARCH.name())){
+                if (!viewModel.getRoleId().equals(Role.MONARCH.getRole())){
                     viewModel.setRoleId("");
                     viewModel.setHand(new HandEvent(0, new ArrayList<>()));
                 } else {
                     viewModel.setHand(new HandEvent(0,new ArrayList<>()));
                 }
             }
-            playerDataViewModels.add(PlayerDataViewModel.deepCopy(viewModel));
         }
         return playerDataViewModels;
     }
