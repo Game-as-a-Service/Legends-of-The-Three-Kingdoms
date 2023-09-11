@@ -69,7 +69,7 @@ public class WebSocketBroadCast {
                 messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", initialEndViewModel.getGameId(), initialEndViewModel.getPlayerId()), initialEndJson);
             }
         } catch (Exception e) {
-            System.err.println("****************** pushInitialEndEvent ");
+            System.err.println("****************** pushInitialEndEvent error!!!!!!");
             e.printStackTrace();
         }
     }

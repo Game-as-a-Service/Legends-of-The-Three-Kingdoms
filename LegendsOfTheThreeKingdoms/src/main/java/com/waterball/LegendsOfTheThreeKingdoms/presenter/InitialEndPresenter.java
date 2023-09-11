@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,7 @@ public class InitialEndPresenter implements GameService.Presenter<List<InitialEn
 
 
     public void renderEvents(List<DomainEvent> events) {
-        if (events.size() > 0) {
+        if (!events.isEmpty()) {
             viewModels = new ArrayList<>();
             InitialEndEvent event = getEvent(events, InitialEndEvent.class).orElseThrow(RuntimeException::new);
             List<PlayerDataViewModel> playerDataViewModels = event.getSeats().stream().map(playerEvent -> new PlayerDataViewModel(playerEvent.getId(), playerEvent.getGeneralId(), playerEvent.getRoleId(), playerEvent.getHp(), playerEvent.getHand(), playerEvent.getEquipments(), playerEvent.getEquipments())).collect(Collectors.toList());
@@ -31,6 +32,8 @@ public class InitialEndPresenter implements GameService.Presenter<List<InitialEn
                 InitialEndDataViewModel initialEndDataViewModel = new InitialEndDataViewModel(hiddenRoleInformationByPlayer(playerDataViewModels, viewModel.getId()), roundDataViewModel, event.getGamePhase());
                 viewModels.add(new InitialEndViewModel(event.getGameId(), initialEndDataViewModel, "", viewModel.getId()));
             }
+        } else {
+            viewModels = Collections.emptyList();
         }
     }
 
@@ -92,22 +95,30 @@ public class InitialEndPresenter implements GameService.Presenter<List<InitialEn
     private List<PlayerDataViewModel> hiddenRoleInformationByPlayer(List<PlayerDataViewModel> viewModels, String playerId) {
         List<PlayerDataViewModel> playerDataViewModels = new ArrayList<>();
 
-        for (PlayerDataViewModel viewModel : viewModels){
+        for (PlayerDataViewModel viewModel : viewModels) {
             playerDataViewModels.add(PlayerDataViewModel.deepCopy(viewModel));
         }
 
         for (int i = 0; i < playerDataViewModels.size(); i++) {
             PlayerDataViewModel viewModel = playerDataViewModels.get(i);
-            if (!viewModel.getId().equals(playerId)) {
-                if (!viewModel.getRoleId().equals(Role.MONARCH.getRole())){
+            int size = viewModel.getHand().getSize();
+            if (isNotCurrentPlayer(playerId, viewModel)) {
+                if (isNotMonarch(viewModel)) {
                     viewModel.setRoleId("");
-                    viewModel.setHand(new HandEvent(0, new ArrayList<>()));
-                } else {
-                    viewModel.setHand(new HandEvent(0,new ArrayList<>()));
                 }
+                viewModel.setHand(new HandEvent(size, new ArrayList<>()));
             }
         }
         return playerDataViewModels;
     }
-    
+
+    private static boolean isNotCurrentPlayer(String playerId, PlayerDataViewModel viewModel) {
+        return !viewModel.getId().equals(playerId);
+    }
+
+    private static boolean isNotMonarch(PlayerDataViewModel viewModel) {
+        return !viewModel.getRoleId().equals(Role.MONARCH.getRole());
+    }
+
+
 }

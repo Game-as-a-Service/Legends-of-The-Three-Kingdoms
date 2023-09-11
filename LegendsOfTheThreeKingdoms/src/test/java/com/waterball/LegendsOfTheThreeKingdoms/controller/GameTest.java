@@ -136,9 +136,9 @@ public class GameTest {
 
         shouldChooseGeneralsByOthers();
 
-        shouldInitialHP();
+//        shouldInitialHP();
 
-        shouldDealCardToPlayers();
+//        shouldDealCardToPlayers();
 
         shouldGetInitialEndGameStatus();
 
@@ -213,19 +213,17 @@ public class GameTest {
         }
 
         Stack<HandCard> stack = new Stack<>();
-
         Arrays.stream(values())
                 .filter(x -> x.getCardName().equals("閃"))
                 .map(Dodge::new)
                 .forEach(stack::push);
-
         Arrays.stream(values())
                 .filter(x -> x.getCardName().equals("殺"))
                 .map(Kill::new)
                 .forEach(stack::push);
-
         Game game = inMemoryGameRepository.findGameById("my-id");
         game.setDeck(new Deck(stack));
+
         assertEquals(Role.MONARCH, game.getPlayer("player-a").getRoleCard().getRole());
         assertEquals(Role.MINISTER, game.getPlayer("player-b").getRoleCard().getRole());
         assertEquals(Role.REBEL, game.getPlayer("player-c").getRoleCard().getRole());
@@ -468,67 +466,80 @@ public class GameTest {
                 .count());
     }
 
-    public void shouldInitialHP() {
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        game.assignHpToPlayers();
-
-        assertEquals(5, game.getPlayer("player-a").getHP());
-        assertEquals(4, game.getPlayer("player-b").getHP());
-        assertEquals(3, game.getPlayer("player-c").getHP());
-        assertEquals(3, game.getPlayer("player-d").getHP());
-    }
-
-    // 推播 所有玩家的武將 && 主公
-    private void shouldDealCardToPlayers() {
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        game.assignHandCardToPlayers();
-
-        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
-        assertEquals(4, game.getPlayer("player-a").getHandSize());
-        assertEquals(4, game.getPlayer("player-b").getHandSize());
-        assertEquals(4, game.getPlayer("player-c").getHandSize());
-        assertEquals(4, game.getPlayer("player-d").getHandSize());
-    }
-
     // 推播 所有玩家的武將 && 手牌
     private void shouldGetInitialEndGameStatus() throws InterruptedException, JsonProcessingException {
+        List<List<String>> allRolesList = getDumpRoleLists();
+        List<Integer> hps = List.of(5, 4, 3, 3);
+        List<String> generals = List.of("SHU001", "SHU006", "SHU004", "WEI002");
 
-        // WebSocket 推播給前端資訊 (主公選擇可以選擇的武將牌)
-        String initialEndViewModelMessage = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            Player currentPlayer = game.getPlayers().get(i);
+            String initialEndViewModelMessageT = map.get(currentPlayer.getId()).poll(5, TimeUnit.SECONDS);
 
-        assertNotNull(initialEndViewModelMessage);
-        InitialEndPresenter.InitialEndViewModel initialEndViewModel = objectMapper.readValue(initialEndViewModelMessage, InitialEndPresenter.InitialEndViewModel.class);
+            assertNotNull(initialEndViewModelMessageT);
+            InitialEndPresenter.InitialEndViewModel initialEndViewModel = objectMapper.readValue(initialEndViewModelMessageT, InitialEndPresenter.InitialEndViewModel.class);
+            var data = initialEndViewModel.getData();
+            var round = data.getRound();
+            List<InitialEndPresenter.PlayerDataViewModel> seats = data.getSeats();
 
-        assertNotNull(initialEndViewModel);
-        assertEquals("Normal", initialEndViewModel.getData().getGamePhase());
-        assertEquals(RoundPhase.Judgement.toString(), initialEndViewModel.getData().getRound().getRoundPhase());
-        assertEquals("player-a", initialEndViewModel.getData().getRound().getActivePlayer());
-        assertEquals("player-a", initialEndViewModel.getData().getRound().getCurrentRoundPlayer());
-        assertEquals("", initialEndViewModel.getData().getRound().getDyingPlayer());
+            // 檢查 game phase
+            assertNotNull(initialEndViewModel);
+            assertEquals("Normal", data.getGamePhase());
+            assertEquals("Judgement", round.getRoundPhase());
+            assertEquals(currentPlayer.getId(), initialEndViewModel.getPlayerId());
+            assertEquals("player-a", round.getCurrentRoundPlayer());
+            assertEquals("", round.getDyingPlayer());
 
-        // player a
-        assertEquals("player-a", initialEndViewModel.getData().getSeats().get(0).getId());
-        assertEquals(Role.MONARCH.toString(), initialEndViewModel.getData().getSeats().get(0).getRoleId());
-        assertEquals("SHU001", initialEndViewModel.getData().getSeats().get(0).getGeneralId());
-        assertEquals(5, initialEndViewModel.getData().getSeats().get(0).getHp());
-        assertEquals(4, initialEndViewModel.getData().getSeats().get(0).getHand().getSize());
-        // player b
-        assertEquals("player-b", initialEndViewModel.getData().getSeats().get(1).getId());
-        assertEquals("", initialEndViewModel.getData().getSeats().get(1).getRoleId());
-        assertEquals("SHU006", initialEndViewModel.getData().getSeats().get(1).getGeneralId());
-        assertEquals(4, initialEndViewModel.getData().getSeats().get(1).getHp());
-        // player c
-        assertEquals("player-c", initialEndViewModel.getData().getSeats().get(2).getId());
-        assertEquals("", initialEndViewModel.getData().getSeats().get(2).getRoleId());
-        assertEquals("SHU004", initialEndViewModel.getData().getSeats().get(2).getGeneralId());
-        assertEquals(3, initialEndViewModel.getData().getSeats().get(2).getHp());
-        // player d
-        assertEquals("player-d", initialEndViewModel.getData().getSeats().get(3).getId());
-        assertEquals("", initialEndViewModel.getData().getSeats().get(3).getRoleId());
-        assertEquals("WEI002", initialEndViewModel.getData().getSeats().get(3).getGeneralId());
-        assertEquals(3, initialEndViewModel.getData().getSeats().get(3).getHp());
+            // 檢查 player 狀態
+
+            assertEquals(4, seats.size());
+            //每個人都可以看到主公的 Role
+            assertEquals(Role.MONARCH.getRole() ,seats.get(0).getRoleId());
+
+            // 其他玩家知道主公是誰, 主公不知道其他玩家的 role
+            // 玩家之間不知道其他玩家的 role
+            assertEquals(allRolesList.get(i), seats.stream()
+                    .map(InitialEndPresenter.PlayerDataViewModel::getRoleId)
+                    .collect(Collectors.toList()));
+
+            // generals
+            checkEveryPlayerPublicInformation(currentPlayer, game, seats, generals, hps);
+        }
     }
 
+
+    private static List<List<String>> getDumpRoleLists() {
+        List<String> playerARolesList =  List.of(Role.MONARCH.getRole(), "", "", "");
+        List<String> playerBRolesList =  List.of(Role.MONARCH.getRole(), Role.MINISTER.getRole(), "", "");
+        List<String> playerCRolesList =  List.of(Role.MONARCH.getRole(), "", Role.REBEL.getRole(), "");
+        List<String> playerDRolesList =  List.of(Role.MONARCH.getRole(), "", "", Role.TRAITOR.getRole());
+
+        List<List<String>> allRolesList = new ArrayList<>();
+        allRolesList.add(playerARolesList);
+        allRolesList.add(playerBRolesList);
+        allRolesList.add(playerCRolesList);
+        allRolesList.add(playerDRolesList);
+        return allRolesList;
+    }
+
+    private static void checkEveryPlayerPublicInformation(Player currentPlayer, Game game, List<InitialEndPresenter.PlayerDataViewModel> seats, List<String> generals, List<Integer> hps) {
+        for (int j = 0; j < game.getPlayers().size(); j++) {
+            Player otherPlayer = game.getPlayers().get(j);
+
+            var playerDataViewModel = seats.get(j);
+            assertEquals(otherPlayer.getId(), playerDataViewModel.getId());
+            assertEquals(4, playerDataViewModel.getHand().getSize());
+
+            assertEquals(generals.get(j), playerDataViewModel.getGeneralId());
+            assertEquals(hps.get(j), playerDataViewModel.getHp());
+
+            if (!currentPlayer.equals(otherPlayer)) {
+                // 看不到其他玩家的手牌
+                assertEquals(0, playerDataViewModel.getHand().getCardIds().size());
+            }
+        }
+    }
 
     private void playerATakeTurnRound1() throws Exception {
         shouldJudgementPhase();
@@ -584,6 +595,9 @@ public class GameTest {
         A
          */
         Game game = inMemoryGameRepository.findGameById("my-id");
+        Stack<HandCard> stack = new Stack<>();
+
+
         Player currentRoundPlayer = game.getCurrentRoundPlayer();
         List<HandCard> cards = currentRoundPlayer.getHand().getCards();
         String cardId = cards.stream().filter(card -> card instanceof Kill).findFirst().get().getId();
