@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDeck;
@@ -15,11 +16,12 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Game {
-
     private String gameId;
     private List<Player> players;
     private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
@@ -28,7 +30,6 @@ public class Game {
     private SeatingChart seatingChart;
     private Round currentRound;
     private GamePhase gamePhase;
-
     private List<Player> winners;
 
     public Game(String gameId, List<Player> players) {
@@ -94,6 +95,14 @@ public class Game {
         return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
     }
 
+    public String getMonarchPlayerId() {
+        return players.stream()
+                .filter(p -> Role.MONARCH.equals(p.getRoleCard().getRole()))
+                .findFirst()
+                .map(Player::getId)
+                .orElseThrow(IllegalArgumentException::new);
+    }
+
     public GeneralCardDeck getGeneralCardDeck() {
         return generalCardDeck;
     }
@@ -109,11 +118,78 @@ public class Game {
         }
     }
 
-    public Game choosePlayerGeneral(String playerId, String generalId) {
+    public GetMonarchGeneralCardsEvent getMonarchCanChooseGeneralCards() {
+        GeneralCardDeck generalCardDeck = getGeneralCardDeck();
+        List<GeneralCard> generalCards = generalCardDeck.drawGeneralCards(5);
+        return new GetMonarchGeneralCardsEvent(generalCards);
+    }
+
+    public List<DomainEvent> monarchChoosePlayerGeneral(String playerId, String generalId) {
+        Player player = getPlayer(playerId);
+        if (!player.getRoleCard().getRole().equals(Role.MONARCH)) {
+            throw new RuntimeException(String.format("Player Id %s not MONARCH.", playerId));
+        }
+        GeneralCard generalCard = GeneralCard.generals.get(generalId);
+        player.setGeneralCard(generalCard);
+        DomainEvent monarchChooseGeneralCardEvent = new MonarchChooseGeneralCardEvent(generalCard, String.format("主公已選擇 %s", generalCard.getGeneralName()), gameId, players.stream().map(Player::getId).collect(Collectors.toList()));
+
+        List<DomainEvent> getGeneralCardEventByOthers = getOtherCanChooseGeneralCards();
+        getGeneralCardEventByOthers.add(monarchChooseGeneralCardEvent);
+
+        return getGeneralCardEventByOthers;
+    }
+
+    public List<DomainEvent> othersChoosePlayerGeneral(String playerId, String generalId) {
         Player player = getPlayer(playerId);
         GeneralCard generalCard = GeneralCard.generals.get(generalId);
         player.setGeneralCard(generalCard);
-        return this;
+
+        if (players.stream().anyMatch(currentPlayer -> currentPlayer.getGeneralCard() == null)) {
+            return Collections.emptyList();
+        }
+
+        assignHpToPlayers();
+        assignHandCardToPlayers();
+        currentRound = new Round(players.get(0));
+        this.enterPhase(new Normal(this));
+
+        RoundEvent roundEvent = new RoundEvent(
+                currentRound.getRoundPhase().toString(),
+                currentRound.getCurrentRoundPlayer().getId(),
+                Optional.ofNullable(currentRound.getActivePlayer()).map(activeplayer->activeplayer.getId()).orElse(""),
+                Optional.ofNullable(currentRound.getDyingPlayer()).map(dyingPlayer->dyingPlayer.getId()).orElse(""),
+                currentRound.isShowKill()
+        );
+
+        List<PlayerEvent> playerEvents = players.stream().map(p ->
+                new PlayerEvent(p.getId(),
+                        p.getGeneralCard().getGeneralID(),
+                        p.getRoleCard().getRole().getRole(),
+                        p.getHP(),
+                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList())),
+                        Collections.emptyList(),
+                        Collections.emptyList())).toList();
+
+        DomainEvent initialEndEvent = new InitialEndEvent(gameId, playerEvents, roundEvent, this.getGamePhase().getPhaseName());
+        return List.of(initialEndEvent);
+    }
+
+    /*
+     private String id;
+        private String generalId;
+        private String roleId;
+        private int hp;
+        private HandEvent hand;
+        private List<String> equipments;
+        private List<String> delayScrolls;
+     */
+    private List<DomainEvent> getOtherCanChooseGeneralCards() {
+        return players.stream()
+                .filter(p -> !p.getRoleCard().getRole().equals(Role.MONARCH))
+                .map(p -> {
+                    List<GeneralCard> generalCards = generalCardDeck.drawGeneralCards(3);
+                    return new GetGeneralCardByOthersEvent(p.getId(), generalCards);
+                }).collect(Collectors.toList());
     }
 
     public void assignHpToPlayers() {
@@ -130,8 +206,6 @@ public class Game {
             player.setHand(new Hand());
             player.getHand().setCards(deck.deal(4));
         });
-        currentRound = new Round(players.get(0));
-        this.enterPhase(new Normal(this));
     }
 
     @Override
@@ -163,7 +237,7 @@ public class Game {
     }
 
     public void playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
-        gamePhase.execute(playerId,cardId,targetPlayerId,playType);
+        gamePhase.execute(playerId, cardId, targetPlayerId, playType);
     }
 
     public void playerDeadSettlement() {
@@ -252,13 +326,16 @@ public class Game {
     public Player getActivePlayer() {
         return currentRound.getActivePlayer();
     }
-    public Player getPrePlayer(Player player){
+
+    public Player getPrePlayer(Player player) {
         return seatingChart.getPrePlayer(player);
     }
-    public Player getNextPlayer(Player player){
+
+    public Player getNextPlayer(Player player) {
         return seatingChart.getNextPlayer(player);
     }
-    public void enterPhase(GamePhase gamePhase){
+
+    public void enterPhase(GamePhase gamePhase) {
         this.gamePhase = gamePhase;
     }
 }

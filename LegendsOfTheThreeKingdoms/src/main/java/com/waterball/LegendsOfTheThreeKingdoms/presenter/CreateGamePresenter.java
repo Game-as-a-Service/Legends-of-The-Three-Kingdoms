@@ -1,43 +1,93 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
-
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 
 public class CreateGamePresenter implements GameService.Presenter<List<CreateGamePresenter.CreateGameViewModel>> {
 
     private List<CreateGameViewModel> viewModels;
 
-    public void renderGame(GameDto game) {
+    public void renderGame(Game game) {
         viewModels = new ArrayList<>();
-        game.getPlayers().forEach(playerDto -> {
-            if (Role.MONARCH.equals(playerDto.getRoleCard().getRole())){
-                viewModels.add(new CreateGameViewModel(playerDto.getId(),"createGameEvent",game.getGameId(),"請選擇武將"));
+
+        game.getPlayers().forEach(player -> {
+            if (Role.MONARCH.equals(player.getRoleCard().getRole())) {
+                viewModels.add(new CreateGameViewModel(game.getGameId(), new CreateGameDataViewModel(hiddenRoleInformationByPlayer(game, player)), "請選擇武將", player.getId()));
             } else
-                viewModels.add(new CreateGameViewModel(playerDto.getId(),"createGameEvent",game.getGameId(),"請等待主公選擇武將"));
+                viewModels.add(new CreateGameViewModel(game.getGameId(), new CreateGameDataViewModel(hiddenRoleInformationByPlayer(game, player)), "請等待主公選擇武將", player.getId()));
         });
     }
 
-    public List<CreateGameViewModel> present() {
-        return viewModels;
+
+   @Data
+   @NoArgsConstructor
+    public static class CreateGameViewModel extends ViewModel<CreateGameDataViewModel> {
+        private String gameId;
+        private String playerId;
+
+       public CreateGameViewModel(String gameId, CreateGameDataViewModel data,String message, String playerId) {
+           super("createGameEvent",data,message);
+           this.gameId = gameId;
+           this.playerId = playerId;
+       }
+   }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateGameDataViewModel {
+        private List<SeatViewModel> seats;
     }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CreateGameViewModel {
-        private String playerId;
-        private String name;
-        private String gameId;
-        private String message;
-        //TODO 加 List<String> generalIds
+    public static class SeatViewModel {
+        public String id;
+        public String role;
     }
+
+
+    @Override
+    public List<CreateGameViewModel> present() {
+        return viewModels;
+    }
+
+    public static List<SeatViewModel> hiddenRoleInformationByPlayer(Game game, Player currentPlayer) {
+        List<SeatViewModel> seatViewModels = game.getSeatingChart().getPlayers().stream()
+                .map(CreateGamePresenter::domainToSeatViewModel)
+                .toList();
+
+        List<SeatViewModel> tempSeatViewModels = new ArrayList<>();
+
+        for (SeatViewModel seatViewModel : seatViewModels) {
+            SeatViewModel copyPlayer = new SeatViewModel(seatViewModel.getId(), seatViewModel.getRole());
+            tempSeatViewModels.add(copyPlayer);
+        }
+
+        List<SeatViewModel> needToHiddenRoleCardPlayers = tempSeatViewModels.stream()
+                .filter(player -> !"MONARCH".equals(player.getRole()))
+                .filter(player -> !player.getId().equals(currentPlayer.getId()))
+                .toList();
+
+        needToHiddenRoleCardPlayers.forEach(player -> tempSeatViewModels.get(tempSeatViewModels.indexOf(player)).setRole(""));
+
+        return tempSeatViewModels;
+    }
+
+    public static SeatViewModel domainToSeatViewModel(Player player) {
+        return new SeatViewModel(player.getId(), player.getRoleCard().getRole().name());
+    }
+
 }
+

@@ -7,12 +7,14 @@ import java.util.List;
 public class SeatingChart {
 
     private List<Player> players;
-    private int head;
 
     public SeatingChart(List<Player> players) {
         this.players = players;
     }
 
+    public List<Player> getPlayers(){
+        return players;
+    }
     // Calculate the distance between two players
     public int calculateDistance(Player player, Player targetPlayer) {
         int seat1 = players.indexOf(player);

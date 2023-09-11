@@ -1,9 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
@@ -14,10 +13,9 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.CreateGamePresenter;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.GeneralCardPresenter;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GeneralCardDto;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,14 +30,13 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
@@ -48,13 +45,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -131,10 +129,18 @@ public class GameTest {
     public void happyPath() throws Exception {
         // initial game
         shouldCreateGame();
+
         shouldChooseGeneralsByMonarch();
+
+        shouldGetGeneralCardsByOthers();
+
         shouldChooseGeneralsByOthers();
-        shouldInitialHP();
-        shouldDealCardToPlayers();
+
+//        shouldInitialHP();
+
+//        shouldDealCardToPlayers();
+
+        shouldGetInitialEndGameStatus();
 
         // Round 1 hp-0 playerA 君主本人
         playerATakeTurnRound1();
@@ -186,7 +192,6 @@ public class GameTest {
 
     }
 
-
     public void shouldCreateGame() throws Exception {
 
         // Monarch
@@ -195,18 +200,7 @@ public class GameTest {
         // Traitors
 
         String requestBody = objectMapper.writeValueAsString(
-                TestGameBuilder.newGame()
-                        .withGameId("my-id")
-                        .players(4)
-                        .withPlayerId("player-a", "player-b", "player-c", "player-d")
-                        .build());
-
-        String responseBody = objectMapper.writeValueAsString(TestGameBuilder.newGame()
-                .withGameId("my-id")
-                .players(4)
-                .withPlayerId("player-a", "player-b", "player-c", "player-d")
-                .withPlayerRoles("Monarch", "Minister", "Rebel", "Traitor")
-                .build());
+                new GameRequest("my-id", List.of("player-a", "player-b", "player-c", "player-d")));
 
         try (MockedStatic<ShuffleWrapper> mockedStatic = Mockito.mockStatic(ShuffleWrapper.class)) {
             mockedStatic.when(() -> ShuffleWrapper.shuffle(Mockito.anyList()))
@@ -215,37 +209,28 @@ public class GameTest {
             this.mockMvc.perform(post("/api/games")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(responseBody));
-
-            // find the game
-            this.mockMvc.perform(get("/api/games/my-id")).andDo(print())
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(responseBody));
+                    .andExpect(status().isOk());
         }
 
         Stack<HandCard> stack = new Stack<>();
-
         Arrays.stream(values())
                 .filter(x -> x.getCardName().equals("閃"))
                 .map(Dodge::new)
                 .forEach(stack::push);
-
         Arrays.stream(values())
                 .filter(x -> x.getCardName().equals("殺"))
                 .map(Kill::new)
                 .forEach(stack::push);
-
         Game game = inMemoryGameRepository.findGameById("my-id");
         game.setDeck(new Deck(stack));
 
-        // ATDD MonarchGeneralCardPresenter?
-        // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
-        String playerAGeneralEvent = map.get("player-a").poll(5, TimeUnit.SECONDS);
-        assertNotNull(playerAGeneralEvent);
-        CreateGamePresenter.CreateGameViewModel generalCardViewModelA = objectMapper.readValue(playerAGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
-        assertNotNull(generalCardViewModelA);
-        assertEquals("請選擇武將", generalCardViewModelA.getMessage());
+        assertEquals(Role.MONARCH, game.getPlayer("player-a").getRoleCard().getRole());
+        assertEquals(Role.MINISTER, game.getPlayer("player-b").getRoleCard().getRole());
+        assertEquals(Role.REBEL, game.getPlayer("player-c").getRoleCard().getRole());
+        assertEquals(Role.TRAITOR, game.getPlayer("player-d").getRoleCard().getRole());
+
+        // WebSocket 推播給前端資訊 (主公)
+        checkPlayerAGetCreateGameEvent();
 
         String playerBGeneralEvent = map.get("player-b").poll(5, TimeUnit.SECONDS);
         assertNotNull(playerBGeneralEvent);
@@ -264,12 +249,64 @@ public class GameTest {
         CreateGamePresenter.CreateGameViewModel generalCardViewModelD = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelD);
         assertEquals("請等待主公選擇武將", generalCardViewModelD.getMessage());
+
+        // find the game
+        this.mockMvc.perform(get("/api/games/my-id?playerId=player-a")).andDo(print())
+                .andExpect(status().isOk());
+
+        // WebSocket 推播給前端資訊
+        checkGetGameEvent();
+    }
+
+    private void checkPlayerAGetCreateGameEvent() throws InterruptedException, JsonProcessingException {
+        String createGameViewModel = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        assertNotNull(createGameViewModel);
+
+        ArrayList<CreateGamePresenter.SeatViewModel> seats = new ArrayList<>();
+        seats.add(new CreateGamePresenter.SeatViewModel("player-a", "MONARCH"));
+        seats.add(new CreateGamePresenter.SeatViewModel("player-b", ""));
+        seats.add(new CreateGamePresenter.SeatViewModel("player-c", ""));
+        seats.add(new CreateGamePresenter.SeatViewModel("player-d", ""));
+
+
+        // WebSocket 推播給前端資訊 (主公收到createGameViewModel)
+        CreateGamePresenter.CreateGameViewModel createGameViewModelOfMonarch = objectMapper.readValue(createGameViewModel, CreateGamePresenter.CreateGameViewModel.class);
+
+        assertNotNull(createGameViewModelOfMonarch);
+        assertEquals(createGameViewModelOfMonarch.getData().getSeats(), seats);
+        assertEquals("my-id", createGameViewModelOfMonarch.getGameId());
+        assertEquals("createGameEvent", createGameViewModelOfMonarch.getEvent());
+        assertEquals("請選擇武將", createGameViewModelOfMonarch.getMessage());
+
+        // WebSocket 推播給前端資訊 (主公選擇可以選擇的武將牌)
+        String monarchGetGeneralCardsEvent = map.get("player-a").poll(5, TimeUnit.SECONDS);
+
+        assertNotNull(monarchGetGeneralCardsEvent);
+        GetGeneralCardPresenter.GetGeneralCardViewModel monarchGetGeneralViewModel = objectMapper.readValue(monarchGetGeneralCardsEvent, GetGeneralCardPresenter.GetGeneralCardViewModel.class);
+
+        assertNotNull(monarchGetGeneralViewModel);
+        assertEquals("WU001", monarchGetGeneralViewModel.getData().get(0));
+        assertEquals("WEI001", monarchGetGeneralViewModel.getData().get(1));
+        assertEquals("SHU001", monarchGetGeneralViewModel.getData().get(2));
+        assertEquals("SHU002", monarchGetGeneralViewModel.getData().get(3));
+        assertEquals("SHU003", monarchGetGeneralViewModel.getData().get(4));
+        assertEquals(5, monarchGetGeneralViewModel.getData().size());
+    }
+
+    private void checkGetGameEvent() throws InterruptedException, JsonProcessingException {
+        String findGameViewModelMessage = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        FindGamePresenter.FindGameViewModel findGameViewModel = objectMapper.readValue(findGameViewModelMessage, FindGamePresenter.FindGameViewModel.class);
+        assertNotNull(findGameViewModelMessage);
+        assertEquals("", findGameViewModel.getMessage());
+        assertEquals("player-a", findGameViewModel.getData().getSeats().get(0).getId());
+        assertEquals("player-b", findGameViewModel.getData().getSeats().get(1).getId());
+        assertEquals("player-c", findGameViewModel.getData().getSeats().get(2).getId());
+        assertEquals("player-d", findGameViewModel.getData().getSeats().get(3).getId());
     }
 
     private void shouldChooseGeneralsByMonarch() throws Exception {
-
         /*
-        主公拿到可以選的五張武將牌 //get api
+        websocket推播主公拿到可以選的五張武將牌
 
           選一張 // post api
           牌堆減少剛剛抽出的牌
@@ -282,20 +319,19 @@ public class GameTest {
 
          拿到可以選的武將牌
          */
-        MvcResult result = this.mockMvc.perform(get("/api/games/my-id/player-a/generals")
-                        .contentType(MediaType.APPLICATION_JSON))
+        // 主公選一張
+//        this.mockMvc.perform(post("/api/games/my-id/player-a/general/SHU001")).andDo(print())
+//                .andExpect(status().isOk());
+        this.mockMvc.perform(post("/api/games/my-id/player:monarchChooseGeneral")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "playerId": "player-a",
+                                 "generalId": "SHU001"
+                                 }
+                                """))
                 .andExpect(status().isOk())
                 .andReturn();
-        String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
-        List<GeneralCardDto> generalCards = objectMapper.readValue(json, new TypeReference<List<GeneralCardDto>>() {
-        });
-        assertEquals("孫權", generalCards.get(0).getGeneralName());
-        assertEquals("曹操", generalCards.get(1).getGeneralName());
-        assertEquals("劉備", generalCards.get(2).getGeneralName());
-        assertEquals(5, generalCards.size());
-        // 主公選一張
-        this.mockMvc.perform(post("/api/games/my-id/player-a/general/SHU001")).andDo(print())
-                .andExpect(status().isOk());
 
         // Then 玩家A武將為劉備 ((主公general是 SHU001 is true)
         Game game = inMemoryGameRepository.findGameById("my-id");
@@ -305,27 +341,49 @@ public class GameTest {
                 .stream().filter(x -> x.getGeneralID().equals("SHU001"))
                 .count());
 
-        // WebSocket 推播給前端資訊 (主公選擇的腳色全部人都可以知道)
-        game.getPlayers().forEach(player -> {
-            try {
-                String generalCardEvent = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
-                GeneralCardPresenter.GeneralCardViewModel generalCardViewModel = objectMapper.readValue(generalCardEvent, GeneralCardPresenter.GeneralCardViewModel.class);
-                assertNotNull(generalCardEvent);
-                assertEquals("SHU001", generalCardViewModel.getPlayers().stream().filter(x -> x.getId().equals("player-a")).findFirst().get().getGeneralCard().getGeneralID());
-                assertEquals("generalCardEvent", generalCardViewModel.getName());
-            } catch (InterruptedException e) {
-                fail("***** generalCardEvent WebSocet failed. *****", e);
-            } catch (JsonMappingException e) {
-                fail("***** generalCardEvent JsonMappingException. *****", e);
-            } catch (JsonProcessingException e) {
-                fail("***** generalCardEvent JsonProcessingException *****", e);
-            }
-        });
+        // WebSocket 推播給前端資訊
+        // 主公選擇的腳色全部人都可以知道
+        for (Player player : game.getPlayers()) {
+            String monarchChooseGeneralCardMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
+            MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel monarchChooseGeneralCardViewModel = objectMapper.readValue(monarchChooseGeneralCardMessage, MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel.class);
+            assertNotNull(monarchChooseGeneralCardMessage);
+            assertEquals("主公已選擇 劉備", monarchChooseGeneralCardViewModel.getMessage());
+            assertEquals("SHU001", monarchChooseGeneralCardViewModel.getData().getMonarchGeneralCard());
+            assertEquals("MonarchGeneralChosenEvent", monarchChooseGeneralCardViewModel.getEvent());
+        }
+
+        // PlayerB打主公選擇角色的API
+        // 期望400 Bad Request
+//        this.mockMvc.perform(post("/api/games/my-id/player-b/general/SHU001")).andDo(print())
+//                .andExpect(status().is4xxClientError());
+        this.mockMvc.perform(post("/api/games/my-id/player:monarchChooseGeneral")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "playerId": "player-b",
+                                 "generalId": "SHU001"
+                                 }
+                                """))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+    }
+
+    private void shouldGetGeneralCardsByOthers() throws Exception {
+
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        List<Player> otherPlayers = game.getPlayers().stream().filter(player -> player.getRoleCard().getRole() != Role.MONARCH).collect(Collectors.toList());
+        for (Player player : otherPlayers) {
+            String getGeneralCardByOthersMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
+            MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel getGeneralCardByOthersViewModel = objectMapper.readValue(getGeneralCardByOthersMessage, MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel.class);
+            assertNotNull(getGeneralCardByOthersMessage);
+            assertEquals("請選擇武將", getGeneralCardByOthersViewModel.getMessage());
+            assertEquals(3, getGeneralCardByOthersViewModel.getData().size());
+            assertEquals("getGeneralCardEventByOthers", getGeneralCardByOthersViewModel.getEvent());
+        }
     }
 
 
     private void shouldChooseGeneralsByOthers() throws Exception {
-
         /*
         Given
         玩家A為主公 ，選擇了武將「劉備」
@@ -341,24 +399,21 @@ public class GameTest {
         玩家 B武將為 馬超
         玩家 C武將為 諸葛亮
         玩家 D武將為 司馬懿
-
-          玩家B拿到可以選的武將牌
-          */
-        MvcResult resultOfPlayerB = this.mockMvc.perform(get("/api/games/my-id/player-b/generals")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-        String jsonResultOfPlayerB = resultOfPlayerB.getResponse().getContentAsString(StandardCharsets.UTF_8);
-        List<GeneralCardDto> generalCards = objectMapper.readValue(jsonResultOfPlayerB, new TypeReference<List<GeneralCardDto>>() {
-        });
-        assertEquals("馬超", generalCards.get(0).getGeneralName());
-        assertEquals("趙雲", generalCards.get(1).getGeneralName());
-        assertEquals("黃月英", generalCards.get(2).getGeneralName());
-        assertEquals(3, generalCards.size());
+      */
 
         // 玩家B選馬超
-        this.mockMvc.perform(post("/api/games/my-id/player-b/general/SHU006")).andDo(print())
-                .andExpect(status().isOk());
+//        this.mockMvc.perform(post("/api/games/my-id/player-b/general/SHU006")).andDo(print())
+//                .andExpect(status().isOk());
+        this.mockMvc.perform(post("/api/games/my-id/player:otherChooseGeneral")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "playerId": "player-b",
+                                 "generalId": "SHU006"
+                                 }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn();
 
         // Then 玩家B武將為馬超 ((玩家B general是 general1 is true)
         Game game = inMemoryGameRepository.findGameById("my-id");
@@ -368,23 +423,19 @@ public class GameTest {
                 .stream().filter(x -> x.getGeneralID().equals("SHU006"))
                 .count());
 
-        //********************************* Round 2 ***************************************//
-
-        MvcResult resultOfPlayerC = this.mockMvc.perform(get("/api/games/my-id/player-c/generals")
-                        .contentType(MediaType.APPLICATION_JSON))
+        // 玩家C選諸葛亮
+//        this.mockMvc.perform(post("/api/games/my-id/player-c/general/SHU004")).andDo(print())
+//                .andExpect(status().isOk());
+        this.mockMvc.perform(post("/api/games/my-id/player:otherChooseGeneral")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "playerId": "player-c",
+                                 "generalId": "SHU004"
+                                 }
+                                """))
                 .andExpect(status().isOk())
                 .andReturn();
-        String jsonResultOfPlayerC = resultOfPlayerC.getResponse().getContentAsString(StandardCharsets.UTF_8);
-        List<GeneralCardDto> generalCards2 = objectMapper.readValue(jsonResultOfPlayerC, new TypeReference<List<GeneralCardDto>>() {
-        });
-        assertEquals("諸葛亮", generalCards2.get(0).getGeneralName());
-        assertEquals("黃忠", generalCards2.get(1).getGeneralName());
-        assertEquals("魏延", generalCards2.get(2).getGeneralName());
-        assertEquals(3, generalCards2.size());
-
-        // 玩家C選諸葛亮
-        this.mockMvc.perform(post("/api/games/my-id/player-c/general/SHU004")).andDo(print())
-                .andExpect(status().isOk());
 
         // Then 玩家C武將為諸葛亮 ((玩家C genera1是 general18 is true)
         assertEquals("SHU004", game.getPlayer("player-c").getGeneralCard().getGeneralID());
@@ -393,23 +444,19 @@ public class GameTest {
                 .stream().filter(x -> x.getGeneralID().equals("SHU004"))
                 .count());
 
-        //********************************* Round 3 ***************************************//
-
-        MvcResult resultOfPlayerD = this.mockMvc.perform(get("/api/games/my-id/player-d/generals")
-                        .contentType(MediaType.APPLICATION_JSON))
+        // 玩家D選司馬懿
+//        this.mockMvc.perform(post("/api/games/my-id/player-d/general/WEI002")).andDo(print())
+//                .andExpect(status().isOk());
+        this.mockMvc.perform(post("/api/games/my-id/player:otherChooseGeneral")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "playerId": "player-d",
+                                 "generalId": "WEI002"
+                                 }
+                                """))
                 .andExpect(status().isOk())
                 .andReturn();
-        String jsonResultOfPlayerD = resultOfPlayerD.getResponse().getContentAsString(StandardCharsets.UTF_8);
-        List<GeneralCardDto> generalCards3 = objectMapper.readValue(jsonResultOfPlayerD, new TypeReference<List<GeneralCardDto>>() {
-        });
-        assertEquals("司馬懿", generalCards3.get(0).getGeneralName());
-        assertEquals("夏侯敦", generalCards3.get(1).getGeneralName());
-        assertEquals("許褚", generalCards3.get(2).getGeneralName());
-        assertEquals(3, generalCards3.size());
-
-        // 玩家D選司馬懿
-        this.mockMvc.perform(post("/api/games/my-id/player-d/general/WEI002")).andDo(print())
-                .andExpect(status().isOk());
 
         // Then 玩家D武將為司馬懿 ((玩家D general是 general1 is true)
         assertEquals("WEI002", game.getPlayer("player-d").getGeneralCard().getGeneralID());
@@ -419,28 +466,80 @@ public class GameTest {
                 .count());
     }
 
-    public void shouldInitialHP() {
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        game.assignHpToPlayers();
+    // 推播 所有玩家的武將 && 手牌
+    private void shouldGetInitialEndGameStatus() throws InterruptedException, JsonProcessingException {
+        List<List<String>> allRolesList = getDumpRoleLists();
+        List<Integer> hps = List.of(5, 4, 3, 3);
+        List<String> generals = List.of("SHU001", "SHU006", "SHU004", "WEI002");
 
-        assertEquals(5, game.getPlayer("player-a").getHP());
-        assertEquals(4, game.getPlayer("player-b").getHP());
-        assertEquals(3, game.getPlayer("player-c").getHP());
-        assertEquals(3, game.getPlayer("player-d").getHP());
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            Player currentPlayer = game.getPlayers().get(i);
+            String initialEndViewModelMessageT = map.get(currentPlayer.getId()).poll(5, TimeUnit.SECONDS);
+
+            assertNotNull(initialEndViewModelMessageT);
+            InitialEndPresenter.InitialEndViewModel initialEndViewModel = objectMapper.readValue(initialEndViewModelMessageT, InitialEndPresenter.InitialEndViewModel.class);
+            var data = initialEndViewModel.getData();
+            var round = data.getRound();
+            List<InitialEndPresenter.PlayerDataViewModel> seats = data.getSeats();
+
+            // 檢查 game phase
+            assertNotNull(initialEndViewModel);
+            assertEquals("Normal", data.getGamePhase());
+            assertEquals("Judgement", round.getRoundPhase());
+            assertEquals(currentPlayer.getId(), initialEndViewModel.getPlayerId());
+            assertEquals("player-a", round.getCurrentRoundPlayer());
+            assertEquals("", round.getDyingPlayer());
+
+            // 檢查 player 狀態
+
+            assertEquals(4, seats.size());
+            //每個人都可以看到主公的 Role
+            assertEquals(Role.MONARCH.getRole() ,seats.get(0).getRoleId());
+
+            // 其他玩家知道主公是誰, 主公不知道其他玩家的 role
+            // 玩家之間不知道其他玩家的 role
+            assertEquals(allRolesList.get(i), seats.stream()
+                    .map(InitialEndPresenter.PlayerDataViewModel::getRoleId)
+                    .collect(Collectors.toList()));
+
+            // generals
+            checkEveryPlayerPublicInformation(currentPlayer, game, seats, generals, hps);
+        }
     }
 
-    // 推播 所有玩家的武將 && 主公
-    private void shouldDealCardToPlayers() {
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        game.assignHandCardToPlayers();
 
-        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
-        assertEquals(4, game.getPlayer("player-a").getHandSize());
-        assertEquals(4, game.getPlayer("player-b").getHandSize());
-        assertEquals(4, game.getPlayer("player-c").getHandSize());
-        assertEquals(4, game.getPlayer("player-d").getHandSize());
+    private static List<List<String>> getDumpRoleLists() {
+        List<String> playerARolesList =  List.of(Role.MONARCH.getRole(), "", "", "");
+        List<String> playerBRolesList =  List.of(Role.MONARCH.getRole(), Role.MINISTER.getRole(), "", "");
+        List<String> playerCRolesList =  List.of(Role.MONARCH.getRole(), "", Role.REBEL.getRole(), "");
+        List<String> playerDRolesList =  List.of(Role.MONARCH.getRole(), "", "", Role.TRAITOR.getRole());
+
+        List<List<String>> allRolesList = new ArrayList<>();
+        allRolesList.add(playerARolesList);
+        allRolesList.add(playerBRolesList);
+        allRolesList.add(playerCRolesList);
+        allRolesList.add(playerDRolesList);
+        return allRolesList;
     }
 
+    private static void checkEveryPlayerPublicInformation(Player currentPlayer, Game game, List<InitialEndPresenter.PlayerDataViewModel> seats, List<String> generals, List<Integer> hps) {
+        for (int j = 0; j < game.getPlayers().size(); j++) {
+            Player otherPlayer = game.getPlayers().get(j);
+
+            var playerDataViewModel = seats.get(j);
+            assertEquals(otherPlayer.getId(), playerDataViewModel.getId());
+            assertEquals(4, playerDataViewModel.getHand().getSize());
+
+            assertEquals(generals.get(j), playerDataViewModel.getGeneralId());
+            assertEquals(hps.get(j), playerDataViewModel.getHp());
+
+            if (!currentPlayer.equals(otherPlayer)) {
+                // 看不到其他玩家的手牌
+                assertEquals(0, playerDataViewModel.getHand().getCardIds().size());
+            }
+        }
+    }
 
     private void playerATakeTurnRound1() throws Exception {
         shouldJudgementPhase();
@@ -496,6 +595,9 @@ public class GameTest {
         A
          */
         Game game = inMemoryGameRepository.findGameById("my-id");
+        Stack<HandCard> stack = new Stack<>();
+
+
         Player currentRoundPlayer = game.getCurrentRoundPlayer();
         List<HandCard> cards = currentRoundPlayer.getHand().getCards();
         String cardId = cards.stream().filter(card -> card instanceof Kill).findFirst().get().getId();

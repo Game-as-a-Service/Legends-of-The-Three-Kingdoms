@@ -10,16 +10,15 @@ public class GameOver extends GamePhase {
 
     public GameOver(Game game) {
         super(game);
+        this.phaseName  = "GameOver";
     }
 
     @Override
     public void execute() {
         List<Player> players = game.getPlayers();
-
         List<Player> winners = players.stream().filter(player ->
                 player.getRoleCard().getRole().equals(Role.REBEL)
         ).toList();
         game.setWinners(winners);
     }
-
 }

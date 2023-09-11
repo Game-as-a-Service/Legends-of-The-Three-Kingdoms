@@ -4,6 +4,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 
 public abstract class GamePhase {
     protected Game game;
+    protected String phaseName;
 
     public GamePhase(Game game) {
         this.game = game;
@@ -19,5 +20,9 @@ public abstract class GamePhase {
 
     public void exit() {
         game.enterPhase(new Normal(game));
+    }
+
+    public String getPhaseName() {
+        return phaseName;
     }
 }

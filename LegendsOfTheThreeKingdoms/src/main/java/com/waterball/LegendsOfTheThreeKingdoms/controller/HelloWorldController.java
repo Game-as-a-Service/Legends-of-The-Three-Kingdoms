@@ -17,7 +17,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 
 import java.util.List;
 
-import static com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest.convertToGameDto;
 
 @RestController
 @RequestMapping("/api")

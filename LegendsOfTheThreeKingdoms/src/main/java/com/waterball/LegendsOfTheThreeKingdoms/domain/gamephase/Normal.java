@@ -8,6 +8,7 @@ public class Normal extends GamePhase {
 
     public Normal(Game game) {
         super(game);
+        this.phaseName  = "Normal";
     }
 
     @Override
