@@ -60,11 +60,12 @@ public class GameService {
         presenter.renderEvents(events);
     }
 
-    public void othersChoosePlayerGeneral(String gameId, MonarchChooseGeneralRequest request, InitialEndPresenter presenter) {
+    public void othersChoosePlayerGeneral(String gameId, MonarchChooseGeneralRequest request, InitialEndPresenter initialEndPresenter, RoundStartPresenter roundStartPresenter) {
         Game game = repository.findGameById(gameId);
         List<DomainEvent> events = game.othersChoosePlayerGeneral(request.getPlayerId(), request.getGeneralId());
         repository.save(game);
-        presenter.renderEvents(events);
+        initialEndPresenter.renderEvents(events.subList(0, 1));
+        roundStartPresenter.renderEvents(events);
     }
 
     public void findGameById(String gameId, String playerId, FindGamePresenter presenter) {

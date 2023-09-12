@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class ViewModel<T> {
-    protected String event;
+    protected String event; //List<Event>
     protected T data;
     protected String message;
 
@@ -32,5 +32,4 @@ public abstract class ViewModel<T> {
                 .map(e -> (T) e)
                 .collect(Collectors.toList());
     }
-
 }

@@ -84,4 +84,16 @@ public class WebSocketBroadCast {
             e.printStackTrace();
         }
     }
+
+    public void pushRoundStartEvent(RoundStartPresenter presenter) {
+        List<RoundStartPresenter.RoundStartViewModel> roundStartViewModel = presenter.present();
+        try {
+            String roundStartJson = objectMapper.writeValueAsString(roundStartViewModel);
+            messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", roundStartViewModel.getGameId(), roundStartViewModel.getPlayerId()), roundStartJson);
+        } catch (Exception e) {
+            System.err.println("****************** pushFindGameEvent ");
+            e.printStackTrace();
+        }
+
+    }
 }

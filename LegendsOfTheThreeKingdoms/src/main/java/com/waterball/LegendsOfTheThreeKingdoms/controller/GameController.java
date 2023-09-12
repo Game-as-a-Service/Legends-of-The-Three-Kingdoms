@@ -57,8 +57,10 @@ public class GameController {
     @PostMapping("/api/games/{gameId}/player:otherChooseGeneral")
     public ResponseEntity chooseGeneralByOthers(@PathVariable String gameId, @RequestBody ChooseGeneralRequest request) {
         InitialEndPresenter initialEndPresenter = new InitialEndPresenter();
-        gameService.othersChoosePlayerGeneral(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter);
+        RoundStartPresenter roundStartPresenter = new RoundStartPresenter();
+        gameService.othersChoosePlayerGeneral(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter, roundStartPresenter);
         webSocketBroadCast.pushInitialEndEvent(initialEndPresenter);
+        webSocketBroadCast.pushRoundStartEvent(roundStartPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

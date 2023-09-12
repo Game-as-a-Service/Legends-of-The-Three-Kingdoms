@@ -542,11 +542,38 @@ public class GameTest {
     }
 
     private void playerATakeTurnRound1() throws Exception {
-        shouldJudgementPhase();
-        shouldDrawCardToPlayer(6);
+//        shouldJudgementPhase();
+//        shouldDrawCardToPlayer(6);
+
+        shouldGetRoundStartStatus();
+
         shouldPlayerAPlayedCardRound1("player-b");
         shouldPlayerFinishAction();
         shouldPlayerADiscardCardRound1();
+    }
+
+    // 玩家 A 抽牌結束後推播發生的 domain event
+    private void shouldGetRoundStartStatus() throws InterruptedException, JsonProcessingException {
+        List<String> events = List.of("RoundStartEvent", "JudgementEvent", "DrawCardEvent");
+
+        // round start
+        String roundStartViewModelMessageT = map.get("player-a").poll(5, TimeUnit.SECONDS);
+
+        assertNotNull(roundStartViewModelMessageT);
+        RoundStartPresenter.RoundStartViewModel roundStartViewModel = objectMapper.readValue(roundStartViewModelMessageT, RoundStartPresenter.RoundStartViewModel.class);
+
+        // test global status
+        assertNotNull(roundStartViewModel);
+        assertEquals("", roundStartViewModel.getMessage());
+        assertEquals("check game data", roundStartViewModel.getData());
+        assertEquals(events, roundStartViewModel.getEvents().stream().map(ViewModel::getEvent).collect(Collectors.toList()));
+
+        // test round start
+//        ViewModel viewModel = roundStartViewModel.getEvents().get(0);
+
+        // test judgement
+
+        // test drawcard
     }
 
     private void shouldJudgementPhase() {
@@ -566,7 +593,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when
-        game.judgePlayerShouldDelay();
+//        game.judgePlayerShouldDelay();
         // then
         assertEquals(RoundPhase.Drawing, game.getCurrentRoundPhase());
     }
@@ -574,10 +601,11 @@ public class GameTest {
     private void shouldDrawCardToPlayer(int expectHandSize) {
         Game game = inMemoryGameRepository.findGameById("my-id");
         String playerId = game.getCurrentRoundPlayer().getId();
-        game.drawCardToPlayer(playerId);
+//        game.drawCardToPlayer(playerId);
         assertEquals(RoundPhase.Action, game.getCurrentRoundPhase());
         assertEquals(expectHandSize, game.getPlayer(playerId).getHandSize());
     }
+
 
     private void shouldPlayerAPlayedCardRound1(String targetPlayerId) throws Exception {
        /*

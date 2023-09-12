@@ -47,7 +47,7 @@ public class DrawCardToPlayer {
         game.setCurrentRound(new Round(player));
 
         //When
-        game.drawCardToPlayer("player-a");
+        game.drawCardToPlayer(player);
 
         //Then
         Assertions.assertEquals(Arrays.asList(new Kill(BH0036), new EightDiagrams(), new EightDiagrams()), game.getPlayer("player-a").getHand().getCards());
@@ -87,7 +87,7 @@ public class DrawCardToPlayer {
         game.setCurrentRound(new Round(player));
 
         // when
-        game.drawCardToPlayer("player-a");
+        game.drawCardToPlayer(player);
 
         // then
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BH0036),new Kill(BH0036),new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));

@@ -16,30 +16,33 @@ import static com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel.getEve
 
 public class InitialEndPresenter implements GameService.Presenter<List<InitialEndPresenter.InitialEndViewModel>> {
 
-    private List<InitialEndViewModel> viewModels;
-
+    private List<InitialEndViewModel> initialEndViewModels;
 
     public void renderEvents(List<DomainEvent> events) {
         if (!events.isEmpty()) {
-            viewModels = new ArrayList<>();
-            InitialEndEvent event = getEvent(events, InitialEndEvent.class).orElseThrow(RuntimeException::new);
-            List<PlayerDataViewModel> playerDataViewModels = event.getSeats().stream().map(playerEvent -> new PlayerDataViewModel(playerEvent.getId(), playerEvent.getGeneralId(), playerEvent.getRoleId(), playerEvent.getHp(), playerEvent.getHand(), playerEvent.getEquipments(), playerEvent.getEquipments())).collect(Collectors.toList());
-
-            RoundEvent roundEvent = event.getRound();
-            RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent.getRoundPhase(), roundEvent.getCurrentRoundPlayer(), roundEvent.getActivePlayer(), roundEvent.getDyingPlayer(), roundEvent.isShowKill());
-
-            for (PlayerDataViewModel viewModel : playerDataViewModels) {
-                InitialEndDataViewModel initialEndDataViewModel = new InitialEndDataViewModel(hiddenRoleInformationByPlayer(playerDataViewModels, viewModel.getId()), roundDataViewModel, event.getGamePhase());
-                viewModels.add(new InitialEndViewModel(event.getGameId(), initialEndDataViewModel, "", viewModel.getId()));
-            }
+            updateInitialEventToViewModel(events);
         } else {
-            viewModels = Collections.emptyList();
+            initialEndViewModels = Collections.emptyList();
+        }
+    }
+
+    public void updateInitialEventToViewModel(List<DomainEvent> events) {
+        initialEndViewModels = new ArrayList<>();
+        InitialEndEvent event = getEvent(events, InitialEndEvent.class).orElseThrow(RuntimeException::new);
+        List<PlayerDataViewModel> playerDataViewModels = event.getSeats().stream().map(playerEvent -> new PlayerDataViewModel(playerEvent.getId(), playerEvent.getGeneralId(), playerEvent.getRoleId(), playerEvent.getHp(), playerEvent.getHand(), playerEvent.getEquipments(), playerEvent.getEquipments())).collect(Collectors.toList());
+
+        RoundEvent roundEvent = event.getRound();
+        RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent.getRoundPhase(), roundEvent.getCurrentRoundPlayer(), roundEvent.getActivePlayer(), roundEvent.getDyingPlayer(), roundEvent.isShowKill());
+
+        for (PlayerDataViewModel viewModel : playerDataViewModels) {
+            InitialEndDataViewModel initialEndDataViewModel = new InitialEndDataViewModel(hiddenRoleInformationByPlayer(playerDataViewModels, viewModel.getId()), roundDataViewModel, event.getGamePhase());
+            initialEndViewModels.add(new InitialEndViewModel(event.getGameId(), initialEndDataViewModel, "", viewModel.getId()));
         }
     }
 
 
     public List<InitialEndViewModel> present() {
-        return viewModels;
+        return initialEndViewModels;
     }
 
     @Data

@@ -15,10 +15,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Game {
@@ -171,7 +168,19 @@ public class Game {
                         Collections.emptyList())).toList();
 
         DomainEvent initialEndEvent = new InitialEndEvent(gameId, playerEvents, roundEvent, this.getGamePhase().getPhaseName());
-        return List.of(initialEndEvent);
+
+        List<DomainEvent> domainEvents = playerTakeTurn(getCurrentRoundPlayer());
+        List<DomainEvent> combineEvents = new ArrayList<>(List.of(initialEndEvent));
+        combineEvents.addAll(domainEvents);
+
+        return combineEvents;
+    }
+
+    private List<DomainEvent> playerTakeTurn(Player currentRoundPlayer) {
+        DomainEvent roundStartEvent = new RoundStartEvent();
+        DomainEvent judgeEvent = judgePlayerShouldDelay();
+        DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer);
+        return List.of(roundStartEvent, judgeEvent,drawCardEvent);
     }
 
     /*
@@ -213,11 +222,20 @@ public class Game {
         return super.toString();
     }
 
-    public void drawCardToPlayer(String playerId) {
-        Player player = getPlayer(playerId);
+    public DomainEvent drawCardToPlayer(Player player) {
         refreshDeckWhenCardsNumLessThen(2);
-        player.getHand().addCardToHand(deck.deal(2));
+        int size = calculatePlayerCanDrawCardSize(player);
+        List<HandCard> cards = deck.deal(size);
+        player.getHand().addCardToHand(cards);
         currentRound.setRoundPhase(RoundPhase.Action);
+        List<String> cardIds = cards.stream().map(HandCard::getId).collect(Collectors.toList());
+        String message = String.format("玩家 %s 抽了 %d 張牌",player.getId(), size);
+        return new DrawCardToPlayerEvent(size, cardIds, message);
+    }
+
+    // TODO
+    private int calculatePlayerCanDrawCardSize(Player player) {
+        return 2;
     }
 
     private void refreshDeckWhenCardsNumLessThen(int requiredCardNum) {
@@ -282,11 +300,12 @@ public class Game {
         return currentRound.getCurrentRoundPlayer();
     }
 
-    public void judgePlayerShouldDelay() {
+    private DomainEvent judgePlayerShouldDelay() {
         Player player = currentRound.getCurrentRoundPlayer();
         if (!player.hasAnyDelayScrollCard()) {
             currentRound.setRoundPhase(RoundPhase.Drawing);
         }
+        return new JudgePlayerShouldDelayEvent();
     }
 
     public void judgePlayerShouldDiscardCard() {
