@@ -16,6 +16,17 @@ public class WebSocketBroadCast {
     @Autowired
     private ObjectMapper objectMapper;
 
+    public void pushFindGameEvent(FindGamePresenter presenter) {
+        FindGamePresenter.FindGameViewModel findGameViewModel = presenter.present();
+        try {
+            String findGameJson = objectMapper.writeValueAsString(findGameViewModel);
+            messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", findGameViewModel.getGameId(), findGameViewModel.getPlayerId()), findGameJson);
+        } catch (Exception e) {
+            System.err.println("****************** pushFindGameEvent ");
+            e.printStackTrace();
+        }
+    }
+
     public void pushCreateGameEventToAllPlayers(CreateGamePresenter presenter) {
         List<CreateGamePresenter.CreateGameViewModel> createGameViewModels = presenter.present();
         createGameViewModels.forEach(viewModel -> {
@@ -69,31 +80,21 @@ public class WebSocketBroadCast {
                 messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", initialEndViewModel.getGameId(), initialEndViewModel.getPlayerId()), initialEndJson);
             }
         } catch (Exception e) {
-            System.err.println("****************** pushInitialEndEvent error!!!!!!");
+            System.err.println("****************** pushInitialEndEventd");
             e.printStackTrace();
         }
     }
 
-    public void pushFindGameEvent(FindGamePresenter presenter) {
-        FindGamePresenter.FindGameViewModel findGameViewModel = presenter.present();
+    public void pushPlayerTakeTurnEvent(RoundStartPresenter presenter) {
+        List<RoundStartPresenter.PlayerTakeTurnViewModel> roundStartViewModels = presenter.present();
         try {
-            String findGameJson = objectMapper.writeValueAsString(findGameViewModel);
-            messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", findGameViewModel.getGameId(), findGameViewModel.getPlayerId()), findGameJson);
+            for (RoundStartPresenter.PlayerTakeTurnViewModel roundStartViewModel : roundStartViewModels) {
+                String playerTakeTurnJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(roundStartViewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", roundStartViewModel.getGameId(), roundStartViewModel.getPlayerId()), playerTakeTurnJson);
+            }
         } catch (Exception e) {
-            System.err.println("****************** pushFindGameEvent ");
+            System.err.println("****************** pushRoundStartEvent ");
             e.printStackTrace();
         }
-    }
-
-    public void pushRoundStartEvent(RoundStartPresenter presenter) {
-        List<RoundStartPresenter.RoundStartViewModel> roundStartViewModel = presenter.present();
-        try {
-            String roundStartJson = objectMapper.writeValueAsString(roundStartViewModel);
-            messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", roundStartViewModel.getGameId(), roundStartViewModel.getPlayerId()), roundStartJson);
-        } catch (Exception e) {
-            System.err.println("****************** pushFindGameEvent ");
-            e.printStackTrace();
-        }
-
     }
 }

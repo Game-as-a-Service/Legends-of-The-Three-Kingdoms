@@ -60,7 +60,7 @@ public class GameController {
         RoundStartPresenter roundStartPresenter = new RoundStartPresenter();
         gameService.othersChoosePlayerGeneral(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter, roundStartPresenter);
         webSocketBroadCast.pushInitialEndEvent(initialEndPresenter);
-        webSocketBroadCast.pushRoundStartEvent(roundStartPresenter);
+        webSocketBroadCast.pushPlayerTakeTurnEvent(roundStartPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

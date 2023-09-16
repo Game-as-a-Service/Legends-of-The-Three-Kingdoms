@@ -64,7 +64,7 @@ public class GameService {
         Game game = repository.findGameById(gameId);
         List<DomainEvent> events = game.othersChoosePlayerGeneral(request.getPlayerId(), request.getGeneralId());
         repository.save(game);
-        initialEndPresenter.renderEvents(events.subList(0, 1));
+        initialEndPresenter.renderEvents(events);
         roundStartPresenter.renderEvents(events);
     }
 

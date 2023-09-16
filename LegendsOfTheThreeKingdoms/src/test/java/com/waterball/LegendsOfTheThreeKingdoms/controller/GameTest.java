@@ -35,7 +35,11 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -546,34 +550,19 @@ public class GameTest {
 //        shouldDrawCardToPlayer(6);
 
         shouldGetRoundStartStatus();
-
         shouldPlayerAPlayedCardRound1("player-b");
         shouldPlayerFinishAction();
         shouldPlayerADiscardCardRound1();
     }
 
     // 玩家 A 抽牌結束後推播發生的 domain event
-    private void shouldGetRoundStartStatus() throws InterruptedException, JsonProcessingException {
+    private void shouldGetRoundStartStatus() throws InterruptedException, IOException {
         List<String> events = List.of("RoundStartEvent", "JudgementEvent", "DrawCardEvent");
-
-        // round start
-        String roundStartViewModelMessageT = map.get("player-a").poll(5, TimeUnit.SECONDS);
-
-        assertNotNull(roundStartViewModelMessageT);
-        RoundStartPresenter.RoundStartViewModel roundStartViewModel = objectMapper.readValue(roundStartViewModelMessageT, RoundStartPresenter.RoundStartViewModel.class);
-
-        // test global status
-        assertNotNull(roundStartViewModel);
-        assertEquals("", roundStartViewModel.getMessage());
-        assertEquals("check game data", roundStartViewModel.getData());
-        assertEquals(events, roundStartViewModel.getEvents().stream().map(ViewModel::getEvent).collect(Collectors.toList()));
-
-        // test round start
-//        ViewModel viewModel = roundStartViewModel.getEvents().get(0);
-
-        // test judgement
-
-        // test drawcard
+        String actualJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("round_start_monarch_1st.json");
+        String expectJson = Files.readString(path);
+        assertNotNull(expectJson);
+        assertEquals(actualJson, expectJson);
     }
 
     private void shouldJudgementPhase() {

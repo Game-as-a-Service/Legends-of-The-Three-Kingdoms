@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class ViewModel<T> {
+public class ViewModel<T> {
     protected String event; //List<Event>
     protected T data;
     protected String message;

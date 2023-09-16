@@ -153,8 +153,8 @@ public class Game {
         RoundEvent roundEvent = new RoundEvent(
                 currentRound.getRoundPhase().toString(),
                 currentRound.getCurrentRoundPlayer().getId(),
-                Optional.ofNullable(currentRound.getActivePlayer()).map(activeplayer->activeplayer.getId()).orElse(""),
-                Optional.ofNullable(currentRound.getDyingPlayer()).map(dyingPlayer->dyingPlayer.getId()).orElse(""),
+                Optional.ofNullable(currentRound.getActivePlayer()).map(activeplayer -> activeplayer.getId()).orElse(""),
+                Optional.ofNullable(currentRound.getDyingPlayer()).map(dyingPlayer -> dyingPlayer.getId()).orElse(""),
                 currentRound.isShowKill()
         );
 
@@ -180,18 +180,9 @@ public class Game {
         DomainEvent roundStartEvent = new RoundStartEvent();
         DomainEvent judgeEvent = judgePlayerShouldDelay();
         DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer);
-        return List.of(roundStartEvent, judgeEvent,drawCardEvent);
+        return List.of(roundStartEvent, judgeEvent, drawCardEvent);
     }
 
-    /*
-     private String id;
-        private String generalId;
-        private String roleId;
-        private int hp;
-        private HandEvent hand;
-        private List<String> equipments;
-        private List<String> delayScrolls;
-     */
     private List<DomainEvent> getOtherCanChooseGeneralCards() {
         return players.stream()
                 .filter(p -> !p.getRoleCard().getRole().equals(Role.MONARCH))
@@ -229,11 +220,35 @@ public class Game {
         player.getHand().addCardToHand(cards);
         currentRound.setRoundPhase(RoundPhase.Action);
         List<String> cardIds = cards.stream().map(HandCard::getId).collect(Collectors.toList());
-        String message = String.format("玩家 %s 抽了 %d 張牌",player.getId(), size);
-        return new DrawCardToPlayerEvent(size, cardIds, message);
+        String message = String.format("玩家 %s 抽了 %d 張牌", player.getId(), size);
+
+        List<PlayerEvent> playerEvents = players.stream().map(p ->
+                new PlayerEvent(p.getId(),
+                        p.getGeneralCard().getGeneralID(),
+                        p.getRoleCard().getRole().getRole(),
+                        p.getHP(),
+                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
+                        Collections.emptyList(),
+                        Collections.emptyList())).toList();
+
+        RoundEvent roundEvent = new RoundEvent(
+                currentRound.getRoundPhase().toString(),
+                currentRound.getCurrentRoundPlayer().getId(),
+                Optional.ofNullable(currentRound.getActivePlayer()).map(Player::getId).orElse(""),
+                Optional.ofNullable(currentRound.getDyingPlayer()).map(Player::getId).orElse(""),
+                currentRound.isShowKill()
+        );
+
+        return new DrawCardEvent(
+                size,
+                cardIds,
+                message,
+                gameId,
+                playerEvents,
+                roundEvent,
+                currentRound.getRoundPhase().toString());
     }
 
-    // TODO
     private int calculatePlayerCanDrawCardSize(Player player) {
         return 2;
     }
@@ -305,7 +320,7 @@ public class Game {
         if (!player.hasAnyDelayScrollCard()) {
             currentRound.setRoundPhase(RoundPhase.Drawing);
         }
-        return new JudgePlayerShouldDelayEvent();
+        return new JudgementEvent();
     }
 
     public void judgePlayerShouldDiscardCard() {

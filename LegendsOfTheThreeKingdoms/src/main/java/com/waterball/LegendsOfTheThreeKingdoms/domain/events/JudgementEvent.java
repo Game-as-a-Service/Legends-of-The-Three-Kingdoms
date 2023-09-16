@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class JudgePlayerShouldDelayEvent extends DomainEvent {
+public class JudgementEvent extends DomainEvent {
 
     private final String name = "JudgementEvent";
     private String message = "判定結束";
