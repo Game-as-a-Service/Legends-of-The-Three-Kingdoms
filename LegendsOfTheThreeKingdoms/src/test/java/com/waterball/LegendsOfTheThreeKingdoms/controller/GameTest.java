@@ -15,6 +15,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.Assertions;
@@ -53,7 +54,6 @@ import java.util.stream.Collectors;
 
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -139,10 +139,6 @@ public class GameTest {
         shouldGetGeneralCardsByOthers();
 
         shouldChooseGeneralsByOthers();
-
-//        shouldInitialHP();
-
-//        shouldDealCardToPlayers();
 
         shouldGetInitialEndGameStatus();
 
@@ -485,7 +481,7 @@ public class GameTest {
             InitialEndPresenter.InitialEndViewModel initialEndViewModel = objectMapper.readValue(initialEndViewModelMessageT, InitialEndPresenter.InitialEndViewModel.class);
             var data = initialEndViewModel.getData();
             var round = data.getRound();
-            List<InitialEndPresenter.PlayerDataViewModel> seats = data.getSeats();
+            List<PlayerDataViewModel> seats = data.getSeats();
 
             // 檢查 game phase
             assertNotNull(initialEndViewModel);
@@ -499,12 +495,12 @@ public class GameTest {
 
             assertEquals(4, seats.size());
             //每個人都可以看到主公的 Role
-            assertEquals(Role.MONARCH.getRole() ,seats.get(0).getRoleId());
+            assertEquals(Role.MONARCH.getRole(), seats.get(0).getRoleId());
 
             // 其他玩家知道主公是誰, 主公不知道其他玩家的 role
             // 玩家之間不知道其他玩家的 role
             assertEquals(allRolesList.get(i), seats.stream()
-                    .map(InitialEndPresenter.PlayerDataViewModel::getRoleId)
+                    .map(PlayerDataViewModel::getRoleId)
                     .collect(Collectors.toList()));
 
             // generals
@@ -514,10 +510,10 @@ public class GameTest {
 
 
     private static List<List<String>> getDumpRoleLists() {
-        List<String> playerARolesList =  List.of(Role.MONARCH.getRole(), "", "", "");
-        List<String> playerBRolesList =  List.of(Role.MONARCH.getRole(), Role.MINISTER.getRole(), "", "");
-        List<String> playerCRolesList =  List.of(Role.MONARCH.getRole(), "", Role.REBEL.getRole(), "");
-        List<String> playerDRolesList =  List.of(Role.MONARCH.getRole(), "", "", Role.TRAITOR.getRole());
+        List<String> playerARolesList = List.of(Role.MONARCH.getRole(), "", "", "");
+        List<String> playerBRolesList = List.of(Role.MONARCH.getRole(), Role.MINISTER.getRole(), "", "");
+        List<String> playerCRolesList = List.of(Role.MONARCH.getRole(), "", Role.REBEL.getRole(), "");
+        List<String> playerDRolesList = List.of(Role.MONARCH.getRole(), "", "", Role.TRAITOR.getRole());
 
         List<List<String>> allRolesList = new ArrayList<>();
         allRolesList.add(playerARolesList);
@@ -527,7 +523,7 @@ public class GameTest {
         return allRolesList;
     }
 
-    private static void checkEveryPlayerPublicInformation(Player currentPlayer, Game game, List<InitialEndPresenter.PlayerDataViewModel> seats, List<String> generals, List<Integer> hps) {
+    private static void checkEveryPlayerPublicInformation(Player currentPlayer, Game game, List<PlayerDataViewModel> seats, List<String> generals, List<Integer> hps) {
         for (int j = 0; j < game.getPlayers().size(); j++) {
             Player otherPlayer = game.getPlayers().get(j);
 
@@ -546,9 +542,6 @@ public class GameTest {
     }
 
     private void playerATakeTurnRound1() throws Exception {
-//        shouldJudgementPhase();
-//        shouldDrawCardToPlayer(6);
-
         shouldGetRoundStartStatus();
         shouldPlayerAPlayedCardRound1("player-b");
         shouldPlayerFinishAction();
@@ -557,12 +550,29 @@ public class GameTest {
 
     // 玩家 A 抽牌結束後推播發生的 domain event
     private void shouldGetRoundStartStatus() throws InterruptedException, IOException {
-        List<String> events = List.of("RoundStartEvent", "JudgementEvent", "DrawCardEvent");
         String actualJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
-        Path path = Paths.get("round_start_monarch_1st.json");
-        String expectJson = Files.readString(path);
-        assertNotNull(expectJson);
-        assertEquals(actualJson, expectJson);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_monarch_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertNotNull(expectedJson);
+        assertEquals(expectedJson, actualJson);
+
+        actualJson = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_player_b.json");
+        expectedJson = Files.readString(path);
+        assertNotNull(expectedJson);
+        assertEquals(expectedJson, actualJson);
+
+        actualJson = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_player_c.json");
+        expectedJson = Files.readString(path);
+        assertNotNull(expectedJson);
+        assertEquals(expectedJson, actualJson);
+
+        actualJson = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_player_d.json");
+        expectedJson = Files.readString(path);
+        assertNotNull(expectedJson);
+        assertEquals(expectedJson, actualJson);
     }
 
     private void shouldJudgementPhase() {

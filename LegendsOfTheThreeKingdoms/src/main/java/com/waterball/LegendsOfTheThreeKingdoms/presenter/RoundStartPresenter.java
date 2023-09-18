@@ -1,7 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.RoundDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import lombok.*;
 
@@ -36,26 +37,49 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
         JudgementEvent judgementEvent = getEvent(events, JudgementEvent.class).orElseThrow(RuntimeException::new);
         DrawCardEvent drawCardEvent = getEvent(events, DrawCardEvent.class).orElseThrow(RuntimeException::new);
 
+        // 三種 event 的 view model
         RoundStartViewModel roundStartViewModel = new RoundStartViewModel();
         JudgementViewModel judgementViewModel = new JudgementViewModel();
-        DrawCardDataViewModel drewCardDataViewModel = new DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds());
-
         DrawCardViewModel drawCardViewModel = new DrawCardViewModel();
-        drawCardViewModel.setData(drewCardDataViewModel);
+        DrawCardDataViewModel drawCardDataViewModel = new DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds());
+        drawCardViewModel.setData(drawCardDataViewModel);
 
-        // 取得drawCardEvent中的玩家資訊
-        List<RoundStartPresenter.PlayerDataViewModel> playerDataViewModels = drawCardEvent.getSeats().stream().map(playerEvent -> new PlayerDataViewModel(playerEvent.getId(), playerEvent.getGeneralId(), playerEvent.getRoleId(), playerEvent.getHp(), playerEvent.getHand(), playerEvent.getEquipments(), playerEvent.getEquipments())).toList();
+        // 取得 drawCardEvent 中的玩家全部資訊
+        List<PlayerDataViewModel> playerDataViewModels = drawCardEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
 
-        // 取得drawCardEvent中的回合資訊
+        // 取得 drawCardEvent 中的回合資訊
         RoundEvent roundEvent = drawCardEvent.getRound();
 
-        // 將回合資訊放入RoundDataViewModel
-        RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent.getRoundPhase(), roundEvent.getCurrentRoundPlayer(), roundEvent.getActivePlayer(), roundEvent.getDyingPlayer(), roundEvent.isShowKill());
+        // 將回合資訊放入 RoundDataViewModel ，後續會放到 PlayerTakeTurnDataViewModel
+        RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
 
         for (PlayerDataViewModel viewModel : playerDataViewModels) {
-            PlayerTakeTurnDataViewModel drawCardDataViewModel = new PlayerTakeTurnDataViewModel(hiddenRoleInformationByPlayer(playerDataViewModels, viewModel.getId()), roundDataViewModel, drawCardEvent.getGamePhase());
-            viewModels.add(new PlayerTakeTurnViewModel(List.of(roundStartViewModel, judgementViewModel, drawCardViewModel), drawCardDataViewModel, drawCardEvent.getMessage(), drawCardEvent.getGameId(), viewModel.getId()));
+
+            // 此 use case 的 data 物件
+            PlayerTakeTurnDataViewModel playerTakeTurnDataViewModel = new PlayerTakeTurnDataViewModel(
+                    PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
+                            playerDataViewModels, viewModel.getId()), roundDataViewModel, drawCardEvent.getGamePhase()
+            );
+
+            // 非主公看不到此次 PlayerDrawCardEvent 的抽配 card ids
+            DrawCardViewModel drawCardViewModelInHidden = hiddenOtherPlayerCardIds(drawCardDataViewModel, viewModel);
+
+            viewModels.add(new PlayerTakeTurnViewModel(List.of(roundStartViewModel, judgementViewModel, drawCardViewModelInHidden),
+                    playerTakeTurnDataViewModel,
+                    drawCardEvent.getMessage(),
+                    drawCardEvent.getGameId(),
+                    viewModel.getId())
+            );
         }
+    }
+
+    private DrawCardViewModel hiddenOtherPlayerCardIds(DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel) {
+        List<String> cards = drawCardDataViewModel.getCards();
+        List<String> hiddenCards = new ArrayList<>();
+        if (PlayerDataViewModel.isMonarch(targetPlayerDataViewModel)) {
+            hiddenCards.addAll(cards);
+        }
+        return new DrawCardViewModel(new DrawCardDataViewModel(drawCardDataViewModel.getSize(), hiddenCards));
     }
 
     @Setter
@@ -81,12 +105,16 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
     }
 
     @Data
-    @AllArgsConstructor
     public static class DrawCardViewModel extends ViewModel<DrawCardDataViewModel> {
         private DrawCardDataViewModel data;
 
         public DrawCardViewModel() {
             super("DrawCardEvent", null, "玩家摸牌");
+        }
+
+        public DrawCardViewModel(DrawCardDataViewModel data) {
+            super("DrawCardEvent", null, "玩家摸牌");
+            this.data = data;
         }
     }
 
@@ -116,65 +144,9 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PlayerTakeTurnDataViewModel {
-        private List<RoundStartPresenter.PlayerDataViewModel> seats;
-        private RoundStartPresenter.RoundDataViewModel round;
+        private List<PlayerDataViewModel> seats;
+        private RoundDataViewModel round;
         private String gamePhase;
     }
 
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class PlayerDataViewModel {
-        private String id;
-        private String generalId;
-        private String roleId;
-        private int hp;
-        private HandEvent hand;
-        private List<String> equipments;
-        private List<String> delayScrolls;
-
-        public static RoundStartPresenter.PlayerDataViewModel deepCopy(RoundStartPresenter.PlayerDataViewModel p) {
-            return new RoundStartPresenter.PlayerDataViewModel(p.getId(), p.getGeneralId(), p.getRoleId(), p.getHp(), HandEvent.deepCopy(p.getHand()), new ArrayList<>(p.getEquipments()), new ArrayList<>(p.getDelayScrolls()));
-        }
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class RoundDataViewModel {
-        private String roundPhase;
-        private String currentRoundPlayer;
-        private String activePlayer;
-        private String dyingPlayer;
-        private boolean isShowKill;
-    }
-
-    private List<RoundStartPresenter.PlayerDataViewModel> hiddenRoleInformationByPlayer(List<RoundStartPresenter.PlayerDataViewModel> viewModels, String playerId) {
-        List<RoundStartPresenter.PlayerDataViewModel> playerDataViewModels = new ArrayList<>();
-
-        for (RoundStartPresenter.PlayerDataViewModel viewModel : viewModels) {
-            playerDataViewModels.add(RoundStartPresenter.PlayerDataViewModel.deepCopy(viewModel));
-        }
-
-        for (int i = 0; i < playerDataViewModels.size(); i++) {
-            RoundStartPresenter.PlayerDataViewModel viewModel = playerDataViewModels.get(i);
-            int size = viewModel.getHand().getSize();
-            if (isNotCurrentPlayer(playerId, viewModel)) {
-                if (isNotMonarch(viewModel)) {
-                    viewModel.setRoleId("");
-                }
-                viewModel.setHand(new HandEvent(size, new ArrayList<>()));
-            }
-        }
-        return playerDataViewModels;
-    }
-
-    private static boolean isNotCurrentPlayer(String playerId, RoundStartPresenter.PlayerDataViewModel viewModel) {
-        return !viewModel.getId().equals(playerId);
-    }
-
-    private static boolean isNotMonarch(RoundStartPresenter.PlayerDataViewModel viewModel) {
-        return !viewModel.getRoleId().equals(Role.MONARCH.getRole());
-    }
 }
