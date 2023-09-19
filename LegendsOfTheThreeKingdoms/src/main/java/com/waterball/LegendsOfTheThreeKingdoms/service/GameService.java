@@ -1,6 +1,5 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.ChooseGeneralRequest;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
@@ -73,11 +72,11 @@ public class GameService {
         presenter.renderGame(game, playerId);
     }
 
-    public GameDto playCard(String gameId, String playerId, String cardId, String targetPlayerId, String playType) {
+    public void playCard(String gameId, PlayCardRequest request, PlayCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        game.playerPlayCard(playerId, cardId, targetPlayerId, playType);
+        List<DomainEvent> events = game.playerPlayCard(request.playerId, request.cardId, request.targetPlayerId , request.playType);
         repository.save(game);
-        return convertToGameDto(game);
+        presenter.renderEvents(events);
     }
 
 
@@ -149,4 +148,16 @@ public class GameService {
         private String playerId;
         private String generalId;
     }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PlayCardRequest {
+        private String playerId;
+        private String targetPlayerId;
+        private String cardId;
+        private String playType;
+    }
+
+
 }

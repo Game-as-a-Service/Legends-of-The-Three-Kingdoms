@@ -1,9 +1,8 @@
-package com.waterball.LegendsOfTheThreeKingdoms.controller;
+package com.waterball.LegendsOfTheThreeKingdoms.e2e;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameRequest;
-import com.waterball.LegendsOfTheThreeKingdoms.controller.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GameOver;
@@ -14,6 +13,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
@@ -319,9 +320,6 @@ public class GameTest {
 
          拿到可以選的武將牌
          */
-        // 主公選一張
-//        this.mockMvc.perform(post("/api/games/my-id/player-a/general/SHU001")).andDo(print())
-//                .andExpect(status().isOk());
         this.mockMvc.perform(post("/api/games/my-id/player:monarchChooseGeneral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -354,8 +352,6 @@ public class GameTest {
 
         // PlayerB打主公選擇角色的API
         // 期望400 Bad Request
-//        this.mockMvc.perform(post("/api/games/my-id/player-b/general/SHU001")).andDo(print())
-//                .andExpect(status().is4xxClientError());
         this.mockMvc.perform(post("/api/games/my-id/player:monarchChooseGeneral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -369,7 +365,6 @@ public class GameTest {
     }
 
     private void shouldGetGeneralCardsByOthers() throws Exception {
-
         Game game = inMemoryGameRepository.findGameById("my-id");
         List<Player> otherPlayers = game.getPlayers().stream().filter(player -> player.getRoleCard().getRole() != Role.MONARCH).collect(Collectors.toList());
         for (Player player : otherPlayers) {
@@ -400,10 +395,6 @@ public class GameTest {
         玩家 C武將為 諸葛亮
         玩家 D武將為 司馬懿
       */
-
-        // 玩家B選馬超
-//        this.mockMvc.perform(post("/api/games/my-id/player-b/general/SHU006")).andDo(print())
-//                .andExpect(status().isOk());
         this.mockMvc.perform(post("/api/games/my-id/player:otherChooseGeneral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -551,28 +542,65 @@ public class GameTest {
     // 玩家 A 抽牌結束後推播發生的 domain event
     private void shouldGetRoundStartStatus() throws InterruptedException, IOException {
         String actualJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
-        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_monarch_player_a.json");
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_monarch_player_a.json");
         String expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
 
         actualJson = map.get("player-b").poll(5, TimeUnit.SECONDS);
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_player_b.json");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_player_b.json");
         expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
 
         actualJson = map.get("player-c").poll(5, TimeUnit.SECONDS);
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_player_c.json");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_player_c.json");
         expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
 
         actualJson = map.get("player-d").poll(5, TimeUnit.SECONDS);
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/round_start_player_d.json");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_player_d.json");
         expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
+    }
+
+    private void shouldPlayerAPlayedCardRound1(String targetPlayerId) throws Exception {
+       /*
+        Given
+        輪到 A 玩家出牌
+        A 玩家手牌有殺x2, 閃x2, 桃x2
+        B 玩家在 A 玩家的攻擊距離
+
+        When
+        A 玩家對 B 玩家出殺
+
+        Then
+        A 玩家出殺成功
+        A 玩家手牌有殺x1, 閃x2, 桃x2
+        A
+         */
+
+        String currentPlayer = "player-a";
+        String targetPlayer = "player-b";
+        String playedCardId = "BDK091";
+
+        playCard(currentPlayer, targetPlayer, playedCardId)
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_monarch_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertNotNull(expectedJson);
+        assertEquals(expectedJson, playCardJson);
+
+
+        playedCardId = "BD7085";
+        playCard(currentPlayer,targetPlayer,playedCardId)
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
     }
 
     private void shouldJudgementPhase() {
@@ -594,7 +622,7 @@ public class GameTest {
         // when
 //        game.judgePlayerShouldDelay();
         // then
-        assertEquals(RoundPhase.Drawing, game.getCurrentRoundPhase());
+        Assertions.assertEquals(RoundPhase.Drawing, game.getCurrentRoundPhase());
     }
 
     private void shouldDrawCardToPlayer(int expectHandSize) {
@@ -605,44 +633,6 @@ public class GameTest {
         assertEquals(expectHandSize, game.getPlayer(playerId).getHandSize());
     }
 
-
-    private void shouldPlayerAPlayedCardRound1(String targetPlayerId) throws Exception {
-       /*
-        Given
-        輪到 A 玩家出牌
-        A 玩家手牌有殺x2, 閃x2, 桃x2
-        B 玩家在 A 玩家的攻擊距離
-
-        When
-        A 玩家對 B 玩家出殺
-
-        Then
-        A 玩家出殺成功
-        A 玩家手牌有殺x1, 閃x2, 桃x2
-        A
-         */
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        Stack<HandCard> stack = new Stack<>();
-
-
-        Player currentRoundPlayer = game.getCurrentRoundPlayer();
-        List<HandCard> cards = currentRoundPlayer.getHand().getCards();
-        String cardId = cards.stream().filter(card -> card instanceof Kill).findFirst().get().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "%s",
-                                  "cardId": "%s"
-                                }""", currentRoundPlayer.getId(), targetPlayerId, cardId)))
-                .andExpect(status().isOk())
-                .andReturn();
-        game = inMemoryGameRepository.findGameById("my-id");
-        assertEquals(5, game.getPlayer("player-a").getHandSize());
-        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BD0088), new Kill(BD9087), new Kill(BD8086), new Kill(BC5057), new Kill(BC4056)), game.getPlayer("player-a").getHand().getCards()));
-        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
-    }
 
     private void shouldPlayerFinishAction() throws Exception {
         /*
@@ -837,7 +827,7 @@ public class GameTest {
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
         shouldPlayerFinishAction();
-        shouldPlayerDDiscardCard();
+        shouldPlayerDiscardCard();
     }
 
     private void shouldPlayerDPlayedCard(String targetPlayerId, int expectHandSizeAfterPlayedCard, int expecTargetPlayerHP) throws Exception {
@@ -857,7 +847,7 @@ public class GameTest {
         shouldPlayerPlayedCard(targetPlayerId, expectHandSizeAfterPlayedCard, expecTargetPlayerHP);
     }
 
-    private void shouldPlayerDDiscardCard() throws Exception {
+    private void shouldPlayerDiscardCard() throws Exception {
        /*
        Given
            D 玩家進入棄牌階段(Discard)
@@ -1299,6 +1289,16 @@ public class GameTest {
         assertTrue(game.getGamePhase() instanceof GameOver);
         assertEquals(game.getWinners(), List.of(game.getPlayer("player-c"))); // player-c = 反賊
 
+    }
+
+    private ResultActions playCard(String currentPlayerId,String targetPlayerId,String cardId) throws Exception {
+        return this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "targetPlayerId": "%s",
+                          "cardId": "%s"
+                        }""", currentPlayerId, targetPlayerId, cardId)));
     }
 
 }

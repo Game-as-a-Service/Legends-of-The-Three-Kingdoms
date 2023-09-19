@@ -1,6 +1,10 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.events;
 
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
+
+import java.util.Optional;
+
 public class RoundEvent extends DomainEvent {
     private String roundPhase;
     private String currentRoundPlayer;
@@ -14,6 +18,14 @@ public class RoundEvent extends DomainEvent {
         this.activePlayer = activePlayer;
         this.dyingPlayer = dyingPlayer;
         this.isShowKill = isShowKill;
+    }
+
+    public RoundEvent(Round currentRound) {
+        this.roundPhase = currentRound.getRoundPhase().toString();
+        this.currentRoundPlayer = currentRound.getCurrentRoundPlayer().getId();
+        this.activePlayer = Optional.ofNullable(currentRound.getActivePlayer()).map(activeplayer -> activeplayer.getId()).orElse("");
+        this.dyingPlayer = Optional.ofNullable(currentRound.getDyingPlayer()).map(dyingPlayer -> dyingPlayer.getId()).orElse("");
+        this.isShowKill = currentRound.isShowKill();
     }
 
     public String getRoundPhase() {

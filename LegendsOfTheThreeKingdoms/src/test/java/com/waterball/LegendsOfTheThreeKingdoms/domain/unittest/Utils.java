@@ -1,4 +1,4 @@
-package com.waterball.LegendsOfTheThreeKingdoms.controller.unittest;
+package com.waterball.LegendsOfTheThreeKingdoms.domain.unittest;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,10 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.PlayCardEvent;
+
+import java.util.List;
 
 public abstract class GamePhase {
     protected Game game;
@@ -10,7 +14,7 @@ public abstract class GamePhase {
         this.game = game;
     }
 
-    public void execute(String playerId, String cardId, String targetPlayerId, String playType) {
+    public List<DomainEvent> playCard(String playerId, String cardId, String targetPlayerId, String playType) {
         throw new UnsupportedOperationException("Method not implemented for this class");
     }
 

@@ -65,9 +65,11 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/player:playCard")
-    public ResponseEntity<GameResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
-        GameDto gameDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId(), playRequest.getPlayType());
-        return ResponseEntity.ok(new GameResponse(gameDto));
+    public ResponseEntity playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
+        PlayCardPresenter playCardPresenter = new PlayCardPresenter();
+        gameService.playCard(gameId, playRequest.toPlayCardRequest(),playCardPresenter);
+        webSocketBroadCast.pushPlayerCardEvent(playCardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/api/games/{gameId}/player:finishAction")

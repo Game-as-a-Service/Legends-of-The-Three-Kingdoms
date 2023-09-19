@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.controller.dto;
 
+import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,4 +15,8 @@ public class PlayCardRequest {
     private String targetPlayerId;
     private String cardId;
     private String playType; //skip
+
+    public GameService.PlayCardRequest toPlayCardRequest() {
+        return new GameService.PlayCardRequest(playerId,targetPlayerId,cardId,playType);
+    }
 }

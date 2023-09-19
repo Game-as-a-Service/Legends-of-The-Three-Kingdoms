@@ -150,13 +150,7 @@ public class Game {
         currentRound = new Round(players.get(0));
         this.enterPhase(new Normal(this));
 
-        RoundEvent roundEvent = new RoundEvent(
-                currentRound.getRoundPhase().toString(),
-                currentRound.getCurrentRoundPlayer().getId(),
-                Optional.ofNullable(currentRound.getActivePlayer()).map(activeplayer -> activeplayer.getId()).orElse(""),
-                Optional.ofNullable(currentRound.getDyingPlayer()).map(dyingPlayer -> dyingPlayer.getId()).orElse(""),
-                currentRound.isShowKill()
-        );
+        RoundEvent roundEvent = new RoundEvent(currentRound);
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
@@ -253,8 +247,8 @@ public class Game {
         return 2;
     }
 
-    private void refreshDeckWhenCardsNumLessThen(int requiredCardNum) {
-        if (isDeckLessThanCardNum(requiredCardNum)) deck.add(graveyard.getGraveYardCards());
+    private void refreshDeckWhenCardsNumLessThen(int requiredCardNumber) {
+        if (isDeckLessThanCardNum(requiredCardNumber)) deck.add(graveyard.getGraveYardCards());
     }
 
     private boolean isDeckLessThanCardNum(int requiredCardNum) {
@@ -269,8 +263,8 @@ public class Game {
         playerPlayCard(playerId, cardId, targetPlayerId, "");
     }
 
-    public void playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
-        gamePhase.execute(playerId, cardId, targetPlayerId, playType);
+    public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
+        return gamePhase.playCard(playerId, cardId, targetPlayerId, playType);
     }
 
     public void playerDeadSettlement() {

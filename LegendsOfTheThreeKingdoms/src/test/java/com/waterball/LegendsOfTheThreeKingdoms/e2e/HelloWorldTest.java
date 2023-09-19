@@ -1,4 +1,4 @@
-package com.waterball.LegendsOfTheThreeKingdoms.controller;
+package com.waterball.LegendsOfTheThreeKingdoms.e2e;
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import org.junit.jupiter.api.BeforeEach;

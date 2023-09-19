@@ -1,8 +1,7 @@
-package com.waterball.LegendsOfTheThreeKingdoms.controller;
+package com.waterball.LegendsOfTheThreeKingdoms.e2e;
 
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
 import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.PlayerViewModel;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 

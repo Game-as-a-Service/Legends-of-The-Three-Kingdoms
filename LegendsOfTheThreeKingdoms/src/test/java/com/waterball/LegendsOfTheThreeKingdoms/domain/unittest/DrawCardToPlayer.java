@@ -1,4 +1,4 @@
-package com.waterball.LegendsOfTheThreeKingdoms.controller.unittest;
+package com.waterball.LegendsOfTheThreeKingdoms.domain.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
