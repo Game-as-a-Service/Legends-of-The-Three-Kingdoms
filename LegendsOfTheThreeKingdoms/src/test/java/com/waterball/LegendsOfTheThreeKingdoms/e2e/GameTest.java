@@ -535,6 +535,8 @@ public class GameTest {
     private void playerATakeTurnRound1() throws Exception {
         shouldGetRoundStartStatus();
         shouldPlayerAPlayedCardRound1("player-b");
+        //TODO: 需要驗證 round phase == active
+
         shouldPlayerFinishAction();
         shouldPlayerADiscardCardRound1();
     }
@@ -583,24 +585,39 @@ public class GameTest {
          */
 
         String currentPlayer = "player-a";
-        String targetPlayer = "player-b";
         String playedCardId = "BDK091";
 
-        playCard(currentPlayer, targetPlayer, playedCardId)
+        playCard(currentPlayer, targetPlayerId ,playedCardId)
                 .andExpect(status().isOk()).andReturn();
 
         String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_monarch_player_a.json");
         String expectedJson = Files.readString(path);
-        assertNotNull(expectedJson);
         assertEquals(expectedJson, playCardJson);
 
+        String playerBGetPlayerBPlayCardJson = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_monarch_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBGetPlayerBPlayCardJson);
 
-        playedCardId = "BD7085";
-        playCard(currentPlayer,targetPlayer,playedCardId)
+        String playerCGetPlayerCPlayCardJson = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_monarch_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerCGetPlayerCPlayCardJson);
+
+        String playerDGetPlayerDPlayCardJson = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_monarch_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerDGetPlayerDPlayCardJson);
+
+        playCard(currentPlayer,targetPlayerId,"BD7085")
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
+    }
+
+    private String getJsonByPlayerId(String playerId) throws InterruptedException {
+        return map.get(playerId).poll(5, TimeUnit.SECONDS);
     }
 
     private void shouldJudgementPhase() {
@@ -1297,7 +1314,8 @@ public class GameTest {
                 .content(String.format("""
                         { "playerId": "%s",
                           "targetPlayerId": "%s",
-                          "cardId": "%s"
+                          "cardId": "%s",
+                          "playType": "active"
                         }""", currentPlayerId, targetPlayerId, cardId)));
     }
 

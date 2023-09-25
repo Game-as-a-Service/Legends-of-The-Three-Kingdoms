@@ -350,6 +350,9 @@ public class Game {
         // TODO 通知玩家要出桃
     }
 
+    public void setCurrentRoundActivePlayer(Player targetPlayer) {
+        currentRound.setActivePlayer(targetPlayer);
+    }
 
     public Player getActivePlayer() {
         return currentRound.getActivePlayer();

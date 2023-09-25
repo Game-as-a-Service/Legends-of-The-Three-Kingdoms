@@ -17,7 +17,7 @@
       "hp" : 5,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ "BD0088", "BD9087", "BD8086", "BC5057", "BC4056" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -35,11 +35,11 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU004",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 3,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BC9074", "BC8073", "BCJ063", "BC0062" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -66,5 +66,5 @@
   },
   "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-a"
+  "playerId" : "player-c"
 }

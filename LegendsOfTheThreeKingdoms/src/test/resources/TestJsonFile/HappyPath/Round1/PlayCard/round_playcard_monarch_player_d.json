@@ -17,7 +17,7 @@
       "hp" : 5,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ "BD0088", "BD9087", "BD8086", "BC5057", "BC4056" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -46,11 +46,11 @@
     }, {
       "id" : "player-d",
       "generalId" : "WEI002",
-      "roleId" : "",
+      "roleId" : "Traitor",
       "hp" : 3,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BC9061", "BC8060", "BC7059", "BC6058" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -66,5 +66,5 @@
   },
   "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-a"
+  "playerId" : "player-d"
 }

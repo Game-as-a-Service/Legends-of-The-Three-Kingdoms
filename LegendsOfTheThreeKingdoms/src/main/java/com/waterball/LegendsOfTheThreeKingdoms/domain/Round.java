@@ -18,7 +18,7 @@ public class Round {
         this.roundPhase = RoundPhase.Judgement;
         this.currentRoundPlayer = currentRoundPlayer;
     }
-    public boolean checkPlayedCardIsValid(String cardId){
+    public boolean isPlayerPlayedKill(String cardId){
         HandCard handCard = currentRoundPlayer.getHand().getCard(cardId);
         if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");
