@@ -8,8 +8,8 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.events.RoundEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import java.util.List;
-public class GeneralDying extends GamePhase {
 
+public class GeneralDying extends GamePhase {
 
     public GeneralDying(Game game) {
         super(game);

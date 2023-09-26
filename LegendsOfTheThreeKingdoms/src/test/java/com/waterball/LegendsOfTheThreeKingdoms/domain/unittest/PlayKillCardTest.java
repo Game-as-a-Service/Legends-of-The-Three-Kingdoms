@@ -55,7 +55,7 @@ public class PlayKillCardTest {
 
         //Todo 補上自訂義的 Exception
         assertThrows(IllegalStateException.class,
-                () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerC.getId()));
+                () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerC.getId(), "active"));
         assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
     }
 
@@ -91,11 +91,11 @@ public class PlayKillCardTest {
         game.setPlayers(players);
         game.setCurrentRound(new Round(playerA));
         game.enterPhase(new Normal(game));
-        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId());
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active");
 
         //When Then
         assertThrows(IllegalStateException.class,
-                () -> game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId()));
+                () -> game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), "active"));
         assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(
                 new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));

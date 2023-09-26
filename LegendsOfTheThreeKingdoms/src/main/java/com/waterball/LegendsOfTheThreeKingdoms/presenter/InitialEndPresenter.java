@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.GameDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.RoundDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import lombok.AllArgsConstructor;
@@ -36,11 +37,11 @@ public class InitialEndPresenter implements GameService.Presenter<List<InitialEn
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
 
         for (PlayerDataViewModel viewModel : playerDataViewModels) {
-            InitialEndDataViewModel initialEndDataViewModel = new InitialEndDataViewModel(
+            GameDataViewModel gameDataViewModel = new GameDataViewModel(
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(playerDataViewModels, viewModel.getId()),
                     roundDataViewModel,
                     event.getGamePhase());
-            initialEndViewModels.add(new InitialEndViewModel(event.getGameId(), initialEndDataViewModel, "", viewModel.getId()));
+            initialEndViewModels.add(new InitialEndViewModel(event.getGameId(), gameDataViewModel, "", viewModel.getId()));
         }
     }
 
@@ -51,24 +52,16 @@ public class InitialEndPresenter implements GameService.Presenter<List<InitialEn
 
     @Data
     @NoArgsConstructor
-    public static class InitialEndViewModel extends ViewModel<InitialEndDataViewModel> {
+    public static class InitialEndViewModel extends ViewModel<GameDataViewModel> {
         private String gameId;
         private String playerId;
 
-        public InitialEndViewModel(String gameId, InitialEndDataViewModel data, String message, String playerId) {
+        public InitialEndViewModel(String gameId, GameDataViewModel data, String message, String playerId) {
             super("initialEndViewModel", data, message);
             this.gameId = gameId;
             this.playerId = playerId;
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class InitialEndDataViewModel {
-        private List<PlayerDataViewModel> seats;
-        private RoundDataViewModel round;
-        private String gamePhase;
-    }
 
 }

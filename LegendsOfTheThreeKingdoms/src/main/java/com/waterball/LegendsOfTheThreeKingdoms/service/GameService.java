@@ -158,6 +158,4 @@ public class GameService {
         private String cardId;
         private String playType;
     }
-
-
 }

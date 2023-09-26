@@ -60,7 +60,8 @@
       "currentRoundPlayer" : "player-a",
       "activePlayer" : "player-b",
       "dyingPlayer" : "",
-      "showKill" : true
+      "showKill" : true,
+      "currentPlayedCard" :
     },
     "gamePhase" : "Normal"
   },

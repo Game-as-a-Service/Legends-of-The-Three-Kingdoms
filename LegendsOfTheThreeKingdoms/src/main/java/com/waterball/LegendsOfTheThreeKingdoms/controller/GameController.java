@@ -83,4 +83,5 @@ public class GameController {
         GameDto gameDto = gameService.discardCard(gameId, cardIds);
         return ResponseEntity.ok(new GameResponse(gameDto));
     }
+
 }

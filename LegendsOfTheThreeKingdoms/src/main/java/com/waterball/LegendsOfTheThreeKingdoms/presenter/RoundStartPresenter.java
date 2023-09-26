@@ -1,6 +1,7 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.GameDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.RoundDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
@@ -50,13 +51,13 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
         // 取得 drawCardEvent 中的回合資訊
         RoundEvent roundEvent = drawCardEvent.getRound();
 
-        // 將回合資訊放入 RoundDataViewModel ，後續會放到 PlayerTakeTurnDataViewModel
+        // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
 
         for (PlayerDataViewModel viewModel : playerDataViewModels) {
 
             // 此 use case 的 data 物件
-            PlayerTakeTurnDataViewModel playerTakeTurnDataViewModel = new PlayerTakeTurnDataViewModel(
+            GameDataViewModel GameDataViewModel = new GameDataViewModel(
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, drawCardEvent.getGamePhase()
             );
@@ -65,7 +66,7 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
             DrawCardViewModel drawCardViewModelInHidden = hiddenOtherPlayerCardIds(drawCardDataViewModel, viewModel);
 
             viewModels.add(new PlayerTakeTurnViewModel(List.of(roundStartViewModel, judgementViewModel, drawCardViewModelInHidden),
-                    playerTakeTurnDataViewModel,
+                    GameDataViewModel,
                     drawCardEvent.getMessage(),
                     drawCardEvent.getGameId(),
                     viewModel.getId())
@@ -129,24 +130,16 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class PlayerTakeTurnViewModel extends GameProcessViewModel<PlayerTakeTurnDataViewModel> {
+    public static class PlayerTakeTurnViewModel extends GameProcessViewModel<GameDataViewModel> {
         private String gameId;
         private String playerId;
 
-        public PlayerTakeTurnViewModel(List<ViewModel> events, PlayerTakeTurnDataViewModel data, String message, String gameId, String playerId) {
+        public PlayerTakeTurnViewModel(List<ViewModel> events, GameDataViewModel data, String message, String gameId, String playerId) {
             super(events, data, message);
             this.gameId = gameId;
             this.playerId = playerId;
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class PlayerTakeTurnDataViewModel {
-        private List<PlayerDataViewModel> seats;
-        private RoundDataViewModel round;
-        private String gamePhase;
-    }
 
 }

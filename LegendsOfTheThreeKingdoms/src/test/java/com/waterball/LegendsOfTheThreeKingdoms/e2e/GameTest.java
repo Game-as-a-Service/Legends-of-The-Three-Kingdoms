@@ -535,10 +535,35 @@ public class GameTest {
     private void playerATakeTurnRound1() throws Exception {
         shouldGetRoundStartStatus();
         shouldPlayerAPlayedCardRound1("player-b");
-        //TODO: 需要驗證 round phase == active
+        shouldPlayerBSkipPlayCardRound1();
+
 
         shouldPlayerFinishAction();
         shouldPlayerADiscardCardRound1();
+    }
+
+    private void shouldPlayerBSkipPlayCardRound1() throws Exception{
+        /*
+        * Given
+            玩家 A 的回合，對B出殺
+            玩家身上沒有延遲類錦囊卡
+
+            When
+            B跳過出牌(skip)
+
+            Then
+            B血量 4 -> 3
+
+        * */
+
+        playCard("player-b","player-a","","skip")
+                .andExpect(status().isOk()).andReturn();
+
+        String playerBSkipJson = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBSkipJson);
+
     }
 
     // 玩家 A 抽牌結束後推播發生的 domain event
@@ -587,7 +612,7 @@ public class GameTest {
         String currentPlayer = "player-a";
         String playedCardId = "BDK091";
 
-        playCard(currentPlayer, targetPlayerId ,playedCardId)
+        playCard(currentPlayer, targetPlayerId ,playedCardId,"active")
                 .andExpect(status().isOk()).andReturn();
 
         String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
@@ -610,7 +635,7 @@ public class GameTest {
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerDGetPlayerDPlayCardJson);
 
-        playCard(currentPlayer,targetPlayerId,"BD7085")
+        playCard(currentPlayer,targetPlayerId,"BD7085","active")
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -1308,15 +1333,15 @@ public class GameTest {
 
     }
 
-    private ResultActions playCard(String currentPlayerId,String targetPlayerId,String cardId) throws Exception {
+    private ResultActions playCard(String currentPlayerId,String targetPlayerId,String cardId,String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/my-id/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
                         { "playerId": "%s",
                           "targetPlayerId": "%s",
                           "cardId": "%s",
-                          "playType": "active"
-                        }""", currentPlayerId, targetPlayerId, cardId)));
+                          "playType": "%s"
+                        }""", currentPlayerId, targetPlayerId, cardId, playType)));
     }
 
 }

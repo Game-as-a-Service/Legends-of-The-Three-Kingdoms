@@ -7,6 +7,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCardDec
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayType;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
@@ -259,12 +260,17 @@ public class Game {
         this.graveyard = graveyard;
     }
 
-    public void playerPlayCard(String playerId, String cardId, String targetPlayerId) {
-        playerPlayCard(playerId, cardId, targetPlayerId, "");
+    public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
+        PlayType.checkPlayTypeIsValid(playType);
+        tempPlayCard(playerId,cardId,targetPlayerId,playType);
+        return gamePhase.playCard(playerId, cardId, targetPlayerId, playType);
     }
 
-    public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
-        return gamePhase.playCard(playerId, cardId, targetPlayerId, playType);
+    private void tempPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
+        if (!(gamePhase instanceof Normal) && !(gamePhase instanceof GeneralDying)) throw new RuntimeException();
+        HandCard handCard = getPlayer(playerId).playCard(cardId);
+        updateRoundInformation(getPlayer(targetPlayerId), cardId);
+        graveyard.add(handCard);
     }
 
     public void playerDeadSettlement() {
@@ -350,8 +356,9 @@ public class Game {
         // TODO 通知玩家要出桃
     }
 
-    public void setCurrentRoundActivePlayer(Player targetPlayer) {
+    public void updateRoundInformation(Player targetPlayer, String cardId) {
         currentRound.setActivePlayer(targetPlayer);
+        currentRound.setCurrentPlayCard(targetPlayer.playCard(cardId));
     }
 
     public Player getActivePlayer() {

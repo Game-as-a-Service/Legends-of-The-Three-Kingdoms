@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.PlayCardEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.RoundEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.GameDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.RoundDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
@@ -46,7 +47,7 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
         PlayCardViewModel playCardViewModel = new PlayCardViewModel(playCardDataViewModel);
 
 
-        // 將回合資訊放入 RoundDataViewModel ，後續會放到 PlayerTakeTurnDataViewModel
+        // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
 
 
@@ -106,12 +107,4 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class GameDataViewModel {
-        private List<PlayerDataViewModel> seats;
-        private RoundDataViewModel round;
-        private String gamePhase;
-    }
 }
