@@ -1,11 +1,16 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.PlayerBuilder;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Peach;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -43,11 +48,19 @@ public class AssignHandCardToPlayers {
         //Given
         var game = new Game();
         List<Player> players = asList(
-                Players.defaultPlayer("player-a"),
-                Players.defaultPlayer("player-b"),
-                Players.defaultPlayer("player-c"),
-                Players.defaultPlayer("player-d")
-        );
+                PlayerBuilder.construct()
+                        .withId("player-a")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-b")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-c")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-d")
+                        .build());
+
 
         game.setPlayers(players);
         Stack<HandCard> stack = new Stack<>();

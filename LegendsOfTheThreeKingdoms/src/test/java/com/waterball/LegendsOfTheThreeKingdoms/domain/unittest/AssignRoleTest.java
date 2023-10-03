@@ -1,7 +1,9 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.PlayerBuilder;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import org.junit.jupiter.api.Assertions;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.BH0036;
 import static java.util.Arrays.asList;
 
 public class AssignRoleTest {
@@ -21,11 +24,19 @@ public class AssignRoleTest {
         //Given
         var game = new Game();
         List<Player> players = asList(
-                Players.defaultPlayer("player-a"),
-                Players.defaultPlayer("player-b"),
-                Players.defaultPlayer("player-c"),
-                Players.defaultPlayer("player-d")
-        );
+                PlayerBuilder.construct()
+                        .withId("player-a")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-b")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-c")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-d")
+                        .build());
+
         game.setPlayers(players);
 
         // when
@@ -42,9 +53,15 @@ public class AssignRoleTest {
         //Given
         var game = new Game();
         List<Player> players = asList(
-                Players.defaultPlayer("player-a"),
-                Players.defaultPlayer("player-b"),
-                Players.defaultPlayer("player-c")
+                PlayerBuilder.construct()
+                        .withId("player-a")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-b")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-c")
+                        .build()
         );
         game.setPlayers(players);
 
@@ -58,11 +75,19 @@ public class AssignRoleTest {
         //Given
         var game = new Game();
         List<Player> players = asList(
-                Players.defaultPlayer("player-a"),
-                Players.defaultPlayer("player-b"),
-                Players.defaultPlayer("player-c"),
-                Players.defaultPlayer("player-d")
-        );
+                PlayerBuilder.construct()
+                        .withId("player-a")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-b")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-c")
+                        .build(),
+                PlayerBuilder.construct()
+                        .withId("player-d")
+                        .build());
+
         game.setPlayers(players);
 
         // when

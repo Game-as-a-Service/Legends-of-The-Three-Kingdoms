@@ -2,17 +2,25 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.unittest;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.Players;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.PlayerBuilder;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.equipmentcard.armorcard.EightDiagrams;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.BloodCard;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Hand;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.RoleCard;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import java.util.*;
+
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 
@@ -35,8 +43,19 @@ public class DrawCardToPlayer {
     public void givenAPlayerWithKillAndEightDiagrams_WhenDrawCard_ThenPlayerHaveKillAndEightDiagrams() {
         //Given
         var game = new Game();
-        Player player = Players.defaultPlayer("player-a");
-        player.getHand().addCardToHand(Arrays.asList(new Kill(BH0036)));;
+
+        Player player = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .build();
+
+        player.getHand().addCardToHand(Arrays.asList(new Kill(BH0036)));
+
         List<Player> players = asList(player);
         game.setPlayers(players);
         Deck deck = new Deck(new Stack());
@@ -76,8 +95,19 @@ public class DrawCardToPlayer {
         Deck deck = new Deck(new Stack<>());
         Graveyard graveyard = new Graveyard();
         graveyard.add(Arrays.asList(new Kill(BH0036), new Kill(BH0036)));
-        Player player = Players.defaultPlayer("player-a");
+
+        Player player = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .build();
+
         player.getHand().addCardToHand(Arrays.asList(new Dodge(BHK039)));
+
         List<Player> players = asList(
                 player);
 
@@ -90,7 +120,7 @@ public class DrawCardToPlayer {
         game.drawCardToPlayer(player);
 
         // then
-        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BH0036),new Kill(BH0036),new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
+        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BH0036), new Kill(BH0036), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
         Assertions.assertTrue(deck.isDeckLessThanCardNum(1));
         Assertions.assertTrue(graveyard.isEmpty());
     }

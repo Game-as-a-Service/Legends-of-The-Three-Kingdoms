@@ -1,5 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.Behavior;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.PlayCardBehaviorHandler;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.handler.NormalActiveKillBehaviorHandler;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
@@ -29,15 +32,18 @@ public class Game {
     private Round currentRound;
     private GamePhase gamePhase;
     private List<Player> winners;
+    private PlayCardBehaviorHandler playCardHandler;
+    private Stack<Behavior> topBehavior = new Stack<>();
 
     public Game(String gameId, List<Player> players) {
+        playCardHandler = new NormalActiveKillBehaviorHandler(null, this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-
+        playCardHandler = new NormalActiveKillBehaviorHandler(null, this);
     }
 
     public SeatingChart getSeatingChart() {
@@ -262,14 +268,24 @@ public class Game {
 
     public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         PlayType.checkPlayTypeIsValid(playType);
-        tempPlayCard(playerId,cardId,targetPlayerId,playType);
-        return gamePhase.playCard(playerId, cardId, targetPlayerId, playType);
+
+        if (!topBehavior.isEmpty()) {
+            Behavior behavior = topBehavior.peek();
+            List<DomainEvent> acceptedEvent = behavior.acceptedTargetPlayerPlayCard(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
+            topBehavior.pop();
+            return acceptedEvent;
+        }
+        Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
+        updateTopBehavior(behavior);
+        return behavior.askTargetPlayerPlayCard();
+//        tempPlayCard(playerId,cardId,targetPlayerId,playType);
+//        return gamePhase.playCard(playerId, cardId, targetPlayerId, playType);
     }
 
     private void tempPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         if (!(gamePhase instanceof Normal) && !(gamePhase instanceof GeneralDying)) throw new RuntimeException();
         HandCard handCard = getPlayer(playerId).playCard(cardId);
-        updateRoundInformation(getPlayer(targetPlayerId), cardId);
+        updateRoundInformation(getPlayer(targetPlayerId), handCard);
         graveyard.add(handCard);
     }
 
@@ -356,9 +372,9 @@ public class Game {
         // TODO 通知玩家要出桃
     }
 
-    public void updateRoundInformation(Player targetPlayer, String cardId) {
+    public void updateRoundInformation(Player targetPlayer, HandCard card) {
         currentRound.setActivePlayer(targetPlayer);
-        currentRound.setCurrentPlayCard(targetPlayer.playCard(cardId));
+        currentRound.setCurrentPlayCard(card);
     }
 
     public Player getActivePlayer() {
@@ -375,6 +391,22 @@ public class Game {
 
     public void enterPhase(GamePhase gamePhase) {
         this.gamePhase = gamePhase;
+    }
+
+    public Behavior peekTopBehavior() {
+        return topBehavior.peek();
+    }
+
+    public void removeTopBehavior() {
+        topBehavior.pop();
+    }
+
+    public void updateTopBehavior(Behavior behavior) {
+        topBehavior.add(behavior);
+    }
+
+    public boolean isTopBehaviorEmpty() {
+        return topBehavior.empty();
     }
 }
 

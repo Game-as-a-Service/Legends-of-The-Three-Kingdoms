@@ -4,7 +4,6 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayType;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 
@@ -35,6 +34,16 @@ public class Normal extends GamePhase {
 //            return List.of(playCardEvent, playerDamagedEvent);
 //        }
 
+        // 殺 -> 閃 or Skip
+        // 錦囊舖? -> 殺 or 閃 or ??
+        // 武將效果 ->
+
+
+
+        // 責任鏈的條件是前一張牌是哪張(動作)
+
+
+
         if (isPlayedValidCard(cardId)) {
             playerPlayCard(player, targetPlayer, cardId);
             Round currentRound = game.getCurrentRound();
@@ -61,7 +70,7 @@ public class Normal extends GamePhase {
 
     private void playerPlayCard(Player player, Player targetPlayer, String cardId) {
         HandCard handCard = player.playCard(cardId);
-        game.updateRoundInformation(targetPlayer, cardId);
+        game.updateRoundInformation(targetPlayer, handCard);
         game.getGraveyard().add(handCard);
     }
 
