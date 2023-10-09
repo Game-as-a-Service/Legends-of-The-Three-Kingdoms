@@ -164,6 +164,85 @@ public class PlayKillCardTest {
         assertTrue(game.getCurrentRound().isShowKill());
     }
 
+    @DisplayName("""
+        Given
+        A 玩家對 B 玩家已出過殺
+        A 玩家手牌有殺x1, 閃x2, 桃x2
+        A 玩家對 B 玩家出殺
+        B 玩家 4 滴血
+        
+        When
+        B 出 skip (不出牌)
+        
+        Then
+        B 玩家 3 滴血
+        A 玩家手牌爲 閃x2, 桃x2
+        """)
+    @Test
+    public void givenPlayerAKilledPlayerB_AndPlayerBSkip_ThenPlayerBDecreaseHp() {
+        //Given
+        Game game = new Game();
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .build();
 
-    //TODO 加一個playerB回應
+        playerA.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+        //playerA 對 playerB打殺
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active");
+
+
+        //When
+        game.playerPlayCard(playerB.getId(),"",playerA.getId(),"skip");
+
+
+        //Then
+        assertEquals(4, game.getPlayer("player-a").getBloodCard().getHp());
+        assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
+        assertEquals(4, game.getPlayer("player-d").getBloodCard().getHp());
+        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
+        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(
+                new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
+        assertTrue(game.getCurrentRound().isShowKill());
+    }
+
 }

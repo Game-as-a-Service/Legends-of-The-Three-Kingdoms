@@ -2,6 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.behavior;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import lombok.AllArgsConstructor;
 
@@ -15,8 +16,21 @@ public abstract class Behavior {
     protected Player currentReactionPlayer;
     protected String cardId;
     protected String playType;
+    protected HandCard card;
 
     public abstract List<DomainEvent> askTargetPlayerPlayCard();
-    public abstract List<DomainEvent> acceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType);
+
+    public List<DomainEvent> acceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType){
+       throwExceptionWhenPlayerIsNotInReactionPlayers(playerId);
+       return doAcceptedTargetPlayerPlayCard(playerId,targetPlayerIdString,cardId,playType);
+    }
+
+    protected void throwExceptionWhenPlayerIsNotInReactionPlayers(String playerId) {
+        if (!reactionPlayers.contains(playerId)) {
+            throw new IllegalStateException();
+        }
+    }
+
+    protected abstract List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType);
 
 }

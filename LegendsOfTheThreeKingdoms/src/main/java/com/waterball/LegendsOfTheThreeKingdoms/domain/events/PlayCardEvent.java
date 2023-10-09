@@ -13,7 +13,7 @@ import java.util.List;
 public class PlayCardEvent extends DomainEvent {
 
     private final String name = "PlayCardEvent";
-    private final String message = "出牌";
+    private String message = "出牌";
     private String playerId;
     private String targetPlayerId;
     private String cardId;
@@ -22,4 +22,6 @@ public class PlayCardEvent extends DomainEvent {
     private List<PlayerEvent> seats;
     private RoundEvent round;
     private String gamePhase;
+
+
 }

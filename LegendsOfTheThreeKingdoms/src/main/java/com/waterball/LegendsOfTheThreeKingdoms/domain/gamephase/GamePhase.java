@@ -2,7 +2,6 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.PlayCardEvent;
 
 import java.util.List;
 

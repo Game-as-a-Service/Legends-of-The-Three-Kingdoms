@@ -2,12 +2,20 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-b",
-      "cardId" : "BDK091",
-      "playType" : "active"
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-a",
+      "cardId" : "",
+      "playType" : "skip"
     },
-    "message" : "出牌"
+    "message" : "不出牌"
+  }, {
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "from" : 4,
+      "to" : 3
+    },
+    "message" : "扣血"
   } ],
   "data" : {
     "seats" : [ {
@@ -17,7 +25,7 @@
       "hp" : 5,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ "BD0088", "BD9087", "BD8086", "BC5057", "BC4056" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -46,11 +54,11 @@
     }, {
       "id" : "player-d",
       "generalId" : "WEI002",
-      "roleId" : "",
+      "roleId" : "Traitor",
       "hp" : 3,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BC9061", "BC8060", "BC7059", "BC6058" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -64,7 +72,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出牌",
+  "message" : "不出牌",
   "gameId" : "my-id",
-  "playerId" : "player-a"
+  "playerId" : "player-d"
 }

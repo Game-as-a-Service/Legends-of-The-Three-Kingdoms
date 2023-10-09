@@ -558,11 +558,25 @@ public class GameTest {
 
         playCard("player-b","player-a","","skip")
                 .andExpect(status().isOk()).andReturn();
-
-        String playerBSkipJson = map.get("player-b").poll(5, TimeUnit.SECONDS);
-        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip.json");
+        String playerBSkipJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_a.json");
         String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerBSkipJson);
+        assertEquals(expectedJson, playerBSkipJsonForA);
+
+        String playerBSkipJsonForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBSkipJsonForB);
+
+        String playerBSkipJsonForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBSkipJsonForC);
+
+        String playerBSkipJsonForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBSkipJsonForD);
 
     }
 

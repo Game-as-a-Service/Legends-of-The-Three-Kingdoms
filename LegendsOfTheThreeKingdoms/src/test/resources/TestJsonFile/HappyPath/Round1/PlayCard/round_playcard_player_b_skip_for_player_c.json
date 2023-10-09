@@ -8,17 +8,15 @@
       "playType" : "skip"
     },
     "message" : "不出牌"
-  },
-    {
-      "event": "PlayerDamagedEvent",
-      "data": {
-        "playerId": "player-b",
-        "from": 4,
-        "to": 3
-      },
-      "message": "扣血"
-    }
-   ],
+  }, {
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "from" : 4,
+      "to" : 3
+    },
+    "message" : "扣血"
+  } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
@@ -27,7 +25,7 @@
       "hp" : 5,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ "BD0088", "BD9087", "BD8086", "BC5057", "BC4056" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -45,11 +43,11 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU004",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 3,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BC9074", "BC8073", "BCJ063", "BC0062" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -68,7 +66,7 @@
     "round" : {
       "roundPhase" : "Action",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-a",
+      "activePlayer" : "player-b",
       "dyingPlayer" : "",
       "showKill" : true
     },
@@ -76,5 +74,5 @@
   },
   "message" : "不出牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-c"
 }

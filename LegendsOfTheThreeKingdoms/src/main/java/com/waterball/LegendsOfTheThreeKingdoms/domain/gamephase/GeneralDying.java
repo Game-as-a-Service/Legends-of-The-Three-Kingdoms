@@ -27,7 +27,7 @@ public class GeneralDying extends GamePhase {
                 List<PlayerEvent> playerEvents =  game.getPlayers().stream().map(PlayerEvent::new).toList();
                 RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
 
-                return List.of(new PlayCardEvent(playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
+                return List.of(new PlayCardEvent("出牌",playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
             }
             game.getCurrentRound().setActivePlayer(game.getNextPlayer(game.getActivePlayer()));
         }

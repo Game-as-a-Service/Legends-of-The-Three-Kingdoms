@@ -2,6 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.events;
 
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 
 import java.util.Optional;
@@ -28,7 +29,7 @@ public class RoundEvent extends DomainEvent {
         this.activePlayer = Optional.ofNullable(currentRound.getActivePlayer()).map(Player::getId).orElse("");
         this.dyingPlayer = Optional.ofNullable(currentRound.getDyingPlayer()).map(Player::getId).orElse("");
         this.isShowKill = currentRound.isShowKill();
-        this.currentPlayedCard = currentRound.getCurrentPlayCard().getId();
+        this.currentPlayedCard = Optional.ofNullable(currentRound.getCurrentPlayCard()).map(HandCard::getId).orElse("");
     }
 
     public String getRoundPhase() {

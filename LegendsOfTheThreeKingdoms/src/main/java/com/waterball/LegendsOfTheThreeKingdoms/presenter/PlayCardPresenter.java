@@ -2,6 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.PlayCardEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.PlayerDamagedEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.RoundEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.GameDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
@@ -14,11 +15,12 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel.getEvent;
 
 public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPresenter.GameViewModel>> {
-
+    List<ViewModel> eventToViewModels = new ArrayList<>();
     private List<GameViewModel> viewModels;
 
     public void renderEvents(List<DomainEvent> events) {
@@ -29,6 +31,7 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
         }
     }
 
+
     @Override
     public List<GameViewModel> present() {
         return viewModels;
@@ -37,15 +40,16 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     private void updatePlayCardEventToViewModel(List<DomainEvent> events) {
         viewModels = new ArrayList<>();
 
-        PlayCardEvent event = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
+        PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
 
+        List<PlayerDataViewModel> playerDataViewModels = playCardEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
+        RoundEvent roundEvent = playCardEvent.getRound();
 
-        List<PlayerDataViewModel> playerDataViewModels = event.getSeats().stream().map(PlayerDataViewModel::new).toList();
-        RoundEvent roundEvent = event.getRound();
+        PlayCardDataViewModel playCardDataViewModel = new PlayCardDataViewModel(playCardEvent.getPlayerId(), playCardEvent.getTargetPlayerId(), playCardEvent.getCardId(), playCardEvent.getPlayType());
+        PlayCardViewModel playCardViewModel = new PlayCardViewModel(playCardDataViewModel, playCardEvent.getMessage());
+        PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
 
-        PlayCardDataViewModel playCardDataViewModel = new PlayCardDataViewModel(event.getPlayerId(), event.getTargetPlayerId(), event.getCardId(), event.getPlayType());
-        PlayCardViewModel playCardViewModel = new PlayCardViewModel(playCardDataViewModel);
-
+        updateViewModels(playCardViewModel, playerDamageEventViewModel);
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
@@ -55,16 +59,31 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
             // 此 use case 的 data 物件
             GameDataViewModel gameDataViewModel = new GameDataViewModel(
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
-                            playerDataViewModels, viewModel.getId()), roundDataViewModel, event.getGamePhase());
+                            playerDataViewModels, viewModel.getId()), roundDataViewModel, playCardEvent.getGamePhase());
 
             viewModels.add(new GameViewModel(
-                            List.of(playCardViewModel),
-                            gameDataViewModel,
-                            event.getMessage(),
-                            event.getGameId(),
-                            viewModel.getId()));
+                    eventToViewModels,
+                    gameDataViewModel,
+                    playCardEvent.getMessage(),
+                    playCardEvent.getGameId(),
+                    viewModel.getId()));
 
         }
+    }
+
+    private void updateViewModels(PlayCardViewModel playCardViewModel, PlayerDamagedViewModel playerDamageEventViewModel) {
+        if (playCardViewModel == null) throw new RuntimeException();
+        eventToViewModels.add(playCardViewModel);
+        if (playerDamageEventViewModel != null) eventToViewModels.add(playerDamageEventViewModel);
+    }
+
+    private PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
+        PlayerDamagedEvent playerDamagedEvent = getEvent(events, PlayerDamagedEvent.class).orElse(null);
+        if (playerDamagedEvent != null) {
+            PlayerDamagedDataViewModel playerDamagedDataViewModel = new PlayerDamagedDataViewModel(playerDamagedEvent.getPlayerId(), playerDamagedEvent.getFrom(), playerDamagedEvent.getTo());
+            return new PlayerDamagedViewModel(playerDamagedDataViewModel);
+        }
+        return null;
     }
 
 
@@ -76,9 +95,8 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
             super("PlayCardEvent", null, "出牌");
         }
 
-        public PlayCardViewModel(PlayCardPresenter.PlayCardDataViewModel data) {
-            super("PlayCardEvent", data, "出牌");
-            //this.data = data;
+        public PlayCardViewModel(PlayCardPresenter.PlayCardDataViewModel data, String eventMessage) {
+            super("PlayCardEvent", data, eventMessage);
         }
     }
 
@@ -94,14 +112,31 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
 
 
     @Data
+    public static class PlayerDamagedViewModel extends ViewModel<PlayCardPresenter.PlayerDamagedDataViewModel> {
+        public PlayerDamagedViewModel(PlayCardPresenter.PlayerDamagedDataViewModel data) {
+            super("PlayerDamagedEvent", data, "扣血");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PlayerDamagedDataViewModel {
+        private String playerId;
+        private int from;
+        private int to;
+    }
+
+
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class GameViewModel extends GameProcessViewModel<GameDataViewModel> {
         private String gameId;
         private String playerId;
 
-        public GameViewModel(List<ViewModel> events, GameDataViewModel data, String message, String gameId, String playerId) {
-            super(events, data, message);
+        public GameViewModel(List<ViewModel> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
+            super(viewModels, data, message);
             this.gameId = gameId;
             this.playerId = playerId;
         }

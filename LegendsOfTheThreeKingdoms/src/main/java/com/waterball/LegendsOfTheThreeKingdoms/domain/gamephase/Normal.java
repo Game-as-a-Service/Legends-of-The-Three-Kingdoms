@@ -39,9 +39,7 @@ public class Normal extends GamePhase {
         // 武將效果 ->
 
 
-
         // 責任鏈的條件是前一張牌是哪張(動作)
-
 
 
         if (isPlayedValidCard(cardId)) {
@@ -51,7 +49,7 @@ public class Normal extends GamePhase {
             RoundEvent roundEvent = new RoundEvent(currentRound);
 
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-            return List.of(new PlayCardEvent(playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
+            return List.of(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
         }
         throw new IllegalStateException(String.format("GamePhase Normal execute but player[%s] played card id :[%s] to targetPlay[%s] is not valid.", playerId, cardId, targetPlayerId));
     }
