@@ -537,7 +537,6 @@ public class GameTest {
         shouldPlayerAPlayedCardRound1("player-b");
         shouldPlayerBSkipPlayCardRound1();
 
-
         shouldPlayerFinishAction();
         shouldPlayerADiscardCardRound1();
     }
@@ -738,7 +737,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when
-        game.judgePlayerShouldDiscardCard();
+//        game.getPlayerDiscardCount();
         // then
         assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
         assertEquals("player-b", game.getCurrentRoundPlayer().getId());
@@ -812,7 +811,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when
-        game.judgePlayerShouldDiscardCard();
+//        game.getPlayerDiscardCount();
 
         this.mockMvc.perform(post("/api/games/my-id/player:discardCards")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -858,7 +857,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when 因為 c 不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
+//        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-c").getHand().getCards();
         List<String> ids = cards.stream()
                 .skip(Math.max(0, cards.size() - 3))
@@ -923,7 +922,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when 因為 c 不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
+//        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-d").getHand().getCards();
         List<String> ids = cards.stream()
                 .skip(Math.max(0, cards.size() - 2))
@@ -970,7 +969,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when 因為這邊不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
+//        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-a").getHand().getCards();
         List<String> ids = cards.stream()
                 .skip(Math.max(0, cards.size() - 4))
@@ -1017,7 +1016,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when 因為這邊不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
+//        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-b").getHand().getCards();
         List<String> ids = cards.stream()
                 .skip(Math.max(0, cards.size() - 1))
@@ -1063,7 +1062,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when 因為 c 不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
+//        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-c").getHand().getCards();
         List<String> ids = cards.stream()
                 .skip(Math.max(0, cards.size() - 2))
@@ -1111,7 +1110,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when 因為 c 不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
+//        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-d").getHand().getCards();
         List<String> ids = cards.stream()
                 .skip(Math.max(0, cards.size() - 1))
@@ -1158,7 +1157,7 @@ public class GameTest {
         // given
         Game game = inMemoryGameRepository.findGameById("my-id");
         // when 因為這邊不重要直接隨便丟牌就好
-        game.judgePlayerShouldDiscardCard(); //true
+//        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-a").getHand().getCards();
         List<String> ids = cards.stream()
                 .skip(Math.max(0, cards.size() - 4))

@@ -82,7 +82,8 @@ public class GameService {
 
     public GameDto finishAction(String gameId, String playerId) {
         Game game = repository.findGameById(gameId);
-        game.setDiscardRoundPhase(playerId);
+
+        game.finishAction(playerId);
         return convertToGameDto(game);
     }
 

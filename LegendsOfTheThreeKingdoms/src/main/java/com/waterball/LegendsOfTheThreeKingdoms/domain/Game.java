@@ -316,11 +316,19 @@ public class Game {
         return attackDist >= dist + escapeDist;
     }
 
-    public void setDiscardRoundPhase(String playerId) {
-        if (currentRound == null || !playerId.equals(currentRound.getCurrentRoundPlayer().getId())) {
+    public List<DomainEvent> finishAction(String playerId) {
+        Player currentRoundPlayer = currentRound.getCurrentRoundPlayer();
+        if (currentRound == null || !playerId.equals(currentRoundPlayer.getId())) {
             throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
         }
         currentRound.setRoundPhase(RoundPhase.Discard);
+        FinishActionEvent finishActionEvent = new FinishActionEvent();
+        int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
+        if (currentRoundPlayerDiscardCount == 0) {
+            goNextRound(currentRoundPlayer);
+        }
+        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(currentRoundPlayerDiscardCount);
+        return List.of(finishActionEvent,notifyDiscardEvent);
     }
 
     public RoundPhase getCurrentRoundPhase() {
@@ -339,17 +347,12 @@ public class Game {
         return new JudgementEvent();
     }
 
-    public void judgePlayerShouldDiscardCard() {
+    public int getCurrentRoundPlayerDiscardCount() {
         Player player = currentRound.getCurrentRoundPlayer();
         if (!currentRound.getRoundPhase().equals(RoundPhase.Discard)) {
             throw new RuntimeException();
         }
-        if (player.isHandCardSizeBiggerThanHP()) {
-            //TODO: 通知玩家需要棄牌
-            //TODO: 玩家選擇要丟的牌，通知玩家棄牌，回傳棄牌Event。
-        } else {
-            goNextRound(player);
-        }
+        return player.getDiscardCount();
     }
 
     public void playerDiscardCard(List<String> cardIds) {
@@ -365,7 +368,6 @@ public class Game {
     private void goNextRound(Player player) {
         Player nextPlayer = seatingChart.getNextPlayer(player);
         currentRound = new Round(nextPlayer);
-
     }
 
     public void askActivePlayerPlayPeachCard() {
