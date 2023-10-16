@@ -4,8 +4,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.RoundPhase;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.PlayerBuilder;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.NotifyDiscardEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Normal;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Dodge;
@@ -39,9 +38,14 @@ public class FinishActionTest {
             A 玩家結束出牌
                         
             Then
-            系統向A 玩家發出DiscardCardsEvent, discardCount == 0
-                        
-            Phase為棄牌階段 (Discard)
+            系統向 玩家發出DiscardCardsEvent, discardCount == 0
+            系統向 玩家發出RoundEndEvent
+            系統向 玩家發出RoundStartEvent
+            系統向 玩家發出JudgementEvent
+            系統向 玩家發出DrawCardEvent, size == 2
+            輪到 B 的回合
+            RoundPhase(Action)
+            GamePhase(Normal)
             """)
     @Test
     public void playerA5HPAndHas5Cards_WhenPlayerAFinishAction_ThenDiscardCountIs0() {
@@ -67,6 +71,9 @@ public class FinishActionTest {
                 .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -97,12 +104,22 @@ public class FinishActionTest {
         List<DomainEvent> events = game.finishAction(playerA.getId());
 
         //Then
+        FinishActionEvent finishActionEvent = getEvent(events, FinishActionEvent.class).orElseThrow(RuntimeException::new);
         NotifyDiscardEvent notifyDiscardEvent = getEvent(events, NotifyDiscardEvent.class).orElseThrow(RuntimeException::new);
+        RoundEndEvent roundEndEvent = getEvent(events, RoundEndEvent.class).orElseThrow(RuntimeException::new);
+        RoundStartEvent roundStartEvent = getEvent(events, RoundStartEvent.class).orElseThrow(RuntimeException::new);
+        JudgementEvent judgementEvent = getEvent(events, JudgementEvent.class).orElseThrow(RuntimeException::new);
+        DrawCardEvent drawCardEvent = getEvent(events, DrawCardEvent.class).orElseThrow(RuntimeException::new);
+
+
         assertEquals(0, notifyDiscardEvent.getDiscardCount());
         Round round = game.getCurrentRound();
         assertEquals(playerB, round.getCurrentRoundPlayer());
-//        assertEquals(RoundPhase.Action, round.getRoundPhase());  TODO
-        // TODO:測playerB有沒有多兩張牌
+        assertEquals(RoundPhase.Action, round.getRoundPhase());
+        assertEquals(2, drawCardEvent.getCardIds().size());
+        assertEquals(2, drawCardEvent.getSize());
+        assertEquals(6, game.getPlayer("player-b").getHand().getCards().size());
+        assertEquals("Normal", game.getGamePhase().getPhaseName());
     }
 
     @DisplayName("""

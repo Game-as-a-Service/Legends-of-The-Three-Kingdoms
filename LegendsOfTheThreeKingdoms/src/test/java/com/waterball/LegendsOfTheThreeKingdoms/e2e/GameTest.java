@@ -712,8 +712,26 @@ public class GameTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        String playerAFinishActionForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAFinishActionForA);
 
-        assertEquals(RoundPhase.Discard, game.getCurrentRoundPhase());
+        String playerAFinishActionForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAFinishActionForB);
+
+        String playerAFinishActionForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAFinishActionForC);
+
+        String playerAFinishActionForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAFinishActionForD);
+
 
     }
 

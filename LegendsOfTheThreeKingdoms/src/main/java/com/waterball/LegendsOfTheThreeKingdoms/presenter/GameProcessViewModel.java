@@ -13,4 +13,12 @@ public abstract class GameProcessViewModel<T> {
     protected List<ViewModel> events;
     protected T data;
     protected String message;
+
+    public void addViewModelToEvents(ViewModel viewModel) {
+        events.add(viewModel);
+    }
+
+    public void addViewModelToEvents(int index, ViewModel viewModel) {
+        events.add(index, viewModel);
+    }
 }

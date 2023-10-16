@@ -74,7 +74,7 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
         }
     }
 
-    private DrawCardViewModel hiddenOtherPlayerCardIds(DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel) {
+    public static DrawCardViewModel hiddenOtherPlayerCardIds(DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel) {
         List<String> cards = drawCardDataViewModel.getCards();
         List<String> hiddenCards = new ArrayList<>();
         if (PlayerDataViewModel.isMonarch(targetPlayerDataViewModel)) {
@@ -101,9 +101,6 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
     }
 
 
-    public static class JudgementDataViewModel {
-
-    }
 
     @Data
     public static class DrawCardViewModel extends ViewModel<DrawCardDataViewModel> {

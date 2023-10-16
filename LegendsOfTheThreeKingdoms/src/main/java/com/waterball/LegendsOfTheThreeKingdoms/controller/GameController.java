@@ -73,9 +73,11 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/player:finishAction")
-    public ResponseEntity<GameResponse> finishAction(@PathVariable String gameId, @RequestBody FinishRoundRequest finishRoundRequest) {
-        GameDto gameDto = gameService.finishAction(gameId, finishRoundRequest.getPlayerId());
-        return ResponseEntity.ok(new GameResponse(gameDto));
+    public ResponseEntity finishAction(@PathVariable String gameId, @RequestBody FinishRoundRequest finishRoundRequest) {
+        FinishActionPresenter finishActionPresenter = new FinishActionPresenter();
+        gameService.finishAction(gameId, finishRoundRequest.getPlayerId(), finishActionPresenter);
+        webSocketBroadCast.pushFinishActionEvent(finishActionPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/api/games/{gameId}/player:discardCards")

@@ -2,6 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.service;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.events.FinishActionEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
@@ -80,11 +81,11 @@ public class GameService {
     }
 
 
-    public GameDto finishAction(String gameId, String playerId) {
+    public void finishAction(String gameId, String playerId, FinishActionPresenter presenter) {
         Game game = repository.findGameById(gameId);
-
-        game.finishAction(playerId);
-        return convertToGameDto(game);
+        List<DomainEvent> events = game.finishAction(playerId);
+        repository.save(game);
+        presenter.renderEvents(events);
     }
 
     public GameDto convertToGameDto(Game game) {

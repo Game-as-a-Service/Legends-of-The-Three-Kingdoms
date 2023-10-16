@@ -317,18 +317,36 @@ public class Game {
     }
 
     public List<DomainEvent> finishAction(String playerId) {
+        List<DomainEvent> domainEvents = new ArrayList<>();
         Player currentRoundPlayer = currentRound.getCurrentRoundPlayer();
         if (currentRound == null || !playerId.equals(currentRoundPlayer.getId())) {
             throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
         }
+
+        List<PlayerEvent> playerEvents = players.stream().map(p ->
+                new PlayerEvent(p.getId(),
+                        p.getGeneralCard().getGeneralID(),
+                        p.getRoleCard().getRole().getRole(),
+                        p.getHP(),
+                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList())),
+                        Collections.emptyList(),
+                        Collections.emptyList())).toList();
+        RoundEvent roundEvent = new RoundEvent(currentRound);
+
         currentRound.setRoundPhase(RoundPhase.Discard);
         FinishActionEvent finishActionEvent = new FinishActionEvent();
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
+        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(currentRoundPlayerDiscardCount, playerId, gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
+        domainEvents.add(finishActionEvent);
+        domainEvents.add(notifyDiscardEvent);
+
         if (currentRoundPlayerDiscardCount == 0) {
-            goNextRound(currentRoundPlayer);
+            domainEvents.add(new RoundEndEvent());
+            List<DomainEvent> nextRoundDomainEvents = goNextRound(currentRoundPlayer);
+            domainEvents.addAll(nextRoundDomainEvents);
         }
-        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(currentRoundPlayerDiscardCount);
-        return List.of(finishActionEvent,notifyDiscardEvent);
+
+        return domainEvents;
     }
 
     public RoundPhase getCurrentRoundPhase() {
@@ -365,9 +383,10 @@ public class Game {
         goNextRound(player);
     }
 
-    private void goNextRound(Player player) {
+    private List<DomainEvent> goNextRound(Player player) {
         Player nextPlayer = seatingChart.getNextPlayer(player);
         currentRound = new Round(nextPlayer);
+        return playerTakeTurn(nextPlayer);
     }
 
     public void askActivePlayerPlayPeachCard() {

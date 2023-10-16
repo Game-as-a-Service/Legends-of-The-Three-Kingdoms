@@ -1,0 +1,91 @@
+{
+  "events" : [ {
+    "event" : "FinishActionEvent",
+    "data" : "",
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "PlayerDrawCardEvent",
+    "data" : {
+      "size": 2,
+      "cards": [ ]
+    },
+    "message" : "玩家摸牌"
+  }
+  ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 5,
+      "hand" : {
+        "size" : 5,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU006",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 6,
+        "cardIds" : [ "BD7085", "BD6084", "BCJ076", "BC0075" ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU004",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "WEI002",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Action",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "",
+      "dyingPlayer" : "",
+      "showKill" : false
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "",
+  "gameId" : "my-id",
+  "playerId" : "player-b"
+}
