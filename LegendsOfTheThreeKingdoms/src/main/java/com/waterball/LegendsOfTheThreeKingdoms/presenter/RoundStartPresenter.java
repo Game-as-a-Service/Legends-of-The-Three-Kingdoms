@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.GameDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
@@ -50,6 +51,7 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
 
         // 取得 drawCardEvent 中的回合資訊
         RoundEvent roundEvent = drawCardEvent.getRound();
+        String currentRoundPlayerId = roundEvent.getCurrentRoundPlayer();
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
@@ -63,7 +65,7 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
             );
 
             // 非主公看不到此次 PlayerDrawCardEvent 的抽配 card ids
-            DrawCardViewModel drawCardViewModelInHidden = hiddenOtherPlayerCardIds(drawCardDataViewModel, viewModel);
+            DrawCardViewModel drawCardViewModelInHidden = hiddenOtherPlayerCardIds(drawCardDataViewModel, viewModel, currentRoundPlayerId);
 
             viewModels.add(new PlayerTakeTurnViewModel(List.of(roundStartViewModel, judgementViewModel, drawCardViewModelInHidden),
                     GameDataViewModel,
@@ -74,10 +76,10 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
         }
     }
 
-    public static DrawCardViewModel hiddenOtherPlayerCardIds(DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel) {
+    public DrawCardViewModel hiddenOtherPlayerCardIds(DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel, String currentRoundPlayerId) {
         List<String> cards = drawCardDataViewModel.getCards();
         List<String> hiddenCards = new ArrayList<>();
-        if (PlayerDataViewModel.isMonarch(targetPlayerDataViewModel)) {
+        if (PlayerDataViewModel.isCurrentRoundPlayer(targetPlayerDataViewModel, currentRoundPlayerId)) {
             hiddenCards.addAll(cards);
         }
         return new DrawCardViewModel(new DrawCardDataViewModel(drawCardDataViewModel.getSize(), hiddenCards));

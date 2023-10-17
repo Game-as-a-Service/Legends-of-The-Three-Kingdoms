@@ -1,5 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter.common;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.HandEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.PlayerEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
@@ -69,4 +70,9 @@ public class PlayerDataViewModel {
     public static boolean isMonarch(PlayerDataViewModel viewModel) {
         return viewModel.getRoleId().equals(Role.MONARCH.getRole());
     }
+
+    public static boolean isCurrentRoundPlayer(PlayerDataViewModel viewModel, String currentRoundPlayerId) {
+        return viewModel.getId().equals(currentRoundPlayerId);
+    }
+
 }

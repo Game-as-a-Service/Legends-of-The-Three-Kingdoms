@@ -22,14 +22,13 @@
     "data" : "",
     "message" : "判定結束"
   }, {
-    "event" : "PlayerDrawCardEvent",
+    "event" : "DrawCardEvent",
     "data" : {
-      "size": 2,
-      "cards": [ ]
+      "size" : 2,
+      "cards" : [ ]
     },
     "message" : "玩家摸牌"
-  }
-  ],
+  } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
@@ -46,9 +45,9 @@
       "id" : "player-b",
       "generalId" : "SHU006",
       "roleId" : "",
-      "hp" : 4,
+      "hp" : 3,
       "hand" : {
-        "size" : 4,
+        "size" : 6,
         "cardIds" : [ ]
       },
       "equipments" : [ ],
@@ -85,7 +84,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "",
+  "message" : "玩家 player-b 抽了 2 張牌",
   "gameId" : "my-id",
   "playerId" : "player-d"
 }

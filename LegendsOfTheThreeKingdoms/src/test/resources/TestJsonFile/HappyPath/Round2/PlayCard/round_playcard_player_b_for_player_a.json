@@ -1,33 +1,13 @@
 {
   "events" : [ {
-    "event" : "FinishActionEvent",
-    "data" : "",
-    "message" : "結束出牌"
-  }, {
-    "event" : "NotifyDiscardEvent",
+    "event" : "PlayCardEvent",
     "data" : {
-      "discardCount" : 0
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-a",
+      "cardId" : "BD7085",
+      "playType" : "active"
     },
-    "message" : "通知棄牌"
-  }, {
-    "event" : "RoundEndEvent",
-    "data" : "",
-    "message" : "回合已結束"
-  }, {
-    "event" : "RoundStartEvent",
-    "data" : "",
-    "message" : "回合已開始"
-  }, {
-    "event" : "JudgementEvent",
-    "data" : "",
-    "message" : "判定結束"
-  }, {
-    "event" : "DrawCardEvent",
-    "data" : {
-      "size" : 2,
-      "cards" : [ "BC3055", "BC2054" ]
-    },
-    "message" : "玩家摸牌"
+    "message" : "出牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -37,18 +17,18 @@
       "hp" : 5,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ ]
+        "cardIds" : [ "BD0088", "BD9087", "BD8086", "BC5057", "BC4056" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "SHU006",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 3,
       "hand" : {
-        "size" : 6,
-        "cardIds" : [ "BD7085", "BD6084", "BCJ076", "BC0075", "BC3055", "BC2054" ]
+        "size" : 5,
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -78,13 +58,13 @@
     "round" : {
       "roundPhase" : "Action",
       "currentRoundPlayer" : "player-b",
-      "activePlayer" : "",
+      "activePlayer" : "player-a",
       "dyingPlayer" : "",
-      "showKill" : false
+      "showKill" : true
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-b 抽了 2 張牌",
+  "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-a"
 }

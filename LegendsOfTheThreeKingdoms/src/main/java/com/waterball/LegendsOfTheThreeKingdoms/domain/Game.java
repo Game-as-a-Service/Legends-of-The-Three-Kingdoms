@@ -247,7 +247,7 @@ public class Game {
                 gameId,
                 playerEvents,
                 roundEvent,
-                currentRound.getRoundPhase().toString());
+                gamePhase.getPhaseName());
     }
 
     private int calculatePlayerCanDrawCardSize(Player player) {

@@ -68,7 +68,7 @@
       "dyingPlayer" : "",
       "showKill" : false
     },
-    "gamePhase" : "Action"
+    "gamePhase" : "Normal"
   },
   "message" : "玩家 player-a 抽了 2 張牌",
   "gameId" : "my-id",

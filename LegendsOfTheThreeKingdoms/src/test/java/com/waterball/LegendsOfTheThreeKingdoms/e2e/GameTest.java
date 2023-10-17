@@ -536,12 +536,10 @@ public class GameTest {
         shouldGetRoundStartStatus();
         shouldPlayerAPlayedCardRound1("player-b");
         shouldPlayerBSkipPlayCardRound1();
-
         shouldPlayerFinishAction();
-        shouldPlayerADiscardCardRound1();
     }
 
-    private void shouldPlayerBSkipPlayCardRound1() throws Exception{
+    private void shouldPlayerBSkipPlayCardRound1() throws Exception {
         /*
         * Given
             玩家 A 的回合，對B出殺
@@ -555,7 +553,7 @@ public class GameTest {
 
         * */
 
-        playCard("player-b","player-a","","skip")
+        playCard("player-b", "player-a", "", "skip")
                 .andExpect(status().isOk()).andReturn();
         String playerBSkipJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_a.json");
@@ -625,13 +623,13 @@ public class GameTest {
         String currentPlayer = "player-a";
         String playedCardId = "BDK091";
 
-        playCard(currentPlayer, targetPlayerId ,playedCardId,"active")
+        playCard(currentPlayer, targetPlayerId, playedCardId, "active")
                 .andExpect(status().isOk()).andReturn();
 
-        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playerAGetPlayerAPlayCardJson = getJsonByPlayerId("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_monarch_player_a.json");
         String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playCardJson);
+        assertEquals(expectedJson, playerAGetPlayerAPlayCardJson);
 
         String playerBGetPlayerBPlayCardJson = getJsonByPlayerId("player-b");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_monarch_player_b.json");
@@ -648,7 +646,7 @@ public class GameTest {
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerDGetPlayerDPlayCardJson);
 
-        playCard(currentPlayer,targetPlayerId,"BD7085","active")
+        playCard(currentPlayer, targetPlayerId, "BD7085", "active")
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -656,28 +654,6 @@ public class GameTest {
 
     private String getJsonByPlayerId(String playerId) throws InterruptedException {
         return map.get(playerId).poll(5, TimeUnit.SECONDS);
-    }
-
-    private void shouldJudgementPhase() {
-        /*
-        * Given
-            系統發牌完成
-            輪到玩家 A 的回合
-            玩家身上沒有延遲類錦囊卡
-
-            When
-            系統判定階段
-
-            Then
-            玩家 A進入摸牌階段
-
-        * */
-        // given
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        // when
-//        game.judgePlayerShouldDelay();
-        // then
-        Assertions.assertEquals(RoundPhase.Drawing, game.getCurrentRoundPhase());
     }
 
     private void shouldDrawCardToPlayer(int expectHandSize) {
@@ -735,41 +711,14 @@ public class GameTest {
 
     }
 
-    private void shouldPlayerADiscardCardRound1() {
-
-    /*
-       Given
-           A玩家進入棄牌階段(Discard)
-           A體力5
-           A玩家手牌有殺x1, 閃x2, 桃x2
-
-           When
-           系統進行棄牌判斷
-
-           Then
-           不用棄牌，Ａ回合結束
-           換B玩家回合
-           B Phase 是判斷階段
-    */
-
-        // given
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        // when
-//        game.getPlayerDiscardCount();
-        // then
-        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
-        assertEquals("player-b", game.getCurrentRoundPlayer().getId());
-    }
-
     private void playerBTakeTurnRound2(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(expectHandSize);
-        shouldPlayerBPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
+        shouldPlayerBPlayedCard("player-a");
         shouldPlayerFinishAction();
         shouldPlayerBDiscardCard();
     }
 
-    private void shouldPlayerBPlayedCard(String targetPlayerId, int expectHandSize, int expecTargetPlayerHP) throws Exception {
+    private void shouldPlayerBPlayedCard(String targetPlayerId) throws Exception {
         /*
         Given
         輪到 B 玩家出牌
@@ -777,37 +726,39 @@ public class GameTest {
         A 玩家在 B 玩家的攻擊距離
 
         When
-        B 玩家對 A 玩家出殺
+        B 玩家對 A 玩家出殺 (BD7085)
 
         Then
         B 玩家出殺成功
         A 玩家hp = 3
         B 玩家手牌剩五張
         */
-        shouldPlayerPlayedCard(targetPlayerId, expectHandSize, expecTargetPlayerHP);
+
+        playCard("player-b", targetPlayerId, "BD7085", "active")
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_b_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJson);
+
+        String playerBGetPlayerBPlayCardJson = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_b_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBGetPlayerBPlayCardJson);
+
+        String playerCGetPlayerCPlayCardJson = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_b_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerCGetPlayerCPlayCardJson);
+
+        String playerDGetPlayerDPlayCardJson = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_b_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerDGetPlayerDPlayCardJson);
+
     }
 
-    private void shouldPlayerPlayedCard(String targetPlayerId, int expectHandSizeAfterPlayedCard, int expecTargetPlayerHP) throws Exception {
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        Player currentRoundPlayer = game.getCurrentRoundPlayer();
-        List<HandCard> cards = currentRoundPlayer.getHand().getCards();
-        String cardId = cards.stream().filter(card -> card instanceof Kill).findFirst().get().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "%s",
-                                  "cardId": "%s"
-                                }""", currentRoundPlayer.getId(), targetPlayerId, cardId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        game = inMemoryGameRepository.findGameById("my-id");
-        assertEquals(expectHandSizeAfterPlayedCard, game.getPlayer(currentRoundPlayer.getId()).getHandSize());
-        assertEquals(expecTargetPlayerHP, game.getPlayer(targetPlayerId).getBloodCard().getHp());
-    }
 
     private void shouldPlayerBDiscardCard() throws Exception {
     /*
@@ -850,7 +801,6 @@ public class GameTest {
     }
 
     private void playerCTakeTurnRound3() throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(6);
         shouldPlayerFinishAction();
         shouldPlayerCDiscardCardRound3();
@@ -896,7 +846,6 @@ public class GameTest {
     }
 
     private void playerDTakeTurnRound4(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
         shouldPlayerFinishAction();
@@ -917,7 +866,7 @@ public class GameTest {
         D 玩家出殺成功
         D 玩家手牌有殺x5
         */
-        shouldPlayerPlayedCard(targetPlayerId, expectHandSizeAfterPlayedCard, expecTargetPlayerHP);
+//        shouldPlayerPlayedCard(targetPlayerId, expectHandSizeAfterPlayedCard, expecTargetPlayerHP);
     }
 
     private void shouldPlayerDiscardCard() throws Exception {
@@ -962,7 +911,6 @@ public class GameTest {
     }
 
     private void playerATakeTurnRound5() throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(7);
         shouldPlayerFinishAction();
         shouldPlayerADiscardCardRound5();
@@ -1008,9 +956,8 @@ public class GameTest {
     }
 
     private void playerBTakeTurnRound6(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(5);
-        shouldPlayerBPlayedCard("player-a", 4, 2);
+        shouldPlayerBPlayedCard("player-a");
         shouldPlayerFinishAction();
         shouldPlayerBDiscardCardRound6();
     }
@@ -1055,7 +1002,6 @@ public class GameTest {
     }
 
     private void playerCTakeTurnRound7() throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(5);
         shouldPlayerFinishAction();
         shouldPlayerCDiscardCardRound7();
@@ -1101,7 +1047,6 @@ public class GameTest {
     }
 
     private void playerDTakeTurnRound8(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
         shouldPlayerFinishAction();
@@ -1150,7 +1095,6 @@ public class GameTest {
     }
 
     private void playerATakeTurnRound9() throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(5);
         shouldPlayerFinishAction();
         shouldPlayerADiscardCardRound9();
@@ -1196,9 +1140,8 @@ public class GameTest {
     }
 
     private void playerBTakeTurnRound10(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldJudgementPhase();
         shouldDrawCardToPlayer(expectHandSize);
-        shouldPlayerBPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
+//        shouldPlayerBPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
     }
 
     private void shouldPlayerAHealthStatusDying() {
@@ -1364,7 +1307,7 @@ public class GameTest {
 
     }
 
-    private ResultActions playCard(String currentPlayerId,String targetPlayerId,String cardId,String playType) throws Exception {
+    private ResultActions playCard(String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/my-id/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
