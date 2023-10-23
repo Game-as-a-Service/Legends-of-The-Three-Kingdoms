@@ -278,8 +278,6 @@ public class Game {
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
         updateTopBehavior(behavior);
         return behavior.askTargetPlayerPlayCard();
-//        tempPlayCard(playerId,cardId,targetPlayerId,playType);
-//        return gamePhase.playCard(playerId, cardId, targetPlayerId, playType);
     }
 
     private void tempPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {

@@ -659,7 +659,6 @@ public class GameTest {
     private void shouldDrawCardToPlayer(int expectHandSize) {
         Game game = inMemoryGameRepository.findGameById("my-id");
         String playerId = game.getCurrentRoundPlayer().getId();
-//        game.drawCardToPlayer(playerId);
         assertEquals(RoundPhase.Action, game.getCurrentRoundPhase());
         assertEquals(expectHandSize, game.getPlayer(playerId).getHandSize());
     }
@@ -714,8 +713,47 @@ public class GameTest {
     private void playerBTakeTurnRound2(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerBPlayedCard("player-a");
+        shouldPlayerASkipPlayCardRound2();
         shouldPlayerFinishAction();
         shouldPlayerBDiscardCard();
+    }
+
+    private void shouldPlayerASkipPlayCardRound2() throws Exception {
+        /*
+         * Given
+            玩家 B 的回合，對A出殺
+            玩家身上沒有延遲類錦囊卡
+
+            When
+            A跳過出牌(skip)
+
+            Then
+            A血量 5 -> 4
+
+        * */
+
+        playCard("player-a", "player-b", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+
+        String playerASkipJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerASkipJsonForA);
+
+        String playerASkipJsonForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerASkipJsonForB);
+
+        String playerASkipJsonForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerASkipJsonForC);
+
+        String playerASkipJsonForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerASkipJsonForD);
     }
 
     private void shouldPlayerBPlayedCard(String targetPlayerId) throws Exception {

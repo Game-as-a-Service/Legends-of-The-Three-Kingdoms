@@ -33,7 +33,7 @@
       "id" : "player-b",
       "generalId" : "SHU006",
       "roleId" : "Minister",
-      "hp" : 4,
+      "hp" : 3,
       "hand" : {
         "size" : 4,
         "cardIds" : [ "BD7085", "BD6084", "BCJ076", "BC0075" ]

@@ -2,8 +2,8 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-b",
-      "targetPlayerId" : "player-a",
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
       "cardId" : "",
       "playType" : "skip"
     },
@@ -11,9 +11,9 @@
   }, {
     "event" : "PlayerDamagedEvent",
     "data" : {
-      "playerId" : "player-b",
-      "from" : 4,
-      "to" : 3
+      "playerId" : "player-a",
+      "from" : 5,
+      "to" : 4
     },
     "message" : "扣血"
   } ],
@@ -22,7 +22,7 @@
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 5,
+      "hp" : 4,
       "hand" : {
         "size" : 5,
         "cardIds" : [ ]
@@ -32,11 +32,11 @@
     }, {
       "id" : "player-b",
       "generalId" : "SHU006",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 3,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ ]
+        "size" : 5,
+        "cardIds" : [ "BD6084", "BCJ076", "BC0075", "BC3055", "BC2054" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -54,19 +54,19 @@
     }, {
       "id" : "player-d",
       "generalId" : "WEI002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 3,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BC9061", "BC8060", "BC7059", "BC6058" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
     } ],
     "round" : {
       "roundPhase" : "Action",
-      "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-b",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-a",
       "dyingPlayer" : "",
       "showKill" : true
     },
@@ -74,5 +74,5 @@
   },
   "message" : "不出牌",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-b"
 }

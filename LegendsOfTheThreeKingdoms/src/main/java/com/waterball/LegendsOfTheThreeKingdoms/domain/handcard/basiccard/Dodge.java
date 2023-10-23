@@ -13,4 +13,11 @@ public class Dodge extends BasicCard {
     public void effect(Player player) {
 
     }
+
+    public boolean isDodge(String cardId){
+
+        return true;
+    }
+
+
 }
