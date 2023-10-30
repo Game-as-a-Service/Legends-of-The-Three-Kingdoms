@@ -3,6 +3,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain.unittest;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.builders.PlayerBuilder;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Normal;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Deck;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.Graveyard;
@@ -64,6 +65,7 @@ public class DrawCardToPlayer {
         }
         game.setDeck(deck);
         game.setCurrentRound(new Round(player));
+        game.enterPhase(new Normal(game));
 
         //When
         game.drawCardToPlayer(player);
@@ -115,6 +117,7 @@ public class DrawCardToPlayer {
         game.setPlayers(players);
         game.setGraveyard(graveyard);
         game.setCurrentRound(new Round(player));
+        game.enterPhase(new Normal(game));
 
         // when
         game.drawCardToPlayer(player);

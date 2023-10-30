@@ -280,13 +280,6 @@ public class Game {
         return behavior.askTargetPlayerPlayCard();
     }
 
-    private void tempPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
-        if (!(gamePhase instanceof Normal) && !(gamePhase instanceof GeneralDying)) throw new RuntimeException();
-        HandCard handCard = getPlayer(playerId).playCard(cardId);
-        updateRoundInformation(getPlayer(targetPlayerId), handCard);
-        graveyard.add(handCard);
-    }
-
     public void playerDeadSettlement() {
         Player deathPlayer = currentRound.getDyingPlayer();
         if (deathPlayer.getRoleCard().getRole().equals(Role.MONARCH)) {
@@ -317,24 +310,29 @@ public class Game {
     public List<DomainEvent> finishAction(String playerId) {
         List<DomainEvent> domainEvents = new ArrayList<>();
         Player currentRoundPlayer = currentRound.getCurrentRoundPlayer();
-        if (currentRound == null || !playerId.equals(currentRoundPlayer.getId())) {
+
+        if (currentRoundPlayer == null || !playerId.equals(currentRoundPlayer.getId())) {
             throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
         }
+
+        resetActivePlayer();
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
                         p.getGeneralCard().getGeneralID(),
                         p.getRoleCard().getRole().getRole(),
                         p.getHP(),
-                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList())),
+                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
                         Collections.emptyList(),
                         Collections.emptyList())).toList();
+
         RoundEvent roundEvent = new RoundEvent(currentRound);
 
         currentRound.setRoundPhase(RoundPhase.Discard);
         FinishActionEvent finishActionEvent = new FinishActionEvent();
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
-        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(currentRoundPlayerDiscardCount, playerId, gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
+        String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌",currentRoundPlayer.getId(),currentRoundPlayerDiscardCount);
+        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage,currentRoundPlayerDiscardCount, playerId, gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
         domainEvents.add(finishActionEvent);
         domainEvents.add(notifyDiscardEvent);
 
@@ -345,6 +343,10 @@ public class Game {
         }
 
         return domainEvents;
+    }
+
+    private void resetActivePlayer() {
+        currentRound.setActivePlayer(null);
     }
 
     public RoundPhase getCurrentRoundPhase() {

@@ -31,10 +31,35 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
         FinishActionViewModel finishActionViewModel = new FinishActionViewModel();
         NotifyDiscardEvent notifyDiscardEvent = getEvent(events, NotifyDiscardEvent.class).orElseThrow(RuntimeException::new);
         NotifyDiscardViewModel notifyDiscardViewModel = new NotifyDiscardViewModel(new NotifyDiscardDataViewModel(notifyDiscardEvent.getDiscardCount()));
-        RoundEndEvent roundEndEvent = getEvent(events, RoundEndEvent.class).orElseThrow(RuntimeException::new);
-        RoundEndViewModel roundEndViewModel = new RoundEndViewModel();
 
-        if (notifyDiscardEvent.getDiscardCount() == 0) {
+
+        if (playerNeedToDiscard(notifyDiscardEvent)) {
+            // 取得 notifyDiscardEvent 中的玩家全部資訊
+            List<PlayerDataViewModel> playerDataViewModels = notifyDiscardEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
+
+            // 取得 notifyDiscardEvent 中的回合資訊
+            RoundEvent roundEvent = notifyDiscardEvent.getRound();
+
+            // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
+            RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
+
+            for (PlayerDataViewModel viewModel : playerDataViewModels) {
+
+                // 此 use case 的 data 物件
+                GameDataViewModel gameDataViewModel = createGameDataViewModel(viewModel, playerDataViewModels, roundDataViewModel, notifyDiscardEvent.getGamePhase());
+
+                // 非主公看不到此次 PlayerDrawCardEvent 的抽配 card ids
+                viewModels.add(new FinishActionPresenter.GameViewModel(List.of(finishActionViewModel, notifyDiscardViewModel),
+                        gameDataViewModel,
+                        notifyDiscardEvent.getMessage(),
+                        notifyDiscardEvent.getGameId(),
+                        viewModel.getId())
+                );
+            }
+        } else {
+            // 不用棄牌，直接進入下一回合
+            RoundEndEvent roundEndEvent = getEvent(events, RoundEndEvent.class).orElseThrow(RuntimeException::new);
+            RoundEndViewModel roundEndViewModel = new RoundEndViewModel();
             RoundStartEvent roundStartEvent = getEvent(events, RoundStartEvent.class).orElseThrow(RuntimeException::new);
             JudgementEvent JudgementEvent = getEvent(events, JudgementEvent.class).orElseThrow(RuntimeException::new);
             DrawCardEvent drawCardEvent = getEvent(events, DrawCardEvent.class).orElseThrow(RuntimeException::new);
@@ -58,10 +83,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
             for (PlayerDataViewModel viewModel : playerDataViewModels) {
 
                 // 此 use case 的 data 物件
-                GameDataViewModel gameDataViewModel = new GameDataViewModel(
-                        PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
-                                playerDataViewModels, viewModel.getId()), roundDataViewModel, drawCardEvent.getGamePhase()
-                );
+                GameDataViewModel gameDataViewModel = createGameDataViewModel(viewModel, playerDataViewModels, roundDataViewModel, drawCardEvent.getGamePhase());
 
                 // 非主公看不到此次 PlayerDrawCardEvent 的抽配 card ids
                 RoundStartPresenter.DrawCardViewModel drawCardViewModelInHidden = hiddenOtherPlayerCardIds(drawCardDataViewModel, viewModel, currentRoundPlayerId);
@@ -72,10 +94,18 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
                         viewModel.getId())
                 );
             }
-        } else {
-            //TODO 還未寫到這
         }
     }
+
+    private static GameDataViewModel createGameDataViewModel(PlayerDataViewModel viewModel, List<PlayerDataViewModel> playerDataViewModels, RoundDataViewModel roundDataViewModel, String gamePhase) {
+        return new GameDataViewModel(
+                PlayerDataViewModel.hiddenOtherPlayerRoleInformation(playerDataViewModels, viewModel.getId()), roundDataViewModel, gamePhase);
+    }
+
+    private boolean playerNeedToDiscard(NotifyDiscardEvent notifyDiscardEvent) {
+        return notifyDiscardEvent.getDiscardCount() > 0;
+    }
+
 
     private void updateViewModels(PlayCardPresenter.PlayCardViewModel playCardViewModel, PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel) {
         if (playCardViewModel == null) throw new RuntimeException();
@@ -155,5 +185,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
             this.gameId = gameId;
             this.playerId = playerId;
         }
+
+
     }
 }

@@ -536,7 +536,7 @@ public class GameTest {
         shouldGetRoundStartStatus();
         shouldPlayerAPlayedCardRound1("player-b");
         shouldPlayerBSkipPlayCardRound1();
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound1();
     }
 
     private void shouldPlayerBSkipPlayCardRound1() throws Exception {
@@ -664,7 +664,7 @@ public class GameTest {
     }
 
 
-    private void shouldPlayerFinishAction() throws Exception {
+    private void shouldPlayerFinishActionRound1() throws Exception {
         /*
         Given
         現在是 A 玩家的出牌階段
@@ -714,8 +714,56 @@ public class GameTest {
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerBPlayedCard("player-a");
         shouldPlayerASkipPlayCardRound2();
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerBDiscardCard();
+    }
+
+    private void shouldPlayerFinishActionRound2() throws Exception {
+
+                /*
+        Given
+        現在是 B 玩家的出牌階段
+
+        When
+        B 玩家結束出牌
+
+        Then
+        B 玩家進入棄牌階段
+        */
+        Game game = inMemoryGameRepository.findGameById("my-id");
+        String currentPlayerId = game.getCurrentRoundPlayer().getId();
+        this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                {
+                                "playerId": "%s"
+                                }
+                                """, currentPlayerId)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String playerBFinishActionForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBFinishActionForA);
+
+        String playerBFinishActionForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBFinishActionForB);
+
+        String playerBFinishActionForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBFinishActionForC);
+
+        String playerBFinishActionForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBFinishActionForD);
+
+
+
     }
 
     private void shouldPlayerASkipPlayCardRound2() throws Exception {
@@ -840,7 +888,7 @@ public class GameTest {
 
     private void playerCTakeTurnRound3() throws Exception {
         shouldDrawCardToPlayer(6);
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerCDiscardCardRound3();
     }
 
@@ -886,7 +934,7 @@ public class GameTest {
     private void playerDTakeTurnRound4(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerDiscardCard();
     }
 
@@ -950,7 +998,7 @@ public class GameTest {
 
     private void playerATakeTurnRound5() throws Exception {
         shouldDrawCardToPlayer(7);
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerADiscardCardRound5();
     }
 
@@ -996,7 +1044,7 @@ public class GameTest {
     private void playerBTakeTurnRound6(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
         shouldDrawCardToPlayer(5);
         shouldPlayerBPlayedCard("player-a");
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerBDiscardCardRound6();
     }
 
@@ -1041,7 +1089,7 @@ public class GameTest {
 
     private void playerCTakeTurnRound7() throws Exception {
         shouldDrawCardToPlayer(5);
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerCDiscardCardRound7();
     }
 
@@ -1087,7 +1135,7 @@ public class GameTest {
     private void playerDTakeTurnRound8(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerDDiscardCardRound8();
     }
 
@@ -1134,7 +1182,7 @@ public class GameTest {
 
     private void playerATakeTurnRound9() throws Exception {
         shouldDrawCardToPlayer(5);
-        shouldPlayerFinishAction();
+        shouldPlayerFinishActionRound2();
         shouldPlayerADiscardCardRound9();
     }
 
