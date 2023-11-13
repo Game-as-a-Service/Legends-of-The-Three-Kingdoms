@@ -57,7 +57,7 @@
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Action",
+      "roundPhase" : "Discard",
       "currentRoundPlayer" : "player-b",
       "activePlayer" : "",
       "dyingPlayer" : "",

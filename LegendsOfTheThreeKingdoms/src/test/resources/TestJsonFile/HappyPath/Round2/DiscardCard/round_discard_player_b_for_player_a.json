@@ -1,14 +1,29 @@
 {
   "events" : [ {
-    "event" : "FinishActionEvent",
-    "data" : "",
-    "message" : "結束出牌"
-  }, {
-    "event" : "NotifyDiscardEvent",
+    "event" : "DiscardEvent",
     "data" : {
-      "discardCount" : 2
+      "cardIds" : [ "BD6084", "BCJ076" ]
     },
-    "message" : "通知棄牌"
+    "message" : "玩家 player-b 棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ ]
+    },
+    "message" : "玩家摸牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -18,18 +33,18 @@
       "hp" : 4,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ ]
+        "cardIds" : [ "BD0088", "BD9087", "BD8086", "BC5057", "BC4056" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "SHU006",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 3,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ "BD6084", "BCJ076", "BC0075", "BC3055", "BC2054" ]
+        "size" : 3,
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -39,7 +54,7 @@
       "roleId" : "",
       "hp" : 3,
       "hand" : {
-        "size" : 4,
+        "size" : 6,
         "cardIds" : [ ]
       },
       "equipments" : [ ],
@@ -57,15 +72,15 @@
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Discard",
-      "currentRoundPlayer" : "player-b",
+      "roundPhase" : "Action",
+      "currentRoundPlayer" : "player-c",
       "activePlayer" : "",
       "dyingPlayer" : "",
-      "showKill" : true
+      "showKill" : false
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-b 需要棄 2 張牌",
+  "message" : "玩家 player-c 抽了 2 張牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-a"
 }

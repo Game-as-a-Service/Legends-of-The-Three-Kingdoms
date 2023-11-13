@@ -16,7 +16,6 @@ public enum PlayCard {
     SSJ011("SSJ011", "無懈可擊", Suit.SPADE, Rank.J),
     SSQ012("SSQ012", "過河拆橋", Suit.SPADE, Rank.Q),
     SSK013("SSK013", "南蠻入侵", Suit.SPADE, Rank.K),
-
     SSA014("SSA014", "閃電", Suit.SPADE, Rank.ACE),
     ES2015("ES2015", "八卦陣", Suit.SPADE, Rank.TWO),
     SS3016("SS3016", "順手牽羊", Suit.SPADE, Rank.THREE),

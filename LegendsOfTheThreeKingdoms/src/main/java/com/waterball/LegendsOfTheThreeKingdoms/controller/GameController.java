@@ -39,7 +39,7 @@ public class GameController {
     }
 
     @GetMapping("/api/games/{gameId}")
-    public ResponseEntity findGameById(@RequestParam String playerId, @PathVariable String gameId){
+    public ResponseEntity findGameById(@RequestParam String playerId, @PathVariable String gameId) {
         FindGamePresenter findGamePresenter = new FindGamePresenter();
         gameService.findGameById(gameId, playerId, findGamePresenter);
         webSocketBroadCast.pushFindGameEvent(findGamePresenter);
@@ -67,7 +67,7 @@ public class GameController {
     @PostMapping("/api/games/{gameId}/player:playCard")
     public ResponseEntity playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
         PlayCardPresenter playCardPresenter = new PlayCardPresenter();
-        gameService.playCard(gameId, playRequest.toPlayCardRequest(),playCardPresenter);
+        gameService.playCard(gameId, playRequest.toPlayCardRequest(), playCardPresenter);
         webSocketBroadCast.pushPlayerCardEvent(playCardPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -81,9 +81,11 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/player:discardCards")
-    public ResponseEntity<GameResponse> discardCards(@PathVariable String gameId, @RequestBody List<String> cardIds) {
-        GameDto gameDto = gameService.discardCard(gameId, cardIds);
-        return ResponseEntity.ok(new GameResponse(gameDto));
+    public ResponseEntity discardCards(@PathVariable String gameId, @RequestBody List<String> cardIds) {
+        DiscardPresenter discardPresenter = new DiscardPresenter();
+        gameService.discardCard(gameId, cardIds, discardPresenter);
+        webSocketBroadCast.pushDiscardEvent(discardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
 }

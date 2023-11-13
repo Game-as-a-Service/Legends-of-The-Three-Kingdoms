@@ -326,9 +326,10 @@ public class Game {
                         Collections.emptyList(),
                         Collections.emptyList())).toList();
 
+        currentRound.setRoundPhase(RoundPhase.Discard);
         RoundEvent roundEvent = new RoundEvent(currentRound);
 
-        currentRound.setRoundPhase(RoundPhase.Discard);
+
         FinishActionEvent finishActionEvent = new FinishActionEvent();
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
         String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌",currentRoundPlayer.getId(),currentRoundPlayerDiscardCount);
@@ -373,14 +374,19 @@ public class Game {
         return player.getDiscardCount();
     }
 
-    public void playerDiscardCard(List<String> cardIds) {
+    public List<DomainEvent> playerDiscardCard(List<String> cardIds) {
         Player player = currentRound.getCurrentRoundPlayer();
         int needToDiscardSize = player.getHandSize() - player.getHP();
         if (cardIds.size() < needToDiscardSize) throw new RuntimeException();
         // todo 判斷這個玩家是否有這些牌
         List<HandCard> discardCards = player.discardCards(cardIds);
         graveyard.add(discardCards);
-        goNextRound(player);
+        String message = String.format("玩家 %s 棄牌",player.getId());
+        DomainEvent discardEvent = new DiscardEvent(discardCards,message);
+        List<DomainEvent> nextRoundEvent = new ArrayList<>(goNextRound(player));
+        nextRoundEvent.add(discardEvent);
+        nextRoundEvent.add(new RoundEndEvent());
+        return nextRoundEvent;
     }
 
     private List<DomainEvent> goNextRound(Player player) {

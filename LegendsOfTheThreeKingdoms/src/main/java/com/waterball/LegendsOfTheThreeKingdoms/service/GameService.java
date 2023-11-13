@@ -1,8 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.DiscardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.FinishActionEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
@@ -88,6 +88,13 @@ public class GameService {
         presenter.renderEvents(events);
     }
 
+    public void discardCard(String gameId, List<String> cardIds, DiscardPresenter presenter) {
+        Game game = repository.findGameById(gameId);
+        List<DomainEvent> events = game.playerDiscardCard(cardIds);
+        repository.save(game);
+        presenter.renderEvents(events);
+    }
+
     public GameDto convertToGameDto(Game game) {
         String gameId = game.getGameId();
         List<PlayerDto> playerDtos = convertToPlayerDtos(game.getPlayers());
@@ -116,12 +123,6 @@ public class GameService {
         return playerDto;
     }
 
-
-    public GameDto discardCard(String gameId, List<String> cardIds) {
-        Game game = repository.findGameById(gameId);
-        game.playerDiscardCard(cardIds);
-        return convertToGameDto(game);
-    }
 
     public interface Presenter<T> {
         T present();

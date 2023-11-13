@@ -13,12 +13,10 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.HealthStatus;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.unittest.Utils;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.repository.InMemoryGameRepository;
 import com.waterball.LegendsOfTheThreeKingdoms.utils.ShuffleWrapper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -53,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
+import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.values;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -715,7 +713,7 @@ public class GameTest {
         shouldPlayerBPlayedCard("player-a");
         shouldPlayerASkipPlayCardRound2();
         shouldPlayerFinishActionRound2();
-        shouldPlayerBDiscardCard();
+        shouldPlayerBDiscardCardRound2();
     }
 
     private void shouldPlayerFinishActionRound2() throws Exception {
@@ -761,7 +759,6 @@ public class GameTest {
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBFinishActionForD);
-
 
 
     }
@@ -846,27 +843,23 @@ public class GameTest {
     }
 
 
-    private void shouldPlayerBDiscardCard() throws Exception {
+    private void shouldPlayerBDiscardCardRound2() throws Exception {
     /*
        Given
-           B玩家進入棄牌階段(Discard)
-           B體力3
-           B玩家手牌有殺x5
+       B玩家進入棄牌階段(Discard)
+       B體力3
+       B玩家手牌有殺x5
+       "BD6084", "BCJ076", "BC0075", "BC3055", "BC2054"
 
-           When
-           系統進行棄牌判斷
-           B回合棄BD6084,BCJ076
+       When
+       系統進行棄牌判斷
+       B回合棄BD6084,BCJ076
 
-           Then
-           B玩家剩BC0075,BC3055,BC2054
-           換C玩家回合
-           C Phase 是判斷階段
-
+       Then
+       B玩家剩BC0075,BC3055,BC2054
+       換C玩家回合
+       C Phase 是判斷階段
     */
-        // given
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        // when
-//        game.getPlayerDiscardCount();
 
         this.mockMvc.perform(post("/api/games/my-id/player:discardCards")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -876,13 +869,25 @@ public class GameTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/DiscardCard/round_discard_player_b_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJson);
 
-        // then
-        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
-        assertEquals("player-c", game.getCurrentRoundPlayer().getId());
-        assertEquals(3, game.getPlayer("player-b").getHandSize());
-        Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(new Kill(BC0075), new Kill(BC3055), new Kill(BC2054)), game.getPlayer("player-b").getHand().getCards()));
-        assertEquals(4, game.getGraveyard().size());
+        String playerBGetPlayerBPlayCardJson = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/DiscardCard/round_discard_player_b_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBGetPlayerBPlayCardJson);
+
+        String playerCGetPlayerCPlayCardJson = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/DiscardCard/round_discard_player_b_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerCGetPlayerCPlayCardJson);
+
+        String playerDGetPlayerDPlayCardJson = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/DiscardCard/round_discard_player_b_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerDGetPlayerDPlayCardJson);
 
     }
 
