@@ -145,7 +145,7 @@ public class GameTest {
         playerATakeTurnRound1();
 
         //Round 2 hp-1 playerB 攻擊 君主
-        playerBTakeTurnRound2(6, 5, 4);
+        playerBTakeTurnRound2(6);
 
         //Round 3 hp-0 playerC 距離太遠 無法攻擊 直接棄牌
         playerCTakeTurnRound3();
@@ -708,7 +708,7 @@ public class GameTest {
 
     }
 
-    private void playerBTakeTurnRound2(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
+    private void playerBTakeTurnRound2(int expectHandSize) throws Exception {
         shouldDrawCardToPlayer(expectHandSize);
         shouldPlayerBPlayedCard("player-a");
         shouldPlayerASkipPlayCardRound2();
@@ -893,71 +893,143 @@ public class GameTest {
 
     private void playerCTakeTurnRound3() throws Exception {
         shouldDrawCardToPlayer(6);
-        shouldPlayerFinishActionRound2();
+        shouldPlayerFinishAction();
         shouldPlayerCDiscardCardRound3();
     }
 
-    private void shouldPlayerCDiscardCardRound3() throws Exception {
-            /*
-       Given
-           C 玩家進入棄牌階段(Discard)
-           C 體力3
-           C 玩家手牌有殺x6
+    private void shouldPlayerFinishAction() throws Exception {
+                        /*
+        Given
+        現在是 C 玩家的出牌階段
 
-           When
-           系統進行棄牌判斷
-           C 回合棄前 2 張
+        When
+        C 玩家結束出牌
 
-           Then
-           C玩家剩 3 張手牌
-           換D玩家回合
-           D Phase 是判斷階段
-    */
-        // given
+        Then
+        C 玩家進入棄牌階段
+        */
         Game game = inMemoryGameRepository.findGameById("my-id");
-        // when 因為 c 不重要直接隨便丟牌就好
-//        game.getPlayerDiscardCount(); //true
-        List<HandCard> cards = game.getPlayer("player-c").getHand().getCards();
-        List<String> ids = cards.stream()
-                .skip(Math.max(0, cards.size() - 3))
-                .map(HandCard::getId)
-                .map(id -> "\"" + id + "\"")
-                .toList();
-        this.mockMvc.perform(post("/api/games/my-id/player:discardCards")
+        String currentPlayerId = game.getCurrentRoundPlayer().getId();
+        this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids.toString()))
+                        .content(String.format("""
+                                {
+                                "playerId": "%s"
+                                }
+                                """, currentPlayerId)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        // then
-        assertEquals(3, game.getPlayer("player-c").getHandSize());
-        assertEquals(RoundPhase.Judgement, game.getCurrentRoundPhase());
-        assertEquals("player-d", game.getCurrentRoundPlayer().getId());
-        assertEquals(7, game.getGraveyard().size());
+        map.get("player-a").poll(5, TimeUnit.SECONDS);
+        map.get("player-b").poll(5, TimeUnit.SECONDS);
+        map.get("player-c").poll(5, TimeUnit.SECONDS);
+        map.get("player-d").poll(5, TimeUnit.SECONDS);
+    }
+
+    private void shouldPlayerCDiscardCardRound3() throws Exception {
+    /*
+       Given
+       C玩家進入棄牌階段(Discard)
+       C體力3
+       C玩家手牌有殺x6
+       "BC9074", "BC8073", "BCJ063", "BC0062", "BH0049", "BHJ037"
+
+       When
+       系統進行棄牌判斷
+       C 棄"BC9074", "BC8073", "BCJ063"
+
+       Then
+       C玩家剩"BC0062", "BH0049", "BHJ037"
+       換D玩家回合
+       D Phase 是判斷階段
+    */
+
+        this.mockMvc.perform(post("/api/games/my-id/player:discardCards")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                ["%s", "%s", "%s"]
+                                """, "BC9074", "BH0049", "BCJ063")))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        map.get("player-a").poll(5, TimeUnit.SECONDS);
+        map.get("player-b").poll(5, TimeUnit.SECONDS);
+        map.get("player-c").poll(5, TimeUnit.SECONDS);
+        map.get("player-d").poll(5, TimeUnit.SECONDS);
     }
 
     private void playerDTakeTurnRound4(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldDrawCardToPlayer(expectHandSize);
-        shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
-        shouldPlayerFinishActionRound2();
-        shouldPlayerDiscardCard();
+        currentPlayerPlayedCardToTargetPlayer("player-d","player-a","BC9061");
+        currentPlayerSkipToTargetPlayer("player-a","player-d");
+        shouldPlayerFinishAction();
+        playerDiscardCard(List.of("\"BH0036\"", "\"BS0023\"").toArray(new String[0]));
     }
 
-    private void shouldPlayerDPlayedCard(String targetPlayerId, int expectHandSizeAfterPlayedCard, int expecTargetPlayerHP) throws Exception {
+    private void playerDiscardCard(String[] cardIds) throws Exception {
+        this.mockMvc.perform(post("/api/games/my-id/player:discardCards")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(Arrays.toString(cardIds)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        map.get("player-a").poll(5, TimeUnit.SECONDS);
+        map.get("player-b").poll(5, TimeUnit.SECONDS);
+        map.get("player-c").poll(5, TimeUnit.SECONDS);
+        map.get("player-d").poll(5, TimeUnit.SECONDS);
+    }
+
+
+    private void currentPlayerPlayedCardToTargetPlayer(String currentPlayer, String targetPlayerId, String cardId) throws Exception {
         /*
         Given
-        輪到  玩家出牌
-        D 玩家手牌有殺x6
-        A 玩家在 D 玩家的攻擊距離
+        輪到 D 玩家出牌
+        D 玩家手牌有殺x2, 閃x2, 桃x2
+        A 玩家在 B 玩家的攻擊距離
+        A 玩家hp = 5
 
         When
-        D 玩家對 A 玩家出殺
+        D 玩家對 A 玩家出殺 (BC9061)
 
         Then
         D 玩家出殺成功
-        D 玩家手牌有殺x5
+        A 玩家hp = 4
+        D 玩家手牌剩五張
         */
-//        shouldPlayerPlayedCard(targetPlayerId, expectHandSizeAfterPlayedCard, expecTargetPlayerHP);
+
+        playCard(currentPlayer, targetPlayerId, cardId, "active")
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+
+        String playerBGetPlayerBPlayCardJson = getJsonByPlayerId("player-b");
+
+        String playerCGetPlayerCPlayCardJson = getJsonByPlayerId("player-c");
+
+        String playerDGetPlayerDPlayCardJson = getJsonByPlayerId("player-d");
+
+    }
+
+    private void currentPlayerSkipToTargetPlayer(String currentPlayer, String targetPlayerId) throws Exception {
+        /*
+         * Given
+            玩家 B 的回合，對A出殺
+            玩家身上沒有延遲類錦囊卡
+
+            When
+            A跳過出牌(skip)
+
+            Then
+            A血量 5 -> 4
+
+        * */
+
+        playCard(currentPlayer, targetPlayerId, "", "skip")
+                .andExpect(status().isOk()).andReturn();
+
+        map.get("player-a").poll(5, TimeUnit.SECONDS);
+        map.get("player-b").poll(5, TimeUnit.SECONDS);
+        map.get("player-c").poll(5, TimeUnit.SECONDS);
+        map.get("player-d").poll(5, TimeUnit.SECONDS);
     }
 
     private void shouldPlayerDiscardCard() throws Exception {
@@ -1139,7 +1211,7 @@ public class GameTest {
 
     private void playerDTakeTurnRound8(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
         shouldDrawCardToPlayer(expectHandSize);
-        shouldPlayerDPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
+        currentPlayerPlayedCardToTargetPlayer("player-d","player-a","BC9061");
         shouldPlayerFinishActionRound2();
         shouldPlayerDDiscardCardRound8();
     }
