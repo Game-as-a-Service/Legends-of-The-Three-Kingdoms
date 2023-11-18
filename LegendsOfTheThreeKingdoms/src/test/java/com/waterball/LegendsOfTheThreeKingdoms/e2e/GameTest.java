@@ -109,13 +109,11 @@ public class GameTest {
                 session.subscribe(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", gameId, playerId), new StompFrameHandler() {  // 訂閱伺服器的 "/websocket/legendsOfTheThreeKingdoms/gameId/playerId" 路徑的訊息
                     @Override
                     public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
-                        System.err.println("*************** getPayloadType ***************");
                         return String.class;
                     }
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
-                        System.err.println("*************** handleFrame ***************");
                         try {
                             map.computeIfAbsent(playerId, k -> new LinkedBlockingQueue<>()).add((String) payload);
                         } catch (Exception e) {
@@ -145,31 +143,31 @@ public class GameTest {
         playerATakeTurnRound1();
 
         //Round 2 hp-1 playerB 攻擊 君主
-        playerBTakeTurnRound2(6);
+        playerBTakeTurnRound2();
 
         //Round 3 hp-0 playerC 距離太遠 無法攻擊 直接棄牌
         playerCTakeTurnRound3();
 
         //Round 4 hp-1 playerD
-        playerDTakeTurnRound4(6, 5, 3);
+        playerDTakeTurnRound4();
 
-        //Round 5 hp-0 playerA 本人
+        //Round 5 hp-0 playerA
         playerATakeTurnRound5();
 
         //Round 6 hp-1 playerB
-        playerBTakeTurnRound6(5, 4, 2);
+        playerBTakeTurnRound6();
 
         //ROUND 7 hp-0 playerC 距離太遠 無法攻擊 直接棄牌
         playerCTakeTurnRound7();
 
         //Round 8 hp-1 playerD
-        playerDTakeTurnRound8(5, 4, 1);
+        playerDTakeTurnRound8();
 
-        //Round 9 hp-0 本人
+        //Round 9 hp-0 playerA 君主
         playerATakeTurnRound9();
 
-        //Round 10 hp-1
-        playerBTakeTurnRound10(5, 4, 0);
+        //Round 10 hp-1 playerB
+        playerBTakeTurnRound10();
 
         // playerA 瀕臨死亡
         shouldPlayerAHealthStatusDying();
@@ -708,8 +706,8 @@ public class GameTest {
 
     }
 
-    private void playerBTakeTurnRound2(int expectHandSize) throws Exception {
-        shouldDrawCardToPlayer(expectHandSize);
+    private void playerBTakeTurnRound2() throws Exception {
+        shouldDrawCardToPlayer(6);
         shouldPlayerBPlayedCard("player-a");
         shouldPlayerASkipPlayCardRound2();
         shouldPlayerFinishActionRound2();
@@ -958,7 +956,7 @@ public class GameTest {
         map.get("player-d").poll(5, TimeUnit.SECONDS);
     }
 
-    private void playerDTakeTurnRound4(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
+    private void playerDTakeTurnRound4() throws Exception {
         currentPlayerPlayedCardToTargetPlayer("player-d","player-a","BC9061");
         currentPlayerSkipToTargetPlayer("player-a","player-d");
         shouldPlayerFinishAction();
@@ -972,6 +970,7 @@ public class GameTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        // 推播
         map.get("player-a").poll(5, TimeUnit.SECONDS);
         map.get("player-b").poll(5, TimeUnit.SECONDS);
         map.get("player-c").poll(5, TimeUnit.SECONDS);
@@ -1074,9 +1073,8 @@ public class GameTest {
     }
 
     private void playerATakeTurnRound5() throws Exception {
-        shouldDrawCardToPlayer(7);
-        shouldPlayerFinishActionRound2();
-        shouldPlayerADiscardCardRound5();
+        shouldPlayerFinishAction();
+        playerDiscardCard(List.of("\"BD0088\"", "\"BD9087\"","\"BD8086\"", "\"BC5057\"").toArray(new String[0]));
     }
 
     private void shouldPlayerADiscardCardRound5() throws Exception {
@@ -1118,11 +1116,11 @@ public class GameTest {
         assertEquals(14, game.getGraveyard().size());
     }
 
-    private void playerBTakeTurnRound6(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldDrawCardToPlayer(5);
-        shouldPlayerBPlayedCard("player-a");
-        shouldPlayerFinishActionRound2();
-        shouldPlayerBDiscardCardRound6();
+    private void playerBTakeTurnRound6() throws Exception {
+        currentPlayerPlayedCardToTargetPlayer("player-b","player-a","BC0075");
+        currentPlayerSkipToTargetPlayer("player-a","player-b");
+        shouldPlayerFinishAction();
+        playerDiscardCard(List.of("\"BS8010\"").toArray(new String[0]));
     }
 
     private void shouldPlayerBDiscardCardRound6() throws Exception {
@@ -1165,9 +1163,8 @@ public class GameTest {
     }
 
     private void playerCTakeTurnRound7() throws Exception {
-        shouldDrawCardToPlayer(5);
-        shouldPlayerFinishActionRound2();
-        shouldPlayerCDiscardCardRound7();
+        shouldPlayerFinishAction();
+        playerDiscardCard(List.of("\"BS8009\"","\"BS8008\"").toArray(new String[0]));
     }
 
     private void shouldPlayerCDiscardCardRound7() throws Exception {
@@ -1209,11 +1206,11 @@ public class GameTest {
         assertEquals(18, game.getGraveyard().size());
     }
 
-    private void playerDTakeTurnRound8(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldDrawCardToPlayer(expectHandSize);
-        currentPlayerPlayedCardToTargetPlayer("player-d","player-a","BC9061");
-        shouldPlayerFinishActionRound2();
-        shouldPlayerDDiscardCardRound8();
+    private void playerDTakeTurnRound8() throws Exception {
+        currentPlayerPlayedCardToTargetPlayer("player-d","player-a","BC8060");
+        currentPlayerSkipToTargetPlayer("player-a","player-d");
+        shouldPlayerFinishAction();
+        playerDiscardCard(List.of("\"BD0101\"").toArray(new String[0]));
     }
 
     private void shouldPlayerDDiscardCardRound8() throws Exception {
@@ -1258,9 +1255,8 @@ public class GameTest {
     }
 
     private void playerATakeTurnRound9() throws Exception {
-        shouldDrawCardToPlayer(5);
-        shouldPlayerFinishActionRound2();
-        shouldPlayerADiscardCardRound9();
+        shouldPlayerFinishAction();
+        playerDiscardCard(List.of("\"BC4056\"", "\"BS9022\"", "\"BS8021\"", "\"BD9100\"").toArray(new String[0]));
     }
 
     private void shouldPlayerADiscardCardRound9() throws Exception {
@@ -1302,9 +1298,11 @@ public class GameTest {
         assertEquals(24, game.getGraveyard().size());
     }
 
-    private void playerBTakeTurnRound10(int expectHandSize, int expectHandSizeAfterPlayedCard, int expectTargetPlayerHP) throws Exception {
-        shouldDrawCardToPlayer(expectHandSize);
-//        shouldPlayerBPlayedCard("player-a", expectHandSizeAfterPlayedCard, expectTargetPlayerHP);
+    private void playerBTakeTurnRound10() throws Exception {
+        currentPlayerPlayedCardToTargetPlayer("player-b","player-a","BC3055");
+        currentPlayerSkipToTargetPlayer("player-a","player-b");
+//        shouldPlayerFinishAction();
+//        playerDiscardCard(List.of("\"BD6097\"").toArray(new String[0]));
     }
 
     private void shouldPlayerAHealthStatusDying() {
@@ -1325,7 +1323,6 @@ public class GameTest {
 
         Player playerA = game.getPlayer("player-a");
         assertEquals(playerA, game.getActivePlayer());
-
 
     }
 
