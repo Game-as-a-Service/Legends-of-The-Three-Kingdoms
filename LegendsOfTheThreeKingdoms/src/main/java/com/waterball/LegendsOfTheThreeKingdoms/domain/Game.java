@@ -2,6 +2,7 @@ package com.waterball.LegendsOfTheThreeKingdoms.domain;
 
 import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.Behavior;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.PlayCardBehaviorHandler;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.handler.DyingAskPeachBehaviorHandler;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.handler.NormalActiveKillBehaviorHandler;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.*;
@@ -36,14 +37,14 @@ public class Game {
     private Stack<Behavior> topBehavior = new Stack<>();
 
     public Game(String gameId, List<Player> players) {
-        playCardHandler = new NormalActiveKillBehaviorHandler(null, this);
+        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(null, this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new NormalActiveKillBehaviorHandler(null, this);
+        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(null, this), this);
     }
 
     public SeatingChart getSeatingChart() {
@@ -272,7 +273,10 @@ public class Game {
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
             List<DomainEvent> acceptedEvent = behavior.acceptedTargetPlayerPlayCard(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
-            topBehavior.pop();
+            if (behavior.isNeedToPop()) {
+                topBehavior.pop();
+            }
+            updateTopBehavior(playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType));
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
@@ -332,8 +336,8 @@ public class Game {
 
         FinishActionEvent finishActionEvent = new FinishActionEvent();
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
-        String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌",currentRoundPlayer.getId(),currentRoundPlayerDiscardCount);
-        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage,currentRoundPlayerDiscardCount, playerId, gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
+        String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌", currentRoundPlayer.getId(), currentRoundPlayerDiscardCount);
+        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage, currentRoundPlayerDiscardCount, playerId, gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
         domainEvents.add(finishActionEvent);
         domainEvents.add(notifyDiscardEvent);
 
@@ -381,8 +385,8 @@ public class Game {
         // todo 判斷這個玩家是否有這些牌
         List<HandCard> discardCards = player.discardCards(cardIds);
         graveyard.add(discardCards);
-        String message = String.format("玩家 %s 棄牌",player.getId());
-        DomainEvent discardEvent = new DiscardEvent(discardCards,message);
+        String message = String.format("玩家 %s 棄牌", player.getId());
+        DomainEvent discardEvent = new DiscardEvent(discardCards, message);
         List<DomainEvent> nextRoundEvent = new ArrayList<>(goNextRound(player));
         nextRoundEvent.add(discardEvent);
         nextRoundEvent.add(new RoundEndEvent());

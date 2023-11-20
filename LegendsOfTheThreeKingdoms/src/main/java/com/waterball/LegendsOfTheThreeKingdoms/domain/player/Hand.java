@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -27,15 +29,15 @@ public class Hand {
     public void addCardToHand(List<HandCard> cards) {
         this.cards.addAll(cards);
     }
-
-    public HandCard getCard(String cardId) {
+ 
+    public Optional<HandCard> getCard(String cardId) {
         return cards.stream()
                 .filter(card -> cardId.equals(card.getId()))
-                .findFirst().get();
+                .findFirst();
     }
 //這邊的排是不是本來就棄掉了? 要改測資
     public HandCard playCard(String cardId) {
-        HandCard handCard = getCard(cardId);
+        HandCard handCard = getCard(cardId).orElseThrow(NoSuchElementException::new);
         return cards.remove(cards.indexOf(handCard));
     }
 }

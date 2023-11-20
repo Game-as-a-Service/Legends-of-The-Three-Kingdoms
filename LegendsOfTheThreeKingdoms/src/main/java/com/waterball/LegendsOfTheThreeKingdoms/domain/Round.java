@@ -6,6 +6,8 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.basiccard.Kill;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import lombok.Data;
 
+import java.util.Optional;
+
 
 @Data
 public class Round {
@@ -21,7 +23,10 @@ public class Round {
         this.currentRoundPlayer = currentRoundPlayer;
     }
     public boolean isPlayedValidCard(String cardId) {
-        HandCard handCard = currentRoundPlayer.getHand().getCard(cardId);
+        Optional<HandCard> handCardOptional = currentRoundPlayer.getHand().getCard(cardId);
+        if (handCardOptional.isEmpty()) return false;
+
+        HandCard handCard = handCardOptional.get();
         if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");
         } else if (handCard instanceof Kill) {

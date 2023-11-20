@@ -18,8 +18,8 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
     //這個牌型是不是殺、有沒出過殺、是不是當前人員、targetPlayerIds 是不是他可以殺的距離
     @Override
     protected boolean match(String playerId, String cardId, List<String> reactionPlayers, String playType) {
-        throwExceptionWhenDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)));
-        return isPlayedValidCard(cardId);
+//        throwExceptionWhenDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)));
+        return isPlayedValidCard(cardId) && !isDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)));
     }
 
     private void throwExceptionWhenDistanceTooLong(Player player, Player targetPlayer) {
@@ -31,7 +31,8 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
     @Override
     protected Behavior doHandle(String playerId, String cardId, List<String> reactionPlayers, String playType) {
         Player player = game.getPlayer(playerId);
-        return new NormalActiveKillBehavior(game, player, reactionPlayers, player, cardId, playType, player.getHand().getCard(cardId));
+
+        return new NormalActiveKillBehavior(game, player, reactionPlayers, player, cardId, playType, player.getHand().getCard(cardId).get());
     }
 
 

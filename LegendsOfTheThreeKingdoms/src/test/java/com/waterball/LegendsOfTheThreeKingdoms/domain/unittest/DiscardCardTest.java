@@ -31,7 +31,6 @@ import static java.util.Arrays.asList;
 
 public class DiscardCardTest {
 
-
     @DisplayName("""
             Given
             A 玩家棄牌階段

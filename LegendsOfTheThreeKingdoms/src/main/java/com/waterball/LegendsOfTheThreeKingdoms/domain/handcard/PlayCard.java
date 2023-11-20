@@ -151,4 +151,10 @@ public enum PlayCard {
                 .filter(c -> c.getCardName().equals("閃"))
                 .anyMatch(c -> c.getCardId().equals(cardId));
     }
+
+    public static boolean isPeachCard(String cardId){
+        return Arrays.stream(PlayCard.values())
+                .filter(c->c.getCardName().equals("桃"))
+                .anyMatch(c->c.getCardId().equals(cardId));
+    }
 }

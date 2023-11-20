@@ -17,7 +17,7 @@ public abstract class Behavior {
     protected String cardId;
     protected String playType;
     protected HandCard card;
-
+    protected boolean isNeedToPop = true;
     public abstract List<DomainEvent> askTargetPlayerPlayCard();
 
     public List<DomainEvent> acceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType){
@@ -32,5 +32,9 @@ public abstract class Behavior {
     }
 
     protected abstract List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType);
+
+    public boolean isNeedToPop() {
+        return isNeedToPop;
+    }
 
 }

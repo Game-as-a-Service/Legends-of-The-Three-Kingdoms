@@ -4,6 +4,7 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Round;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.behavior.Behavior;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GeneralDying;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.HandCard;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayType;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
@@ -15,7 +16,7 @@ import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.i
 
 public class NormalActiveKillBehavior extends Behavior {
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true);
     }
 
 
@@ -36,32 +37,44 @@ public class NormalActiveKillBehavior extends Behavior {
         Player damagedPlayer = game.getPlayer(playerId);
         int originalHp = damagedPlayer.getHP();
 
-        RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
-
         if (isSkip(playType)) {
             card.effect(damagedPlayer);
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            return List.of(playCardEvent, playerDamagedEvent);
+
+            if (isPlayerStillAlive(damagedPlayer)) {
+                RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
+                PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+                return List.of(playCardEvent, playerDamagedEvent);
+            } else {
+                PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
+                AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(damagedPlayer));
+                game.enterPhase(new GeneralDying(game));
+                Round currentRound = game.getCurrentRound();
+                currentRound.setDyingPlayer(damagedPlayer);
+                currentRound.setActivePlayer(game.getNextPlayer(damagedPlayer));
+                RoundEvent roundEvent = new RoundEvent(currentRound);
+                PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+                isNeedToPop = false;
+                return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent);
+            }
         } else if (isDodgeCard(cardId)) {
             damagedPlayer.playCard(cardId);
+            RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
             PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
             return List.of(playCardEvent, playerDamagedEvent);
         } else {
+            //TODO:怕有其他效果或殺的其他case
             return null;
-           /*
-            card.effect(damagedPlayer);
-            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            return List.of(playCardEvent, playerDamagedEvent);
-            */
         }
     }
 
+
+    private  boolean isPlayerStillAlive(Player damagedPlayer) {
+        return damagedPlayer.getHP() > 0;
+    }
 
     private boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
@@ -71,6 +84,13 @@ public class NormalActiveKillBehavior extends Behavior {
         return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
     }
 
+    private PlayerDyingEvent createPlayerDyingEvent(Player player) {
+        return new PlayerDyingEvent(player.getId());
+    }
+
+    private AskPeachEvent createAskPeachEvent(Player player) {
+        return new AskPeachEvent(player.getId());
+    }
 
     private void playerPlayCard(Player player, Player targetPlayer, String cardId) {
         HandCard handCard = player.playCard(cardId);

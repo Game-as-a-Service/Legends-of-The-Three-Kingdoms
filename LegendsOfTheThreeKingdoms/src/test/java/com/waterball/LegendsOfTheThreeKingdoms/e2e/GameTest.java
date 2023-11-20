@@ -1018,7 +1018,7 @@ public class GameTest {
             A跳過出牌(skip)
 
             Then
-            A血量 5 -> 4
+            A血量 - 1
 
         * */
 
@@ -1300,9 +1300,48 @@ public class GameTest {
 
     private void playerBTakeTurnRound10() throws Exception {
         currentPlayerPlayedCardToTargetPlayer("player-b","player-a","BC3055");
-        currentPlayerSkipToTargetPlayer("player-a","player-b");
+//        currentPlayerSkipToTargetPlayer("player-a","player-b");
+        shouldPlayerASkipAndAllPlayerReceiveDyingEvents("player-a","player-b");
 //        shouldPlayerFinishAction();
 //        playerDiscardCard(List.of("\"BD6097\"").toArray(new String[0]));
+    }
+
+    private void shouldPlayerASkipAndAllPlayerReceiveDyingEvents(String currentPlayer, String targetPlayerId) throws Exception {
+        /*
+        Given
+        A 玩家 HP <= 0
+
+        When
+        A 玩家 skip 不出桃
+        A 玩家已瀕臨死亡
+
+        Then
+        全部玩家收到 A 玩家瀕臨死亡 event
+        全部玩家收到要求玩家 B 出桃 event
+        */
+
+        playCard(currentPlayer, targetPlayerId, "", "skip")
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJson = getJsonByPlayerId("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/PlayCard/player_a_skip_and_dying_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJson);
+
+        String playerBGetPlayerBPlayCardJson = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/PlayCard/player_a_skip_and_dying_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBGetPlayerBPlayCardJson);
+
+        String playerCGetPlayerCPlayCardJson = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/PlayCard/player_a_skip_and_dying_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerCGetPlayerCPlayCardJson);
+
+        String playerDGetPlayerDPlayCardJson = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/PlayCard/player_a_skip_and_dying_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerDGetPlayerDPlayCardJson);
     }
 
     private void shouldPlayerAHealthStatusDying() {
