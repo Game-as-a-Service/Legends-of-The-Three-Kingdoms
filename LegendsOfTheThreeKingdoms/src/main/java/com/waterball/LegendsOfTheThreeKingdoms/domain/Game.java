@@ -163,7 +163,7 @@ public class Game {
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
                         p.getGeneralCard().getGeneralID(),
-                        p.getRoleCard().getRole().getRole(),
+                        p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList())),
                         Collections.emptyList(),
@@ -227,7 +227,7 @@ public class Game {
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
                         p.getGeneralCard().getGeneralID(),
-                        p.getRoleCard().getRole().getRole(),
+                        p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
                         Collections.emptyList(),
@@ -275,8 +275,9 @@ public class Game {
             List<DomainEvent> acceptedEvent = behavior.acceptedTargetPlayerPlayCard(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
             if (behavior.isNeedToPop()) {
                 topBehavior.pop();
+            } else {
+                updateTopBehavior(playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType));
             }
-            updateTopBehavior(playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType));
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
@@ -324,7 +325,7 @@ public class Game {
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
                         p.getGeneralCard().getGeneralID(),
-                        p.getRoleCard().getRole().getRole(),
+                        p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
                         Collections.emptyList(),
@@ -438,6 +439,18 @@ public class Game {
 
     public boolean isTopBehaviorEmpty() {
         return topBehavior.empty();
+    }
+
+    public String createGameOverMessage() {
+        Player deadPlayer = players.stream().filter(player -> player.getHP() == 0).findFirst().get();
+        String gameOverMessage = "";
+        if (deadPlayer.getRoleCard().getRole() == Role.MONARCH) {
+            for (Player player : players) {
+                gameOverMessage += player.getId() + " " + player.getRoleCard().getRole().getRoleName() + "\n";
+            }
+            gameOverMessage += "反賊獲勝";
+        }
+        return gameOverMessage;
     }
 }
 

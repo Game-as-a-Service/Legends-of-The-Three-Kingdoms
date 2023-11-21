@@ -18,15 +18,10 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
     //這個牌型是不是殺、有沒出過殺、是不是當前人員、targetPlayerIds 是不是他可以殺的距離
     @Override
     protected boolean match(String playerId, String cardId, List<String> reactionPlayers, String playType) {
-//        throwExceptionWhenDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)));
-        return isPlayedValidCard(cardId) && !isDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)));
+//        return isPlayedValidCard(cardId) && !isDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)));
+        return isPlayedValidCard(cardId) && isDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)));
     }
 
-    private void throwExceptionWhenDistanceTooLong(Player player, Player targetPlayer) {
-        if (isDistanceTooLong(player, targetPlayer)) {
-            throw new IllegalStateException("Players are not within range.");
-        }
-    }
 
     @Override
     protected Behavior doHandle(String playerId, String cardId, List<String> reactionPlayers, String playType) {
@@ -40,8 +35,10 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
         return game.getCurrentRound().isPlayedValidCard(cardId);
     }
 
-
     private boolean isDistanceTooLong(Player player, Player targetPlayer) {
-        return !game.isWithinDistance(player, targetPlayer);
+        if (!game.isWithinDistance(player, targetPlayer)) {
+            throw new IllegalStateException("Players are not within range.");
+        }
+        return true;
     }
 }

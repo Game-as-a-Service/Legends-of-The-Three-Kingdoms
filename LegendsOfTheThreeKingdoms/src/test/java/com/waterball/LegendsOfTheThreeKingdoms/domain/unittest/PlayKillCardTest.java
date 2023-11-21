@@ -81,6 +81,7 @@ public class PlayKillCardTest {
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
         game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
 
         //Todo 補上自訂義的 Exception
         assertThrows(IllegalStateException.class,

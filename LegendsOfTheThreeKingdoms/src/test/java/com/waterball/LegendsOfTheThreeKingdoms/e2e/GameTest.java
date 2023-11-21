@@ -482,7 +482,7 @@ public class GameTest {
 
             assertEquals(4, seats.size());
             //每個人都可以看到主公的 Role
-            assertEquals(Role.MONARCH.getRole(), seats.get(0).getRoleId());
+            assertEquals(Role.MONARCH.getRoleName(), seats.get(0).getRoleId());
 
             // 其他玩家知道主公是誰, 主公不知道其他玩家的 role
             // 玩家之間不知道其他玩家的 role
@@ -497,10 +497,10 @@ public class GameTest {
 
 
     private static List<List<String>> getDumpRoleLists() {
-        List<String> playerARolesList = List.of(Role.MONARCH.getRole(), "", "", "");
-        List<String> playerBRolesList = List.of(Role.MONARCH.getRole(), Role.MINISTER.getRole(), "", "");
-        List<String> playerCRolesList = List.of(Role.MONARCH.getRole(), "", Role.REBEL.getRole(), "");
-        List<String> playerDRolesList = List.of(Role.MONARCH.getRole(), "", "", Role.TRAITOR.getRole());
+        List<String> playerARolesList = List.of(Role.MONARCH.getRoleName(), "", "", "");
+        List<String> playerBRolesList = List.of(Role.MONARCH.getRoleName(), Role.MINISTER.getRoleName(), "", "");
+        List<String> playerCRolesList = List.of(Role.MONARCH.getRoleName(), "", Role.REBEL.getRoleName(), "");
+        List<String> playerDRolesList = List.of(Role.MONARCH.getRoleName(), "", "", Role.TRAITOR.getRoleName());
 
         List<List<String>> allRolesList = new ArrayList<>();
         allRolesList.add(playerARolesList);

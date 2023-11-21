@@ -4,7 +4,6 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class PlayerEvent extends DomainEvent {
 
@@ -29,7 +28,7 @@ public class PlayerEvent extends DomainEvent {
     public PlayerEvent(Player player) {
         this.id = player.getId();
         this.generalId = player.getGeneralCard().getGeneralID();
-        this.roleId = player.getRoleCard().getRole().getRole();
+        this.roleId = player.getRoleCard().getRole().getRoleName();
         this.hp = player.getHP();
         this.hand = new HandEvent(player);
         this.equipments = Collections.emptyList();
