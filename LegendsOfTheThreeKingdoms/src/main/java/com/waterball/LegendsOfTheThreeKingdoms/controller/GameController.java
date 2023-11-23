@@ -39,7 +39,7 @@ public class GameController {
     }
 
     @GetMapping("/api/games/{gameId}")
-    public ResponseEntity findGameById(@RequestParam String playerId, @PathVariable String gameId){
+    public ResponseEntity findGameById(@RequestParam String playerId, @PathVariable String gameId) {
         FindGamePresenter findGamePresenter = new FindGamePresenter();
         gameService.findGameById(gameId, playerId, findGamePresenter);
         webSocketBroadCast.pushFindGameEvent(findGamePresenter);
@@ -57,26 +57,35 @@ public class GameController {
     @PostMapping("/api/games/{gameId}/player:otherChooseGeneral")
     public ResponseEntity chooseGeneralByOthers(@PathVariable String gameId, @RequestBody ChooseGeneralRequest request) {
         InitialEndPresenter initialEndPresenter = new InitialEndPresenter();
-        gameService.othersChoosePlayerGeneral(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter);
+        RoundStartPresenter roundStartPresenter = new RoundStartPresenter();
+        gameService.othersChoosePlayerGeneral(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter, roundStartPresenter);
         webSocketBroadCast.pushInitialEndEvent(initialEndPresenter);
+        webSocketBroadCast.pushPlayerTakeTurnEvent(roundStartPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/api/games/{gameId}/player:playCard")
-    public ResponseEntity<GameResponse> playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
-        GameDto gameDto = gameService.playCard(gameId, playRequest.getPlayerId(), playRequest.getCardId(), playRequest.getTargetPlayerId(), playRequest.getPlayType());
-        return ResponseEntity.ok(new GameResponse(gameDto));
+    public ResponseEntity playerPlayCard(@PathVariable String gameId, @RequestBody PlayCardRequest playRequest) {
+        PlayCardPresenter playCardPresenter = new PlayCardPresenter();
+        gameService.playCard(gameId, playRequest.toPlayCardRequest(), playCardPresenter);
+        webSocketBroadCast.pushPlayerCardEvent(playCardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/api/games/{gameId}/player:finishAction")
-    public ResponseEntity<GameResponse> finishAction(@PathVariable String gameId, @RequestBody FinishRoundRequest finishRoundRequest) {
-        GameDto gameDto = gameService.finishAction(gameId, finishRoundRequest.getPlayerId());
-        return ResponseEntity.ok(new GameResponse(gameDto));
+    public ResponseEntity finishAction(@PathVariable String gameId, @RequestBody FinishRoundRequest finishRoundRequest) {
+        FinishActionPresenter finishActionPresenter = new FinishActionPresenter();
+        gameService.finishAction(gameId, finishRoundRequest.getPlayerId(), finishActionPresenter);
+        webSocketBroadCast.pushFinishActionEvent(finishActionPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/api/games/{gameId}/player:discardCards")
-    public ResponseEntity<GameResponse> discardCards(@PathVariable String gameId, @RequestBody List<String> cardIds) {
-        GameDto gameDto = gameService.discardCard(gameId, cardIds);
-        return ResponseEntity.ok(new GameResponse(gameDto));
+    public ResponseEntity discardCards(@PathVariable String gameId, @RequestBody List<String> cardIds) {
+        DiscardPresenter discardPresenter = new DiscardPresenter();
+        gameService.discardCard(gameId, cardIds, discardPresenter);
+        webSocketBroadCast.pushDiscardEvent(discardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
+
 }

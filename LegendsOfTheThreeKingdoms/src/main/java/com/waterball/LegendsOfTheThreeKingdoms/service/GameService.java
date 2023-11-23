@@ -1,6 +1,6 @@
 package com.waterball.LegendsOfTheThreeKingdoms.service;
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.ChooseGeneralRequest;
+import com.waterball.LegendsOfTheThreeKingdoms.presenter.DiscardPresenter;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.DomainEvent;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
@@ -60,11 +60,12 @@ public class GameService {
         presenter.renderEvents(events);
     }
 
-    public void othersChoosePlayerGeneral(String gameId, MonarchChooseGeneralRequest request, InitialEndPresenter presenter) {
+    public void othersChoosePlayerGeneral(String gameId, MonarchChooseGeneralRequest request, InitialEndPresenter initialEndPresenter, RoundStartPresenter roundStartPresenter) {
         Game game = repository.findGameById(gameId);
         List<DomainEvent> events = game.othersChoosePlayerGeneral(request.getPlayerId(), request.getGeneralId());
         repository.save(game);
-        presenter.renderEvents(events);
+        initialEndPresenter.renderEvents(events);
+        roundStartPresenter.renderEvents(events);
     }
 
     public void findGameById(String gameId, String playerId, FindGamePresenter presenter) {
@@ -72,18 +73,26 @@ public class GameService {
         presenter.renderGame(game, playerId);
     }
 
-    public GameDto playCard(String gameId, String playerId, String cardId, String targetPlayerId, String playType) {
+    public void playCard(String gameId, PlayCardRequest request, PlayCardPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        game.playerPlayCard(playerId, cardId, targetPlayerId, playType);
+        List<DomainEvent> events = game.playerPlayCard(request.playerId, request.cardId, request.targetPlayerId , request.playType);
         repository.save(game);
-        return convertToGameDto(game);
+        presenter.renderEvents(events);
     }
 
 
-    public GameDto finishAction(String gameId, String playerId) {
+    public void finishAction(String gameId, String playerId, FinishActionPresenter presenter) {
         Game game = repository.findGameById(gameId);
-        game.setDiscardRoundPhase(playerId);
-        return convertToGameDto(game);
+        List<DomainEvent> events = game.finishAction(playerId);
+        repository.save(game);
+        presenter.renderEvents(events);
+    }
+
+    public void discardCard(String gameId, List<String> cardIds, DiscardPresenter presenter) {
+        Game game = repository.findGameById(gameId);
+        List<DomainEvent> events = game.playerDiscardCard(cardIds);
+        repository.save(game);
+        presenter.renderEvents(events);
     }
 
     public GameDto convertToGameDto(Game game) {
@@ -115,12 +124,6 @@ public class GameService {
     }
 
 
-    public GameDto discardCard(String gameId, List<String> cardIds) {
-        Game game = repository.findGameById(gameId);
-        game.playerDiscardCard(cardIds);
-        return convertToGameDto(game);
-    }
-
     public interface Presenter<T> {
         T present();
     }
@@ -147,5 +150,15 @@ public class GameService {
     public static class OthersChooseGeneralRequest {
         private String playerId;
         private String generalId;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PlayCardRequest {
+        private String playerId;
+        private String targetPlayerId;
+        private String cardId;
+        private String playType;
     }
 }

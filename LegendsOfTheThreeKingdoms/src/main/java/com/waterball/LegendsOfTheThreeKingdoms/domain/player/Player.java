@@ -76,4 +76,11 @@ public class Player {
         return healthStatus;
     }
 
+    public int getDiscardCount() {
+        if (isHandCardSizeBiggerThanHP()) {
+            return hand.size() - bloodCard.getHp();
+        } else {
+            return 0;
+        }
+    }
 }

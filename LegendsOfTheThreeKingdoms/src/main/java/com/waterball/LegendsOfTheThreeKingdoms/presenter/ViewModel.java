@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class ViewModel<T> {
-    protected String event;
+public class ViewModel<T> {
+    protected String event; //List<Event>
     protected T data;
     protected String message;
 
 
     @SuppressWarnings("unchecked")
-    protected static <T extends DomainEvent> Optional<T> getEvent(List<DomainEvent> events, Class<T> type) {
+    public static <T extends DomainEvent> Optional<T> getEvent(List<DomainEvent> events, Class<T> type) {
         return events.stream()
                 .filter(e -> type.isAssignableFrom(e.getClass()))
                 .map(e -> (T) e)
@@ -32,5 +32,4 @@ public abstract class ViewModel<T> {
                 .map(e -> (T) e)
                 .collect(Collectors.toList());
     }
-
 }

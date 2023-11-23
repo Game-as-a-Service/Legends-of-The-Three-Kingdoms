@@ -20,4 +20,6 @@ public class GeneralCard {
 
     public static final Map<String, GeneralCard> generals = new HashMap<>() {
     };
+
+
 }
