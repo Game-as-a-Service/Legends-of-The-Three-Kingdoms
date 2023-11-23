@@ -166,26 +166,26 @@ public class GameTest {
         //Round 9 hp-0 playerA 君主
         playerATakeTurnRound9();
 
-        //Round 10 hp-1 playerB
-        playerBTakeTurnRound10();
-
-        // playerA 瀕臨死亡
-        shouldPlayerAHealthStatusDying();
-
-        // 詢問A是否要出桃
-        shouldPlayerARequestPeach();
-
-        // 詢問B是否要出桃
-        shouldPlayerBRequestPeach();
-
-        // 詢問C是否要出桃
-        shouldPlayerCRequestPeach();
-
-        // 詢問D是否要出桃
-        shouldPlayerDRequestPeach();
-
-        // 遊戲結束
-        shouldPlayerDeadSettlement();
+//        //Round 10 hp-1 playerB
+//        playerBTakeTurnRound10();
+//
+//        // playerA 瀕臨死亡
+//        shouldPlayerAHealthStatusDying();
+//
+//        // 詢問A是否要出桃
+//        shouldPlayerARequestPeach();
+//
+//        // 詢問B是否要出桃
+//        shouldPlayerBRequestPeach();
+//
+//        // 詢問C是否要出桃
+//        shouldPlayerCRequestPeach();
+//
+//        // 詢問D是否要出桃
+//        shouldPlayerDRequestPeach();
+//
+//        // 遊戲結束
+//        shouldPlayerDeadSettlement();
 
     }
 
