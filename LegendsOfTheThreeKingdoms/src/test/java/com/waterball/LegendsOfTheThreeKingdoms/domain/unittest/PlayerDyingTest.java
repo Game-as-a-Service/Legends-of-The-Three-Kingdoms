@@ -44,7 +44,7 @@ public class PlayerDyingTest {
             系統向所有玩家發出 player-b PlayCardEvent
             系統向所有玩家發出 player-a PlayerDamagedEvent
             系統向所有玩家發出 PlayerDyingEvent, playerId = "player-a"
-            系統向所有玩家發出 AskPeachEvent, playerId = "player-b"
+            系統向所有玩家發出 AskPeachEvent, playerId = "player-a"
             activePlayer = "player-b"
             currentRoundPlayer = "player-b"
             dyingPlayer = "player-a"
@@ -117,6 +117,96 @@ public class PlayerDyingTest {
         RoundEvent roundEvent = playCardEvent.getRound();
         assertEquals("player-a", playerDamagedEvent.getPlayerId());
         assertEquals("player-a", playerDyingEvent.getPlayerId());
+        assertEquals("player-a", askPeachEvent.getPlayerId());
+        assertEquals("player-a", roundEvent.getDyingPlayer());
+
+        assertEquals("player-b", roundEvent.getCurrentRoundPlayer());
+        assertEquals("player-a", roundEvent.getActivePlayer());
+        assertEquals("GeneralDying", game.getGamePhase().getPhaseName());
+    }
+
+    @DisplayName("""
+            Given
+            A 玩家已瀕臨死亡且狀態是 Dying
+            A 玩家被詢問要不要出桃救A
+                        
+            When
+            A玩家不出桃救A
+               
+            Then
+            B玩家被詢問要不要出桃救A
+            系統向所有玩家發出 player-a PlayCardEvent
+            系統向所有玩家發出 AskPeachEvent, playerId = "player-b"
+            activePlayer = "player-a"
+            currentRoundPlayer = "player-a"
+            dyingPlayer = "player-a"
+            RoundPhase(Action)
+            GamePhase(Normal)
+            """)
+    @Test
+    public void playerADying_WhenPlayerAPlayCardSkip_ThenAskPlayerBPeach() {
+        //Given
+        Game game = new Game();
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 1))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerB));
+        game.enterPhase(new Normal(game));
+
+        game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");
+        game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
+
+        //When
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), "", playerA.getId(), "skip");
+
+        //Then
+        PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
+        AskPeachEvent askPeachEvent = getEvent(events, AskPeachEvent.class).orElseThrow(RuntimeException::new);
+
+        assertNotNull(playCardEvent);
+        RoundEvent roundEvent = playCardEvent.getRound();
         assertEquals("player-b", askPeachEvent.getPlayerId());
         assertEquals("player-a", roundEvent.getDyingPlayer());
 

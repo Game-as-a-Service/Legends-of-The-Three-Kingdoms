@@ -24,11 +24,10 @@ public class DyingAskPeachBehaviorHandler extends PlayCardBehaviorHandler {
     protected Behavior doHandle(String playerId, String cardId, List<String> reactionPlayers, String playType) {
         Player player = game.getPlayer(playerId);
 
-        List<String> otherPlayers = game.getPlayers().stream()
+        List<String> players = game.getPlayers().stream()
                 .map(Player::getId)
-                .filter(id -> !id.equals(playerId))
                 .collect(Collectors.toList());
 
-        return new DyingAskPeachBehavior(game, player, otherPlayers, player, cardId, playType, null);
+        return new DyingAskPeachBehavior(game, player, players, player, cardId, playType, null);
     }
 }

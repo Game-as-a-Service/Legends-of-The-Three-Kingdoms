@@ -48,11 +48,11 @@ public class NormalActiveKillBehavior extends Behavior {
                 return List.of(playCardEvent, playerDamagedEvent);
             } else {
                 PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
-                AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(damagedPlayer));
+                AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer);
                 game.enterPhase(new GeneralDying(game));
                 Round currentRound = game.getCurrentRound();
                 currentRound.setDyingPlayer(damagedPlayer);
-                currentRound.setActivePlayer(game.getNextPlayer(damagedPlayer));
+                currentRound.setActivePlayer(damagedPlayer);
                 RoundEvent roundEvent = new RoundEvent(currentRound);
                 PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
                 isNeedToPop = false;

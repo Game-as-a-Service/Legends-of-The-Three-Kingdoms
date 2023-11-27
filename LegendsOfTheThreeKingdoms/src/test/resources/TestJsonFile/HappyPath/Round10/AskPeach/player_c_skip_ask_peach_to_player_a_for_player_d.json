@@ -2,30 +2,16 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-b",
+      "playerId" : "player-c",
+      "targetPlayerId" : "player-a",
       "cardId" : "",
       "playType" : "skip"
     },
     "message" : "不出牌"
   }, {
-    "event" : "PlayerDamagedEvent",
-    "data" : {
-      "playerId" : "player-a",
-      "from" : 1,
-      "to" : 0
-    },
-    "message" : "扣血"
-  }, {
-    "event" : "PlayerDyingEvent",
-    "data" : {
-      "playerId" : "player-a"
-    },
-    "message" : "玩家已瀕臨死亡"
-  }, {
     "event" : "AskPeachEvent",
     "data" : {
-      "playerId" : "player-a"
+      "playerId" : "player-d"
     },
     "message" : "要求玩家出桃"
   } ],
@@ -44,11 +30,11 @@
     }, {
       "id" : "player-b",
       "generalId" : "SHU006",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 3,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BC2054", "BS7020", "BD7098", "BD6097" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -66,11 +52,11 @@
     }, {
       "id" : "player-d",
       "generalId" : "WEI002",
-      "roleId" : "",
+      "roleId" : "Traitor",
       "hp" : 3,
       "hand" : {
         "size" : 3,
-        "cardIds" : [ ]
+        "cardIds" : [ "BC7059", "BC6058", "BDJ102" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -78,7 +64,7 @@
     "round" : {
       "roundPhase" : "Action",
       "currentRoundPlayer" : "player-b",
-      "activePlayer" : "player-a",
+      "activePlayer" : "player-d",
       "dyingPlayer" : "player-a",
       "showKill" : true
     },
@@ -86,5 +72,5 @@
   },
   "message" : "不出牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-d"
 }

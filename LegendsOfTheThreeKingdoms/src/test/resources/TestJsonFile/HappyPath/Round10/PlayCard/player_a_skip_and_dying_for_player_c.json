@@ -9,13 +9,13 @@
     },
     "message" : "不出牌"
   }, {
-    "event": "PlayerDamagedEvent",
-    "data": {
-      "playerId": "player-a",
-      "from": 1,
-      "to": 0
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "from" : 1,
+      "to" : 0
     },
-    "message": "扣血"
+    "message" : "扣血"
   }, {
     "event" : "PlayerDyingEvent",
     "data" : {
@@ -25,7 +25,7 @@
   }, {
     "event" : "AskPeachEvent",
     "data" : {
-      "playerId" : "player-b"
+      "playerId" : "player-a"
     },
     "message" : "要求玩家出桃"
   } ],
@@ -36,7 +36,7 @@
       "roleId" : "Monarch",
       "hp" : 0,
       "hand" : {
-        "size" : 5,
+        "size" : 1,
         "cardIds" : [ ]
       },
       "equipments" : [ ],
@@ -47,7 +47,7 @@
       "roleId" : "",
       "hp" : 3,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ ],
@@ -55,22 +55,22 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU004",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 3,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ ]
+        "size" : 3,
+        "cardIds" : [ "BC8073", "BC0062", "BHJ037" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
       "generalId" : "WEI002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 3,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BC9061", "BC8060", "BC7059", "BC6058" ]
+        "size" : 3,
+        "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
@@ -79,12 +79,12 @@
       "roundPhase" : "Action",
       "currentRoundPlayer" : "player-b",
       "activePlayer" : "player-a",
-      "dyingPlayer" : "",
+      "dyingPlayer" : "player-a",
       "showKill" : true
     },
-    "gamePhase" : "Normal"
+    "gamePhase" : "GeneralDying"
   },
-  "message" : "出牌",
+  "message" : "不出牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-c"
 }

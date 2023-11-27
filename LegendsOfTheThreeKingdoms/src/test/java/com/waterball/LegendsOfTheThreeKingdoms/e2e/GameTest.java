@@ -166,12 +166,20 @@ public class GameTest {
         //Round 9 hp-0 playerA 君主
         playerATakeTurnRound9();
 
-//        //Round 10 hp-1 playerB
-//        playerBTakeTurnRound10();
-//
-//        // playerA 瀕臨死亡
-//        shouldPlayerAHealthStatusDying();
-//
+        //Round 10 hp-1 playerB
+        playerBTakeTurnRound10();
+
+        // player A 不出桃
+        playerAPlayedCardSkip();
+
+        // player B 不出逃
+        playerBPlayedCardSkip();
+
+        playerCPlayedCardSkip();
+
+        playerDPlayedCardSkip();
+
+
 //        // 詢問A是否要出桃
 //        shouldPlayerARequestPeach();
 //
@@ -188,6 +196,8 @@ public class GameTest {
 //        shouldPlayerDeadSettlement();
 
     }
+
+
 
     public void shouldCreateGame() throws Exception {
 
@@ -454,6 +464,7 @@ public class GameTest {
     }
 
     // 推播 所有玩家的武將 && 手牌
+
     private void shouldGetInitialEndGameStatus() throws InterruptedException, JsonProcessingException {
         List<List<String>> allRolesList = getDumpRoleLists();
         List<Integer> hps = List.of(5, 4, 3, 3);
@@ -494,7 +505,6 @@ public class GameTest {
             checkEveryPlayerPublicInformation(currentPlayer, game, seats, generals, hps);
         }
     }
-
 
     private static List<List<String>> getDumpRoleLists() {
         List<String> playerARolesList = List.of(Role.MONARCH.getRoleName(), "", "", "");
@@ -574,6 +584,7 @@ public class GameTest {
     }
 
     // 玩家 A 抽牌結束後推播發生的 domain event
+
     private void shouldGetRoundStartStatus() throws InterruptedException, IOException {
         String actualJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_monarch_player_a.json");
@@ -599,7 +610,6 @@ public class GameTest {
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
     }
-
     private void shouldPlayerAPlayedCardRound1(String targetPlayerId) throws Exception {
        /*
         Given
@@ -1300,10 +1310,7 @@ public class GameTest {
 
     private void playerBTakeTurnRound10() throws Exception {
         currentPlayerPlayedCardToTargetPlayer("player-b","player-a","BC3055");
-//        currentPlayerSkipToTargetPlayer("player-a","player-b");
         shouldPlayerASkipAndAllPlayerReceiveDyingEvents("player-a","player-b");
-//        shouldPlayerFinishAction();
-//        playerDiscardCard(List.of("\"BD6097\"").toArray(new String[0]));
     }
 
     private void shouldPlayerASkipAndAllPlayerReceiveDyingEvents(String currentPlayer, String targetPlayerId) throws Exception {
@@ -1344,6 +1351,105 @@ public class GameTest {
         assertEquals(expectedJson, playerDGetPlayerDPlayCardJson);
     }
 
+    private void playerAPlayedCardSkip() throws Exception {
+        playCard("player-a", "player-a", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJsonForPlayerA = getJsonByPlayerId("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerA);
+
+        String playCardJsonForPlayerB = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerB);
+
+        String playCardJsonForPlayerC = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerC);
+
+        String playCardJsonForPlayerD = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerD);
+    }
+
+    private void playerBPlayedCardSkip() throws Exception {
+        playCard("player-b", "player-a", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJsonForPlayerA = getJsonByPlayerId("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_b_skip_ask_peach_to_player_a_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerA);
+
+        String playCardJsonForPlayerB = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_b_skip_ask_peach_to_player_a_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerB);
+
+        String playCardJsonForPlayerC = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_b_skip_ask_peach_to_player_a_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerC);
+
+        String playCardJsonForPlayerD = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_b_skip_ask_peach_to_player_a_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerD);
+    }
+
+    private void playerCPlayedCardSkip() throws Exception{
+        playCard("player-c", "player-a", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJsonForPlayerA = getJsonByPlayerId("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_c_skip_ask_peach_to_player_a_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerA);
+
+        String playCardJsonForPlayerB = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_c_skip_ask_peach_to_player_a_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerB);
+
+        String playCardJsonForPlayerC = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_c_skip_ask_peach_to_player_a_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerC);
+
+        String playCardJsonForPlayerD = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_c_skip_ask_peach_to_player_a_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerD);
+    }
+
+    private void playerDPlayedCardSkip() throws  Exception {
+        playCard("player-d", "player-a", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+
+        String playCardJsonForPlayerA = getJsonByPlayerId("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerA);
+
+        String playCardJsonForPlayerB = getJsonByPlayerId("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerB);
+
+        String playCardJsonForPlayerC = getJsonByPlayerId("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerC);
+
+        String playCardJsonForPlayerD = getJsonByPlayerId("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playCardJsonForPlayerD);
+    }
     private void shouldPlayerAHealthStatusDying() {
         /*  Given(ATDD)
             A 玩家 HP = 0
