@@ -35,12 +35,12 @@ public class DyingAskPeachBehavior extends Behavior {
             AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer));
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isNeedToPop = true;
-                if (dyingPlayer.getRoleCard().getRole().equals(Role.MONARCH)) {
+                if (isMonarchDied(dyingPlayer)) {
                     Round currentRound = game.getCurrentRound();
                     RoundEvent roundEvent = new RoundEvent(currentRound);
                     PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), "死亡玩家為主公，遊戲結束");
-                    GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage());
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole().getRoleName(), "死亡玩家為主公，遊戲結束");
+                    GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage(), getWinners(game.getPlayers()), playerEvents);
                     game.enterPhase(new GameOver(game));
                     return List.of(playCardEvent, settlementEvent, gameOverEvent);
                 }
@@ -62,6 +62,17 @@ public class DyingAskPeachBehavior extends Behavior {
             //TODO:怕有其他效果或殺的其他case
             return null;
         }
+    }
+
+    private static boolean isMonarchDied(Player dyingPlayer) {
+        return dyingPlayer.getRoleCard().getRole().equals(Role.MONARCH);
+    }
+
+    private List<String> getWinners(List<Player> players) {
+        return players.stream()
+                .filter(player -> player.getRoleCard().getRole().equals(Role.REBEL))
+                .map(Player::getId)
+                .collect(Collectors.toList());
     }
 
     private static String findNextPlayer(List<String> players, String currentPlayer) {

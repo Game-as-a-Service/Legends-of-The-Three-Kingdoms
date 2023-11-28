@@ -1,6 +1,8 @@
 package com.waterball.LegendsOfTheThreeKingdoms.presenter;
 
+import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
+import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.GameOver;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.GameDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
 import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.RoundDataViewModel;
@@ -47,9 +49,11 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
         PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
         PlayerDyingViewModel playerDyingViewModel = getPlayerDyingEventViewModel(events);
         AskPeachViewModel askPeachViewModel = getAskPeachViewModel(events);
+        SettlementViewModel settlementViewModel = getSettlementViewModel(events);
+        GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
 
 
-        updateViewModels(playCardViewModel, playerDamageEventViewModel, playerDyingViewModel, askPeachViewModel);
+        updateViewModels(playCardViewModel, playerDamageEventViewModel, playerDyingViewModel, askPeachViewModel, settlementViewModel, gameOverViewModel);
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
@@ -72,15 +76,21 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     }
 
 
-    private void updateViewModels(PlayCardViewModel playCardViewModel,
-                                  PlayerDamagedViewModel playerDamageEventViewModel,
-                                  PlayerDyingViewModel playerDyingViewModel,
-                                  AskPeachViewModel askPeachViewModel) {
+    private void updateViewModels(
+            PlayCardViewModel playCardViewModel,
+            PlayerDamagedViewModel playerDamageEventViewModel,
+            PlayerDyingViewModel playerDyingViewModel,
+            AskPeachViewModel askPeachViewModel,
+            SettlementViewModel settlementViewModel,
+            GameOverViewModel gameOverViewModel
+    ) {
         if (playCardViewModel == null) throw new RuntimeException();
         eventToViewModels.add(playCardViewModel);
         if (playerDamageEventViewModel != null) eventToViewModels.add(playerDamageEventViewModel);
         if (playerDyingViewModel != null) eventToViewModels.add(playerDyingViewModel);
         if (askPeachViewModel != null) eventToViewModels.add(askPeachViewModel);
+        if (settlementViewModel != null) eventToViewModels.add(settlementViewModel);
+        if (gameOverViewModel != null) eventToViewModels.add(gameOverViewModel);
     }
 
     private PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
@@ -107,6 +117,26 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
         if (askPeachEvent != null) {
             AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(askPeachEvent.getPlayerId());
             return new AskPeachViewModel(askPeachDataViewModel);
+        }
+        return null;
+    }
+
+    private SettlementViewModel getSettlementViewModel(List<DomainEvent> events) {
+        SettlementEvent settlementEvent = getEvent(events, SettlementEvent.class).orElse(null);
+        if (settlementEvent != null) {
+            SettlementDataViewModel settlementDataViewModel = new SettlementDataViewModel(settlementEvent.getPlayerId(), settlementEvent.getRole());
+            return new SettlementViewModel(settlementDataViewModel);
+        }
+        return null;
+    }
+
+    private GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
+        GameOverEvent gameOverEvent = getEvent(events, GameOverEvent.class).orElse(null);
+        if (gameOverEvent != null) {
+            GameOverDataViewModel gameOverDataViewModel = new GameOverDataViewModel(gameOverEvent.getPlayers().stream()
+                    .map(PlayerDataViewModel::new)
+                    .toList(), gameOverEvent.getWinners());
+            return new GameOverViewModel(gameOverDataViewModel);
         }
         return null;
     }
@@ -177,6 +207,36 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     @NoArgsConstructor
     public static class AskPeachDataViewModel {
         private String playerId;
+    }
+
+    @Data
+    public static class SettlementViewModel extends ViewModel<PlayCardPresenter.SettlementDataViewModel> {
+        public SettlementViewModel(PlayCardPresenter.SettlementDataViewModel data) {
+            super("SettlementEvent", data, "結算");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SettlementDataViewModel {
+        private String playerId;
+        private String role;
+    }
+
+    @Data
+    public static class GameOverViewModel extends ViewModel<PlayCardPresenter.GameOverDataViewModel> {
+        public GameOverViewModel(PlayCardPresenter.GameOverDataViewModel data) {
+            super("GameOverEvent", data, "遊戲結束");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class GameOverDataViewModel {
+        private List<PlayerDataViewModel> players;
+        private List<String> winners;
     }
 
     @Data

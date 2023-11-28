@@ -142,61 +142,47 @@ public class GameTest {
         // Round 1 hp-0 playerA 君主本人
         playerATakeTurnRound1();
 
-        //Round 2 hp-1 playerB 攻擊 君主
+        // Round 2 hp-1 playerB 攻擊 君主
         playerBTakeTurnRound2();
 
-        //Round 3 hp-0 playerC 距離太遠 無法攻擊 直接棄牌
+        // Round 3 hp-0 playerC 距離太遠 無法攻擊 直接棄牌
         playerCTakeTurnRound3();
 
-        //Round 4 hp-1 playerD
+        // Round 4 hp-1 playerD
         playerDTakeTurnRound4();
 
-        //Round 5 hp-0 playerA
+        // Round 5 hp-0 playerA
         playerATakeTurnRound5();
 
-        //Round 6 hp-1 playerB
+        // Round 6 hp-1 playerB
         playerBTakeTurnRound6();
 
-        //ROUND 7 hp-0 playerC 距離太遠 無法攻擊 直接棄牌
+        // ROUND 7 hp-0 playerC 距離太遠 無法攻擊 直接棄牌
         playerCTakeTurnRound7();
 
-        //Round 8 hp-1 playerD
+        // Round 8 hp-1 playerD
         playerDTakeTurnRound8();
 
-        //Round 9 hp-0 playerA 君主
+        // Round 9 hp-0 playerA 君主
         playerATakeTurnRound9();
 
-        //Round 10 hp-1 playerB
+        // Round 10 hp-1 playerB
         playerBTakeTurnRound10();
 
         // player A 不出桃
         playerAPlayedCardSkip();
 
-        // player B 不出逃
+        // player B 不出桃
         playerBPlayedCardSkip();
 
+        // player C 不出桃
         playerCPlayedCardSkip();
 
+        // player D 不出桃
+        // 遊戲結束
         playerDPlayedCardSkip();
 
-
-//        // 詢問A是否要出桃
-//        shouldPlayerARequestPeach();
-//
-//        // 詢問B是否要出桃
-//        shouldPlayerBRequestPeach();
-//
-//        // 詢問C是否要出桃
-//        shouldPlayerCRequestPeach();
-//
-//        // 詢問D是否要出桃
-//        shouldPlayerDRequestPeach();
-//
-//        // 遊戲結束
-//        shouldPlayerDeadSettlement();
-
     }
-
 
 
     public void shouldCreateGame() throws Exception {
@@ -610,6 +596,7 @@ public class GameTest {
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
     }
+
     private void shouldPlayerAPlayedCardRound1(String targetPlayerId) throws Exception {
        /*
         Given
@@ -967,8 +954,8 @@ public class GameTest {
     }
 
     private void playerDTakeTurnRound4() throws Exception {
-        currentPlayerPlayedCardToTargetPlayer("player-d","player-a","BC9061");
-        currentPlayerSkipToTargetPlayer("player-a","player-d");
+        currentPlayerPlayedCardToTargetPlayer("player-d", "player-a", "BC9061");
+        currentPlayerSkipToTargetPlayer("player-a", "player-d");
         shouldPlayerFinishAction();
         playerDiscardCard(List.of("\"BH0036\"", "\"BS0023\"").toArray(new String[0]));
     }
@@ -1084,7 +1071,7 @@ public class GameTest {
 
     private void playerATakeTurnRound5() throws Exception {
         shouldPlayerFinishAction();
-        playerDiscardCard(List.of("\"BD0088\"", "\"BD9087\"","\"BD8086\"", "\"BC5057\"").toArray(new String[0]));
+        playerDiscardCard(List.of("\"BD0088\"", "\"BD9087\"", "\"BD8086\"", "\"BC5057\"").toArray(new String[0]));
     }
 
     private void shouldPlayerADiscardCardRound5() throws Exception {
@@ -1127,8 +1114,8 @@ public class GameTest {
     }
 
     private void playerBTakeTurnRound6() throws Exception {
-        currentPlayerPlayedCardToTargetPlayer("player-b","player-a","BC0075");
-        currentPlayerSkipToTargetPlayer("player-a","player-b");
+        currentPlayerPlayedCardToTargetPlayer("player-b", "player-a", "BC0075");
+        currentPlayerSkipToTargetPlayer("player-a", "player-b");
         shouldPlayerFinishAction();
         playerDiscardCard(List.of("\"BS8010\"").toArray(new String[0]));
     }
@@ -1174,7 +1161,7 @@ public class GameTest {
 
     private void playerCTakeTurnRound7() throws Exception {
         shouldPlayerFinishAction();
-        playerDiscardCard(List.of("\"BS8009\"","\"BS8008\"").toArray(new String[0]));
+        playerDiscardCard(List.of("\"BS8009\"", "\"BS8008\"").toArray(new String[0]));
     }
 
     private void shouldPlayerCDiscardCardRound7() throws Exception {
@@ -1217,8 +1204,8 @@ public class GameTest {
     }
 
     private void playerDTakeTurnRound8() throws Exception {
-        currentPlayerPlayedCardToTargetPlayer("player-d","player-a","BC8060");
-        currentPlayerSkipToTargetPlayer("player-a","player-d");
+        currentPlayerPlayedCardToTargetPlayer("player-d", "player-a", "BC8060");
+        currentPlayerSkipToTargetPlayer("player-a", "player-d");
         shouldPlayerFinishAction();
         playerDiscardCard(List.of("\"BD0101\"").toArray(new String[0]));
     }
@@ -1309,8 +1296,8 @@ public class GameTest {
     }
 
     private void playerBTakeTurnRound10() throws Exception {
-        currentPlayerPlayedCardToTargetPlayer("player-b","player-a","BC3055");
-        shouldPlayerASkipAndAllPlayerReceiveDyingEvents("player-a","player-b");
+        currentPlayerPlayedCardToTargetPlayer("player-b", "player-a", "BC3055");
+        shouldPlayerASkipAndAllPlayerReceiveDyingEvents("player-a", "player-b");
     }
 
     private void shouldPlayerASkipAndAllPlayerReceiveDyingEvents(String currentPlayer, String targetPlayerId) throws Exception {
@@ -1401,7 +1388,7 @@ public class GameTest {
         assertEquals(expectedJson, playCardJsonForPlayerD);
     }
 
-    private void playerCPlayedCardSkip() throws Exception{
+    private void playerCPlayedCardSkip() throws Exception {
         playCard("player-c", "player-a", "", "skip")
                 .andExpect(status().isOk()).andReturn();
 
@@ -1426,190 +1413,29 @@ public class GameTest {
         assertEquals(expectedJson, playCardJsonForPlayerD);
     }
 
-    private void playerDPlayedCardSkip() throws  Exception {
+    private void playerDPlayedCardSkip() throws Exception {
         playCard("player-d", "player-a", "", "skip")
                 .andExpect(status().isOk()).andReturn();
 
         String playCardJsonForPlayerA = getJsonByPlayerId("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_a.json");
+        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/GameOver/player_d_skip_ask_peach_to_player_a_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playCardJsonForPlayerA);
 
         String playCardJsonForPlayerB = getJsonByPlayerId("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_b.json");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/GameOver/player_d_skip_ask_peach_to_player_a_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playCardJsonForPlayerB);
 
         String playCardJsonForPlayerC = getJsonByPlayerId("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_c.json");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/GameOver/player_d_skip_ask_peach_to_player_a_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playCardJsonForPlayerC);
 
         String playCardJsonForPlayerD = getJsonByPlayerId("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/AskPeach/player_a_skip_ask_peach_to_player_a_for_player_d.json");
+        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round10/GameOver/player_d_skip_ask_peach_to_player_a_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playCardJsonForPlayerD);
-    }
-    private void shouldPlayerAHealthStatusDying() {
-        /*  Given(ATDD)
-            A 玩家 HP = 0
-            A 玩家 狀態 alive
-
-            When
-            系統判定已瀕臨死亡
-
-            Then
-            A 玩家狀態為dying
-            Active Player 為 A 玩家
-        */
-
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        assertEquals(HealthStatus.DYING, game.getPlayer("player-a").getHealthStatus());
-
-        Player playerA = game.getPlayer("player-a");
-        assertEquals(playerA, game.getActivePlayer());
-
-    }
-
-    private void shouldPlayerARequestPeach() throws Exception {
-        /*Given(ATDD)
-        A 玩家 HP = 0
-        A 玩家 狀態dying
-
-        When
-        A 玩家不出桃
-
-        Then
-        Active player 為 B 玩家
-        * */
-
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        String playerId = game.getActivePlayer().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "%s",
-                                  "cardId": "",
-                                  "playType": "skip"
-                                }""", playerId, playerId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals("player-b", game.getActivePlayer().getId());
-    }
-
-    private void shouldPlayerBRequestPeach() throws Exception {
-
-        /*Given(ATDD)
-        A 玩家 HP = 0
-        A 玩家 狀態dying
-
-        When
-        B 玩家不出桃
-
-        Then
-        Active player 為 C 玩家
-        * */
-
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        String playerId = game.getActivePlayer().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "",
-                                  "cardId": "",
-                                  "playType": "skip"
-                                }""", playerId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals("player-c", game.getActivePlayer().getId());
-    }
-
-    private void shouldPlayerCRequestPeach() throws Exception {
-        /*Given(ATDD)
-        A 玩家 HP = 0
-        A 玩家 狀態dying
-
-        When
-        C 玩家不出桃
-
-        Then
-        Active player 為 D 玩家
-        * */
-
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        String playerId = game.getActivePlayer().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "",
-                                  "cardId": "",
-                                  "playType": "skip"
-                                }""", playerId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals("player-d", game.getActivePlayer().getId());
-    }
-
-    private void shouldPlayerDRequestPeach() throws Exception {
-        /*Given(ATDD)
-        A 玩家 HP = 0
-        A 玩家 狀態dying
-
-        When
-        D 玩家不出桃
-
-        Then
-        A 玩家狀態為 death
-        * */
-        Game game = inMemoryGameRepository.findGameById("my-id");
-
-        String playerId = game.getActivePlayer().getId();
-
-        this.mockMvc.perform(post("/api/games/my-id/player:playCard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                { "playerId": "%s",
-                                  "targetPlayerId": "",
-                                  "cardId": "",
-                                  "playType": "skip"
-                                }""", playerId)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals(HealthStatus.DEATH, game.getPlayer("player-a").getHealthStatus());
-        assertTrue(game.getGamePhase() instanceof GameOver);
-    }
-
-    private void shouldPlayerDeadSettlement() {
-        /*
-        * Given(TDD)
-            A 玩家 HP = 0
-            A玩家 狀態dead
-
-            When
-            系統結算
-
-            Then
-            Game Phase 遊戲結束
-            player-c 是反賊是贏家
-        *
-        * */
-        Game game = inMemoryGameRepository.findGameById("my-id");
-        assertTrue(game.getGamePhase() instanceof GameOver);
-        assertEquals(game.getWinners(), List.of(game.getPlayer("player-c"))); // player-c = 反賊
-
     }
 
     private ResultActions playCard(String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
