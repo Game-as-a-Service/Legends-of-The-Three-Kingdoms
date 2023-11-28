@@ -1,0 +1,128 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-d",
+      "targetPlayerId" : "player-a",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "SettlementEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "role" : "Monarch"
+    },
+    "message" : "結算"
+  }, {
+    "event" : "GameOverEvent",
+    "data" : {
+      "players" : [ {
+        "id" : "player-a",
+        "generalId" : "SHU001",
+        "roleId" : "Monarch",
+        "hp" : 0,
+        "hand" : {
+          "size" : 1,
+          "cardIds" : [ "BD8099" ]
+        },
+        "equipments" : [ ],
+        "delayScrolls" : [ ]
+      }, {
+        "id" : "player-b",
+        "generalId" : "SHU006",
+        "roleId" : "Minister",
+        "hp" : 3,
+        "hand" : {
+          "size" : 4,
+          "cardIds" : [ "BC2054", "BS7020", "BD7098", "BD6097" ]
+        },
+        "equipments" : [ ],
+        "delayScrolls" : [ ]
+      }, {
+        "id" : "player-c",
+        "generalId" : "SHU004",
+        "roleId" : "Rebel",
+        "hp" : 3,
+        "hand" : {
+          "size" : 3,
+          "cardIds" : [ "BC8073", "BC0062", "BHJ037" ]
+        },
+        "equipments" : [ ],
+        "delayScrolls" : [ ]
+      }, {
+        "id" : "player-d",
+        "generalId" : "WEI002",
+        "roleId" : "Traitor",
+        "hp" : 3,
+        "hand" : {
+          "size" : 3,
+          "cardIds" : [ "BC7059", "BC6058", "BDJ102" ]
+        },
+        "equipments" : [ ],
+        "delayScrolls" : [ ]
+      } ],
+      "winners" : [ "player-c" ]
+    },
+    "message" : "遊戲結束"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 0,
+      "hand" : {
+        "size" : 1,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU006",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU004",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "WEI002",
+      "roleId" : "Traitor",
+      "hp" : 3,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ "BC7059", "BC6058", "BDJ102" ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Action",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-d",
+      "dyingPlayer" : "player-a",
+      "showKill" : true
+    },
+    "gamePhase" : "GeneralDying"
+  },
+  "message" : "不出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-d"
+}
