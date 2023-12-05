@@ -32,7 +32,7 @@ name: Build and Deploy to AWS
 on: [ push, workflow_dispatch ]
 
 env:
-  JAR_FILENAME: LegendsOfTheThreeKingDoms-0.0.1-SNAPSHOT>
+  JAR_FILENAME: LegendsOfTheThreeKingDoms-0.0.1-SNAPSHOT
   ARTIFACT_NAME: LegendsOfTheThreeKingDoms
   SYSTEMD_SERVICE_NAME: LegendsOfTheThreeKingDoms
 
