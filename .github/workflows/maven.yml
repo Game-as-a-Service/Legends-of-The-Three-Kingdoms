@@ -25,16 +25,15 @@
 #          java-version: '17'
 #          distribution: 'zulu'
 #          cache: maven
-#      - name: Build with Maven
-#        run: mvn -B package --file LegendsOfTheThreeKingdoms/pom.xml
+
 name: Build and Deploy to AWS
 
 on: [ push, workflow_dispatch ]
 
 env:
-  JAR_FILENAME: LegendsOfTheThreeKingDoms-0.0.1-SNAPSHOT
-  ARTIFACT_NAME: LegendsOfTheThreeKingDoms
-  SYSTEMD_SERVICE_NAME: LegendsOfTheThreeKingDoms
+  JAR_FILENAME: LegendsOfTheThreeKingdoms
+  ARTIFACT_NAME: LegendsOfTheThreeKingdoms
+  SYSTEMD_SERVICE_NAME: legends-Of-The-ThreeKingdoms
 
 jobs:
   build:
@@ -53,9 +52,9 @@ jobs:
           java-version: '17'
           distribution: 'corretto'
 
-      # Maven Verify
-      - name: Maven Verify
-        run: mvn -B verify -DJAR_FILENAME=${{ env.JAR_FILENAME }}
+      # Build with Maven
+      - name: Build with Maven
+        run: mvn -B package --file LegendsOfTheThreeKingdoms/pom.xml
 
       # Dump GitHub Context
       - name: Dump GitHub Context
@@ -84,6 +83,12 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == 'main'
 
     steps:
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-session-name: github-runner-build-and-deploy
+          aws-region: ap-northeast-1
 
       # Login to Amazon ECR Public
       - name: Login to Amazon ECR Public
