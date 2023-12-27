@@ -1,39 +1,11 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-#name: Java CI with Maven
-#
-#on:
-#  push:
-#    branches: [ "main" ]
-#  pull_request:
-#    branches: [ "main" ]
-#
-#jobs:
-#  build:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Set up JDK 17
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: '17'
-#          distribution: 'zulu'
-#          cache: maven
-
 name: Build and Deploy to AWS
 
 on: [ push, workflow_dispatch ]
 
 env:
   JAR_FILENAME: LegendsOfTheThreeKingdoms
-  ARTIFACT_NAME: LegendsOfTheThreeKingdoms
-  SYSTEMD_SERVICE_NAME: legends-Of-The-ThreeKingdoms
+  ARTIFACT_NAME: backend-app
+  SYSTEMD_SERVICE_NAME: ThreeKingdoms
 
 jobs:
   build:
@@ -52,9 +24,16 @@ jobs:
           java-version: '17'
           distribution: 'corretto'
 
-      # Build with Maven
-      - name: Build with Maven
-        run: mvn -B package --file LegendsOfTheThreeKingdoms/pom.xml
+      # List Pom.xml
+      - name: List LegendsOfTheThreeKingdoms Files
+        run: ls LegendsOfTheThreeKingdoms
+      # Get Path
+      - name: Get Path
+        run: pwd
+        
+      # Maven Verify
+      - name: Maven Verify
+        run: mvn -f LegendsOfTheThreeKingdoms/pom.xml -B verify -DJAR_FILENAME=${{ env.JAR_FILENAME }}
 
       # Dump GitHub Context
       - name: Dump GitHub Context
@@ -64,6 +43,8 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "$GITHUB_CONTEXT" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: List target
+        run: ls LegendsOfTheThreeKingdoms/target
 
       # Publish Artifact
       - name: Upload Artifact
@@ -72,73 +53,67 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: |
-            spring/target/${{ env.JAR_FILENAME }}.jar
-            docker/Dockerfile
-
-  #  docker-push:
-  #    name: Docker Push
-  #    runs-on: ubuntu-latest
-  #    needs: build
-  #    environment: production
-  #    if: github.event_name == 'push' && github.ref_name == 'main'
-  #
-  #    steps:
-  #      # Configure AWS credentials
-  #      - name: Configure AWS credentials
-  #        uses: aws-actions/configure-aws-credentials@v2
-  #        with:
-  #          role-session-name: github-runner-build-and-deploy
-  #          aws-region: ap-northeast-1
-  #
-  #      # Login to Amazon ECR Public
-  #      - name: Login to Amazon ECR Public
-  #        id: login-ecr-public
-  #        uses: aws-actions/amazon-ecr-login@v1
-  #        with:
-  #          registry-type: public
-  #
-  #      # Download Artifact
-  #      - name: Download Artifact
-  #        uses: actions/download-artifact@v3
-  #        with:
-  #          name: ${{ env.ARTIFACT_NAME }}
-  #          path: .
-  #
-  #      # Docker build & push to AWS ECR Public
-  #      - name: Docker build & push
-  #        run: |
-  #          docker build \
-  #            --build-arg JAR_FILENAME=spring/target/${{ env.JAR_FILENAME }}.jar \
-  #            -t ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest \
-  #            -t ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:${{ github.sha }} \
-  #            -f docker/Dockerfile \
-  #            .
-  #          docker push ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }} --all-tags
-
-  deploy:
-    name: Deploy to AWS EC2
-    needs: build
+            LegendsOfTheThreeKingdoms/target/LegendsOfTheThreeKingdoms-*.jar
+            LegendsOfTheThreeKingdoms/docker/Dockerfile
+  docker-push:
+    name: Docker Push
     runs-on: ubuntu-latest
-    #    environment: production
-    #    if: github.event_name == 'push' && github.ref_name == 'main'
+    needs: build
+    environment: production
+    if: github.event_name == 'push' && github.ref_name == 'main'
 
     steps:
-    - name: Copy JAR to EC2
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_KEY }}  # 引用私钥
-        source: "target/LegendsOfTheThreeKingdoms-0.0.1-SNAPSHOT.jar"
-        target: "/home/ubuntu"
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-    - name: SSH into EC2 and restart app
-      uses: appleboy/ssh-action@master
-      with:
-         host: ${{ secrets.EC2_HOST }}
-         username: ${{ secrets.EC2_USERNAME }}
-         key: ${{ secrets.EC2_KEY }}  # 引用私钥
-         port: 22
-         script: |
-          cd /home/ubuntu
-          sudo java -jar LegendsOfTheThreeKingdoms-0.0.1-SNAPSHOT.jar
+      # Login to Amazon ECR Public
+      - name: Login to Amazon ECR Public
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # Download Artifact
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: .
+      - name: List All Target File
+        run:  ls target/
+      - name: Get Path
+        run: pwd
+      # Docker build & push to AWS ECR Public
+      - name: Docker build & push
+        run: |
+          docker build \
+            --build-arg JAR_FILENAME=target/${{ env.JAR_FILENAME }}.jar \
+            -t ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest \
+            -t ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:${{ github.sha }} \
+            -f docker/Dockerfile \
+            .
+          docker push ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }} --all-tags
+  deploy:
+    name: Deploy to AWS EC2
+    needs: docker-push
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event_name == 'push' && github.ref_name == 'main'
+
+    steps:
+      # Restart systemd service
+      - name: Run Application
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          port: 22
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            uname -a
+            whoami
+            pwd
+            sudo systemctl restart ${{ env.SYSTEMD_SERVICE_NAME }}

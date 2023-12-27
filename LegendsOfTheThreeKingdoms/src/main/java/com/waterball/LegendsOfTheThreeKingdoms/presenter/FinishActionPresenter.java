@@ -15,14 +15,14 @@ import static com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel.getEve
 
 public class FinishActionPresenter implements GameService.Presenter<List<FinishActionPresenter.GameViewModel>> {
     List<ViewModel> eventToViewModels = new ArrayList<>();
-    private List<FinishActionPresenter.GameViewModel> viewModels = new ArrayList<>();
+    private List<GameViewModel> viewModels = new ArrayList<>();
 
     public void renderEvents(List<DomainEvent> events) {
         updateFinishActionEventToViewModel(events);
     }
 
     @Override
-    public List<FinishActionPresenter.GameViewModel> present() {
+    public List<GameViewModel> present() {
         return viewModels;
     }
 
@@ -30,7 +30,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
         FinishActionEvent finishActionEvent = getEvent(events, FinishActionEvent.class).orElseThrow(RuntimeException::new);
         FinishActionViewModel finishActionViewModel = new FinishActionViewModel();
         NotifyDiscardEvent notifyDiscardEvent = getEvent(events, NotifyDiscardEvent.class).orElseThrow(RuntimeException::new);
-        NotifyDiscardViewModel notifyDiscardViewModel = new NotifyDiscardViewModel(new NotifyDiscardDataViewModel(notifyDiscardEvent.getDiscardCount()));
+        NotifyDiscardViewModel notifyDiscardViewModel = new NotifyDiscardViewModel(new NotifyDiscardDataViewModel(notifyDiscardEvent.getDiscardCount(), notifyDiscardEvent.getDiscardPlayerId()));
 
 
         if (playerNeedToDiscard(notifyDiscardEvent)) {
@@ -49,7 +49,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
                 GameDataViewModel gameDataViewModel = createGameDataViewModel(viewModel, playerDataViewModels, roundDataViewModel, notifyDiscardEvent.getGamePhase());
 
                 // 非主公看不到此次 PlayerDrawCardEvent 的抽配 card ids
-                viewModels.add(new FinishActionPresenter.GameViewModel(List.of(finishActionViewModel, notifyDiscardViewModel),
+                viewModels.add(new GameViewModel(List.of(finishActionViewModel, notifyDiscardViewModel),
                         gameDataViewModel,
                         notifyDiscardEvent.getMessage(),
                         notifyDiscardEvent.getGameId(),
@@ -67,7 +67,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
             RoundStartPresenter.RoundStartViewModel roundStartViewModel = new RoundStartPresenter.RoundStartViewModel();
             RoundStartPresenter.JudgementViewModel judgementViewModel = new RoundStartPresenter.JudgementViewModel();
             RoundStartPresenter.DrawCardViewModel drawCardViewModel = new RoundStartPresenter.DrawCardViewModel();
-            RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel = new RoundStartPresenter.DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds());
+            RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel = new RoundStartPresenter.DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds(), drawCardEvent.getDrawCardPlayerId());
             drawCardViewModel.setData(drawCardDataViewModel);
 
 
@@ -87,7 +87,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
 
                 // 非主公看不到此次 PlayerDrawCardEvent 的抽配 card ids
                 RoundStartPresenter.DrawCardViewModel drawCardViewModelInHidden = hiddenOtherPlayerCardIds(drawCardDataViewModel, viewModel, currentRoundPlayerId);
-                viewModels.add(new FinishActionPresenter.GameViewModel(List.of(finishActionViewModel, notifyDiscardViewModel, roundEndViewModel, roundStartViewModel, judgementViewModel, drawCardViewModelInHidden),
+                viewModels.add(new GameViewModel(List.of(finishActionViewModel, notifyDiscardViewModel, roundEndViewModel, roundStartViewModel, judgementViewModel, drawCardViewModelInHidden),
                         gameDataViewModel,
                         drawCardEvent.getMessage(),
                         drawCardEvent.getGameId(),
@@ -119,7 +119,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
         if (PlayerDataViewModel.isCurrentRoundPlayer(targetPlayerDataViewModel, currentRoundPlayerId)) {
             hiddenCards.addAll(cards);
         }
-        return new RoundStartPresenter.DrawCardViewModel(new RoundStartPresenter.DrawCardDataViewModel(drawCardDataViewModel.getSize(), hiddenCards));
+        return new RoundStartPresenter.DrawCardViewModel(new RoundStartPresenter.DrawCardDataViewModel(drawCardDataViewModel.getSize(), hiddenCards, drawCardDataViewModel.getDrawCardPlayerId()));
     }
 
     private PlayCardPresenter.PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
@@ -163,6 +163,7 @@ public class FinishActionPresenter implements GameService.Presenter<List<FinishA
     @NoArgsConstructor
     public static class NotifyDiscardDataViewModel {
         private int discardCount;
+        private String discardPlayerId;
     }
 
     @Setter

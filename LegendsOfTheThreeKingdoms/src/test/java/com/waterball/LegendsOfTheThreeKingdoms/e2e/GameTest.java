@@ -98,7 +98,7 @@ public class GameTest {
     private void setupClientSubscribe(String gameId, String playerId) throws Exception {
         final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
 
-        StompSessionHandler handler = new HelloWorldTest.TestSessionHandler(failure) {
+        StompSessionHandler handler = new TestSessionHandler(failure) {
             @Override
             public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
                 throw new RuntimeException("Failure in WebSocket handling", exception);
@@ -123,7 +123,7 @@ public class GameTest {
                 });
             }
         };
-        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingDom", this.headers, handler, this.port);
+        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingdoms", this.headers, handler, this.port);
     }
 
     @Test
@@ -1447,6 +1447,29 @@ public class GameTest {
                           "cardId": "%s",
                           "playType": "%s"
                         }""", currentPlayerId, targetPlayerId, cardId, playType)));
+    }
+
+    public static class TestSessionHandler extends StompSessionHandlerAdapter {
+        private final AtomicReference<Throwable> failure;
+
+        public TestSessionHandler(AtomicReference failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public void handleFrame(StompHeaders headers, Object payload) {
+            this.failure.set(new Exception(headers.toString()));
+        }
+
+        @Override
+        public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
+            this.failure.set(ex);
+        }
+
+        @Override
+        public void handleTransportError(StompSession session, Throwable ex) {
+            this.failure.set(ex);
+        }
     }
 
 }

@@ -6,7 +6,8 @@
   }, {
     "event" : "NotifyDiscardEvent",
     "data" : {
-      "discardCount" : 2
+      "discardCount" : 2,
+      "discardPlayerId" : "player-b"
     },
     "message" : "通知棄牌"
   } ],

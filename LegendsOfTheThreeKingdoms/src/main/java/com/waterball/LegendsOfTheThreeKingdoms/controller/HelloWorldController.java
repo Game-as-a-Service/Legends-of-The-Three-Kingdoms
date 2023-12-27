@@ -7,13 +7,10 @@ import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Initial;
 import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 
 import java.util.List;
 
@@ -25,11 +22,10 @@ public class HelloWorldController {
     private GameService gameService;
 
     @MessageMapping("/hello")
-    @SendTo("/websocket/greetings")
-    public GameResponse sayHello(String message) throws Exception {
-
+    @SendTo("/websocket/legendsOfTheThreeKingdoms/my-id/player-a")
+    public GameResponse sayHello() throws Exception {
         Game game = new Game();
-        game.setGameId("Hello,world fromBackend");
+        game.setGameId("Hello World From Backend");
 
         game.setPlayers(List.of(
                 Player.builder().id("player-a").build(),
