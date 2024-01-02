@@ -43,7 +43,7 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
         RoundStartViewModel roundStartViewModel = new RoundStartViewModel();
         JudgementViewModel judgementViewModel = new JudgementViewModel();
         DrawCardViewModel drawCardViewModel = new DrawCardViewModel();
-        DrawCardDataViewModel drawCardDataViewModel = new DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds());
+        DrawCardDataViewModel drawCardDataViewModel = new DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds(), drawCardEvent.getDrawCardPlayerId());
         drawCardViewModel.setData(drawCardDataViewModel);
 
         // 取得 drawCardEvent 中的玩家全部資訊
@@ -82,7 +82,7 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
         if (PlayerDataViewModel.isCurrentRoundPlayer(targetPlayerDataViewModel, currentRoundPlayerId)) {
             hiddenCards.addAll(cards);
         }
-        return new DrawCardViewModel(new DrawCardDataViewModel(drawCardDataViewModel.getSize(), hiddenCards));
+        return new DrawCardViewModel(new DrawCardDataViewModel(drawCardDataViewModel.getSize(), hiddenCards, drawCardDataViewModel.getDrawCardPlayerId()));
     }
 
     @Setter
@@ -124,6 +124,7 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
     public static class DrawCardDataViewModel {
         private int size;
         private List<String> cards;
+        private String drawCardPlayerId;
     }
 
     @Data

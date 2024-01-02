@@ -155,7 +155,14 @@ public class Game {
 
         assignHpToPlayers();
         assignHandCardToPlayers();
-        currentRound = new Round(players.get(0));
+
+        currentRound = new Round(
+                players.stream()
+                .filter(currentPlayer -> currentPlayer.getRoleCard().getRole().equals(Role.MONARCH))
+                .findFirst()
+                .orElseThrow(()->new IllegalStateException("還有沒有玩家是主公，請確認主公狀態"))
+        );
+
         this.enterPhase(new Normal(this));
 
         RoundEvent roundEvent = new RoundEvent(currentRound);
@@ -248,7 +255,9 @@ public class Game {
                 gameId,
                 playerEvents,
                 roundEvent,
-                gamePhase.getPhaseName());
+                gamePhase.getPhaseName(),
+                player.getId()
+        );
     }
 
     private int calculatePlayerCanDrawCardSize(Player player) {
@@ -338,7 +347,7 @@ public class Game {
         FinishActionEvent finishActionEvent = new FinishActionEvent();
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
         String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌", currentRoundPlayer.getId(), currentRoundPlayerDiscardCount);
-        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage, currentRoundPlayerDiscardCount, playerId, gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
+        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage, currentRoundPlayerDiscardCount, playerId, currentRoundPlayer.getId(), gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
         domainEvents.add(finishActionEvent);
         domainEvents.add(notifyDiscardEvent);
 
@@ -387,7 +396,7 @@ public class Game {
         List<HandCard> discardCards = player.discardCards(cardIds);
         graveyard.add(discardCards);
         String message = String.format("玩家 %s 棄牌", player.getId());
-        DomainEvent discardEvent = new DiscardEvent(discardCards, message);
+        DomainEvent discardEvent = new DiscardEvent(discardCards, message, player.getId());
         List<DomainEvent> nextRoundEvent = new ArrayList<>(goNextRound(player));
         nextRoundEvent.add(discardEvent);
         nextRoundEvent.add(new RoundEndEvent());

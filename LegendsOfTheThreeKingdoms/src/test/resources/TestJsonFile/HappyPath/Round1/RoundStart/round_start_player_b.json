@@ -11,7 +11,8 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ ]
+      "cards" : [ ],
+      "drawCardPlayerId" : "player-a"
     },
     "message" : "玩家摸牌"
   } ],

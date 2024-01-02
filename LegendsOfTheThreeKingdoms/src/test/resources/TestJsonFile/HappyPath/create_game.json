@@ -3,19 +3,19 @@
   "players": [
     {
       "id": "player-a",
-      "role": "Monarch"
+      "roleId": "Monarch"
     },
     {
       "id": "player-b",
-      "role": "Minister"
+      "roleId": "Minister"
     },
     {
       "id": "player-c",
-      "role": "Rebel"
+      "roleId": "Rebel"
     },
     {
       "id": "player-d",
-      "role": "Traitor"
+      "roleId": "Traitor"
     }
   ]
 

@@ -36,7 +36,7 @@ public class FindGamePresenter implements GameService.Presenter<FindGamePresente
         private String gameId;
         private String playerId;
 
-        public FindGameViewModel(String gameId, FindGamePresenter.FindGameDataViewModel data,String message, String playerId) {
+        public FindGameViewModel(String gameId, FindGameDataViewModel data,String message, String playerId) {
             super("findGameEvent",data,message);
             this.gameId = gameId;
             this.playerId = playerId;

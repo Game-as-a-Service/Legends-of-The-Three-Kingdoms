@@ -6,7 +6,8 @@
   }, {
     "event" : "NotifyDiscardEvent",
     "data" : {
-      "discardCount" : 0
+      "discardCount" : 0,
+      "discardPlayerId" : "player-a"
     },
     "message" : "通知棄牌"
   }, {
@@ -25,7 +26,8 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ "BC3055", "BC2054" ]
+      "cards" : [ "BC3055", "BC2054" ],
+      "drawCardPlayerId" : "player-b"
     },
     "message" : "玩家摸牌"
   } ],

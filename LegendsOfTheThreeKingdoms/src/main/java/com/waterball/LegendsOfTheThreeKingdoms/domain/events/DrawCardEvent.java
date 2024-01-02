@@ -18,8 +18,9 @@ public class DrawCardEvent extends DomainEvent {
     private List<PlayerEvent> seats;
     private RoundEvent round;
     private String gamePhase;
+    private String drawCardPlayerId;
 
-    public DrawCardEvent(int size, List<String> cardIds, String message, String gameId, List<PlayerEvent> seats, RoundEvent round, String gamePhase) {
+    public DrawCardEvent(int size, List<String> cardIds, String message, String gameId, List<PlayerEvent> seats, RoundEvent round, String gamePhase, String drawCardPlayerId) {
         this.size = size;
         this.cardIds = cardIds;
         this.message = message;
@@ -27,5 +28,6 @@ public class DrawCardEvent extends DomainEvent {
         this.seats = seats;
         this.round = round;
         this.gamePhase = gamePhase;
+        this.drawCardPlayerId = drawCardPlayerId;
     }
 }

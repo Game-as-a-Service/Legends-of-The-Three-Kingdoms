@@ -142,14 +142,14 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     }
 
     @Data
-    public static class PlayCardViewModel extends ViewModel<PlayCardPresenter.PlayCardDataViewModel> {
+    public static class PlayCardViewModel extends ViewModel<PlayCardDataViewModel> {
         //private PlayCardPresenter.PlayCardDataViewModel data;
 
         public PlayCardViewModel() {
             super("PlayCardEvent", null, "出牌");
         }
 
-        public PlayCardViewModel(PlayCardPresenter.PlayCardDataViewModel data, String eventMessage) {
+        public PlayCardViewModel(PlayCardDataViewModel data, String eventMessage) {
             super("PlayCardEvent", data, eventMessage);
         }
     }
@@ -166,8 +166,8 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
 
 
     @Data
-    public static class PlayerDamagedViewModel extends ViewModel<PlayCardPresenter.PlayerDamagedDataViewModel> {
-        public PlayerDamagedViewModel(PlayCardPresenter.PlayerDamagedDataViewModel data) {
+    public static class PlayerDamagedViewModel extends ViewModel<PlayerDamagedDataViewModel> {
+        public PlayerDamagedViewModel(PlayerDamagedDataViewModel data) {
             super("PlayerDamagedEvent", data, "扣血");
         }
     }
@@ -182,8 +182,8 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     }
 
     @Data
-    public static class PlayerDyingViewModel extends ViewModel<PlayCardPresenter.PlayerDyingDataViewModel> {
-        public PlayerDyingViewModel(PlayCardPresenter.PlayerDyingDataViewModel data) {
+    public static class PlayerDyingViewModel extends ViewModel<PlayerDyingDataViewModel> {
+        public PlayerDyingViewModel(PlayerDyingDataViewModel data) {
             super("PlayerDyingEvent", data, "玩家已瀕臨死亡");
         }
     }
@@ -196,8 +196,8 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     }
 
     @Data
-    public static class AskPeachViewModel extends ViewModel<PlayCardPresenter.AskPeachDataViewModel> {
-        public AskPeachViewModel(PlayCardPresenter.AskPeachDataViewModel data) {
+    public static class AskPeachViewModel extends ViewModel<AskPeachDataViewModel> {
+        public AskPeachViewModel(AskPeachDataViewModel data) {
             super("AskPeachEvent", data, "要求玩家出桃");
         }
     }
@@ -210,8 +210,8 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     }
 
     @Data
-    public static class SettlementViewModel extends ViewModel<PlayCardPresenter.SettlementDataViewModel> {
-        public SettlementViewModel(PlayCardPresenter.SettlementDataViewModel data) {
+    public static class SettlementViewModel extends ViewModel<SettlementDataViewModel> {
+        public SettlementViewModel(SettlementDataViewModel data) {
             super("SettlementEvent", data, "結算");
         }
     }
@@ -225,8 +225,8 @@ public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPre
     }
 
     @Data
-    public static class GameOverViewModel extends ViewModel<PlayCardPresenter.GameOverDataViewModel> {
-        public GameOverViewModel(PlayCardPresenter.GameOverDataViewModel data) {
+    public static class GameOverViewModel extends ViewModel<GameOverDataViewModel> {
+        public GameOverViewModel(GameOverDataViewModel data) {
             super("GameOverEvent", data, "遊戲結束");
         }
     }

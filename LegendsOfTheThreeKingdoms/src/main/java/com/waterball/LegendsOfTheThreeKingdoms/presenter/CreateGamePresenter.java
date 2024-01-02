@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 public class CreateGamePresenter implements GameService.Presenter<List<CreateGamePresenter.CreateGameViewModel>> {
@@ -54,7 +53,7 @@ public class CreateGamePresenter implements GameService.Presenter<List<CreateGam
     @AllArgsConstructor
     public static class SeatViewModel {
         public String id;
-        public String role;
+        public String roleId;
     }
 
 
@@ -71,16 +70,16 @@ public class CreateGamePresenter implements GameService.Presenter<List<CreateGam
         List<SeatViewModel> tempSeatViewModels = new ArrayList<>();
 
         for (SeatViewModel seatViewModel : seatViewModels) {
-            SeatViewModel copyPlayer = new SeatViewModel(seatViewModel.getId(), seatViewModel.getRole());
+            SeatViewModel copyPlayer = new SeatViewModel(seatViewModel.getId(), seatViewModel.getRoleId());
             tempSeatViewModels.add(copyPlayer);
         }
 
         List<SeatViewModel> needToHiddenRoleCardPlayers = tempSeatViewModels.stream()
-                .filter(player -> !"MONARCH".equals(player.getRole()))
+                .filter(player -> !"MONARCH".equals(player.getRoleId()))
                 .filter(player -> !player.getId().equals(currentPlayer.getId()))
                 .toList();
 
-        needToHiddenRoleCardPlayers.forEach(player -> tempSeatViewModels.get(tempSeatViewModels.indexOf(player)).setRole(""));
+        needToHiddenRoleCardPlayers.forEach(player -> tempSeatViewModels.get(tempSeatViewModels.indexOf(player)).setRoleId(""));
 
         return tempSeatViewModels;
     }

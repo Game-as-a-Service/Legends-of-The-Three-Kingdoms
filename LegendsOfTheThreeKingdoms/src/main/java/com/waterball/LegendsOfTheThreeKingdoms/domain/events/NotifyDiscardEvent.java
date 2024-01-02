@@ -11,6 +11,7 @@ public class NotifyDiscardEvent extends DomainEvent {
     private final String name = "NotifyDiscardEvent";
     private final String message;
     private int discardCount;
+    private String discardPlayerId;
 
     // Game state
     private String playerId;

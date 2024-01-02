@@ -11,7 +11,8 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ "BC5057", "BC4056" ]
+      "cards" : [ "BC5057", "BC4056" ],
+      "drawCardPlayerId" : "player-a"
     },
     "message" : "玩家摸牌"
   } ],
