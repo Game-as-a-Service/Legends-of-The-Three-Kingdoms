@@ -8,6 +8,6 @@ public class GreetController {
 
     @GetMapping("/greet")
     public String greet() {
-        return "Hello 三國殺 From EC2 20240106";
+        return "Hello 三國殺 From EC2 20240107";
     }
 }
