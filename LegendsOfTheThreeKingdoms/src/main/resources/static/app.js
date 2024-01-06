@@ -1,7 +1,7 @@
  const isLocal = window.location.hostname === 'localhost';
 const websocketURL = isLocal
     ? 'ws://localhost:8080/legendsOfTheThreeKingdoms'
-    : 'ws://54.249.145.17:8080/legendsOfTheThreeKingdoms';
+    : 'ws://54.238.232.62:8080/legendsOfTheThreeKingdoms';
 
 const stompClient = new StompJs.Client({
     brokerURL: websocketURL
