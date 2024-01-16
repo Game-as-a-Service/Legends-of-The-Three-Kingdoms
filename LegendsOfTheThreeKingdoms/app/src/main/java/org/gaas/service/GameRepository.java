@@ -1,4 +1,4 @@
-package org.gaas.service.repository;
+package org.gaas.service;
 
 import org.gaas.domain.Game;
 

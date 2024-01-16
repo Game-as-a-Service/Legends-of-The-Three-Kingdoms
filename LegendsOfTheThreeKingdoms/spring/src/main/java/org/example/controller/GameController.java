@@ -1,8 +1,8 @@
 package org.example.controller;
 
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.*;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
+import org.example.controller.dto.*;
+import org.example.presenter.*;
 import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
