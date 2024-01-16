@@ -23,7 +23,7 @@ import java.util.Stack;
 import static com.waterball.LegendsOfTheThreeKingdoms.domain.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 
-public class AssignHandCardToPlayers {
+publigc class AssignHandCardToPlayers {
 
     @DisplayName("""
             Given
