@@ -1,12 +1,11 @@
 package org.example.presenter;
 
-import org.gaas.domain.Round;
-import org.gaas.domain.events.*;
+import lombok.*;
 import org.example.presenter.common.GameDataViewModel;
 import org.example.presenter.common.PlayerDataViewModel;
 import org.example.presenter.common.RoundDataViewModel;
-import org.gaas.service.GameService;
-import lombok.*;
+import org.gaas.domain.events.*;
+import org.gaas.usecase.OthersChoosePlayerGeneralUseCase;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +13,7 @@ import java.util.List;
 
 import static org.example.presenter.ViewModel.getEvent;
 
-public class RoundStartPresenter implements GameService.Presenter<List<RoundStartPresenter.PlayerTakeTurnViewModel>> {
+public class RoundStartPresenter implements OthersChoosePlayerGeneralUseCase.RoundStartPresenter<List<RoundStartPresenter.PlayerTakeTurnViewModel>> {
 
     private List<PlayerTakeTurnViewModel> viewModels;
 
@@ -101,7 +100,6 @@ public class RoundStartPresenter implements GameService.Presenter<List<RoundStar
             super("JudgementEvent", "", "判定結束");
         }
     }
-
 
 
     @Data

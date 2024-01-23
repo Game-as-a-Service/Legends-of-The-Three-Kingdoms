@@ -3,8 +3,8 @@ package org.example.presenter;
 import org.gaas.domain.events.DomainEvent;
 import org.gaas.domain.events.GetGeneralCardByOthersEvent;
 import org.gaas.domain.events.MonarchChooseGeneralCardEvent;
-import org.gaas.service.GameService;
 import lombok.*;
+import org.gaas.usecase.MonarchChooseGeneralUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import static org.example.presenter.ViewModel.getEvent;
 import static org.example.presenter.ViewModel.getEvents;
 
 @RequiredArgsConstructor
-public class MonarchChooseGeneralCardPresenter implements GameService.Presenter<MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel> {
+public class MonarchChooseGeneralCardPresenter implements MonarchChooseGeneralUseCase.MonarchChooseGeneralCardPresenter<MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel> {
 
     private MonarchChooseGeneralCardViewModel viewModel;
     private List<GetGeneralCardByOthersViewModel> generalCardByOtherViewModels;

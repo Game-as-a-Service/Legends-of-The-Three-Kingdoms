@@ -1,6 +1,6 @@
 package org.example.presenter.common;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.RoundEvent;
+import org.gaas.domain.events.RoundEvent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

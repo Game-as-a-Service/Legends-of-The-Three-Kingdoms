@@ -2,7 +2,8 @@ package org.example.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.*;
+import org.example.presenter.*;
+import org.gaas.usecase.StartGameUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class WebSocketBroadCast {
         }
     }
 
-    public void pushCreateGameEventToAllPlayers(CreateGamePresenter presenter) {
+    public void pushCreateGameEventToAllPlayers(StartGameUseCase.CreateGamePresenter<List<CreateGamePresenter.CreateGameViewModel>> presenter) {
         List<CreateGamePresenter.CreateGameViewModel> createGameViewModels = presenter.present();
         createGameViewModels.forEach(viewModel -> {
             try {

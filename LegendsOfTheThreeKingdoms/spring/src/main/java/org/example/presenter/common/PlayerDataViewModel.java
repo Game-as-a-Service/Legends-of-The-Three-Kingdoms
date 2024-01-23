@@ -1,12 +1,12 @@
 package org.example.presenter.common;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.HandEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.PlayerEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.rolecard.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.gaas.domain.events.HandEvent;
+import org.gaas.domain.events.PlayerEvent;
+import org.gaas.domain.rolecard.Role;
 
 import java.util.ArrayList;
 import java.util.List;

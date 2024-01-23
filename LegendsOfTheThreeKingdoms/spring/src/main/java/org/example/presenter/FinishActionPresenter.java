@@ -1,19 +1,19 @@
 package org.example.presenter;
 
-import org.gaas.domain.Round;
-import org.gaas.domain.events.*;
+import lombok.*;
 import org.example.presenter.common.GameDataViewModel;
 import org.example.presenter.common.PlayerDataViewModel;
 import org.example.presenter.common.RoundDataViewModel;
-import org.example.service.GameService;
-import lombok.*;
+import org.gaas.domain.events.*;
+import org.gaas.usecase.FinishActionUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel.getEvent;
+import static org.example.presenter.ViewModel.getEvent;
 
-public class FinishActionPresenter implements GameService.Presenter<List<FinishActionPresenter.GameViewModel>> {
+
+public class FinishActionPresenter implements FinishActionUseCase.FinishActionPresenter<List<FinishActionPresenter.GameViewModel>> {
     List<ViewModel> eventToViewModels = new ArrayList<>();
     private List<GameViewModel> viewModels = new ArrayList<>();
 

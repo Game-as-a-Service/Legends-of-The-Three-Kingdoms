@@ -8,16 +8,17 @@ import org.example.presenter.common.GameDataViewModel;
 import org.example.presenter.common.PlayerDataViewModel;
 import org.example.presenter.common.RoundDataViewModel;
 import org.gaas.domain.events.*;
+import org.gaas.usecase.PlayCardUseCase;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+
 
 import static org.example.presenter.ViewModel.getEvent;
 
 
-public class PlayCardPresenter implements GameService.Presenter<List<PlayCardPresenter.GameViewModel>> {
+public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List<PlayCardPresenter.GameViewModel>> {
     List<ViewModel> eventToViewModels = new ArrayList<>();
     private List<GameViewModel> viewModels;
 

@@ -1,22 +1,23 @@
 package org.example.presenter;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.*;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.GameDataViewModel;
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.RoundDataViewModel;
-import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
+import org.gaas.domain.events.*;
+import org.example.presenter.common.GameDataViewModel;
+import org.example.presenter.common.RoundDataViewModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.waterball.LegendsOfTheThreeKingdoms.presenter.common.PlayerDataViewModel;
+import org.example.presenter.common.PlayerDataViewModel;
+import org.gaas.usecase.OthersChoosePlayerGeneralUseCase;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.waterball.LegendsOfTheThreeKingdoms.presenter.ViewModel.getEvent;
+import static org.example.presenter.ViewModel.getEvent;
 
-public class InitialEndPresenter implements GameService.Presenter<List<InitialEndPresenter.InitialEndViewModel>> {
+public class InitialEndPresenter implements OthersChoosePlayerGeneralUseCase.InitialEndPresenter<List<InitialEndPresenter.InitialEndViewModel>> {
 
     private List<InitialEndViewModel> initialEndViewModels;
 

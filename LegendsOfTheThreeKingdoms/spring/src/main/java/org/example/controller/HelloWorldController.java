@@ -1,12 +1,14 @@
 package org.example.controller;
 
 
-import com.waterball.LegendsOfTheThreeKingdoms.controller.dto.GameResponse;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.Game;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.gamephase.Initial;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.player.Player;
-import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.example.controller.dto.GameResponse;
+import org.gaas.domain.Game;
+import org.gaas.domain.gamephase.Initial;
+import org.gaas.domain.player.Player;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class HelloWorldController {
-    @Autowired
-    private GameService gameService;
+
 
     @MessageMapping("/hello")
     @SendTo("/websocket/legendsOfTheThreeKingdoms/my-id/player-a")
@@ -35,6 +36,25 @@ public class HelloWorldController {
 
         game.enterPhase(new Initial(game));
 
-        return new GameResponse(gameService.convertToGameDto(game));
+        return new GameResponse(convertToGameDto(game));
+    }
+
+    private GameDto convertToGameDto(Game game) {
+        String gameId = game.getGameId();
+        List<Player> players = game.getPlayers();
+        GameDto gameDto = new GameDto();
+        gameDto.setGameId(gameId);
+        gameDto.setPlayers(players);
+        gameDto.setGamePhaseState(game.getGamePhase().getClass().getName());
+        return gameDto;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public class GameDto {
+        private String gameId;
+        private List<Player> players;
+        private String gamePhaseState;
     }
 }

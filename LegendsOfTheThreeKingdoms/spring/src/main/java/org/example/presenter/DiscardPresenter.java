@@ -5,15 +5,15 @@ import org.gaas.domain.handcard.HandCard;
 import org.example.presenter.common.GameDataViewModel;
 import org.example.presenter.common.PlayerDataViewModel;
 import org.example.presenter.common.RoundDataViewModel;
-import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import lombok.*;
+import org.gaas.usecase.DiscardCardUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.example.presenter.ViewModel.getEvent;
 
-public class DiscardPresenter implements GameService.Presenter<List<DiscardPresenter.GameViewModel>> {
+public class DiscardPresenter implements DiscardCardUseCase.DiscardPresenter<List<DiscardPresenter.GameViewModel>> {
 
     private List<GameViewModel> viewModels = new ArrayList<>();
 

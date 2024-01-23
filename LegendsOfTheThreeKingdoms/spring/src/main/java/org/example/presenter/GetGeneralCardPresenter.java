@@ -1,17 +1,15 @@
 package org.example.presenter;
 
-import com.waterball.LegendsOfTheThreeKingdoms.domain.events.GetMonarchGeneralCardsEvent;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.General;
-import com.waterball.LegendsOfTheThreeKingdoms.domain.generalcard.GeneralCard;
-import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
-import lombok.AllArgsConstructor;
+import org.gaas.domain.events.GetMonarchGeneralCardsEvent;
+import org.gaas.domain.generalcard.GeneralCard;
+import org.gaas.usecase.StartGameUseCase;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GetGeneralCardPresenter implements GameService.Presenter<GetGeneralCardPresenter.GetGeneralCardViewModel> {
+public class GetGeneralCardPresenter implements StartGameUseCase.GetGeneralCardPresenter<GetGeneralCardPresenter.GetGeneralCardViewModel> {
 
     private GetGeneralCardViewModel viewModel;
 

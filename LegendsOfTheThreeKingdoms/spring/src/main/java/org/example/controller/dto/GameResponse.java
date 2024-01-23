@@ -1,6 +1,6 @@
 package org.example.controller.dto;
 
-import com.waterball.LegendsOfTheThreeKingdoms.service.dto.GameDto;
+import org.example.controller.HelloWorldController.GameDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -4,13 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.gaas.domain.Game;
+import org.gaas.domain.player.Player;
 import org.gaas.domain.rolecard.Role;
+import org.gaas.usecase.StartGameUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class CreateGamePresenter implements GameService.Presenter<List<CreateGamePresenter.CreateGameViewModel>> {
+public class CreateGamePresenter implements StartGameUseCase.CreateGamePresenter<List<CreateGamePresenter.CreateGameViewModel>> {
 
     private List<CreateGameViewModel> viewModels;
 
@@ -26,18 +28,18 @@ public class CreateGamePresenter implements GameService.Presenter<List<CreateGam
     }
 
 
-   @Data
-   @NoArgsConstructor
+    @Data
+    @NoArgsConstructor
     public static class CreateGameViewModel extends ViewModel<CreateGameDataViewModel> {
         private String gameId;
         private String playerId;
 
-       public CreateGameViewModel(String gameId, CreateGameDataViewModel data,String message, String playerId) {
-           super("createGameEvent",data,message);
-           this.gameId = gameId;
-           this.playerId = playerId;
-       }
-   }
+        public CreateGameViewModel(String gameId, CreateGameDataViewModel data, String message, String playerId) {
+            super("createGameEvent", data, message);
+            this.gameId = gameId;
+            this.playerId = playerId;
+        }
+    }
 
     @Data
     @NoArgsConstructor

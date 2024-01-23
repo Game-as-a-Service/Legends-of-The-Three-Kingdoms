@@ -1,15 +1,17 @@
 package org.example.presenter;
 
-import com.waterball.LegendsOfTheThreeKingdoms.service.GameService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.gaas.domain.Game;
+import org.gaas.domain.player.Player;
+import org.gaas.usecase.FindGameByIdUseCase;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
 
-public class FindGamePresenter implements GameService.Presenter<FindGamePresenter.FindGameViewModel> {
+public class FindGamePresenter implements FindGameByIdUseCase.FindGamePresenter<FindGamePresenter.FindGameViewModel> {
 
     private FindGameViewModel viewModel;
 
