@@ -1,30 +1,21 @@
 package com.gaas.threeKingdoms.usecase;
 
+import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.events.GetMonarchGeneralCardsEvent;
+import com.gaas.threeKingdoms.outport.GameRepository;
+import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.events.GetMonarchGeneralCardsEvent;
-import com.gaas.threeKingdoms.player.Player;
-import com.gaas.threeKingdoms.outport.GameRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-
-import javax.inject.Named;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+@RequiredArgsConstructor
 public class StartGameUseCase {
 
     private final GameRepository gameRepository;
-
-    @Autowired
-    public StartGameUseCase(GameRepository gameRepository) {
-        this.gameRepository = gameRepository;
-    }
 
     public void execute(CreateGameRequest createGameRequest, CreateGamePresenter createGamePresenter, GetGeneralCardPresenter getMonarchGeneralCardPresenter) {
         // 創建遊戲
@@ -63,11 +54,13 @@ public class StartGameUseCase {
 
     public interface CreateGamePresenter<T> {
         void renderGame(Game game);
+
         T present();
     }
 
     public interface GetGeneralCardPresenter<T> {
         void renderGame(GetMonarchGeneralCardsEvent event, String gameId, String monarchPlayerId);
+
         T present();
     }
 

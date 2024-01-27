@@ -1,24 +1,16 @@
 package com.gaas.threeKingdoms.usecase;
 
-import com.gaas.threeKingdoms.outport.GameRepository;
-import lombok.RequiredArgsConstructor;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.DomainEvent;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import com.gaas.threeKingdoms.outport.GameRepository;
+import lombok.RequiredArgsConstructor;
 
-
-import javax.inject.Named;
 import java.util.List;
 
-@Component
+@RequiredArgsConstructor
 public class DiscardCardUseCase {
 
     private final GameRepository repository;
-
-    public DiscardCardUseCase(GameRepository repository) {
-        this.repository = repository;
-    }
 
     public void execute(String gameId, List<String> cardIds, DiscardPresenter presenter) {
         Game game = repository.findById(gameId);

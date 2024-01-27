@@ -8,7 +8,6 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.1.0</version>
-<!--        <version>2.7.5</version>-->
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -23,6 +22,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.waterball</groupId>
             <artifactId>app</artifactId>

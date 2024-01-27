@@ -1,27 +1,19 @@
 package com.gaas.threeKingdoms.usecase;
 
+import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.outport.GameRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.outport.GameRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import javax.inject.Named;
 import java.util.List;
 
-@Component
+@RequiredArgsConstructor
 public class PlayCardUseCase {
 
     private final GameRepository gameRepository;
-
-    @Autowired
-    public PlayCardUseCase(GameRepository gameRepository) {
-        this.gameRepository = gameRepository;
-    }
 
     public void execute(String gameId, PlayCardRequest request, PlayCardPresenter presenter) {
         Game game = gameRepository.findById(gameId);
@@ -42,6 +34,7 @@ public class PlayCardUseCase {
 
     public interface PlayCardPresenter<T> {
         void renderEvents(List<DomainEvent> events);
+
         T present();
     }
 

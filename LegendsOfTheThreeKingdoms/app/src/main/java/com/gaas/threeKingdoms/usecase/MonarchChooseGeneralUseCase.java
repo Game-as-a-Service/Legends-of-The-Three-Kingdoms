@@ -1,27 +1,20 @@
 package com.gaas.threeKingdoms.usecase;
 
+import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.outport.GameRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.outport.GameRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import javax.inject.Named;
 import java.util.List;
 
-@Component
+@RequiredArgsConstructor
 public class MonarchChooseGeneralUseCase {
 
     private final GameRepository repository;
 
-    @Autowired
-    public MonarchChooseGeneralUseCase(GameRepository repository) {
-        this.repository = repository;
-    }
 
     public void execute(String gameId, MonarchChooseGeneralRequest request, MonarchChooseGeneralCardPresenter presenter) {
         Game game = repository.findById(gameId);
@@ -49,6 +42,7 @@ public class MonarchChooseGeneralUseCase {
 
     public interface MonarchChooseGeneralCardPresenter<T> {
         void renderEvents(List<DomainEvent> events);
+
         T present();
     }
 }
