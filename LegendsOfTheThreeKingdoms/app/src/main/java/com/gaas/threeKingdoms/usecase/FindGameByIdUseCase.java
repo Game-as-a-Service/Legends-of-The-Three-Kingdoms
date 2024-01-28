@@ -2,9 +2,11 @@ package com.gaas.threeKingdoms.usecase;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.outport.GameRepository;
+import jakarta.inject.Named;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Named
 public class FindGameByIdUseCase {
 
     private final GameRepository repository;
