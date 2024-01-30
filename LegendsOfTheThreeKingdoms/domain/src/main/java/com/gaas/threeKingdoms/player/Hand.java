@@ -38,6 +38,7 @@ public class Hand {
 //這邊的排是不是本來就棄掉了? 要改測資
     public HandCard playCard(String cardId) {
         HandCard handCard = getCard(cardId).orElseThrow(NoSuchElementException::new);
-        return cards.remove(cards.indexOf(handCard));
+        int index = cards.indexOf(handCard);
+        return cards.remove(index);
     }
 }

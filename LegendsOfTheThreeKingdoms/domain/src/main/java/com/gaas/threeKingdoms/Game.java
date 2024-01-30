@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.DyingAskPeachBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.NormalActiveKillBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.handler.PeachBehaviorHandler;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -37,14 +38,14 @@ public class Game {
     private Stack<Behavior> topBehavior = new Stack<>();
 
     public Game(String gameId, List<Player> players) {
-        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(null, this), this);
+        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(null,this), this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(null, this), this);
+        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(null,this), this), this);
     }
 
     public SeatingChart getSeatingChart() {
@@ -169,7 +170,7 @@ public class Game {
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
-                        p.getGeneralCard().getGeneralID(),
+                        p.getGeneralCard().getGeneralId(),
                         p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList())),
@@ -204,7 +205,8 @@ public class Game {
     public void assignHpToPlayers() {
         players.forEach(p -> {
             int healthPoint = p.getRoleCard().getRole().equals(Role.MONARCH) ? 1 : 0;
-            p.setBloodCard(new BloodCard(p.getGeneralCard().getHealthPoint() + healthPoint));
+            int maxHp = p.getGeneralCard().getHealthPoint() + healthPoint;
+            p.setBloodCard(new BloodCard(maxHp));
             p.setHealthStatus(HealthStatus.ALIVE);
         });
     }
@@ -233,7 +235,7 @@ public class Game {
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
-                        p.getGeneralCard().getGeneralID(),
+                        p.getGeneralCard().getGeneralId(),
                         p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
@@ -290,7 +292,9 @@ public class Game {
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
-        updateTopBehavior(behavior);
+        if (!behavior.isNeedToPop()) {
+            updateTopBehavior(behavior);
+        }
         return behavior.askTargetPlayerPlayCard();
     }
 
@@ -333,7 +337,7 @@ public class Game {
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
-                        p.getGeneralCard().getGeneralID(),
+                        p.getGeneralCard().getGeneralId(),
                         p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),

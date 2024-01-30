@@ -22,7 +22,7 @@ public class MonarchChooseGeneralCardPresenter implements MonarchChooseGeneralUs
     public void renderEvents(List<DomainEvent> events) {
         Optional<MonarchChooseGeneralCardEvent> monarchChooseGeneralCardEvent = getEvent(events, MonarchChooseGeneralCardEvent.class);
         viewModel = monarchChooseGeneralCardEvent
-                .map(e -> new MonarchChooseGeneralCardViewModel(e.getGameId(), e.getPlayerIds(), "MonarchGeneralChosenEvent", new MonarchChooseGeneralDataViewModel(e.getGeneralCard().getGeneralID()), e.getMessage()))
+                .map(e -> new MonarchChooseGeneralCardViewModel(e.getGameId(), e.getPlayerIds(), "MonarchGeneralChosenEvent", new MonarchChooseGeneralDataViewModel(e.getGeneralCard().getGeneralId()), e.getMessage()))
                 .orElse(null);
         String gameId = viewModel.gameId;
 
@@ -30,7 +30,7 @@ public class MonarchChooseGeneralCardPresenter implements MonarchChooseGeneralUs
 
         generalCardByOtherViewModels = getGeneralCardByOthersEvent
                 .stream()
-                .map(e -> new GetGeneralCardByOthersViewModel(gameId, e.getPlayerId(), "getGeneralCardEventByOthers", e.getGeneralCardsList().stream().map(generalCard -> generalCard.getGeneralID()).toList(), e.getMessage()))
+                .map(e -> new GetGeneralCardByOthersViewModel(gameId, e.getPlayerId(), "getGeneralCardEventByOthers", e.getGeneralCardsList().stream().map(generalCard -> generalCard.getGeneralId()).toList(), e.getMessage()))
                 .toList();
     }
 

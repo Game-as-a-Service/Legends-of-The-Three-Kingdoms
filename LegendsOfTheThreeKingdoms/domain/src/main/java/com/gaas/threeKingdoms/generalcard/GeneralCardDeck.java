@@ -19,14 +19,14 @@ public class GeneralCardDeck {
     private void initGeneralCardDeck() {
         General[] generalNames = General.values();
         for (int i = generalNames.length - 1; i >= 3; i--) {
-            GeneralCard generalCard = new GeneralCard(generalNames[i].getGeneralId(), generalNames[i].getGeneralName(), generalNames[i].getHealthPoint());
+            GeneralCard generalCard = new GeneralCard(generalNames[i]);
             generalStack.add(generalCard);
             GeneralCard.generals.put(generalNames[i].getGeneralId(), generalCard);
         }
         ShuffleWrapper.shuffle(generalStack);
         //讓劉備,曹操,孫權在最上面
         for (int i = 0; i < 3; i++) {
-            GeneralCard generalCard = new GeneralCard(generalNames[i].getGeneralId(), generalNames[i].getGeneralName(), generalNames[i].getHealthPoint());
+            GeneralCard generalCard = new GeneralCard(generalNames[i]);
             generalStack.add(generalCard);
             GeneralCard.generals.put(generalNames[i].getGeneralId(), generalCard);
         }

@@ -10,6 +10,6 @@ public class Peach extends BasicCard {
     }
     @Override
     public void effect(Player player) {
-
+        player.heal(1);
     }
 }

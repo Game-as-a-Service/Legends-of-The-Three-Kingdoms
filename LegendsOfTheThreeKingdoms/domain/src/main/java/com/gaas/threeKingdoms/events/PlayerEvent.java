@@ -27,7 +27,7 @@ public class PlayerEvent extends DomainEvent {
 
     public PlayerEvent(Player player) {
         this.id = player.getId();
-        this.generalId = player.getGeneralCard().getGeneralID();
+        this.generalId = player.getGeneralCard().getGeneralId();
         this.roleId = player.getRoleCard().getRole().getRoleName();
         this.hp = player.getHP();
         this.hand = new HandEvent(player);

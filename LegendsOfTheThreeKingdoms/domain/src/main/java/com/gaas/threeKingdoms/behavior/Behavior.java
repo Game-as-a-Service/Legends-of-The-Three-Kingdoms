@@ -31,10 +31,17 @@ public abstract class Behavior {
         }
     }
 
-    protected abstract List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType);
+    protected abstract List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType);
 
     public boolean isNeedToPop() {
         return isNeedToPop;
+    }
+
+    protected void playerPlayCard(Player player, Player targetPlayer, String cardId) {
+        HandCard handCard = player.playCard(cardId);
+        card = handCard;
+        game.updateRoundInformation(targetPlayer, handCard);
+        game.getGraveyard().add(handCard);
     }
 
 }

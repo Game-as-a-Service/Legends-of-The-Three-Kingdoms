@@ -1,8 +1,11 @@
 package com.gaas.threeKingdoms.behavior;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @AllArgsConstructor
 public abstract class PlayCardBehaviorHandler {
@@ -22,4 +25,13 @@ public abstract class PlayCardBehaviorHandler {
     protected abstract boolean match(String playerId, String cardId, List<String> targetPlayerId, String playType);
 
     protected abstract Behavior doHandle(String playerId, String cardId, List<String> targetPlayerId, String playType);
+
+
+    protected Player getPlayer(String playerId) {
+        return game.getPlayer(playerId);
+    }
+
+    protected HandCard getCard(String cardId, Player player) {
+        return player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
+    }
 }

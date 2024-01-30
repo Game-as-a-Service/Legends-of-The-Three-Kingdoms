@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.gamephase.Normal;
+import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -46,7 +47,7 @@ public class DiscardCardTest {
                 .construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -56,7 +57,7 @@ public class DiscardCardTest {
                 .construct()
                 .withId("player-b")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard("WEI002", "司馬懿", 3))
+                .withGeneralCard(new GeneralCard(General.司馬懿))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -66,7 +67,7 @@ public class DiscardCardTest {
                 .construct()
                 .withId("player-C")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard("WEI002", "司馬懿", 3))
+                .withGeneralCard(new GeneralCard(General.司馬懿))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -76,7 +77,7 @@ public class DiscardCardTest {
                 .construct()
                 .withId("player-D")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard("WEI002", "司馬懿", 3))
+                .withGeneralCard(new GeneralCard(General.司馬懿))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())

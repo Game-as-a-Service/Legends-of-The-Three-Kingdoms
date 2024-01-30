@@ -87,12 +87,6 @@ public class DyingAskPeachBehavior extends Behavior {
         return new AskPeachEvent(player.getId());
     }
 
-    private void playerPlayCard(Player player, Player targetPlayer, String cardId) {
-        HandCard handCard = player.playCard(cardId);
-        card = handCard;
-        game.updateRoundInformation(targetPlayer, handCard);
-        game.getGraveyard().add(handCard);
-    }
 
     private boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);

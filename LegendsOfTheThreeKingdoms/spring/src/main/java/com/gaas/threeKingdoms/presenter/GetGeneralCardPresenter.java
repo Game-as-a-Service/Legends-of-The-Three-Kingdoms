@@ -15,7 +15,7 @@ public class GetGeneralCardPresenter implements StartGameUseCase.GetGeneralCardP
 
     public void renderGame(GetMonarchGeneralCardsEvent event, String gameId, String monarchPlayerId) {
         viewModel = new GetGeneralCardViewModel(event.getGeneralCardsList().stream()
-                .map(GeneralCard::getGeneralID)
+                .map(GeneralCard::getGeneralId)
                 .collect(Collectors.toList()), "可選擇的武將", gameId, monarchPlayerId);
     }
 

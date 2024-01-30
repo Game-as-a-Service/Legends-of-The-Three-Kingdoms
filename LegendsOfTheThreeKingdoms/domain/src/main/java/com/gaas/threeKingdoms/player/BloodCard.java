@@ -1,10 +1,14 @@
 package com.gaas.threeKingdoms.player;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 public class BloodCard {
+    private int maxHp;
     private int hp;
+
+    public BloodCard(int hp) {
+        this.maxHp = hp;
+        this.hp = hp;
+    }
 }
