@@ -19,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin
 public class GameController {
 
     private final StartGameUseCase startGameUseCase;
