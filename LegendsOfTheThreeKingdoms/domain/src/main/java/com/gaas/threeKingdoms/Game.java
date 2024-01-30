@@ -38,68 +38,16 @@ public class Game {
     private Stack<Behavior> topBehavior = new Stack<>();
 
     public Game(String gameId, List<Player> players) {
-        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(null,this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(null, this), this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new NormalActiveKillBehaviorHandler(new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(null,this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(null, this), this), this);
     }
 
-    public SeatingChart getSeatingChart() {
-        return seatingChart;
-    }
-
-    public List<Player> getWinners() {
-        return winners;
-    }
-
-    public void setWinners(List<Player> winners) {
-        this.winners = winners;
-    }
-
-    public GamePhase getGamePhase() {
-        return gamePhase;
-    }
-
-    public String getGameId() {
-        return gameId;
-    }
-
-    public void setGameId(String gameId) {
-        this.gameId = gameId;
-    }
-
-    public List<Player> getPlayers() {
-        return players;
-    }
-
-    public Graveyard getGraveyard() {
-        return graveyard;
-    }
-
-    public Round getCurrentRound() {
-        return currentRound;
-    }
-
-    public void setCurrentRound(Round currentRound) {
-        this.currentRound = currentRound;
-    }
-
-    public void setPlayers(List<Player> players) {
-        this.players = players;
-        seatingChart = new SeatingChart(players);
-    }
-
-    public void setDeck(Deck deck) {
-        this.deck = deck;
-    }
-
-    public Player getPlayer(String playerId) {
-        return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
-    }
 
     public String getMonarchPlayerId() {
         return players.stream()
@@ -159,9 +107,9 @@ public class Game {
 
         currentRound = new Round(
                 players.stream()
-                .filter(currentPlayer -> currentPlayer.getRoleCard().getRole().equals(Role.MONARCH))
-                .findFirst()
-                .orElseThrow(()->new IllegalStateException("還有沒有玩家是主公，請確認主公狀態"))
+                        .filter(currentPlayer -> currentPlayer.getRoleCard().getRole().equals(Role.MONARCH))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("還有沒有玩家是主公，請確認主公狀態"))
         );
 
         this.enterPhase(new Normal(this));
@@ -292,7 +240,7 @@ public class Game {
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
-        if (!behavior.isNeedToPop()) {
+        if (behavior.isNeedToPush()){
             updateTopBehavior(behavior);
         }
         return behavior.askTargetPlayerPlayCard();
@@ -317,7 +265,7 @@ public class Game {
         }
     }
 
-    public boolean isWithinDistance(Player player, Player targetPlayer) {
+    public boolean isInAttackRange(Player player, Player targetPlayer) {
         // 攻擊距離 >= 基礎距離(座位表) + 逃走距離
         int dist = seatingChart.calculateDistance(player, targetPlayer);
         int escapeDist = targetPlayer.judgeEscapeDistance();
@@ -346,7 +294,6 @@ public class Game {
 
         currentRound.setRoundPhase(RoundPhase.Discard);
         RoundEvent roundEvent = new RoundEvent(currentRound);
-
 
         FinishActionEvent finishActionEvent = new FinishActionEvent();
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
@@ -422,6 +369,72 @@ public class Game {
         currentRound.setCurrentPlayCard(card);
     }
 
+    public String createGameOverMessage() {
+        Player deadPlayer = players.stream().filter(player -> player.getHP() == 0).findFirst().get();
+        String gameOverMessage = "";
+        if (deadPlayer.getRoleCard().getRole() == Role.MONARCH) {
+            for (Player player : players) {
+                gameOverMessage += player.getId() + " " + player.getRoleCard().getRole().getRoleName() + "\n";
+            }
+            gameOverMessage += "反賊獲勝";
+        }
+        return gameOverMessage;
+    }
+
+
+    public SeatingChart getSeatingChart() {
+        return seatingChart;
+    }
+
+    public List<Player> getWinners() {
+        return winners;
+    }
+
+    public void setWinners(List<Player> winners) {
+        this.winners = winners;
+    }
+
+    public GamePhase getGamePhase() {
+        return gamePhase;
+    }
+
+    public String getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(String gameId) {
+        this.gameId = gameId;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public Graveyard getGraveyard() {
+        return graveyard;
+    }
+
+    public Round getCurrentRound() {
+        return currentRound;
+    }
+
+    public void setCurrentRound(Round currentRound) {
+        this.currentRound = currentRound;
+    }
+
+    public void setPlayers(List<Player> players) {
+        this.players = players;
+        seatingChart = new SeatingChart(players);
+    }
+
+    public void setDeck(Deck deck) {
+        this.deck = deck;
+    }
+
+    public Player getPlayer(String playerId) {
+        return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElseThrow();
+    }
+
     public Player getActivePlayer() {
         return currentRound.getActivePlayer();
     }
@@ -452,18 +465,6 @@ public class Game {
 
     public boolean isTopBehaviorEmpty() {
         return topBehavior.empty();
-    }
-
-    public String createGameOverMessage() {
-        Player deadPlayer = players.stream().filter(player -> player.getHP() == 0).findFirst().get();
-        String gameOverMessage = "";
-        if (deadPlayer.getRoleCard().getRole() == Role.MONARCH) {
-            for (Player player : players) {
-                gameOverMessage += player.getId() + " " + player.getRoleCard().getRole().getRoleName() + "\n";
-            }
-            gameOverMessage += "反賊獲勝";
-        }
-        return gameOverMessage;
     }
 }
 

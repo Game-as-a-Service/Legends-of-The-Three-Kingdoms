@@ -62,7 +62,7 @@ public class Normal extends GamePhase {
     }
 
     private boolean isDistanceTooLong(Player player, Player targetPlayer) {
-        return !game.isWithinDistance(player, targetPlayer);
+        return !game.isInAttackRange(player, targetPlayer);
     }
 
     private boolean isPlayedValidCard(String cardId) {

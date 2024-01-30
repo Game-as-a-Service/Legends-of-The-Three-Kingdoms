@@ -5,7 +5,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @AllArgsConstructor
 public abstract class PlayCardBehaviorHandler {
@@ -31,7 +31,7 @@ public abstract class PlayCardBehaviorHandler {
         return game.getPlayer(playerId);
     }
 
-    protected HandCard getCard(String cardId, Player player) {
-        return player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
+    protected Optional<HandCard> getCard(String cardId, Player player) {
+        return player.getHand().getCard(cardId);
     }
 }

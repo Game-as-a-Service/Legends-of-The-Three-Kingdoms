@@ -26,7 +26,7 @@ jobs:
 
       # List Pom.xml
       - name: List LegendsOfTheThreeKingdoms Files
-        run: ls LegendsOfTheThreeKingdoms
+        run: ls
       # Get Path
       - name: Get Path
         run: pwd
@@ -43,8 +43,8 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "$GITHUB_CONTEXT" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-      - name: List target
-        run: ls LegendsOfTheThreeKingdoms/target
+      - name: List LegendsOfTheThreeKingdoms
+        run: ls LegendsOfTheThreeKingdoms/spring/target
 
       # Publish Artifact
       - name: Upload Artifact
@@ -53,7 +53,7 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: |
-            LegendsOfTheThreeKingdoms/target/LegendsOfTheThreeKingdoms-*.jar
+            LegendsOfTheThreeKingdoms/spring/target/spring-*.jar
             LegendsOfTheThreeKingdoms/docker/Dockerfile
   docker-push:
     name: Docker Push
@@ -83,7 +83,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: .
       - name: List All Target File
-        run:  ls target/
+        run:  ls
       - name: Get Path
         run: pwd
       # Docker build & push to AWS ECR Public

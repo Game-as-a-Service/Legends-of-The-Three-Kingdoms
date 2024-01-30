@@ -17,7 +17,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 
 public class DyingAskPeachBehavior extends Behavior {
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
     }
 
     @Override

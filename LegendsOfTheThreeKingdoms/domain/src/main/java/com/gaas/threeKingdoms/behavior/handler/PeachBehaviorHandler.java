@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class PeachBehaviorHandler extends PlayCardBehaviorHandler {
@@ -21,8 +22,8 @@ public class PeachBehaviorHandler extends PlayCardBehaviorHandler {
     @Override
     protected boolean match(String playerId, String cardId, List<String> targetPlayerId, String playType) {
         Player player = getPlayer(playerId);
-        HandCard card = getCard(cardId, player);
-        return card instanceof Peach;
+        Optional<HandCard> card = getCard(cardId, player);
+        return card.filter(handCard -> handCard instanceof Peach).isPresent();
     }
 
 

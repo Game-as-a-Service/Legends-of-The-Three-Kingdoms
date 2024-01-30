@@ -15,7 +15,7 @@ import java.util.List;
 public class PeachBehavior extends Behavior {
 
     public PeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
     }
 
     @Override
@@ -26,14 +26,14 @@ public class PeachBehavior extends Behavior {
         RoundEvent roundEvent = new RoundEvent(currentRound);
         List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
         return List.of(new PlayCardEvent("出牌",
-                                                 behaviorPlayer.getId(),
-                                                 behaviorPlayer.getId(),
-                                                 cardId,
-                                                 playType,
-                                                 game.getGameId(),
-                                                 playerEvents,
-                                                 roundEvent,
-                                                 game.getGamePhase().getPhaseName()));
+                behaviorPlayer.getId(),
+                behaviorPlayer.getId(),
+                cardId,
+                playType,
+                game.getGameId(),
+                playerEvents,
+                roundEvent,
+                game.getGamePhase().getPhaseName()));
     }
 
     @Override
