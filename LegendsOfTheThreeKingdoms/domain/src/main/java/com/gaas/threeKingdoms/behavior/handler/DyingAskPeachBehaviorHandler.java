@@ -5,9 +5,12 @@ import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
+import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 public class DyingAskPeachBehaviorHandler extends PlayCardBehaviorHandler {

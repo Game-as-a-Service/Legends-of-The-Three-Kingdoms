@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.Round;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GameOver;
+import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
@@ -51,13 +52,23 @@ public class DyingAskPeachBehavior extends Behavior {
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
             return List.of(playCardEvent, askPeachEvent);
         } else if (isPeachCard(cardId)) {
-//            dyingPlayer.playCard(cardId);
-//            RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
-//            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, dyingPlayer);
-//            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-//            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-//            return List.of(playCardEvent, playerDamagedEvent);
-            return null;
+
+            // Player use peach card
+            HandCard card = currentPlayer.playCard(cardId);
+            card.effect(dyingPlayer);
+            Round currentRound = game.getCurrentRound();
+
+            // Dying player is healed
+            currentRound.setDyingPlayer(null);
+            currentRound.setActivePlayer(null);
+            game.enterPhase(new Normal(game));
+
+            // Create Domain Events
+            RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
+            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
+            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+            return List.of(playCardEvent);
+
         } else {
             //TODO:怕有其他效果或殺的其他case
             return null;
