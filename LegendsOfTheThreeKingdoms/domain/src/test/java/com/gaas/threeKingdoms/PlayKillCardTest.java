@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.gamephase.Normal;
+import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -26,18 +27,18 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PlayKillCardTest {
 
     @DisplayName("""
-        Given
-        輪到 A 玩家出牌
-        A 玩家手牌有殺x2, 閃x2, 桃x2, HP 4
-        C 玩家不在 A 玩家的攻擊距離, HP 4
-        
-        When
-        A 玩家對 C 玩家出殺
-        
-        Then
-        A 玩家出殺失敗
-        C 玩家 HP 4
-        """)
+            Given
+            輪到 A 玩家出牌
+            A 玩家手牌有殺x2, 閃x2, 桃x2, HP 4
+            C 玩家不在 A 玩家的攻擊距離, HP 4
+                    
+            When
+            A 玩家對 C 玩家出殺
+                    
+            Then
+            A 玩家出殺失敗
+            C 玩家 HP 4
+            """)
     @Test
     public void givenPlayerAAndPlayerCDistance2_WhenPlayerAKillB_ThenPlayerAFail() {
         Game game = new Game();
@@ -53,7 +54,7 @@ public class PlayKillCardTest {
                 .withId("player-b")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -61,7 +62,7 @@ public class PlayKillCardTest {
                 .withId("player-c")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -69,7 +70,7 @@ public class PlayKillCardTest {
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -86,19 +87,19 @@ public class PlayKillCardTest {
     }
 
     @DisplayName("""
-        Given
-        輪到 A 玩家出牌
-        A 玩家對 B 玩家已出過殺
-        A 玩家手牌有殺x1, 閃x2, 桃x2
-        
-        When
-        A 玩家對 B 玩家出殺
-        
-        Then
-        A 玩家出殺失敗
-        A 玩家手牌爲 殺x1, 閃x2, 桃x2
-        A 玩家已出殺的狀態為true
-        """)
+            Given
+            輪到 A 玩家出牌
+            A 玩家對 B 玩家已出過殺
+            A 玩家手牌有殺x1, 閃x2, 桃x2
+                    
+            When
+            A 玩家對 B 玩家出殺
+                    
+            Then
+            A 玩家出殺失敗
+            A 玩家手牌爲 殺x1, 閃x2, 桃x2
+            A 玩家已出殺的狀態為true
+            """)
     @Test
     public void givenPlayerAKilledPlayerB_WhenPlayerAKillB_ThenPlayerAFail() {
         //Given
@@ -106,7 +107,7 @@ public class PlayKillCardTest {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -120,7 +121,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -129,7 +130,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -138,7 +139,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -157,24 +158,24 @@ public class PlayKillCardTest {
                 () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active"));
         assertEquals(4, game.getPlayer("player-b").getBloodCard().getHp());
         Assertions.assertTrue(Utils.compareArrayLists(Arrays.asList(
-                new Kill(BS8008),  new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)), game.getPlayer("player-a").getHand().getCards()));
         assertTrue(game.getCurrentRound().isShowKill());
     }
 
     @DisplayName("""
-        Given
-        A 玩家對 B 玩家已出過殺
-        A 玩家手牌有殺x1, 閃x2, 桃x2
-        A 玩家對 B 玩家出殺
-        B 玩家 4 滴血
-        
-        When
-        B 出 skip (不出牌)
-        
-        Then
-        B 玩家 3 滴血
-        A 玩家手牌爲 閃x2, 桃x2
-        """)
+            Given
+            A 玩家對 B 玩家已出過殺
+            A 玩家手牌有殺x1, 閃x2, 桃x2
+            A 玩家對 B 玩家出殺
+            B 玩家 4 滴血
+                    
+            When
+            B 出 skip (不出牌)
+                    
+            Then
+            B 玩家 3 滴血
+            A 玩家手牌爲 閃x2, 桃x2
+            """)
     @Test
     public void givenPlayerAKilledPlayerB_AndPlayerBSkip_ThenPlayerBDecreaseHp() {
         //Given
@@ -182,7 +183,7 @@ public class PlayKillCardTest {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -196,7 +197,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -205,7 +206,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -214,7 +215,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -229,7 +230,7 @@ public class PlayKillCardTest {
 
 
         //When
-        game.playerPlayCard(playerB.getId(),"",playerA.getId(),"skip");
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
 
         //Then
@@ -243,18 +244,18 @@ public class PlayKillCardTest {
     }
 
     @DisplayName("""
-        Given
-        A 玩家手牌有殺x1, 閃x2, 桃x2
-        A 玩家對 B 玩家出殺
-        B 玩家 4 滴血
-        
-        When
-        B 出 閃
-        
-        Then
-        B 玩家 4 滴血
-        A 玩家手牌爲 閃x2, 桃x2
-        """)
+            Given
+            A 玩家手牌有殺x1, 閃x2, 桃x2
+            A 玩家對 B 玩家出殺
+            B 玩家 4 滴血
+                    
+            When
+            B 出 閃
+                    
+            Then
+            B 玩家 4 滴血
+            A 玩家手牌爲 閃x2, 桃x2
+            """)
     @Test
     public void givenPlayerAKilledPlayerB_AndPlayerBSDodge_ThenPlayerBSameHp() {
         //Given
@@ -262,7 +263,7 @@ public class PlayKillCardTest {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -276,7 +277,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -288,7 +289,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -297,7 +298,7 @@ public class PlayKillCardTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -312,7 +313,7 @@ public class PlayKillCardTest {
 
 
         //When
-        game.playerPlayCard(playerB.getId(),"BH2028", playerA.getId(),"active");
+        game.playerPlayCard(playerB.getId(), "BH2028", playerA.getId(), "active");
 
 
         //Then

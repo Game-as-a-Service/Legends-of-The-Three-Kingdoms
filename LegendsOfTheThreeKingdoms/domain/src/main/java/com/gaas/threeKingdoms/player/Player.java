@@ -48,6 +48,10 @@ public class Player {
         bloodCard.setHp(getHP() - i);
     }
 
+    public void heal(int value) {
+        bloodCard.setHp(Math.min(getHP() + value, bloodCard.getMaxHp()));
+    }
+
     public int judgeEscapeDistance() {
         return 0;
     }

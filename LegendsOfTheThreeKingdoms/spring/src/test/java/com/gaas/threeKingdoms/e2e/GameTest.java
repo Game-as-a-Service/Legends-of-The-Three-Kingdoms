@@ -16,7 +16,6 @@ import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -328,10 +327,10 @@ public class GameTest {
 
         // Then 玩家A武將為劉備 ((主公general是 SHU001 is true)
         Game game = inMemoryGameRepository.findById("my-id");
-        assertEquals("SHU001", game.getPlayer("player-a").getGeneralCard().getGeneralID());
+        assertEquals("SHU001", game.getPlayer("player-a").getGeneralCard().getGeneralId());
         // 牌堆不能有 SHU001
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
-                .stream().filter(x -> x.getGeneralID().equals("SHU001"))
+                .stream().filter(x -> x.getGeneralId().equals("SHU001"))
                 .count());
 
         // WebSocket 推播給前端資訊
@@ -403,10 +402,10 @@ public class GameTest {
 
         // Then 玩家B武將為馬超 ((玩家B general是 general1 is true)
         Game game = inMemoryGameRepository.findById("my-id");
-        assertEquals("SHU006", game.getPlayer("player-b").getGeneralCard().getGeneralID());
+        assertEquals("SHU006", game.getPlayer("player-b").getGeneralCard().getGeneralId());
         // 牌堆不能有 general1
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
-                .stream().filter(x -> x.getGeneralID().equals("SHU006"))
+                .stream().filter(x -> x.getGeneralId().equals("SHU006"))
                 .count());
 
         // 玩家C選諸葛亮
@@ -424,10 +423,10 @@ public class GameTest {
                 .andReturn();
 
         // Then 玩家C武將為諸葛亮 ((玩家C genera1是 general18 is true)
-        assertEquals("SHU004", game.getPlayer("player-c").getGeneralCard().getGeneralID());
+        assertEquals("SHU004", game.getPlayer("player-c").getGeneralCard().getGeneralId());
         // 牌堆不能有 general1
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
-                .stream().filter(x -> x.getGeneralID().equals("SHU004"))
+                .stream().filter(x -> x.getGeneralId().equals("SHU004"))
                 .count());
 
         // 玩家D選司馬懿
@@ -445,10 +444,10 @@ public class GameTest {
                 .andReturn();
 
         // Then 玩家D武將為司馬懿 ((玩家D general是 general1 is true)
-        assertEquals("WEI002", game.getPlayer("player-d").getGeneralCard().getGeneralID());
+        assertEquals("WEI002", game.getPlayer("player-d").getGeneralCard().getGeneralId());
         // 牌堆不能有 general1
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
-                .stream().filter(x -> x.getGeneralID().equals("WEI002"))
+                .stream().filter(x -> x.getGeneralId().equals("WEI002"))
                 .count());
     }
 

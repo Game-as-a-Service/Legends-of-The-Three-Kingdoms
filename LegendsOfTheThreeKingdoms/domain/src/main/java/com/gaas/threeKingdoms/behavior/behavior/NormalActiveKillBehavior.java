@@ -16,7 +16,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
 
 public class NormalActiveKillBehavior extends Behavior {
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
     }
 
 
@@ -72,7 +72,7 @@ public class NormalActiveKillBehavior extends Behavior {
     }
 
 
-    private  boolean isPlayerStillAlive(Player damagedPlayer) {
+    private boolean isPlayerStillAlive(Player damagedPlayer) {
         return damagedPlayer.getHP() > 0;
     }
 
@@ -91,13 +91,5 @@ public class NormalActiveKillBehavior extends Behavior {
     private AskPeachEvent createAskPeachEvent(Player player) {
         return new AskPeachEvent(player.getId());
     }
-
-    private void playerPlayCard(Player player, Player targetPlayer, String cardId) {
-        HandCard handCard = player.playCard(cardId);
-        card = handCard;
-        game.updateRoundInformation(targetPlayer, handCard);
-        game.getGraveyard().add(handCard);
-    }
-
 
 }

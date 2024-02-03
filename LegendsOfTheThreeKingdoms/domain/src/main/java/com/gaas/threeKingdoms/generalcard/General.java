@@ -29,9 +29,9 @@ public enum General {
     呂布("呂布",4, "QUN002"),
     貂蟬("貂蟬",3, "QUN003");
 
-    private final String generalName;
-    private final int healthPoint;
-    private final String generalId;
+    public final String generalName;
+    public final int healthPoint;
+    public final String generalId;
 
     General(String generalName, int healthPoint, String generalId) {
         this.generalName = generalName;

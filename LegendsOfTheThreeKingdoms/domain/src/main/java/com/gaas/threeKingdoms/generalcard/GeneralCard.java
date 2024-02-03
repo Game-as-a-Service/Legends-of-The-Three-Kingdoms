@@ -1,7 +1,5 @@
 package com.gaas.threeKingdoms.generalcard;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,17 +7,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@Builder
-@AllArgsConstructor
+//@Builder
+//@AllArgsConstructor
 @NoArgsConstructor
 public class GeneralCard {
 
-    private String generalID;
+    private String generalId;
     private String generalName;
     private int healthPoint;
 
-    public static final Map<String, GeneralCard> generals = new HashMap<>() {
-    };
+    public GeneralCard(General general) {
+        this.generalId = general.getGeneralId();
+        this.generalName = general.getGeneralName();
+        this.healthPoint = general.getHealthPoint();
+    }
 
-
+    public static final Map<String, GeneralCard> generals = new HashMap<>();
 }

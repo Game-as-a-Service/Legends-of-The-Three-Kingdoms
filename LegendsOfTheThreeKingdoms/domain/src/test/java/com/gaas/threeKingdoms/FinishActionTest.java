@@ -4,6 +4,7 @@ package com.gaas.threeKingdoms;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
+import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -52,7 +53,7 @@ public class FinishActionTest {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(5))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -66,7 +67,7 @@ public class FinishActionTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -78,7 +79,7 @@ public class FinishActionTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -87,7 +88,7 @@ public class FinishActionTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -140,7 +141,7 @@ public class FinishActionTest {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(5))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -154,7 +155,7 @@ public class FinishActionTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -163,7 +164,7 @@ public class FinishActionTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -172,7 +173,7 @@ public class FinishActionTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard("SHU001", "劉備", 4))
+                .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
