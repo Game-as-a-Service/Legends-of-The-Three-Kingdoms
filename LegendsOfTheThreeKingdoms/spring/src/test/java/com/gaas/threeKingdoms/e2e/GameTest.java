@@ -1440,7 +1440,7 @@ public class GameTest {
         assertEquals(expectedJson, playCardJsonForPlayerD);
     }
 
-    private ResultActions playCard(String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
+    public ResultActions playCard(String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/my-id/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""

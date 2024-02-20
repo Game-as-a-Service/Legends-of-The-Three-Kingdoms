@@ -1,0 +1,78 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-a",
+      "cardId" : "",
+      "playType" : "active"
+    },
+    "message" : "出桃"
+  }, {
+    "event": "PeachEvent",
+    "data": {
+      "playerId": "player-a",
+      "from": 0,
+      "to": 1
+    },
+    "message": "吃桃"
+  }],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 0,
+      "hand" : {
+        "size" : 1,
+        "cardIds" : [ "BS8008", "" ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU006",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU004",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "WEI002",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Action",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-b",
+      "dyingPlayer" : "player-a",
+      "showKill" : true
+    },
+    "gamePhase" : "GeneralDying"
+  },
+  "message" : "不出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-a"
+}
