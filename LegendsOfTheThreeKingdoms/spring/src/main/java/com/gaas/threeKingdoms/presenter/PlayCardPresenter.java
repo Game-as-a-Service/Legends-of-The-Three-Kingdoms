@@ -10,9 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.gaas.threeKingdoms.usecase.PlayCardUseCase;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
@@ -51,9 +50,9 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         AskPeachViewModel askPeachViewModel = getAskPeachViewModel(events);
         SettlementViewModel settlementViewModel = getSettlementViewModel(events);
         GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
+        PeachViewModel peachViewModel = getPeachViewModel(events);
 
-
-        updateViewModels(playCardViewModel, playerDamageEventViewModel, playerDyingViewModel, askPeachViewModel, settlementViewModel, gameOverViewModel);
+        updateViewModels(playCardViewModel, playerDamageEventViewModel, playerDyingViewModel, askPeachViewModel, peachViewModel, settlementViewModel, gameOverViewModel);
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
@@ -75,71 +74,72 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         }
     }
 
-
-    private void updateViewModels(
-            PlayCardViewModel playCardViewModel,
-            PlayerDamagedViewModel playerDamageEventViewModel,
-            PlayerDyingViewModel playerDyingViewModel,
-            AskPeachViewModel askPeachViewModel,
-            SettlementViewModel settlementViewModel,
-            GameOverViewModel gameOverViewModel
-    ) {
-        if (playCardViewModel == null) throw new RuntimeException();
-        eventToViewModels.add(playCardViewModel);
-        if (playerDamageEventViewModel != null) eventToViewModels.add(playerDamageEventViewModel);
-        if (playerDyingViewModel != null) eventToViewModels.add(playerDyingViewModel);
-        if (askPeachViewModel != null) eventToViewModels.add(askPeachViewModel);
-        if (settlementViewModel != null) eventToViewModels.add(settlementViewModel);
-        if (gameOverViewModel != null) eventToViewModels.add(gameOverViewModel);
+   private void updateViewModels(ViewModel<?>... viewModels) {
+       Arrays.stream(viewModels)
+               .filter(Objects::nonNull)
+               .forEach(eventToViewModels::add);
     }
 
+
     private PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
-        PlayerDamagedEvent playerDamagedEvent = getEvent(events, PlayerDamagedEvent.class).orElse(null);
-        if (playerDamagedEvent != null) {
-            PlayerDamagedDataViewModel playerDamagedDataViewModel = new PlayerDamagedDataViewModel(playerDamagedEvent.getPlayerId(), playerDamagedEvent.getFrom(), playerDamagedEvent.getTo());
-            return new PlayerDamagedViewModel(playerDamagedDataViewModel);
-        }
-        return null;
+        return getEvent(events, PlayerDamagedEvent.class)
+                .map(event -> {
+                    PlayerDamagedDataViewModel playerDamagedDataViewModel = new PlayerDamagedDataViewModel(event.getPlayerId(), event.getFrom(), event.getTo());
+                    return new PlayerDamagedViewModel(playerDamagedDataViewModel);
+                })
+                .orElse(null);
     }
 
     private PlayerDyingViewModel getPlayerDyingEventViewModel(List<DomainEvent> events) {
-        PlayerDyingEvent playerDyingEvent = getEvent(events, PlayerDyingEvent.class).orElse(null);
-        if (playerDyingEvent != null) {
-            PlayerDyingDataViewModel playerDyingDataViewModel = new PlayerDyingDataViewModel(playerDyingEvent.getPlayerId());
-            return new PlayerDyingViewModel(playerDyingDataViewModel);
-        }
-        return null;
+        return getEvent(events,PlayerDyingEvent.class)
+                .map(event -> {
+                    PlayerDyingDataViewModel playerDyingDataViewModel = new PlayerDyingDataViewModel(event.getPlayerId());
+                    return new PlayerDyingViewModel(playerDyingDataViewModel);
+                })
+                .orElse(null);
     }
 
 
     private AskPeachViewModel getAskPeachViewModel(List<DomainEvent> events) {
-        AskPeachEvent askPeachEvent = getEvent(events, AskPeachEvent.class).orElse(null);
-        if (askPeachEvent != null) {
-            AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(askPeachEvent.getPlayerId());
-            return new AskPeachViewModel(askPeachDataViewModel);
-        }
-        return null;
+        return getEvent(events,AskPeachEvent.class)
+                .map(event -> {
+                    AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(event.getPlayerId());
+                    return new AskPeachViewModel(askPeachDataViewModel);
+                })
+                .orElse(null);
     }
 
     private SettlementViewModel getSettlementViewModel(List<DomainEvent> events) {
-        SettlementEvent settlementEvent = getEvent(events, SettlementEvent.class).orElse(null);
-        if (settlementEvent != null) {
-            SettlementDataViewModel settlementDataViewModel = new SettlementDataViewModel(settlementEvent.getPlayerId(), settlementEvent.getRole());
-            return new SettlementViewModel(settlementDataViewModel);
-        }
-        return null;
+        return getEvent(events,SettlementEvent.class)
+                .map(event -> {
+                    SettlementDataViewModel settlementDataViewModel = new SettlementDataViewModel(event.getPlayerId(), event.getRole());
+                    return new SettlementViewModel(settlementDataViewModel);
+                })
+                .orElse(null);
     }
 
+
+
     private GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
-        GameOverEvent gameOverEvent = getEvent(events, GameOverEvent.class).orElse(null);
-        if (gameOverEvent != null) {
-            GameOverDataViewModel gameOverDataViewModel = new GameOverDataViewModel(gameOverEvent.getPlayers().stream()
-                    .map(PlayerDataViewModel::new)
-                    .toList(), gameOverEvent.getWinners());
-            return new GameOverViewModel(gameOverDataViewModel);
-        }
-        return null;
+        return getEvent(events, GameOverEvent.class)
+                .map(gameOverEvent -> {
+                    GameOverDataViewModel gameOverDataViewModel = new GameOverDataViewModel(gameOverEvent.getPlayers().stream()
+                            .map(PlayerDataViewModel::new)
+                            .toList(), gameOverEvent.getWinners());
+                    return new GameOverViewModel(gameOverDataViewModel);
+                })
+                .orElse(null);
     }
+
+    private PeachViewModel getPeachViewModel(List<DomainEvent> events) {
+        return getEvent(events,PeachEvent.class)
+                .map(event -> {
+                    PeachDataViewModel peachDataViewModel = new PeachDataViewModel(event.getPlayerId(), event.getFrom(), event.getTo());
+                    return new PeachViewModel(peachDataViewModel);
+                })
+                .orElse(null);
+    }
+
 
     @Data
     public static class PlayCardViewModel extends ViewModel<PlayCardDataViewModel> {
@@ -237,6 +237,22 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     public static class GameOverDataViewModel {
         private List<PlayerDataViewModel> players;
         private List<String> winners;
+    }
+
+    @Data
+    public static class PeachViewModel extends ViewModel<PeachDataViewModel> {
+        public PeachViewModel(PeachDataViewModel data) {
+            super("PeachEvent", data, "玩家出桃");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PeachDataViewModel {
+        private String playerId;
+        private int from;
+        private int to;
     }
 
     @Data

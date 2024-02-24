@@ -7,14 +7,15 @@ import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
-import com.gaas.threeKingdoms.repository.InMemoryGameRepository;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -44,11 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class DyingTest {
 
-//    @Mock
-//    private final InMemoryGameRepository repository = Mockito.mock(InMemoryGameRepository.class);
-
-    @Autowired
-    private InMemoryGameRepository repository;
+    @MockBean
+    private GameRepository repository;
 
     private WebsocketUtil websocketUtil;
 
@@ -61,12 +60,13 @@ public class DyingTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private final String gameId = "my-id";
+
 
     @BeforeEach
     public void setup() throws Exception {
         websocketUtil = new WebsocketUtil(port);
-        String gameId = "my-id";
-        givenPlayerAIsEnterDyingStatus(gameId);
+        givenPlayerAIsEnterDyingStatus();
     }
 
     @Test
@@ -90,83 +90,93 @@ public class DyingTest {
 
         //Then A玩家還有一滴血
         String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_a.json");
+        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForA);
 
         String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_b.json");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForB);
 
         String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_c.json");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForC);
 
         String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_d.json");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
 
-    private void givenPlayerAIsEnterDyingStatus(String gameId) {
-        Player playerA = PlayerBuilder.construct()
-                .withId("player-a")
-                .withBloodCard(new BloodCard(1))
-                .withGeneralCard(new GeneralCard(General.劉備))
-                .withHealthStatus(HealthStatus.ALIVE)
-                .withRoleCard(new RoleCard(Role.MONARCH))
-                .withHand(new Hand())
-                .build();
+    private void givenPlayerAIsEnterDyingStatus() {
+        Player playerA = createPlayer(
+                "player-a",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
 
-        playerA.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)));
+        Player playerB = createPlayer("player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+        );
 
-        Player playerB = PlayerBuilder.construct()
-                .withId("player-b")
-                .withBloodCard(new BloodCard(4))
-                .withHand(new Hand())
-                .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard(General.劉備))
-                .withHealthStatus(HealthStatus.ALIVE)
-                .build();
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
 
-        playerB.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)));
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
 
-        Player playerC = PlayerBuilder.construct()
-                .withId("player-c")
-                .withBloodCard(new BloodCard(4))
-                .withHand(new Hand())
-                .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard(General.劉備))
-                .withHealthStatus(HealthStatus.ALIVE)
-                .build();
-
-        Player playerD = PlayerBuilder.construct()
-                .withId("player-d")
-                .withBloodCard(new BloodCard(4))
-                .withHand(new Hand())
-                .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard(General.劉備))
-                .withHealthStatus(HealthStatus.ALIVE)
-                .build();
-
-
-        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Game game = new Game(gameId, players);
-        game.setCurrentRound(new Round(playerB));
-        game.enterPhase(new Normal(game));
+        Game game = initGame(gameId, playerA, playerB, playerC, playerD);
 
         // B對A出殺
         game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");
 
         // A玩家出skip
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
-        repository.save(game);
-//        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        Mockito.when(repository.findById(gameId)).thenReturn(game);
+    }
+
+    private static Player createPlayer(String id, int hp, General general, HealthStatus healthStatus, Role role, HandCard... cards) {
+        Player player = PlayerBuilder.construct()
+                .withId(id)
+                .withBloodCard(new BloodCard(hp))
+                .withGeneralCard(new GeneralCard(general))
+                .withHealthStatus(healthStatus)
+                .withRoleCard(new RoleCard(role))
+                .withHand(new Hand())
+                .build();
+
+        player.getHand().addCardToHand(Arrays.asList(cards));
+        return player;
+    }
+
+    private static Game initGame(String gameId, Player playerA, Player playerB, Player playerC, Player playerD) {
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = new Game(gameId, players);
+        game.setCurrentRound(new Round(playerB));
+        game.enterPhase(new Normal(game));
+        return game;
     }
 
     private ResultActions playCard(String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {

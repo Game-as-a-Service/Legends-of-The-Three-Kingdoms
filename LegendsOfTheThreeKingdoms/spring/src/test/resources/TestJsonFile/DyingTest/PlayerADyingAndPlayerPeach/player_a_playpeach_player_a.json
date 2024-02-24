@@ -4,36 +4,47 @@
     "data" : {
       "playerId" : "player-a",
       "targetPlayerId" : "player-a",
-      "cardId" : "",
+      "cardId" : "BH3029",
       "playType" : "active"
     },
-    "message" : "出桃"
+    "message" : "出牌"
   }, {
-    "event": "PeachEvent",
-    "data": {
-      "playerId": "player-a",
-      "from": 0,
-      "to": 1
+    "event" : "PeachEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "from" : 0,
+      "to" : 1
     },
-    "message": "吃桃"
-  }],
+    "message" : "玩家出桃"
+  } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 0,
+      "hp" : 1,
       "hand" : {
-        "size" : 1,
-        "cardIds" : [ "BS8008", "" ]
+        "size" : 3,
+        "cardIds" : [ "BS8008", "BH2028", "BHK039" ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU006",
+      "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
@@ -41,38 +52,27 @@
       "equipments" : [ ],
       "delayScrolls" : [ ]
     }, {
-      "id" : "player-c",
-      "generalId" : "SHU004",
-      "roleId" : "",
-      "hp" : 3,
-      "hand" : {
-        "size" : 3,
-        "cardIds" : [ ]
-      },
-      "equipments" : [ ],
-      "delayScrolls" : [ ]
-    }, {
       "id" : "player-d",
-      "generalId" : "WEI002",
+      "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ ],
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Action",
+      "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-b",
-      "activePlayer" : "player-b",
-      "dyingPlayer" : "player-a",
+      "activePlayer" : "",
+      "dyingPlayer" : "",
       "showKill" : true
     },
-    "gamePhase" : "GeneralDying"
+    "gamePhase" : "Normal"
   },
-  "message" : "不出牌",
+  "message" : "出牌",
   "gameId" : "my-id",
   "playerId" : "player-a"
 }
