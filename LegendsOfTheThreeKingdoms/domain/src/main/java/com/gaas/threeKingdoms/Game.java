@@ -20,10 +20,14 @@ import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Builder
+@AllArgsConstructor
 public class Game {
     private String gameId;
     private List<Player> players;

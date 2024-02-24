@@ -30,6 +30,7 @@ public class DyingAskPeachBehavior extends Behavior {
     protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType) {
         Player dyingPlayer = game.getPlayer(targetPlayerId);
         Player currentPlayer = game.getPlayer(playerId);
+        int originalHp = dyingPlayer.getHP();
 
         if (isSkip(playType)) {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
@@ -67,7 +68,8 @@ public class DyingAskPeachBehavior extends Behavior {
             RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            return List.of(playCardEvent);
+            PeachEvent peachEvent = new PeachEvent("吃桃", playerId, originalHp, dyingPlayer.getHP());
+            return List.of(playCardEvent, peachEvent);
 
         } else {
             //TODO:怕有其他效果或殺的其他case

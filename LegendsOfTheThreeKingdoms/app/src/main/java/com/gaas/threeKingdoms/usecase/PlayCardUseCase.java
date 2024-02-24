@@ -17,6 +17,7 @@ public class PlayCardUseCase {
 
     private final GameRepository gameRepository;
 
+
     public void execute(String gameId, PlayCardRequest request, PlayCardPresenter presenter) {
         Game game = gameRepository.findById(gameId);
         List<DomainEvent> events = game.playerPlayCard(request.playerId, request.cardId, request.targetPlayerId, request.playType);
