@@ -7,11 +7,11 @@ import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import com.gaas.threeKingdoms.usecase.PlayCardUseCase;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
@@ -141,9 +141,9 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class PlayCardViewModel extends ViewModel<PlayCardDataViewModel> {
-        //private PlayCardPresenter.PlayCardDataViewModel data;
 
         public PlayCardViewModel() {
             super("PlayCardEvent", null, "出牌");
@@ -165,6 +165,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class PlayerDamagedViewModel extends ViewModel<PlayerDamagedDataViewModel> {
         public PlayerDamagedViewModel(PlayerDamagedDataViewModel data) {
@@ -181,6 +182,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private int to;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class PlayerDyingViewModel extends ViewModel<PlayerDyingDataViewModel> {
         public PlayerDyingViewModel(PlayerDyingDataViewModel data) {
@@ -195,6 +197,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String playerId;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class AskPeachViewModel extends ViewModel<AskPeachDataViewModel> {
         public AskPeachViewModel(AskPeachDataViewModel data) {
@@ -209,6 +212,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String playerId;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class SettlementViewModel extends ViewModel<SettlementDataViewModel> {
         public SettlementViewModel(SettlementDataViewModel data) {
@@ -224,6 +228,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String role;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class GameOverViewModel extends ViewModel<GameOverDataViewModel> {
         public GameOverViewModel(GameOverDataViewModel data) {
@@ -239,6 +244,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private List<String> winners;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class PeachViewModel extends ViewModel<PeachDataViewModel> {
         public PeachViewModel(PeachDataViewModel data) {
@@ -255,6 +261,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private int to;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
