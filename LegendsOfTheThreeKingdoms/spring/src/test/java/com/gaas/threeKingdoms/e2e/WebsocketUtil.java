@@ -26,8 +26,6 @@ public class WebsocketUtil {
         setUp();
     }
 
-
-
     public void setUp() throws Exception {
         //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
         webSocketClient = new StandardWebSocketClient();
