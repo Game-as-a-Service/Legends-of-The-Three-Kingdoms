@@ -15,8 +15,8 @@ public class MockMvcUtil {
         this.mockMvc = mockMvc;
     }
 
-    public ResultActions playCard(String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
-        return this.mockMvc.perform(post("/api/games/my-id/player:playCard")
+    public ResultActions playCard(String gameId, String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
                         { "playerId": "%s",

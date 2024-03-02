@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -56,29 +57,28 @@ public class DyingTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        System.out.println("DyingTest port:" + port);
-        websocketUtil = new WebsocketUtil(port);
+        websocketUtil = new WebsocketUtil(port, gameId);
         mockMvcUtil = new MockMvcUtil(mockMvc);
         givenPlayerAIsEnterDyingStatus();
     }
 
     @Test
     public void testMockGame() throws Exception {
-        Game game = repository.findById("my-id");
+        Game game = repository.findById(gameId);
         assertNotNull(game);
     }
 
     @Test
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         //Given A玩家瀕臨死亡
-        Game game = repository.findById("my-id");
+        Game game = repository.findById(gameId);
 
         //When A玩家出桃
         String currentPlayer = "player-a";
         String targetPlayerId = "player-a";
         String playedCardId = "BH3029";
 
-        mockMvcUtil.playCard(currentPlayer, targetPlayerId, playedCardId, "active")
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
                 .andExpect(status().isOk()).andReturn();
 
         //Then A玩家還有一滴血

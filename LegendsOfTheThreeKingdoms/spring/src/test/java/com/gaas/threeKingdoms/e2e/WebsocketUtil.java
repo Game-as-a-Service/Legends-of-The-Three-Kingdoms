@@ -21,12 +21,12 @@ public class WebsocketUtil {
     private final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
     private final Integer port;
 
-    WebsocketUtil(Integer port) throws Exception {
+    public WebsocketUtil(Integer port, String gameId) throws Exception {
         this.port = port;
-        setUp();
+        setUp(gameId);
     }
 
-    public void setUp() throws Exception {
+    public void setUp(String gameId) throws Exception {
         //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
         webSocketClient = new StandardWebSocketClient();
         this.stompClient = new WebSocketStompClient(webSocketClient);
@@ -35,10 +35,10 @@ public class WebsocketUtil {
         map.computeIfAbsent("player-b", k -> new LinkedBlockingQueue<>());
         map.computeIfAbsent("player-c", k -> new LinkedBlockingQueue<>());
         map.computeIfAbsent("player-d", k -> new LinkedBlockingQueue<>());
-        setupClientSubscribe("my-id", "player-a");
-        setupClientSubscribe("my-id", "player-b");
-        setupClientSubscribe("my-id", "player-c");
-        setupClientSubscribe("my-id", "player-d");
+        setupClientSubscribe(gameId, "player-a");
+        setupClientSubscribe(gameId, "player-b");
+        setupClientSubscribe(gameId, "player-c");
+        setupClientSubscribe(gameId, "player-d");
     }
 
     public String getValue(String key) {
