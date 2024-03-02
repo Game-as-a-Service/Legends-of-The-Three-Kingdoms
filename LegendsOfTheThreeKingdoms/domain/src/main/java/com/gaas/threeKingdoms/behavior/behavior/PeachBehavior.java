@@ -3,10 +3,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.Round;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.events.PlayCardEvent;
-import com.gaas.threeKingdoms.events.PlayerEvent;
-import com.gaas.threeKingdoms.events.RoundEvent;
+import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 
@@ -21,6 +18,7 @@ public class PeachBehavior extends Behavior {
     @Override
     public List<DomainEvent> askTargetPlayerPlayCard() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
+        int originHp = behaviorPlayer.getHP();
         card.effect(behaviorPlayer);
         Round currentRound = game.getCurrentRound();
         RoundEvent roundEvent = new RoundEvent(currentRound);
@@ -33,7 +31,7 @@ public class PeachBehavior extends Behavior {
                 game.getGameId(),
                 playerEvents,
                 roundEvent,
-                game.getGamePhase().getPhaseName()));
+                game.getGamePhase().getPhaseName()), new PeachEvent("吃桃", behaviorPlayer.getId(), originHp, behaviorPlayer.getHP()));
     }
 
     @Override

@@ -82,6 +82,7 @@ public class GameTest {
     @BeforeEach
     public void setUp() throws Exception {
         //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
+        System.out.println("GameTest port:" + port);
         WebSocketClient webSocketClient = new StandardWebSocketClient();
         this.stompClient = new WebSocketStompClient(webSocketClient);
         this.stompClient.setMessageConverter(new StringMessageConverter());
