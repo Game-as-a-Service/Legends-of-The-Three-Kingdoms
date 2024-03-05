@@ -68,7 +68,7 @@ public class DyingAskPeachBehavior extends Behavior {
             RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            PeachEvent peachEvent = new PeachEvent("吃桃", playerId, originalHp, dyingPlayer.getHP());
+            PeachEvent peachEvent = new PeachEvent("吃桃", targetPlayerId, originalHp, dyingPlayer.getHP());
             return List.of(playCardEvent, peachEvent);
 
         } else {
