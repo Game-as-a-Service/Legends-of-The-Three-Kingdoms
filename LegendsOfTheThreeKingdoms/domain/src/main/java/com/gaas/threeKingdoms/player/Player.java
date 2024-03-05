@@ -22,7 +22,7 @@ public class Player {
     private RoleCard roleCard;
     private GeneralCard generalCard;
     private BloodCard bloodCard;
-    private HealthStatus healthStatus;ㄆ
+    private HealthStatus healthStatus;
 
     public void setHealthStatus(HealthStatus healthStatus) {
         this.healthStatus = healthStatus;
