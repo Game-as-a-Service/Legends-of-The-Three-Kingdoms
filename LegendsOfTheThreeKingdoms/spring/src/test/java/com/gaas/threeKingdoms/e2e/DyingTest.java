@@ -53,25 +53,20 @@ public class DyingTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final String gameId = "my-id";
+    private final String gameId = "dyingTestGame";
 
 
     @BeforeEach
     public void setup() throws Exception {
         websocketUtil = new WebsocketUtil(port, gameId);
         mockMvcUtil = new MockMvcUtil(mockMvc);
-        givenPlayerAIsEnterDyingStatus();
     }
 
-    @Test
-    public void testMockGame() throws Exception {
-        Game game = repository.findById(gameId);
-        assertNotNull(game);
-    }
 
     @Test
     public void testPlayerAIsEnterDyingStatus() throws Exception {
-        //Given A玩家瀕臨死亡
+        givenPlayerAIsEnterDyingStatus();
+//Given A玩家瀕臨死亡
         Game game = repository.findById(gameId);
 
         //When A玩家出桃
