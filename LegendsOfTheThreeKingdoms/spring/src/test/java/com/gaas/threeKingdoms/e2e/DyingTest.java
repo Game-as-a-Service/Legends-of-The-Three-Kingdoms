@@ -74,7 +74,7 @@ public class DyingTest {
         String targetPlayerId = "player-a";
         String playedCardId = "BH3029";
 
-        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "inactive")
                 .andExpect(status().isOk()).andReturn();
 
         //Then A玩家還有一滴血

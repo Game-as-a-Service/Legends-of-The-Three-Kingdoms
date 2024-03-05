@@ -5,7 +5,7 @@
       "playerId" : "player-a",
       "targetPlayerId" : "player-a",
       "cardId" : "BH3029",
-      "playType" : "active"
+      "playType" : "inactive"
     },
     "message" : "出牌"
   }, {
