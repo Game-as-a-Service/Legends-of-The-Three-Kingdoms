@@ -73,6 +73,6 @@
     "gamePhase" : "Normal"
   },
   "message" : "出牌",
-  "gameId" : "my-id",
+  "gameId" : "dyingTestGame",
   "playerId" : "player-a"
 }

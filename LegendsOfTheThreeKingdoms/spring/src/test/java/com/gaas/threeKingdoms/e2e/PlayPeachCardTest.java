@@ -8,8 +8,6 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,7 +24,7 @@ import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext
 @AutoConfigureMockMvc
 public class PlayPeachCardTest {
@@ -44,7 +42,7 @@ public class PlayPeachCardTest {
     private WebsocketUtil websocketUtil;
 
     @Value(value = "${local.server.port}")
-    private int port;
+    private int port = 1001;
     private final String gameId = "my-id";
 
     @BeforeEach

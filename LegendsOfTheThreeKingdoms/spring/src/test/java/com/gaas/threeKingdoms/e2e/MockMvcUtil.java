@@ -8,6 +8,9 @@ import org.springframework.test.web.servlet.ResultActions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
+/**
+ * MockMvcUtil doc
+ */
 public class MockMvcUtil {
     private final MockMvc mockMvc;
 
