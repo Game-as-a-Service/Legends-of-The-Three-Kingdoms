@@ -62,12 +62,12 @@ import com.gaas.threeKingdoms.handcard.basiccard.*;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
+//@DirtiesContext
 @AutoConfigureMockMvc
 public class GameTest {
 
     @Value(value = "${local.server.port}")
-    private int port;
+    private Integer port;
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
     final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();

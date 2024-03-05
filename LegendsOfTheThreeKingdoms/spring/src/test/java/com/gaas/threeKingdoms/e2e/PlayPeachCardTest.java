@@ -25,7 +25,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@DirtiesContext
+//@DirtiesContext
 @AutoConfigureMockMvc
 public class PlayPeachCardTest {
 
@@ -42,7 +42,7 @@ public class PlayPeachCardTest {
     private WebsocketUtil websocketUtil;
 
     @Value(value = "${local.server.port}")
-    private int port = 1001;
+    private Integer port;
     private final String gameId = "my-id";
 
     @BeforeEach
