@@ -34,7 +34,7 @@ public class DyingAskPeachBehavior extends Behavior {
 
         if (isSkip(playType)) {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-            AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer));
+            AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer);
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isNeedToPop = true;
                 if (isMonarchDied(dyingPlayer)) {
@@ -96,8 +96,8 @@ public class DyingAskPeachBehavior extends Behavior {
         return null;
     }
 
-    private AskPeachEvent createAskPeachEvent(Player player) {
-        return new AskPeachEvent(player.getId());
+    private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
+        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
     }
 
 
