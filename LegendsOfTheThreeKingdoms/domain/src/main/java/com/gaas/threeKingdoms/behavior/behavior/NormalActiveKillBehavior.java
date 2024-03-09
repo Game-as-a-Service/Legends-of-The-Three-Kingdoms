@@ -48,7 +48,7 @@ public class NormalActiveKillBehavior extends Behavior {
                 return List.of(playCardEvent, playerDamagedEvent);
             } else {
                 PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
-                AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer);
+                AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
                 game.enterPhase(new GeneralDying(game));
                 Round currentRound = game.getCurrentRound();
                 currentRound.setDyingPlayer(damagedPlayer);
@@ -88,8 +88,8 @@ public class NormalActiveKillBehavior extends Behavior {
         return new PlayerDyingEvent(player.getId());
     }
 
-    private AskPeachEvent createAskPeachEvent(Player player) {
-        return new AskPeachEvent(player.getId());
+    private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
+        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
     }
 
 }

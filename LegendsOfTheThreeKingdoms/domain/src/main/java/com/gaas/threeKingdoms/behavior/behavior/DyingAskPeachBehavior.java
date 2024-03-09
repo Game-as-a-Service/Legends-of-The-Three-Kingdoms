@@ -34,7 +34,7 @@ public class DyingAskPeachBehavior extends Behavior {
 
         if (isSkip(playType)) {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-            AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer));
+            AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer);
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isNeedToPop = true;
                 if (isMonarchDied(dyingPlayer)) {
@@ -68,7 +68,7 @@ public class DyingAskPeachBehavior extends Behavior {
             RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            PeachEvent peachEvent = new PeachEvent("吃桃", playerId, originalHp, dyingPlayer.getHP());
+            PeachEvent peachEvent = new PeachEvent("吃桃", targetPlayerId, originalHp, dyingPlayer.getHP());
             return List.of(playCardEvent, peachEvent);
 
         } else {
@@ -96,8 +96,8 @@ public class DyingAskPeachBehavior extends Behavior {
         return null;
     }
 
-    private AskPeachEvent createAskPeachEvent(Player player) {
-        return new AskPeachEvent(player.getId());
+    private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
+        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
     }
 
 

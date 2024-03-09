@@ -11,7 +11,8 @@
   }, {
     "event" : "AskPeachEvent",
     "data" : {
-      "playerId" : "player-c"
+      "playerId" : "player-c",
+      "dyingPlayerId" : "player-a"
     },
     "message" : "要求玩家出桃"
   } ],

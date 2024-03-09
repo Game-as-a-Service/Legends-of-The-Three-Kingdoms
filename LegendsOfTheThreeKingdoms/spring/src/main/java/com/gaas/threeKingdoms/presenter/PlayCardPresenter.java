@@ -103,7 +103,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     private AskPeachViewModel getAskPeachViewModel(List<DomainEvent> events) {
         return getEvent(events,AskPeachEvent.class)
                 .map(event -> {
-                    AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(event.getPlayerId());
+                    AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(event.getPlayerId(), event.getDyingPlayerId());
                     return new AskPeachViewModel(askPeachDataViewModel);
                 })
                 .orElse(null);
@@ -207,6 +207,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     @NoArgsConstructor
     public static class AskPeachDataViewModel {
         private String playerId;
+        private String dyingPlayerId;
     }
 
     @Data

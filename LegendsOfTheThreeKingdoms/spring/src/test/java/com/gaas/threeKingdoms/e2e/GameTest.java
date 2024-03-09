@@ -2,12 +2,13 @@ package com.gaas.threeKingdoms.e2e;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.RoundPhase;
 import com.gaas.threeKingdoms.controller.dto.GameRequest;
 import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
+import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.presenter.*;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
@@ -49,25 +50,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static com.gaas.threeKingdoms.handcard.PlayCard.values;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static com.gaas.threeKingdoms.handcard.PlayCard.values;
-
-import com.gaas.threeKingdoms.handcard.basiccard.*;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
 public class GameTest {
 
     @Value(value = "${local.server.port}")
-    private int port;
+    private Integer port;
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
     final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
