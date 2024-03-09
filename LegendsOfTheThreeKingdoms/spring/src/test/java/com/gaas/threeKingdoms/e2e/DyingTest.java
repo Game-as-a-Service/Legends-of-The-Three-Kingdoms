@@ -9,6 +9,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.repository.InMemoryGameRepository;
 import com.gaas.threeKingdoms.rolecard.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,8 +52,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class DyingTest {
 
-    @MockBean
-    private GameRepository repository;
+//    @MockBean
+//    private GameRepository repository;
+
+    @Autowired
+    private InMemoryGameRepository inMemoryGameRepository;
 
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
@@ -86,6 +90,7 @@ public class DyingTest {
         setupClientSubscribe(gameId, "player-b");
         setupClientSubscribe(gameId, "player-c");
         setupClientSubscribe(gameId, "player-d");
+        givenPlayerAIsEnterDyingStatus();
     }
 
     private void setupClientSubscribe(String gameId, String playerId) throws Exception {
@@ -123,7 +128,7 @@ public class DyingTest {
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+        Game game = inMemoryGameRepository.findById(gameId);
 
         //When A玩家出桃
         String currentPlayer = "player-a";
@@ -228,6 +233,7 @@ public class DyingTest {
 
         // A玩家出skip
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        inMemoryGameRepository.save(game);
+//        Mockito.when(repository.findById(gameId)).thenReturn(game);
     }
 }

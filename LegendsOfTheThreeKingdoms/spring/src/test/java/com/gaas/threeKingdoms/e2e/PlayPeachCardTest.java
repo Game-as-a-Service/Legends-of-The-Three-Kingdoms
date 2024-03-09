@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.repository.InMemoryGameRepository;
 import com.gaas.threeKingdoms.rolecard.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,8 +49,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class PlayPeachCardTest {
 
-    @MockBean
-    private GameRepository repository;
+//    @MockBean
+//    private GameRepository repository;
+
+    @Autowired
+    private InMemoryGameRepository repository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -189,7 +193,8 @@ public class PlayPeachCardTest {
         );
 
         playerA.damage(1);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, playerA, playerB, playerC, playerD));
+        repository.save(initGame(gameId, playerA, playerB, playerC, playerD));
+//        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, playerA, playerB, playerC, playerD));
     }
 
 
