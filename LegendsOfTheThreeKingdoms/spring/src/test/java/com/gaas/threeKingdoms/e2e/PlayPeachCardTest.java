@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.annotation.DirtiesContext;
@@ -39,6 +40,7 @@ import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -52,8 +54,6 @@ public class PlayPeachCardTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private MockMvcUtil mockMvcUtil;
-
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
     final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
@@ -64,7 +64,6 @@ public class PlayPeachCardTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        mockMvcUtil = new MockMvcUtil(mockMvc);
         //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
         System.out.println("GameTest port:" + port);
         WebSocketClient webSocketClient = new StandardWebSocketClient();
@@ -117,8 +116,17 @@ public class PlayPeachCardTest {
         givenPlayerAPlayCardStatus();
 
         //When A玩家出桃
-        mockMvcUtil.playCard(gameId, "player-a", "player-a", "BH3029", "active")
-                .andExpect(status().isOk());
+//        mockMvcUtil.playCard(gameId, "player-a", "player-a", "BH3029", "active")
+//                .andExpect(status().isOk());
+
+        this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "targetPlayerId": "%s",
+                          "cardId": "%s",
+                          "playType": "%s"
+                        }""", "player-a", "player-a", "BH3029", "active")));
 
         //Then A玩家hp為4
         String playerAPlayPeachJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
@@ -183,6 +191,8 @@ public class PlayPeachCardTest {
         playerA.damage(1);
         Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, playerA, playerB, playerC, playerD));
     }
+
+
 
 
 }

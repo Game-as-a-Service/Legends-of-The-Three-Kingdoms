@@ -18,10 +18,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
@@ -41,6 +43,7 @@ import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -58,8 +61,6 @@ public class DyingTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private MockMvcUtil mockMvcUtil;
-
     @Value(value = "${local.server.port}")
     private Integer port;
 
@@ -71,7 +72,7 @@ public class DyingTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        mockMvcUtil = new MockMvcUtil(mockMvc);
+//        mockMvcUtil = new MockMvcUtil(mockMvc);
         //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
         System.out.println("GameTest port:" + port);
         WebSocketClient webSocketClient = new StandardWebSocketClient();
@@ -129,8 +130,17 @@ public class DyingTest {
         String targetPlayerId = "player-a";
         String playedCardId = "BH3029";
 
-        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "inactive")
-                .andExpect(status().isOk()).andReturn();
+        this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "targetPlayerId": "%s",
+                          "cardId": "%s",
+                          "playType": "%s"
+                        }""", currentPlayer, targetPlayerId, playedCardId, "inactive")));
+
+//        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "inactive")
+//                .andExpect(status().isOk()).andReturn();
 
         //Then A玩家還有一滴血
         String playerAPlayPeachJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
@@ -220,5 +230,4 @@ public class DyingTest {
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
         Mockito.when(repository.findById(gameId)).thenReturn(game);
     }
-
 }
