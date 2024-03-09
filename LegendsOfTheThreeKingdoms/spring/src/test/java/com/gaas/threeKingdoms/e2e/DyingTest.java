@@ -18,12 +18,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
@@ -39,7 +51,9 @@ public class DyingTest {
     @MockBean
     private GameRepository repository;
 
-    private WebsocketUtil websocketUtil;
+    private WebSocketStompClient stompClient;
+    private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+    final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,16 +70,58 @@ public class DyingTest {
 
 
     @BeforeEach
-    public void setup() throws Exception {
-        websocketUtil = new WebsocketUtil(port, gameId);
+    public void setUp() throws Exception {
         mockMvcUtil = new MockMvcUtil(mockMvc);
+        //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
+        System.out.println("GameTest port:" + port);
+        WebSocketClient webSocketClient = new StandardWebSocketClient();
+        this.stompClient = new WebSocketStompClient(webSocketClient);
+        this.stompClient.setMessageConverter(new StringMessageConverter());
+        map.computeIfAbsent("player-a", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-b", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-c", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-d", k -> new LinkedBlockingQueue<>());
+        setupClientSubscribe(gameId, "player-a");
+        setupClientSubscribe(gameId, "player-b");
+        setupClientSubscribe(gameId, "player-c");
+        setupClientSubscribe(gameId, "player-d");
     }
 
+    private void setupClientSubscribe(String gameId, String playerId) throws Exception {
+        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
+
+        StompSessionHandler handler = new GameTest.TestSessionHandler(failure) {
+            @Override
+            public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
+                throw new RuntimeException("Failure in WebSocket handling", exception);
+            }
+
+            @Override
+            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
+                session.subscribe(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", gameId, playerId), new StompFrameHandler() {  // 訂閱伺服器的 "/websocket/legendsOfTheThreeKingdoms/gameId/playerId" 路徑的訊息
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
+                        return String.class;
+                    }
+
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        try {
+                            map.computeIfAbsent(playerId, k -> new LinkedBlockingQueue<>()).add((String) payload);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        };
+        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingdoms", this.headers, handler, this.port);
+    }
 
     @Test
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         givenPlayerAIsEnterDyingStatus();
-//Given A玩家瀕臨死亡
+        //Given A玩家瀕臨死亡
         Game game = repository.findById(gameId);
 
         //When A玩家出桃
@@ -77,25 +133,45 @@ public class DyingTest {
                 .andExpect(status().isOk()).andReturn();
 
         //Then A玩家還有一滴血
-        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+        String playerAPlayPeachJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
         Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForA);
 
-        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+        String playerAPlayPeachJsonForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForB);
 
-        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
+        String playerAPlayPeachJsonForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForC);
 
-        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
+        String playerAPlayPeachJsonForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
+
+//        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+//        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_a.json");
+//        String expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForA);
+//
+//        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_b.json");
+//        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+//
+//        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
+//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_c.json");
+//        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForC);
+//
+//        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
+//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
+//        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
 
