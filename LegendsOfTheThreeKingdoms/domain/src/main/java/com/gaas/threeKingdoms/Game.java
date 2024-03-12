@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.DyingAskPeachBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.NormalActiveKillBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.PeachBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.handler.RedRabbitHouseBehaviorHandler;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -42,14 +43,14 @@ public class Game {
     private Stack<Behavior> topBehavior = new Stack<>();
 
     public Game(String gameId, List<Player> players) {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(null, this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new RedRabbitHouseBehaviorHandler(null, this), this), this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(null, this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new RedRabbitHouseBehaviorHandler(null, this), this), this), this);
     }
 
 
@@ -236,7 +237,7 @@ public class Game {
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
             List<DomainEvent> acceptedEvent = behavior.acceptedTargetPlayerPlayCard(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
-            if (behavior.isNeedToPop()) {
+            if (behavior.isOneRound()) {
                 topBehavior.pop();
             } else {
                 updateTopBehavior(playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType));
@@ -244,7 +245,7 @@ public class Game {
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
-        if (behavior.isNeedToPush()){
+        if (behavior.isTargetPlayerNeedToResponse()){
             updateTopBehavior(behavior);
         }
         return behavior.askTargetPlayerPlayCard();

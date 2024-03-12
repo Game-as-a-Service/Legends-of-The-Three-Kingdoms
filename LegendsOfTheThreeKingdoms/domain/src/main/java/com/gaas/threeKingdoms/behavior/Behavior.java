@@ -17,8 +17,10 @@ public abstract class Behavior {
     protected String cardId;
     protected String playType;
     protected HandCard card;
-    protected boolean isNeedToPush = true;
-    protected boolean isNeedToPop = true;
+    // 別人要不要反應
+    protected boolean isTargetPlayerNeedToResponse = true;
+    // 是不是一回合就結束
+    protected boolean isOneRound = true;
     public abstract List<DomainEvent> askTargetPlayerPlayCard();
 
     public List<DomainEvent> acceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType){
@@ -41,11 +43,11 @@ public abstract class Behavior {
         game.getGraveyard().add(handCard);
     }
 
-    public boolean isNeedToPop() {
-        return isNeedToPop;
+    public boolean isOneRound() {
+        return isOneRound;
     }
 
-    public boolean isNeedToPush() {
-        return isNeedToPush;
+    public boolean isTargetPlayerNeedToResponse() {
+        return isTargetPlayerNeedToResponse;
     }
 }

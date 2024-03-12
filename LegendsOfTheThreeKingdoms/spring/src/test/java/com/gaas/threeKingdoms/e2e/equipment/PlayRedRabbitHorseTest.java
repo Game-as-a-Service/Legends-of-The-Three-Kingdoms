@@ -1,9 +1,13 @@
-package com.gaas.threeKingdoms.e2e;
+package com.gaas.threeKingdoms.e2e.equipment;
 
+import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
+import com.gaas.threeKingdoms.e2e.MockMvcUtil;
+import com.gaas.threeKingdoms.e2e.WebsocketUtil;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
@@ -19,15 +23,21 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
+import static com.gaas.threeKingdoms.handcard.PlayCard.BHK039;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
 @AutoConfigureMockMvc
-public class PlayPeachCardTest {
+public class PlayRedRabbitHorseTest {
 
     @MockBean
     private GameRepository repository;
@@ -50,24 +60,43 @@ public class PlayPeachCardTest {
         mockMvcUtil = new MockMvcUtil(mockMvc);
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
+        givenPlayerAPlayCardStatus();
     }
 
     @Test
-    public void testPlayerAPlayPeachCard() throws Exception {
-        //Given A玩家hp為3
-        givenPlayerAPlayCardStatus();
-
-        //When A玩家出桃
-        mockMvcUtil.playCard(gameId, "player-a", "player-a", "BH3029", "active")
-                .andExpect(status().isOk());
-
-        //Then A玩家hp為4
-        helper.assertThat("player-a").getJsonIsEqualToFile("PlayPeachCardTest/PlayerPlayPeachCard/player_a_playpeach_for_player_a.json");
-        helper.assertThat("player-b").getJsonIsEqualToFile("PlayPeachCardTest/PlayerPlayPeachCard/player_a_playpeach_for_player_b.json");
-        helper.assertThat("player-c").getJsonIsEqualToFile("PlayPeachCardTest/PlayerPlayPeachCard/player_a_playpeach_for_player_c.json");
-        helper.assertThat("player-d").getJsonIsEqualToFile("PlayPeachCardTest/PlayerPlayPeachCard/player_a_playpeach_for_player_d.json");
+    public void testPlayerAPlayRedRabbitHorse() throws Exception {
+//        //Given A玩家有一張赤兔馬
+//        givenPlayerAPlayCardStatus();
+//
+//        // When A 玩家出赤兔馬
+//        String currentPlayer = "player-a";
+//        String targetPlayerId = "player-a";
+//        String playedCardId = "ES5018";
+//
+//        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
+//                .andExpect(status().isOk()).andReturn();
+//
+//        //Then A裝備有赤兔馬
+//        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+//        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_a.json");
+//        String expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForA);
+//
+//        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_b.json");
+//        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+//
+//        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
+//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_c.json");
+//        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForC);
+//
+//        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
+//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
+//        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
-
 
     private void givenPlayerAPlayCardStatus() {
         Player playerA = createPlayer(
@@ -76,7 +105,7 @@ public class PlayPeachCardTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RedRabbitHorse(ES5018)
         );
 
         Player playerB = createPlayer("player-b",
@@ -105,9 +134,6 @@ public class PlayPeachCardTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
 
-        playerA.damage(1);
         Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, playerA, playerB, playerC, playerD));
     }
-
-
 }

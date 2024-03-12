@@ -36,7 +36,7 @@ public class DyingAskPeachBehavior extends Behavior {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer);
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
-                isNeedToPop = true;
+                isOneRound = true;
                 if (isMonarchDied(dyingPlayer)) {
                     Round currentRound = game.getCurrentRound();
                     RoundEvent roundEvent = new RoundEvent(currentRound);

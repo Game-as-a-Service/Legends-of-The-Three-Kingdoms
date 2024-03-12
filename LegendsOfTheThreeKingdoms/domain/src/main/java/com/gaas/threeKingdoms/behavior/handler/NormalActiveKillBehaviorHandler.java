@@ -29,7 +29,6 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
     @Override
     protected Behavior doHandle(String playerId, String cardId, List<String> reactionPlayers, String playType) {
         Player player = game.getPlayer(playerId);
-
         return new NormalActiveKillBehavior(game, player, reactionPlayers, player, cardId, playType, player.getHand().getCard(cardId).get());
     }
 

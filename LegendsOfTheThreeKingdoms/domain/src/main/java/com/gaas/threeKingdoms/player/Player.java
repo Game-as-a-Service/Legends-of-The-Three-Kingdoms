@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.player;
 
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MountsCard;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class Player {
     private GeneralCard generalCard;
     private BloodCard bloodCard;
     private HealthStatus healthStatus;
+    private Equipment equipment;
 
     public void setHealthStatus(HealthStatus healthStatus) {
         this.healthStatus = healthStatus;
@@ -42,6 +44,14 @@ public class Player {
 
     public HandCard playCard(String cardId) {
         return hand.playCard(cardId);
+    }
+
+    public MountsCard getEquipmentPlusOneMountsCard() {
+        return equipment.getPlusOne();
+    }
+
+    public MountsCard getEquipmentMinusOneMountsCard() {
+        return equipment.getMinusOne();
     }
 
     public void damage(int i) {

@@ -262,6 +262,7 @@ public class PlayKillCardTest {
         Game game = new Game();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
+                .withDefault()
                 .withBloodCard(new BloodCard(4))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)

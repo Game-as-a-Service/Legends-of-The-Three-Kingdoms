@@ -1,8 +1,11 @@
 package com.gaas.threeKingdoms;
 
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MountsCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class SeatingChart {
 
@@ -21,10 +24,21 @@ public class SeatingChart {
         int seat2 = players.indexOf(targetPlayer);
 
         int totalSeats = players.size();
+        int minusOneMountCount = getMountsCount(player);
         int distanceClockwise = (seat2 - seat1 + totalSeats) % totalSeats;
         int distanceCounterClockwise = (seat1 - seat2 + totalSeats) % totalSeats;
         // Return the shorter distance of clockwise and counterclockwise
-        return Math.min(distanceClockwise, distanceCounterClockwise);
+        return Math.min(distanceClockwise, distanceCounterClockwise) + minusOneMountCount;
+    }
+
+    private int getMountsCount(Player player) {
+        if (player.getEquipment() == null) return 0;
+        MountsCard minusOne = player.getEquipment().getMinusOne();
+        if (minusOne == null){
+            return 0;
+        } else {
+            return -1;
+        }
     }
 
     public Player getNextPlayer(Player player) {

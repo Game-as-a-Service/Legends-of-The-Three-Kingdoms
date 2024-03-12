@@ -55,7 +55,7 @@ public class NormalActiveKillBehavior extends Behavior {
                 currentRound.setActivePlayer(damagedPlayer);
                 RoundEvent roundEvent = new RoundEvent(currentRound);
                 PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-                isNeedToPop = false;
+                isOneRound = false;
                 return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent);
             }
         } else if (isDodgeCard(cardId)) {
