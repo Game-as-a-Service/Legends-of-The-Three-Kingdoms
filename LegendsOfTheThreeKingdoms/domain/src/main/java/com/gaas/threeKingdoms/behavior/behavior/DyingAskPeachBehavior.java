@@ -36,12 +36,12 @@ public class DyingAskPeachBehavior extends Behavior {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer);
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
-                isNeedToPop = true;
+                isOneRound = true;
                 if (isMonarchDied(dyingPlayer)) {
                     Round currentRound = game.getCurrentRound();
                     RoundEvent roundEvent = new RoundEvent(currentRound);
                     PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole().getRoleName(), "死亡玩家為主公，遊戲結束");
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole().getRoleName());
                     GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage(), getWinners(game.getPlayers()), playerEvents);
                     game.enterPhase(new GameOver(game));
                     return List.of(playCardEvent, settlementEvent, gameOverEvent);
@@ -50,7 +50,7 @@ public class DyingAskPeachBehavior extends Behavior {
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(game.getNextPlayer(currentPlayer));
             RoundEvent roundEvent = new RoundEvent(currentRound);
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌",playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
             return List.of(playCardEvent, askPeachEvent);
         } else if (isPeachCard(cardId)) {
 
@@ -68,7 +68,7 @@ public class DyingAskPeachBehavior extends Behavior {
             RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            PeachEvent peachEvent = new PeachEvent("吃桃", targetPlayerId, originalHp, dyingPlayer.getHP());
+            PeachEvent peachEvent = new PeachEvent(targetPlayerId, originalHp, dyingPlayer.getHP());
             return List.of(playCardEvent, peachEvent);
 
         } else {

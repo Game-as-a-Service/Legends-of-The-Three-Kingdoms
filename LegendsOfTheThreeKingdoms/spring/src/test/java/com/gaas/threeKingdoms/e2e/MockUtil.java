@@ -7,10 +7,7 @@ import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.player.BloodCard;
-import com.gaas.threeKingdoms.player.Hand;
-import com.gaas.threeKingdoms.player.HealthStatus;
-import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 
@@ -25,6 +22,7 @@ public class MockUtil {
                 .withGeneralCard(new GeneralCard(general))
                 .withHealthStatus(healthStatus)
                 .withRoleCard(new RoleCard(role))
+                .withEquipment(new Equipment())
                 .withHand(new Hand())
                 .build();
 
@@ -32,10 +30,10 @@ public class MockUtil {
         return player;
     }
 
-    public static Game initGame(String gameId, Player playerA, Player playerB, Player playerC, Player playerD) {
-        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+    public static Game initGame(String gameId, List<Player> players, Player currentRoundPlayer) {
+//        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = new Game(gameId, players);
-        game.setCurrentRound(new Round(playerB));
+        game.setCurrentRound(new Round(currentRoundPlayer));
         game.enterPhase(new Normal(game));
         return game;
     }

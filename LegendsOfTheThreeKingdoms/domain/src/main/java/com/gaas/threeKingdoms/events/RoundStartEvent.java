@@ -1,12 +1,12 @@
 package com.gaas.threeKingdoms.events;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
-@Data
-@NoArgsConstructor
+@Getter
 public class RoundStartEvent extends DomainEvent {
 
-    private final String name = "RoundStartEvent";
-    private String message = "回合已開始";
+
+    public RoundStartEvent() {
+        super("RoundStartEvent", "回合已開始");
+    }
 }

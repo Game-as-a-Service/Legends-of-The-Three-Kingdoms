@@ -24,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
@@ -32,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext
 @AutoConfigureMockMvc
 public class DyingTest {
 
@@ -64,7 +67,7 @@ public class DyingTest {
     @Test
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         givenPlayerAIsEnterDyingStatus();
-//Given A玩家瀕臨死亡
+        //Given A玩家瀕臨死亡
         Game game = repository.findById(gameId);
 
         //When A玩家出桃
@@ -134,7 +137,8 @@ public class DyingTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
 
-        Game game = initGame(gameId, playerA, playerB, playerC, playerD);
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerB);
 
         // B對A出殺
         game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");

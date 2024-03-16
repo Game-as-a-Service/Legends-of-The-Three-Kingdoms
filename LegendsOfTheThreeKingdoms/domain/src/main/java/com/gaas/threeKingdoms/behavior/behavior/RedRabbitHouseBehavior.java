@@ -5,21 +5,29 @@ import com.gaas.threeKingdoms.Round;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MountsCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
+import java.util.Optional;
 
-public class PeachBehavior extends Behavior {
+public class RedRabbitHouseBehavior extends Behavior {
 
-    public PeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
+    public RedRabbitHouseBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
     }
 
     @Override
     public List<DomainEvent> askTargetPlayerPlayCard() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
-        int originHp = behaviorPlayer.getHP();
+        MountsCard mountsCard = behaviorPlayer.getEquipment().getMinusOne();
+        String originEquipmentId = "";
+        if (mountsCard != null) {
+            originEquipmentId = mountsCard.getId();
+        }
         card.effect(behaviorPlayer);
+
         Round currentRound = game.getCurrentRound();
         RoundEvent roundEvent = new RoundEvent(currentRound);
         List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
@@ -32,12 +40,11 @@ public class PeachBehavior extends Behavior {
                 game.getGameId(),
                 playerEvents,
                 roundEvent,
-                game.getGamePhase().getPhaseName()), new PeachEvent(behaviorPlayer.getId(), originHp, behaviorPlayer.getHP()));
+                game.getGamePhase().getPhaseName()), new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId));
     }
 
     @Override
-    protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType) {
+    protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType) {
         return null;
     }
-
 }

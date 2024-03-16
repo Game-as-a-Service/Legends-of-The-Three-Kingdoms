@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import com.gaas.threeKingdoms.usecase.PlayCardUseCase;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
@@ -51,8 +50,18 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         SettlementViewModel settlementViewModel = getSettlementViewModel(events);
         GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
         PeachViewModel peachViewModel = getPeachViewModel(events);
+        PlayEquipmentCardViewModel playCardEquipmentViewModel = getPlayEquipmentViewModel(events);
 
-        updateViewModels(playCardViewModel, playerDamageEventViewModel, playerDyingViewModel, askPeachViewModel, peachViewModel, settlementViewModel, gameOverViewModel);
+        updateViewModels(
+                playCardViewModel,
+                playerDamageEventViewModel,
+                playerDyingViewModel,
+                askPeachViewModel,
+                peachViewModel,
+                settlementViewModel,
+                gameOverViewModel,
+                playCardEquipmentViewModel
+        );
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
@@ -140,6 +149,14 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                 .orElse(null);
     }
 
+    private PlayEquipmentCardViewModel getPlayEquipmentViewModel(List<DomainEvent> events) {
+        return getEvent(events,PlayEquipmentCardEvent.class)
+                .map(event -> {
+                    PlayEquipmentCardDataViewModel playEquipmentCardDataViewModel = new PlayEquipmentCardDataViewModel(event.getPlayerId(), event.getCardId(), event.getDeprecatedCardId());
+                    return new PlayEquipmentCardViewModel(playEquipmentCardDataViewModel);
+                })
+                .orElse(null);
+    }
 
     @Data
     public static class PlayCardViewModel extends ViewModel<PlayCardDataViewModel> {
@@ -254,6 +271,22 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String playerId;
         private int from;
         private int to;
+    }
+
+    @Data
+    public static class PlayEquipmentCardViewModel extends ViewModel<PlayEquipmentCardDataViewModel> {
+        public PlayEquipmentCardViewModel(PlayEquipmentCardDataViewModel data) {
+            super("PlayEquipmentEvent", data, "玩家出裝備卡");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PlayEquipmentCardDataViewModel {
+        private String playerId;
+        private String cardId;
+        private String deprecatedCardId;
     }
 
     @Data
