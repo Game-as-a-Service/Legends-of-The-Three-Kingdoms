@@ -5,14 +5,10 @@ import lombok.*;
 import java.util.List;
 
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class DrawCardEvent extends DomainEvent {
     private int size;
     private List<String> cardIds;
-    private String message;
-    private String name = "DrawCardToPlayerEvent";
     private String gameId;
     private List<PlayerEvent> seats;
     private RoundEvent round;
@@ -20,9 +16,9 @@ public class DrawCardEvent extends DomainEvent {
     private String drawCardPlayerId;
 
     public DrawCardEvent(int size, List<String> cardIds, String message, String gameId, List<PlayerEvent> seats, RoundEvent round, String gamePhase, String drawCardPlayerId) {
+        super("DrawCardToPlayerEvent", message);
         this.size = size;
         this.cardIds = cardIds;
-        this.message = message;
         this.gameId = gameId;
         this.seats = seats;
         this.round = round;

@@ -1,18 +1,12 @@
 package com.gaas.threeKingdoms.events;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class PlayCardEvent extends DomainEvent {
 
-    private final String name = "PlayCardEvent";
-    private String message = "出牌";
     private String playerId;
     private String targetPlayerId;
     private String cardId;
@@ -23,4 +17,15 @@ public class PlayCardEvent extends DomainEvent {
     private String gamePhase;
 
 
+    public PlayCardEvent(String message, String playerId, String targetPlayerId, String cardId, String playType, String gameId, List<PlayerEvent> seats, RoundEvent round, String gamePhase) {
+        super("PlayCardEvent", message);
+        this.playerId = playerId;
+        this.targetPlayerId = targetPlayerId;
+        this.cardId = cardId;
+        this.playType = playType;
+        this.gameId = gameId;
+        this.seats = seats;
+        this.round = round;
+        this.gamePhase = gamePhase;
+    }
 }

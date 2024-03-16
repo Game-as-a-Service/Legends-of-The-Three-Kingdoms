@@ -7,10 +7,7 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.player.BloodCard;
-import com.gaas.threeKingdoms.player.Hand;
-import com.gaas.threeKingdoms.player.HealthStatus;
-import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.DisplayName;
@@ -52,6 +49,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -64,6 +62,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(
@@ -76,6 +75,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -85,6 +85,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
 
@@ -139,6 +140,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -151,6 +153,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(
@@ -163,6 +166,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -172,6 +176,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
 
@@ -231,6 +236,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -243,6 +249,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(
@@ -255,6 +262,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerC.getHand().addCardToHand(Arrays.asList(
@@ -267,6 +275,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
 
@@ -329,6 +338,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -341,6 +351,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(
@@ -353,6 +364,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerC.getHand().addCardToHand(Arrays.asList(
@@ -365,6 +377,7 @@ public class PlayerDyingAndPlayPeachTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerD.getHand().addCardToHand(Arrays.asList(

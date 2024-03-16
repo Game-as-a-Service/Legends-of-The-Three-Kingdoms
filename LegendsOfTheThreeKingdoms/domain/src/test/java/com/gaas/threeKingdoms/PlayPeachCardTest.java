@@ -7,10 +7,7 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.player.BloodCard;
-import com.gaas.threeKingdoms.player.Hand;
-import com.gaas.threeKingdoms.player.HealthStatus;
-import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.DisplayName;
@@ -51,6 +48,7 @@ public class PlayPeachCardTest {
                 .withHand(new Hand())
                 .withBloodCard(new BloodCard(4))
                 .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
@@ -64,6 +62,7 @@ public class PlayPeachCardTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerC = PlayerBuilder.construct()
@@ -73,6 +72,7 @@ public class PlayPeachCardTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -82,6 +82,7 @@ public class PlayPeachCardTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         List<Player> players = asList(
@@ -123,6 +124,7 @@ public class PlayPeachCardTest {
                 .withHand(new Hand())
                 .withBloodCard(new BloodCard(4))
                 .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
@@ -134,6 +136,7 @@ public class PlayPeachCardTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerC = PlayerBuilder.construct()
@@ -143,6 +146,7 @@ public class PlayPeachCardTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -152,6 +156,7 @@ public class PlayPeachCardTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         List<Player> players = asList(

@@ -24,7 +24,7 @@ public class Player {
     private GeneralCard generalCard;
     private BloodCard bloodCard;
     private HealthStatus healthStatus;
-    private Equipment equipment;
+    private Equipment equipment = new Equipment();
 
     public void setHealthStatus(HealthStatus healthStatus) {
         this.healthStatus = healthStatus;

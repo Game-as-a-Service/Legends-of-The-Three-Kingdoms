@@ -1,20 +1,11 @@
 package com.gaas.threeKingdoms.events;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
 public class InitialEndEvent extends DomainEvent {
-    private final String name = "OtherChooseGeneralCardEvent";
-
     private String gameId;
 
     private List<PlayerEvent> seats;
@@ -23,4 +14,11 @@ public class InitialEndEvent extends DomainEvent {
 
     private String gamePhase;
 
+    public InitialEndEvent(String gameId, List<PlayerEvent> seats, RoundEvent round, String gamePhase) {
+        super("OtherChooseGeneralCardEvent", "所有玩家選完腳色牌");
+        this.gameId = gameId;
+        this.seats = seats;
+        this.round = round;
+        this.gamePhase = gamePhase;
+    }
 }

@@ -26,6 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
@@ -60,42 +62,41 @@ public class PlayRedRabbitHorseTest {
         mockMvcUtil = new MockMvcUtil(mockMvc);
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
-        givenPlayerAPlayCardStatus();
     }
 
     @Test
     public void testPlayerAPlayRedRabbitHorse() throws Exception {
-//        //Given A玩家有一張赤兔馬
-//        givenPlayerAPlayCardStatus();
-//
-//        // When A 玩家出赤兔馬
-//        String currentPlayer = "player-a";
-//        String targetPlayerId = "player-a";
-//        String playedCardId = "ES5018";
-//
-//        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
-//                .andExpect(status().isOk()).andReturn();
-//
-//        //Then A裝備有赤兔馬
-//        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-//        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_a.json");
-//        String expectedJson = Files.readString(path);
-//        assertEquals(expectedJson, playerAPlayPeachJsonForA);
-//
-//        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_b.json");
-//        expectedJson = Files.readString(path);
-//        assertEquals(expectedJson, playerAPlayPeachJsonForB);
-//
-//        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_c.json");
-//        expectedJson = Files.readString(path);
-//        assertEquals(expectedJson, playerAPlayPeachJsonForC);
-//
-//        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-//        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
-//        expectedJson = Files.readString(path);
-//        assertEquals(expectedJson, playerAPlayPeachJsonForD);
+        //Given A玩家有一張赤兔馬
+        givenPlayerAPlayCardStatus();
+
+        // When A 玩家出赤兔馬
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-a";
+        String playedCardId = "ES5018";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
+                .andExpect(status().isOk()).andReturn();
+
+        //Then A裝備有赤兔馬
+        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredrabbithorse_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForA);
+
+        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredrabbithorse_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+
+        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredrabbithorse_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForC);
+
+        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredrabbithorse_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
     private void givenPlayerAPlayCardStatus() {
@@ -133,7 +134,7 @@ public class PlayRedRabbitHorseTest {
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
-
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, playerA, playerB, playerC, playerD));
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
     }
 }

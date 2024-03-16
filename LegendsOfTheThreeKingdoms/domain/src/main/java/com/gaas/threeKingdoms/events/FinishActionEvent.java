@@ -1,13 +1,7 @@
 package com.gaas.threeKingdoms.events;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-public class FinishActionEvent extends DomainEvent{
-
-    private String name = "FinishActionEvent";
-    private String message = "結束出牌";
-
+public class FinishActionEvent extends DomainEvent {
+    public FinishActionEvent() {
+        super("FinishActionEvent", "結束出牌");
+    }
 }

@@ -7,10 +7,7 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.player.BloodCard;
-import com.gaas.threeKingdoms.player.Hand;
-import com.gaas.threeKingdoms.player.HealthStatus;
-import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.Assertions;
@@ -48,6 +45,7 @@ public class PlayKillCardTest {
                 .withId("player-a")
                 .withHand(new Hand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039))))
                 .withBloodCard(new BloodCard(4))
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerB = PlayerBuilder.construct()
@@ -56,6 +54,7 @@ public class PlayKillCardTest {
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerC = PlayerBuilder.construct()
@@ -64,6 +63,7 @@ public class PlayKillCardTest {
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -72,6 +72,7 @@ public class PlayKillCardTest {
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         List<Player> players = asList(
@@ -111,6 +112,7 @@ public class PlayKillCardTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -123,6 +125,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerC = PlayerBuilder.construct()
@@ -132,6 +135,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -141,6 +145,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
 
@@ -187,6 +192,7 @@ public class PlayKillCardTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -199,6 +205,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerC = PlayerBuilder.construct()
@@ -208,6 +215,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -217,6 +225,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
 
@@ -268,6 +277,7 @@ public class PlayKillCardTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -280,6 +290,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(
@@ -292,6 +303,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -301,6 +313,7 @@ public class PlayKillCardTest {
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
                 .build();
 
 

@@ -16,6 +16,7 @@ public class RoundEvent extends DomainEvent {
     private String currentPlayedCard;
 
     public RoundEvent(String roundPhase, String currentRoundPlayer, String activePlayer, String dyingPlayer, boolean isShowKill) {
+        super("RoundEvent", "Round Event");
         this.roundPhase = roundPhase;
         this.currentRoundPlayer = currentRoundPlayer;
         this.activePlayer = activePlayer;
@@ -24,6 +25,7 @@ public class RoundEvent extends DomainEvent {
     }
 
     public RoundEvent(Round currentRound) {
+        super("RoundEvent", "Round Event");
         this.roundPhase = currentRound.getRoundPhase().toString();
         this.currentRoundPlayer = currentRound.getCurrentRoundPlayer().getId();
         this.activePlayer = Optional.ofNullable(currentRound.getActivePlayer()).map(Player::getId).orElse("");

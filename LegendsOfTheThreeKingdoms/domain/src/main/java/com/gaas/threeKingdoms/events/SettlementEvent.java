@@ -7,12 +7,9 @@ public class SettlementEvent extends DomainEvent {
     private String playerId;
     private String role;
 
-    private final String name = "SettlementEvent";
-    private final String message;
-
-    public SettlementEvent(String playerId, String role, String message){
+    public SettlementEvent(String playerId, String role){
+        super("SettlementEvent", "結算");
         this.playerId = playerId;
         this.role = role;
-        this.message = message;
     }
 }

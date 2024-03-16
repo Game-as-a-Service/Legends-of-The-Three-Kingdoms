@@ -241,4 +241,97 @@ public class PlayRedRabbitHorseTest {
 
         assertEquals(3, game.getPlayer("player-c").getHP());
     }
+
+    @DisplayName("""
+        Given
+        有ABCDEF玩家
+        A的回合
+        A有一張赤兔馬 (-1)
+        A出赤兔馬
+        
+        When
+        A玩家攻擊D玩家
+        
+        Then
+        噴出例外
+        """)
+    @Test
+    public void givenPlayerAHasRedRabbitHorse_WhenPlayerAAttackPlayerD_ThenExceptionError(){
+        Game game = new Game();
+        Equipment equipment = new Equipment();
+        equipment.setMinusOne(new RedRabbitHorse(ES5018));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RedRabbitHorse(EH5044)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        //Then
+        assertThrows(IllegalStateException.class,
+                () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerD.getId(), "active"));
+    }
 }

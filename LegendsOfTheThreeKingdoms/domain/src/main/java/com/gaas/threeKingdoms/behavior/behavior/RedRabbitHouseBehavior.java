@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MountsCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
+import java.util.Optional;
 
 public class RedRabbitHouseBehavior extends Behavior {
 
@@ -20,13 +21,18 @@ public class RedRabbitHouseBehavior extends Behavior {
     @Override
     public List<DomainEvent> askTargetPlayerPlayCard() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
-        int originHp = behaviorPlayer.getHP();
-        behaviorPlayer.getEquipment().setMinusOne((MountsCard) card);
+        MountsCard mountsCard = behaviorPlayer.getEquipment().getMinusOne();
+        String originEquipmentId = "";
+        if (mountsCard != null) {
+            originEquipmentId = mountsCard.getId();
+        }
+        card.effect(behaviorPlayer);
 
         Round currentRound = game.getCurrentRound();
         RoundEvent roundEvent = new RoundEvent(currentRound);
         List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-        return List.of(new PlayCardEvent("出牌",
+        return List.of(new PlayCardEvent(
+                "出牌",
                 behaviorPlayer.getId(),
                 behaviorPlayer.getId(),
                 cardId,
@@ -34,7 +40,7 @@ public class RedRabbitHouseBehavior extends Behavior {
                 game.getGameId(),
                 playerEvents,
                 roundEvent,
-                game.getGamePhase().getPhaseName()), new PeachEvent("吃桃", behaviorPlayer.getId(), originHp, behaviorPlayer.getHP()));
+                game.getGamePhase().getPhaseName()), new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId));
     }
 
     @Override

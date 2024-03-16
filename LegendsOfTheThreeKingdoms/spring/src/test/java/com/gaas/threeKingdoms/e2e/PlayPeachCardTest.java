@@ -19,6 +19,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -106,7 +109,8 @@ public class PlayPeachCardTest {
         );
 
         playerA.damage(1);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, playerA, playerB, playerC, playerD));
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerB));
     }
 
 

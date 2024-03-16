@@ -14,6 +14,6 @@ public class RedRabbitHorse extends MountsCard {
 
     @Override
     public void effect(Player player) {
-        
+        player.getEquipment().setMinusOne(this);
     }
 }

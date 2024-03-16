@@ -23,7 +23,8 @@ public class PeachBehavior extends Behavior {
         Round currentRound = game.getCurrentRound();
         RoundEvent roundEvent = new RoundEvent(currentRound);
         List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-        return List.of(new PlayCardEvent("出牌",
+        return List.of(new PlayCardEvent(
+                "出牌",
                 behaviorPlayer.getId(),
                 behaviorPlayer.getId(),
                 cardId,
@@ -31,7 +32,7 @@ public class PeachBehavior extends Behavior {
                 game.getGameId(),
                 playerEvents,
                 roundEvent,
-                game.getGamePhase().getPhaseName()), new PeachEvent("吃桃", behaviorPlayer.getId(), originHp, behaviorPlayer.getHP()));
+                game.getGamePhase().getPhaseName()), new PeachEvent(behaviorPlayer.getId(), originHp, behaviorPlayer.getHP()));
     }
 
     @Override
