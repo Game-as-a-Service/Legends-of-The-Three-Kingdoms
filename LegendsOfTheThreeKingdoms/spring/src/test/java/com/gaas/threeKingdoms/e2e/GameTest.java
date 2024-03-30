@@ -1452,7 +1452,7 @@ public class GameTest {
                         }""", currentPlayerId, targetPlayerId, cardId, playType)));
     }
 
-    public static class TestSessionHandler extends StompSessionHandlerAdapter {
+    public class TestSessionHandler extends StompSessionHandlerAdapter {
         private final AtomicReference<Throwable> failure;
 
         public TestSessionHandler(AtomicReference failure) {
