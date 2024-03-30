@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.handcard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
@@ -24,6 +25,7 @@ public class Deck {
             cardDeck.add(new Kill(PlayCard.BS8008));
             cardDeck.add(new Peach(PlayCard.BH4030));
             cardDeck.add(new Dodge(PlayCard.BHK039));
+            cardDeck.add(new RedRabbitHorse(PlayCard.ES5018));
         });
         shuffle();
     }
