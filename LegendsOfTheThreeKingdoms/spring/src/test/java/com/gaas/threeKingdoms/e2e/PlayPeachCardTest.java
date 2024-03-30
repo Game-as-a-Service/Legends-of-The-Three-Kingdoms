@@ -28,6 +28,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext
 @AutoConfigureMockMvc
 public class PlayPeachCardTest {
 
