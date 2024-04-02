@@ -20,7 +20,7 @@ public enum PlayCard {
     ES2015("ES2015", "八卦陣", Suit.SPADE, Rank.TWO),
     SS3016("SS3016", "順手牽羊", Suit.SPADE, Rank.THREE),
     SS4017("SS4017", "順手牽羊", Suit.SPADE, Rank.FOUR),
-    ES5018("ES5018", "赤兔", Suit.SPADE, Rank.FIVE),
+    ES5018("ES5018", "絕影", Suit.SPADE, Rank.FIVE),
     ES6019("ES6019", "青虹劍", Suit.SPADE, Rank.SIX),
     BS7020("BS7020", "殺", Suit.SPADE, Rank.SEVEN),
     BS8021("BS8021", "殺", Suit.SPADE, Rank.EIGHT),

@@ -35,13 +35,7 @@ public class PlayerEvent extends DomainEvent {
         this.roleId = player.getRoleCard().getRole().getRoleName();
         this.hp = player.getHP();
         this.hand = new HandEvent(player);
-        MountsCard minusOne = player.getEquipment().getMinusOne();
-        if (minusOne != null) {
-            this.equipments = Collections.singletonList(minusOne.getId());
-        } else {
-            this.equipments = Collections.emptyList();
-        }
-        
+        this.equipments = player.getEquipment().getAllEquipmentCardIds();
         this.delayScrolls = Collections.emptyList();
     }
 

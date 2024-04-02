@@ -127,7 +127,7 @@ public class Game {
                         p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList())),
-                        Collections.emptyList(),
+                        p.getEquipment().getAllEquipmentCardIds(),
                         Collections.emptyList())).toList();
 
         DomainEvent initialEndEvent = new InitialEndEvent(gameId, playerEvents, roundEvent, this.getGamePhase().getPhaseName());
@@ -192,7 +192,7 @@ public class Game {
                         p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
-                        Collections.emptyList(),
+                        p.getEquipment().getAllEquipmentCardIds(),
                         Collections.emptyList())).toList();
 
         RoundEvent roundEvent = new RoundEvent(
@@ -294,7 +294,7 @@ public class Game {
                         p.getRoleCard().getRole().getRoleName(),
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
-                        Collections.emptyList(),
+                        p.getEquipment().getAllEquipmentCardIds(),
                         Collections.emptyList())).toList();
 
         currentRound.setRoundPhase(RoundPhase.Discard);

@@ -72,7 +72,7 @@ public class PlayRedRabbitHorseTest {
         // When A 玩家出赤兔馬
         String currentPlayer = "player-a";
         String targetPlayerId = "player-a";
-        String playedCardId = "ES5018";
+        String playedCardId = "EH5044";
 
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
                 .andExpect(status().isOk()).andReturn();
@@ -106,7 +106,7 @@ public class PlayRedRabbitHorseTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RedRabbitHorse(ES5018)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RedRabbitHorse(EH5044)
         );
 
         Player playerB = createPlayer("player-b",

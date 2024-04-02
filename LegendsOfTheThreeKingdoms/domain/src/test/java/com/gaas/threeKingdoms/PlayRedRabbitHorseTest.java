@@ -50,7 +50,7 @@ public class PlayRedRabbitHorseTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RedRabbitHorse(ES5018)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RedRabbitHorse(EH5044)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -89,10 +89,10 @@ public class PlayRedRabbitHorseTest {
         game.setCurrentRound(new Round(playerA));
 
         //When
-        game.playerPlayCard(playerA.getId(), ES5018.getCardId(), playerA.getId(), "active");
+        game.playerPlayCard(playerA.getId(), EH5044.getCardId(), playerA.getId(), "active");
 
         //Then
-        assertEquals(ES5018.getCardId(), game.getPlayer("player-a").getEquipmentMinusOneMountsCard().getId());
+        assertEquals(EH5044.getCardId(), game.getPlayer("player-a").getEquipmentMinusOneMountsCard().getId());
     }
 
     @DisplayName("""
@@ -111,7 +111,7 @@ public class PlayRedRabbitHorseTest {
     public void testRedRabbitHorseCoverageEffect() {
         Game game = new Game();
         Equipment equipment = new Equipment();
-        equipment.setMinusOne(new RedRabbitHorse(ES5018));
+        equipment.setMinusOne(new RedRabbitHorse(EH5044));
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -185,7 +185,7 @@ public class PlayRedRabbitHorseTest {
     public void givenPlayerAHasRedRabbitHorse_WhenPlayerAAttackPlayerC_ThenCHpIs3(){
         Game game = new Game();
         Equipment equipment = new Equipment();
-        equipment.setMinusOne(new RedRabbitHorse(ES5018));
+        equipment.setMinusOne(new RedRabbitHorse(EH5044));
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -259,7 +259,7 @@ public class PlayRedRabbitHorseTest {
     public void givenPlayerAHasRedRabbitHorse_WhenPlayerAAttackPlayerD_ThenExceptionError(){
         Game game = new Game();
         Equipment equipment = new Equipment();
-        equipment.setMinusOne(new RedRabbitHorse(ES5018));
+        equipment.setMinusOne(new RedRabbitHorse(EH5044));
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")

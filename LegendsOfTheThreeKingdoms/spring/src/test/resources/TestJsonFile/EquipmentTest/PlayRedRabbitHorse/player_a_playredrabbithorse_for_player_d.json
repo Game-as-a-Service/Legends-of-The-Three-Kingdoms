@@ -4,7 +4,7 @@
     "data" : {
       "playerId" : "player-a",
       "targetPlayerId" : "player-a",
-      "cardId" : "ES5018",
+      "cardId" : "EH5044",
       "playType" : "active"
     },
     "message" : "出牌"
@@ -12,7 +12,7 @@
     "event" : "PlayEquipmentEvent",
     "data" : {
       "playerId" : "player-a",
-      "cardId" : "ES5018",
+      "cardId" : "EH5044",
       "deprecatedCardId" : ""
     },
     "message" : "玩家出裝備卡"
@@ -27,7 +27,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ "ES5018" ],
+      "equipments" : [ "", "EH5044", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
@@ -38,7 +38,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
@@ -49,7 +49,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
@@ -60,7 +60,7 @@
         "size" : 4,
         "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
-      "equipments" : [ ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     } ],
     "round" : {

@@ -25,7 +25,7 @@ public class Deck {
             cardDeck.add(new Kill(PlayCard.BS8008));
             cardDeck.add(new Peach(PlayCard.BH4030));
             cardDeck.add(new Dodge(PlayCard.BHK039));
-            cardDeck.add(new RedRabbitHorse(PlayCard.ES5018));
+            cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
         });
         shuffle();
     }
