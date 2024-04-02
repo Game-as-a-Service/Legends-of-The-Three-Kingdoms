@@ -10,10 +10,7 @@ import com.gaas.threeKingdoms.handcard.Graveyard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagrams;
-import com.gaas.threeKingdoms.player.BloodCard;
-import com.gaas.threeKingdoms.player.Hand;
-import com.gaas.threeKingdoms.player.HealthStatus;
-import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.Assertions;
@@ -55,6 +52,7 @@ public class DrawCardToPlayer {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
                 .withHand(new Hand())
                 .build();
 
@@ -108,6 +106,7 @@ public class DrawCardToPlayer {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
                 .withHand(new Hand())
                 .build();
 

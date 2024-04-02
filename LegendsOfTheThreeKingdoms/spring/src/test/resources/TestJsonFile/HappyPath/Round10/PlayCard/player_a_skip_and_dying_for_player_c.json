@@ -40,7 +40,7 @@
         "size" : 1,
         "cardIds" : [ ]
       },
-      "equipments" : [ ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
@@ -51,7 +51,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
@@ -62,7 +62,7 @@
         "size" : 3,
         "cardIds" : [ "BC8073", "BC0062", "BHJ037" ]
       },
-      "equipments" : [ ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
@@ -73,7 +73,7 @@
         "size" : 3,
         "cardIds" : [ ]
       },
-      "equipments" : [ ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     } ],
     "round" : {

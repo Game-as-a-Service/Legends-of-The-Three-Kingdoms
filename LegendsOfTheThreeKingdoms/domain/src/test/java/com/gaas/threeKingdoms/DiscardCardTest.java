@@ -6,10 +6,7 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
-import com.gaas.threeKingdoms.player.BloodCard;
-import com.gaas.threeKingdoms.player.Hand;
-import com.gaas.threeKingdoms.player.HealthStatus;
-import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.Assertions;
@@ -51,6 +48,7 @@ public class DiscardCardTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerB = PlayerBuilder
@@ -61,6 +59,7 @@ public class DiscardCardTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
+                .withEquipment(new Equipment())
                 .build();
 
         Player playerC = PlayerBuilder
@@ -70,6 +69,7 @@ public class DiscardCardTest {
                 .withGeneralCard(new GeneralCard(General.司馬懿))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
                 .withHand(new Hand())
                 .build();
 
@@ -80,6 +80,7 @@ public class DiscardCardTest {
                 .withGeneralCard(new GeneralCard(General.司馬懿))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
                 .withHand(new Hand())
                 .build();
 
