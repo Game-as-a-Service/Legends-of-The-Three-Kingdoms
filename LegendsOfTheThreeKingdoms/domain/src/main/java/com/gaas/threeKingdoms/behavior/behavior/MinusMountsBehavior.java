@@ -5,23 +5,21 @@ import com.gaas.threeKingdoms.Round;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.PlayCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
-import java.util.Optional;
 
-public class RedRabbitHouseBehavior extends Behavior {
+public class MinusMountsBehavior extends Behavior {
 
-    public RedRabbitHouseBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
+    public MinusMountsBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
     }
 
     @Override
     public List<DomainEvent> askTargetPlayerPlayCard() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
-        MountsCard mountsCard = behaviorPlayer.getEquipment().getMinusOne();
+        MinusMountsCard mountsCard = behaviorPlayer.getEquipment().getMinusOne();
         String originEquipmentId = "";
         if (mountsCard != null) {
             originEquipmentId = mountsCard.getId();

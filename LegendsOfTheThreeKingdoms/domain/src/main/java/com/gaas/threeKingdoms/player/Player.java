@@ -3,7 +3,8 @@ package com.gaas.threeKingdoms.player;
 
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,11 +47,11 @@ public class Player {
         return hand.playCard(cardId);
     }
 
-    public MountsCard getEquipmentPlusOneMountsCard() {
+    public PlusMountsCard getEquipmentPlusOneMountsCard() {
         return equipment.getPlusOne();
     }
 
-    public MountsCard getEquipmentMinusOneMountsCard() {
+    public MinusMountsCard getEquipmentMinusOneMountsCard() {
         return equipment.getMinusOne();
     }
 

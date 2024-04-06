@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
+import com.gaas.threeKingdoms.exception.DistanceErrorException;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.player.Player;
@@ -39,7 +40,7 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
 
     private boolean isDistanceTooLong(Player player, Player targetPlayer) {
         if (!game.isInAttackRange(player, targetPlayer)) {
-            throw new IllegalStateException("Players are not within range.");
+            throw new DistanceErrorException("Players are not within range.");
         }
         return true;
     }
