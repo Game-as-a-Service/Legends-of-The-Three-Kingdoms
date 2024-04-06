@@ -2,10 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.handler.DyingAskPeachBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.handler.NormalActiveKillBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.handler.PeachBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.handler.RedRabbitHouseBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -43,14 +40,14 @@ public class Game {
     private Stack<Behavior> topBehavior = new Stack<>();
 
     public Game(String gameId, List<Player> players) {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new RedRabbitHouseBehaviorHandler(null, this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(null, this), this), this), this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new RedRabbitHouseBehaviorHandler(null, this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(null,this), this), this), this), this);
     }
 
 

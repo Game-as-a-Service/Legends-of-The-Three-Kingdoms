@@ -6,14 +6,9 @@ import com.gaas.threeKingdoms.player.Player;
 /**
  * 赤兔馬
  */
-public class RedRabbitHorse extends MountsCard {
+public class RedRabbitHorse extends MinusMountsCard {
 
     public RedRabbitHorse(PlayCard playCard) {
         super(playCard);
-    }
-
-    @Override
-    public void effect(Player player) {
-        player.getEquipment().setMinusOne(this);
     }
 }

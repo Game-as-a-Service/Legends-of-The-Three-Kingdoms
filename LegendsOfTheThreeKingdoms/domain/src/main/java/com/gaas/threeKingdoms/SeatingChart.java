@@ -1,11 +1,10 @@
 package com.gaas.threeKingdoms;
 
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 public class SeatingChart {
 
@@ -24,20 +23,35 @@ public class SeatingChart {
         int seat2 = players.indexOf(targetPlayer);
 
         int totalSeats = players.size();
-        int minusOneMountCount = getMountsCount(player);
+        int equipmentDistance = getEquipmentDistance(player,targetPlayer);
         int distanceClockwise = (seat2 - seat1 + totalSeats) % totalSeats;
         int distanceCounterClockwise = (seat1 - seat2 + totalSeats) % totalSeats;
         // Return the shorter distance of clockwise and counterclockwise
-        return Math.min(distanceClockwise, distanceCounterClockwise) + minusOneMountCount;
+        return Math.min(distanceClockwise, distanceCounterClockwise) +  equipmentDistance;
     }
 
-    private int getMountsCount(Player player) {
+    private int getEquipmentDistance(Player player,Player targetPlayer) {
+        int minusCount = getMinusOneDistance(player);
+        int plusCount = getPlusDistance(targetPlayer);
+        return minusCount + plusCount;
+    }
+
+    private int getMinusOneDistance(Player player) {
         if (player.getEquipment() == null) return 0;
-        MountsCard minusOne = player.getEquipment().getMinusOne();
-        if (minusOne == null){
+        MinusMountsCard minusOne = player.getEquipment().getMinusOne();
+        if (minusOne == null) {
             return 0;
         } else {
             return -1;
+        }
+    }
+    private int getPlusDistance(Player player) {
+        if (player.getEquipment() == null) return 0;
+        PlusMountsCard plusOne = player.getEquipment().getPlusOne();
+        if (plusOne == null) {
+            return 0;
+        } else {
+            return 1;
         }
     }
 

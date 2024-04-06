@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
+import com.gaas.threeKingdoms.exception.DistanceErrorException;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -81,8 +82,7 @@ public class PlayKillCardTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerA));
 
-        //Todo 補上自訂義的 Exception
-        assertThrows(IllegalStateException.class,
+        assertThrows(DistanceErrorException.class,
                 () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerC.getId(), "active"));
         assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
     }

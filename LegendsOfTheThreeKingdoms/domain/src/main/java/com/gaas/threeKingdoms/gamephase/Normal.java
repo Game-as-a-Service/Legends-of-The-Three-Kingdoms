@@ -6,6 +6,7 @@ import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.events.PlayerEvent;
 import com.gaas.threeKingdoms.events.RoundEvent;
+import com.gaas.threeKingdoms.exception.DistanceErrorException;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
@@ -25,7 +26,7 @@ public class Normal extends GamePhase {
         Player targetPlayer = game.getPlayer(targetPlayerId);
 
         if (isDistanceTooLong(player, targetPlayer)) {
-            throw new IllegalStateException("Players are not within range.");
+            throw new DistanceErrorException("Players are not within range.");
         }
 
 //        if (isSkip(playType)) {
