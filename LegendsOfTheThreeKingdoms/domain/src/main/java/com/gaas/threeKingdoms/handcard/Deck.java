@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.handcard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.RepeatingCrossbowArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static com.gaas.threeKingdoms.handcard.PlayCard.ECA066;
 
 @Data
 @AllArgsConstructor
@@ -28,6 +31,7 @@ public class Deck {
             cardDeck.add(new Dodge(PlayCard.BHK039));
             cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
             cardDeck.add(new ShadowHorse(PlayCard.ES5018));
+            cardDeck.add(new RepeatingCrossbowArmorCard(ECA066));
         });
         shuffle();
     }

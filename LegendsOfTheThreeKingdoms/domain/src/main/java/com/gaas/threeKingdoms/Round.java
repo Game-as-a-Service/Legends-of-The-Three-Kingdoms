@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.RepeatingCrossbowArmorCard;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.Data;
 
@@ -26,7 +27,9 @@ public class Round {
         if (handCardOptional.isEmpty()) return false;
 
         HandCard handCard = handCardOptional.get();
-        if (handCard instanceof Kill && isShowKill) {
+        if (handCard instanceof Kill &&  currentRoundPlayer.getEquipmentArmorCard() instanceof RepeatingCrossbowArmorCard) {
+            isShowKill = false;
+        } else if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");
         } else if (handCard instanceof Kill) {
             isShowKill = true;

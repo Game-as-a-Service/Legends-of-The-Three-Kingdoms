@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.player;
 
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -53,6 +54,10 @@ public class Player {
 
     public MinusMountsCard getEquipmentMinusOneMountsCard() {
         return equipment.getMinusOne();
+    }
+
+    public ArmorCard getEquipmentArmorCard() {
+        return equipment.getArmor();
     }
 
     public void damage(int i) {
