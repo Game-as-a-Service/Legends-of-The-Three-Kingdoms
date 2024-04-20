@@ -5,6 +5,6 @@ services:
       context: ../..
       target: development
     ports:
-      - 443:8080
+      - 8080:8080
     volumes:
       - ./:/app
