@@ -61,6 +61,7 @@ public class DyingTest {
     public void setup() throws Exception {
         websocketUtil = new WebsocketUtil(port, gameId);
         mockMvcUtil = new MockMvcUtil(mockMvc);
+        Thread.sleep(1000);
     }
 
 
