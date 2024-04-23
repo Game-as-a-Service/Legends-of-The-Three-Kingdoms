@@ -4,7 +4,9 @@ public enum PlayType {
 
     SKIP("skip"),
     ACTIVE("active"),
-    INACTIVE("inactive");
+    INACTIVE("inactive"),
+    EQUIPMENT_ACTIVE("equipmentActive"),
+    EQUIPMENT_SKIP("equipmentSkip");
 
     private final String playType;
 

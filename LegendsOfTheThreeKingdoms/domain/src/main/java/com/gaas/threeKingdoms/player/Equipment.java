@@ -22,4 +22,12 @@ public class Equipment {
                 .map(equipment -> equipment != null ? equipment.getId() : "")
                 .collect(Collectors.toList());
     }
+
+    public boolean hasSpecialEffect() {
+        boolean plusOneHasSpecialEffect = plusOne != null && plusOne.isHasSpecialEffect();
+        boolean minusOneHasSpecialEffect = minusOne != null && minusOne.isHasSpecialEffect();
+        boolean armorHasSpecialEffect = armor != null && armor.isHasSpecialEffect();
+        boolean weaponHasSpecialEffect = weapon != null && weapon.isHasSpecialEffect();
+        return plusOneHasSpecialEffect || minusOneHasSpecialEffect || armorHasSpecialEffect || weaponHasSpecialEffect;
+    }
 }

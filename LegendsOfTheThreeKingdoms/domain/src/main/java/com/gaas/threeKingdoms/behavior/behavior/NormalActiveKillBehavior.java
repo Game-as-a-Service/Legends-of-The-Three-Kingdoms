@@ -9,6 +9,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
@@ -23,13 +24,23 @@ public class NormalActiveKillBehavior extends Behavior {
     @Override
     public List<DomainEvent> askTargetPlayerPlayCard() {
         String targetPlayerId = reactionPlayers.get(0);
+        Player targetPlayer = game.getPlayer(targetPlayerId);
         playerPlayCard(behaviorPlayer, game.getPlayer(targetPlayerId), cardId);
         Round currentRound = game.getCurrentRound();
 
         RoundEvent roundEvent = new RoundEvent(currentRound);
 
         List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-        return List.of(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
+
+
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
+
+        if (isEquipmentHasSpecialEffect(targetPlayer)) {
+            DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor());
+            events.add(askPlayEquipmentEffectEvent);
+        }
+        return events;
     }
 
     @Override
@@ -90,6 +101,10 @@ public class NormalActiveKillBehavior extends Behavior {
 
     private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
         return new AskPeachEvent(player.getId(), dyingPlayer.getId());
+    }
+
+    private boolean isEquipmentHasSpecialEffect(Player targetPlayer) {
+        return targetPlayer.getEquipment().hasSpecialEffect();
     }
 
 }
