@@ -36,6 +36,10 @@ public class Deck {
         shuffle();
     }
 
+    public Deck(List<HandCard> handCards) {
+        cardDeck.addAll(handCards);
+    }
+
     public void shuffle() {
         ShuffleWrapper.shuffle(cardDeck);
     }

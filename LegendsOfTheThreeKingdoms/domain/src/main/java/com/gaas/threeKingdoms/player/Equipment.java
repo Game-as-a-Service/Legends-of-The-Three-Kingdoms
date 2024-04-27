@@ -30,4 +30,5 @@ public class Equipment {
         boolean weaponHasSpecialEffect = weapon != null && weapon.isHasSpecialEffect();
         return plusOneHasSpecialEffect || minusOneHasSpecialEffect || armorHasSpecialEffect || weaponHasSpecialEffect;
     }
+
 }

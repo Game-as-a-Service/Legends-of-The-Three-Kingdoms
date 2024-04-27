@@ -4,7 +4,7 @@ import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.player.Player;
 
-public class ArmorCard extends EquipmentCard {
+public abstract class ArmorCard extends EquipmentCard {
 
     public ArmorCard(PlayCard playCard) {
         super(playCard);

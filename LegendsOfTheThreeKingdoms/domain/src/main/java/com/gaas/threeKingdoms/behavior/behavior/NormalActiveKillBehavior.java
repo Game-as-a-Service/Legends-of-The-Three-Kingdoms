@@ -7,12 +7,14 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
+import static com.gaas.threeKingdoms.handcard.PlayCard.isEightDiagramTacticCard;
 
 
 public class NormalActiveKillBehavior extends Behavior {
@@ -76,6 +78,15 @@ public class NormalActiveKillBehavior extends Behavior {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
             return List.of(playCardEvent, playerDamagedEvent);
+        } else if (isEquipment(playType) && isEightDiagramTacticCard(cardId)) {
+            ArmorCard armorCard = damagedPlayer.getEquipment().getArmor();
+            List<DomainEvent> domainEvents = armorCard.equipmentEffect(game);
+
+            isOneRound = domainEvents.stream()
+                    .map(EffectEvent.class::cast)
+                    .allMatch(EffectEvent::isSuccess);
+
+            return domainEvents;
         } else {
             //TODO:怕有其他效果或殺的其他case
             return null;
@@ -89,6 +100,10 @@ public class NormalActiveKillBehavior extends Behavior {
 
     private boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
+    }
+
+    private boolean isEquipment(String playType) {
+        return PlayType.EQUIPMENT_ACTIVE.getPlayType().equals(playType);
     }
 
     private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {

@@ -158,5 +158,11 @@ public enum PlayCard {
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
 
+    public static boolean isEightDiagramTacticCard(String cardId){
+        return Arrays.stream(PlayCard.values())
+                .filter(c->c.getCardName().equals("八卦陣"))
+                .anyMatch(c->c.getCardId().equals(cardId));
+    }
+
 
 }

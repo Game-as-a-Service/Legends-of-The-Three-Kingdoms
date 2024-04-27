@@ -468,5 +468,11 @@ public class Game {
     public boolean isTopBehaviorEmpty() {
         return topBehavior.empty();
     }
+
+    public HandCard drawCardForEightDiagramTactic() {
+        refreshDeckWhenCardsNumLessThen(1);
+        List<HandCard> cards = deck.deal(1);
+        return cards.get(0);
+    }
 }
 
