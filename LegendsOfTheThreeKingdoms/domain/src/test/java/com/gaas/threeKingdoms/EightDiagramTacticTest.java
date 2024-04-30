@@ -4,7 +4,6 @@ import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.EffectEvent;
-import com.gaas.threeKingdoms.events.EightDiagramTacticEffectEvent;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -26,8 +25,7 @@ import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EightDiagramTacticTest {
 
@@ -277,11 +275,17 @@ public class EightDiagramTacticTest {
             八卦陣效果抽到大老二
                     
             Then
-            詢問A玩家要不要出閃
+            八卦陣效果event isSuccess = false
                 """)
     @Test
     public void givenPlayerAUesEightDiagramTactic_WhenGetBig2_ThenPlayerABeenAskIfWantToDodge() {
         Game game = new Game();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(ES2002)
+                )
+        );
+        game.setDeck(deck);
         Equipment equipment = new Equipment();
         equipment.setArmor(new EightDiagramTactic(ES2015));
         Player playerA = PlayerBuilder
@@ -336,10 +340,11 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_ACTIVE.getPlayType());
 
+        assertFalse(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
-        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());
     }
 
@@ -416,11 +421,12 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_SKIP.getPlayType());
+        game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
-        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
-        assertEquals(4, game.getPlayer("player-a").getHP());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(3, game.getPlayer("player-a").getHP());
     }
 
     @DisplayName("""
@@ -454,6 +460,9 @@ public class EightDiagramTacticTest {
                 .withBloodCard(new BloodCard(4))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new EightDiagramTactic(EC2067)));
+
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -496,10 +505,11 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_SKIP.getPlayType());
+        game.playerPlayCard(playerA.getId(), BH2028.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
-        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(null, game.getCurrentRound().getActivePlayer());
         assertEquals(4, game.getPlayer("player-a").getHP());
     }
 }

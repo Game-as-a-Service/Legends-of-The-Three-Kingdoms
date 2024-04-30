@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.Suit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EightDiagramTactic extends ArmorCard {
@@ -21,7 +22,9 @@ public class EightDiagramTactic extends ArmorCard {
     public List<DomainEvent> equipmentEffect(Game game) {
         HandCard card = game.drawCardForEightDiagramTactic();
         boolean isEffectSuccess = isEffectSuccess(card);
-        return List.of(new EightDiagramTacticEffectEvent("發動八卦陣效果", card.getId(), isEffectSuccess));
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(new EightDiagramTacticEffectEvent("發動八卦陣效果", card.getId(), isEffectSuccess));
+        return events;
     }
 
     private boolean isEffectSuccess(HandCard card) {

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
-import static com.gaas.threeKingdoms.handcard.PlayCard.isEightDiagramTacticCard;
 
 
 public class NormalActiveKillBehavior extends Behavior {
@@ -23,11 +22,18 @@ public class NormalActiveKillBehavior extends Behavior {
     }
 
 
+//    @Override
+//    public List<DomainEvent> askTargetPlayerPlayCard() {
+//       return askTargetPlayerPlayCard(true);
+//    }
+
     @Override
     public List<DomainEvent> askTargetPlayerPlayCard() {
         String targetPlayerId = reactionPlayers.get(0);
         Player targetPlayer = game.getPlayer(targetPlayerId);
+
         playerPlayCard(behaviorPlayer, game.getPlayer(targetPlayerId), cardId);
+
         Round currentRound = game.getCurrentRound();
 
         RoundEvent roundEvent = new RoundEvent(currentRound);
@@ -42,6 +48,17 @@ public class NormalActiveKillBehavior extends Behavior {
             DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor());
             events.add(askPlayEquipmentEffectEvent);
         }
+        return events;
+    }
+
+    public List<DomainEvent> askTargetPlayerPlayCardWhenSkipEquipmentEffect() {
+        String targetPlayerId = reactionPlayers.get(0);
+        Player targetPlayer = game.getPlayer(targetPlayerId);
+        Round currentRound = game.getCurrentRound();
+        RoundEvent roundEvent = new RoundEvent(currentRound);
+        List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
         return events;
     }
 
@@ -76,23 +93,30 @@ public class NormalActiveKillBehavior extends Behavior {
             RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
             PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
+            Round currentRound = game.getCurrentRound();
+            currentRound.setActivePlayer(null);
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
             return List.of(playCardEvent, playerDamagedEvent);
-        } else if (isEquipment(playType) && isEightDiagramTacticCard(cardId)) {
-            ArmorCard armorCard = damagedPlayer.getEquipment().getArmor();
-            List<DomainEvent> domainEvents = armorCard.equipmentEffect(game);
-
-            isOneRound = domainEvents.stream()
-                    .map(EffectEvent.class::cast)
-                    .allMatch(EffectEvent::isSuccess);
-
-            return domainEvents;
-        } else {
+        }
+//        else if (executeEquipmentEffect(playType)) {
+//            ArmorCard armorCard = damagedPlayer.getEquipment().getArmor();
+//            List<DomainEvent> domainEvents = armorCard.equipmentEffect(game);
+//
+//            isOneRound = domainEvents.stream()
+//                    .map(EffectEvent.class::cast)
+//                    .allMatch(EffectEvent::isSuccess);
+//
+//            return domainEvents;
+//        } else if (skipEquipmentEffect(playType)) {
+//            List<DomainEvent> events = askTargetPlayerPlayCardWhenSkipEquipmentEffect();
+//            isOneRound = false;
+//            return events;
+//        }
+        else {
             //TODO:怕有其他效果或殺的其他case
-            return null;
+           return  new ArrayList<>();
         }
     }
-
 
     private boolean isPlayerStillAlive(Player damagedPlayer) {
         return damagedPlayer.getHP() > 0;
@@ -102,8 +126,12 @@ public class NormalActiveKillBehavior extends Behavior {
         return PlayType.SKIP.getPlayType().equals(playType);
     }
 
-    private boolean isEquipment(String playType) {
+    private boolean executeEquipmentEffect(String playType) {
         return PlayType.EQUIPMENT_ACTIVE.getPlayType().equals(playType);
+    }
+
+    private boolean skipEquipmentEffect(String playType) {
+        return PlayType.EQUIPMENT_SKIP.getPlayType().equals(playType);
     }
 
     private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {

@@ -1,5 +1,8 @@
 package com.gaas.threeKingdoms.handcard;
 
+import javax.print.DocFlavor;
+import java.util.Arrays;
+
 public enum PlayType {
 
     SKIP("skip"),
@@ -16,6 +19,11 @@ public enum PlayType {
 
     PlayType(String playType) {
         this.playType = playType;
+    }
+
+    public static PlayType getPlayType(String playType) {
+       return Arrays.stream(PlayType.values()).filter(playtype -> playtype.getPlayType().equals(playType)).findFirst()
+                .orElseThrow();
     }
 
     public static void checkPlayTypeIsValid(String value) {
