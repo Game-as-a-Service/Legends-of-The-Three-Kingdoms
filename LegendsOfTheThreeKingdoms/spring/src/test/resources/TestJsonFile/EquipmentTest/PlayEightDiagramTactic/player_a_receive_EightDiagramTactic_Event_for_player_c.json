@@ -2,20 +2,12 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
+      "playerId" : "player-b",
       "targetPlayerId" : "player-a",
-      "cardId" : "ES2015",
+      "cardId" : "BS8008",
       "playType" : "active"
     },
     "message" : "出牌"
-  }, {
-    "event" : "PlayEquipmentEvent",
-    "data" : {
-      "playerId" : "player-a",
-      "cardId" : "ES2015",
-      "deprecatedCardId" : ""
-    },
-    "message" : "玩家出裝備卡"
   } ],
   "data" : {
     "seats" : [ {
@@ -35,7 +27,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 3,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -65,10 +57,10 @@
     } ],
     "round" : {
       "roundPhase" : "Judgement",
-      "currentRoundPlayer" : "player-a",
+      "currentRoundPlayer" : "player-b",
       "activePlayer" : "player-a",
       "dyingPlayer" : "",
-      "showKill" : false
+      "showKill" : true
     },
     "gamePhase" : "Normal"
   },

@@ -7,8 +7,7 @@ import lombok.Getter;
 public class AskPlayEquipmentEffectEvent extends DomainEvent {
     private final String playerId;
     private final EquipmentCard equipmentCard;
-//    private final String equipmentId;
-//    private final String equipmentName;
+
 
     //    public AskPlayEquipmentEffectEvent(String playerId, String equipmentId, String equipmentName) {
     public AskPlayEquipmentEffectEvent(String playerId, EquipmentCard equipmentCard) {

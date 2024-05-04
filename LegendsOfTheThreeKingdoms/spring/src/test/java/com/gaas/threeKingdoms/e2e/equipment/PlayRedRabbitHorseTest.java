@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -106,7 +107,7 @@ public class PlayRedRabbitHorseTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RedRabbitHorse(EH5044)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new EightDiagramTactic(EH5044)
         );
 
         Player playerB = createPlayer("player-b",

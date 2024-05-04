@@ -2,20 +2,12 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
+      "playerId" : "player-b",
       "targetPlayerId" : "player-a",
-      "cardId" : "ES2015",
+      "cardId" : "BS8008",
       "playType" : "active"
     },
     "message" : "出牌"
-  }, {
-    "event" : "PlayEquipmentEvent",
-    "data" : {
-      "playerId" : "player-a",
-      "cardId" : "ES2015",
-      "deprecatedCardId" : ""
-    },
-    "message" : "玩家出裝備卡"
   } ],
   "data" : {
     "seats" : [ {
@@ -32,22 +24,22 @@
     }, {
       "id" : "player-b",
       "generalId" : "SHU001",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ ]
+        "size" : 3,
+        "cardIds" : [ "BH3029", "BH4030", "BH2028" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU001",
-      "roleId" : "Rebel",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -65,14 +57,14 @@
     } ],
     "round" : {
       "roundPhase" : "Judgement",
-      "currentRoundPlayer" : "player-a",
+      "currentRoundPlayer" : "player-b",
       "activePlayer" : "player-a",
       "dyingPlayer" : "",
-      "showKill" : false
+      "showKill" : true
     },
     "gamePhase" : "Normal"
   },
   "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-c"
+  "playerId" : "player-b"
 }
