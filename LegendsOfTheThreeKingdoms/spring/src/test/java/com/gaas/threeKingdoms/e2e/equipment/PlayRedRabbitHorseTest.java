@@ -107,7 +107,7 @@ public class PlayRedRabbitHorseTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new EightDiagramTactic(EH5044)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RedRabbitHorse(EH5044)
         );
 
         Player playerB = createPlayer("player-b",

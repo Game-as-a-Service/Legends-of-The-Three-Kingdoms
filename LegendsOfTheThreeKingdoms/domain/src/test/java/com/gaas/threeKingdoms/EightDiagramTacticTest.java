@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.Deck;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -253,12 +254,12 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
 
         //Then
         assertTrue(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
-        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());
     }
 
@@ -340,7 +341,7 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
 
         assertFalse(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
@@ -421,7 +422,7 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_SKIP.getPlayType());
+        game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
@@ -505,7 +506,7 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        game.playerPlayCard(playerA.getId(), ES2015.getCardId(), playerA.getId(), PlayType.EQUIPMENT_SKIP.getPlayType());
+        game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
         game.playerPlayCard(playerA.getId(), BH2028.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());

@@ -8,8 +8,6 @@ public class AskPlayEquipmentEffectEvent extends DomainEvent {
     private final String playerId;
     private final EquipmentCard equipmentCard;
 
-
-    //    public AskPlayEquipmentEffectEvent(String playerId, String equipmentId, String equipmentName) {
     public AskPlayEquipmentEffectEvent(String playerId, EquipmentCard equipmentCard) {
         super("AskPlayEquipmentEffectEvent", String.format("請問是否要發動裝備卡%s的效果", equipmentCard.getName()));
         this.playerId = playerId;

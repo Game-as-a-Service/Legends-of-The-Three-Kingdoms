@@ -6,6 +6,7 @@ import com.gaas.threeKingdoms.e2e.MockMvcUtil;
 import com.gaas.threeKingdoms.e2e.WebsocketUtil;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -153,7 +154,7 @@ public class EightDiagramTacticTest {
         String targetPlayerId = "player-a";
         String playedCardId = "ES2015";
 
-        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.EQUIPMENT_ACTIVE.getPlayType())
+        mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.ACTIVE)
                 .andExpect(status().isOk()).andReturn();
 
         //Then 全部人收到 八卦陣效果抽到赤兔馬 (♥5) 的 Event
@@ -161,22 +162,22 @@ public class EightDiagramTacticTest {
         //A玩家HP=4
         //還是 B 的回合
         String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredeightDiagramTactic_for_player_a.json");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForA);
 
         String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredeightDiagramTactic_for_player_b.json");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForB);
 
         String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredeightDiagramTactic_for_player_c.json");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForC);
 
         String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayRedRabbitHorse/player_a_playredrabbithorse_for_player_d.json");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }    

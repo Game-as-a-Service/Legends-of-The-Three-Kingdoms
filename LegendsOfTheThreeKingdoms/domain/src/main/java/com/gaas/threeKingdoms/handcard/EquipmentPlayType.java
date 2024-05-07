@@ -1,13 +1,11 @@
 package com.gaas.threeKingdoms.handcard;
 
-import javax.print.DocFlavor;
 import java.util.Arrays;
 
-public enum PlayType {
+public enum EquipmentPlayType {
 
-    SKIP("skip"),
-    ACTIVE("active"),
-    INACTIVE("inactive");
+    ACTIVE("equipmentActive"),
+    SKIP("equipmentSkip");
 
     private final String playType;
 
@@ -15,12 +13,12 @@ public enum PlayType {
         return playType;
     }
 
-    PlayType(String playType) {
+    EquipmentPlayType(String playType) {
         this.playType = playType;
     }
 
-    public static PlayType getPlayType(String playType) {
-       return Arrays.stream(PlayType.values()).filter(playtype -> playtype.getPlayType().equals(playType)).findFirst()
+    public static EquipmentPlayType getPlayType(String playType) {
+        return Arrays.stream(EquipmentPlayType.values()).filter(equipmentPlayType -> equipmentPlayType.getPlayType().equals(playType)).findFirst()
                 .orElseThrow();
     }
 

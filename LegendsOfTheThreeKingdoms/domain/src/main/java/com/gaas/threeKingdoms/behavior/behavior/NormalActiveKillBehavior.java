@@ -126,13 +126,13 @@ public class NormalActiveKillBehavior extends Behavior {
         return PlayType.SKIP.getPlayType().equals(playType);
     }
 
-    private boolean executeEquipmentEffect(String playType) {
-        return PlayType.EQUIPMENT_ACTIVE.getPlayType().equals(playType);
-    }
-
-    private boolean skipEquipmentEffect(String playType) {
-        return PlayType.EQUIPMENT_SKIP.getPlayType().equals(playType);
-    }
+//    private boolean executeEquipmentEffect(String playType) {
+//        return PlayType.EQUIPMENT_ACTIVE.getPlayType().equals(playType);
+//    }
+//
+//    private boolean skipEquipmentEffect(String playType) {
+//        return PlayType.EQUIPMENT_SKIP.getPlayType().equals(playType);
+//    }
 
     private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
         return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());

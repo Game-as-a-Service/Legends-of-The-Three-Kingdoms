@@ -2,10 +2,7 @@ package com.gaas.threeKingdoms.controller;
 
 
 
-import com.gaas.threeKingdoms.controller.dto.ChooseGeneralRequest;
-import com.gaas.threeKingdoms.controller.dto.FinishRoundRequest;
-import com.gaas.threeKingdoms.controller.dto.GameRequest;
-import com.gaas.threeKingdoms.controller.dto.PlayCardRequest;
+import com.gaas.threeKingdoms.controller.dto.*;
 import com.gaas.threeKingdoms.presenter.*;
 import com.gaas.threeKingdoms.usecase.*;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +26,7 @@ public class GameController {
     private final OthersChoosePlayerGeneralUseCase othersChoosePlayerGeneralUseCase;
     private final PlayCardUseCase playCardUseCase;
     private final FindGameByIdUseCase findGameUseCase;
+    private final UseEquipmentUseCase useEquipmentUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -94,6 +92,14 @@ public class GameController {
         DiscardPresenter discardPresenter = new DiscardPresenter();
         discardCardUseCase.execute(gameId,cardIds,discardPresenter);
         webSocketBroadCast.pushDiscardEvent(discardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useEquipmentEffect")
+    public ResponseEntity<?> playerUseEquipmentEffect(@PathVariable String gameId, @RequestBody UseEquipmentRequest useEquipmentRequest) {
+        UseEquipmentEffectPresenter equipmentEffectPresenter = new UseEquipmentEffectPresenter();
+        useEquipmentUseCase.execute(gameId,useEquipmentRequest.toUseEquipmentRequest(), equipmentEffectPresenter);
+        webSocketBroadCast.pushEquipmentEffectEvent(equipmentEffectPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

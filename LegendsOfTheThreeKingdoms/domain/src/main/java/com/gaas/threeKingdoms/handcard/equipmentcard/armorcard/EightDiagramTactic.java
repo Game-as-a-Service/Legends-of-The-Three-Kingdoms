@@ -1,8 +1,11 @@
 package com.gaas.threeKingdoms.handcard.equipmentcard.armorcard;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.Round;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.EightDiagramTacticEffectEvent;
+import com.gaas.threeKingdoms.events.PlayerEvent;
+import com.gaas.threeKingdoms.events.RoundEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.Suit;
@@ -22,7 +25,13 @@ public class EightDiagramTactic extends ArmorCard {
         HandCard card = game.drawCardForEightDiagramTactic();
         boolean isEffectSuccess = isEffectSuccess(card);
         List<DomainEvent> events = new ArrayList<>();
-        events.add(new EightDiagramTacticEffectEvent("發動八卦陣效果", card.getId(), isEffectSuccess));
+        List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
+        Round currentRound = game.getCurrentRound();
+        if (isEffectSuccess) {
+            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+        }
+        RoundEvent roundEvent = new RoundEvent(currentRound);
+        events.add(new EightDiagramTacticEffectEvent("發動八卦陣效果", isEffectSuccess, card.getId(),game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
         return events;
     }
 
