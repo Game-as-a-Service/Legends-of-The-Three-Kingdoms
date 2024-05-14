@@ -18,6 +18,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
+import com.gaas.threeKingdoms.round.Round;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -423,10 +424,13 @@ public class EightDiagramTacticTest {
 
         //When
         game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
-        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(3, game.getPlayer("player-a").getHP());
     }
 
@@ -507,10 +511,98 @@ public class EightDiagramTacticTest {
 
         //When
         game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+
         game.playerPlayCard(playerA.getId(), BH2028.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
-        assertEquals(null, game.getCurrentRound().getActivePlayer());
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());
+    }
+
+    @DisplayName("""
+            Given
+            B的回合
+            A已經裝備八卦陣，且有閃
+            B有四張殺
+            A玩家HP=4
+            B玩家攻擊A玩家
+            A發動裝備卡抽到大老二，效果失敗
+            
+            When
+            A再次發動裝備卡八卦陣
+
+            Then
+            拋出例外
+                """)
+    @Test
+    public void givenPlayerAUesEightDiagramTacticAndAlreadyUsedEightDiagramTactic_WhenUseEightDiagramTacticAgain_ThenThrowException() {
+        Game game = new Game();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(ES2002)
+                )
+        );
+        game.setDeck(deck);
+        Equipment equipment = new Equipment();
+        equipment.setArmor(new EightDiagramTactic(ES2015));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BD6084), new Kill(BD7085), new Kill(BD8086), new Kill(BD0088)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerB));
+
+        game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+
+        //When
+        List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
+
+        assertFalse(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
+
+        assertThrows(IllegalStateException.class, () -> game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE));
     }
 }

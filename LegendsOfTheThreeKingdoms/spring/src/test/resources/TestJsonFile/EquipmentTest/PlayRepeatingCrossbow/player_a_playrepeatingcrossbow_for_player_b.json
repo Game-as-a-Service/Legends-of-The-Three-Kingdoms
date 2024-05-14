@@ -27,7 +27,7 @@
         "size" : 5,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "ECA066", "" ],
+      "equipments" : [ "", "", "", "ECA066" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",

@@ -1,7 +1,7 @@
 package com.gaas.threeKingdoms.handcard.equipmentcard.armorcard;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.Round;
+import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.EightDiagramTacticEffectEvent;
 import com.gaas.threeKingdoms.events.PlayerEvent;

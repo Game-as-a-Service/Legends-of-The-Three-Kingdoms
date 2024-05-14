@@ -3,8 +3,8 @@ package com.gaas.threeKingdoms;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.*;
-import com.gaas.threeKingdoms.effect.EquipmentEffectHandler;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
+import com.gaas.threeKingdoms.effect.EquipmentEffectHandler;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -16,6 +16,8 @@ import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
+import com.gaas.threeKingdoms.round.Round;
+import com.gaas.threeKingdoms.round.RoundPhase;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,14 +43,14 @@ public class Game {
 
     public Game(String gameId, List<Player> players) {
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null,this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null, this), this), this), this), this), this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null,this), this),this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null, this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
     }
 
@@ -248,7 +250,7 @@ public class Game {
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
-        if (behavior.isTargetPlayerNeedToResponse()){
+        if (behavior.isTargetPlayerNeedToResponse()) {
             updateTopBehavior(behavior);
         }
         List<DomainEvent> events = behavior.askTargetPlayerPlayCard();
@@ -256,7 +258,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseEquipment(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
-        return Optional.ofNullable(equipmentEffectHandler.handle(playerId,cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
+        return Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
     }
 
     public void playerDeadSettlement() {
@@ -474,7 +476,7 @@ public class Game {
 
     public void updateTopBehavior(Behavior behavior) {
         if (behavior != null)
-         topBehavior.add(behavior);
+            topBehavior.add(behavior);
     }
 
     public boolean isTopBehaviorEmpty() {

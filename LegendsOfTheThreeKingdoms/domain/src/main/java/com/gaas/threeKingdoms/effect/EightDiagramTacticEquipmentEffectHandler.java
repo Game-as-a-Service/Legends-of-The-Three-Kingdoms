@@ -1,16 +1,15 @@
 package com.gaas.threeKingdoms.effect;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.Round;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.EffectEvent;
-import com.gaas.threeKingdoms.events.RoundEvent;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.round.Round;
+import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +30,12 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
 
     @Override
     protected List<DomainEvent> doHandle(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
+        Round currentRound = game.getCurrentRound();
+        Stage currentStage = currentRound.getStage();
+        if (!currentStage.equals(Stage.Wait_Equipment_Effect)) {
+            throw new IllegalStateException(String.format("CurrentRound stage not Wait_Equipment_Effect but [%s]", currentStage));
+        }
+        currentRound.setStage(Stage.Normal);
         if (skipEquipmentEffect(playType)) {
             game.peekTopBehavior().setIsOneRound(false);
             return new ArrayList<>();

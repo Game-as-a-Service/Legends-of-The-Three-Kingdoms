@@ -1,21 +1,11 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
+    "event" : "UseEquipmentEffectViewModel",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-b",
-      "cardId" : "",
-      "playType" : "skip"
+      "drawCardId" : "BS7020",
+      "success" : false
     },
-    "message" : "不出牌"
-  }, {
-    "event" : "PlayerDamagedEvent",
-    "data" : {
-      "playerId" : "player-a",
-      "from" : 5,
-      "to" : 4
-    },
-    "message" : "扣血"
+    "message" : "發動效果"
   } ],
   "data" : {
     "seats" : [ {
@@ -24,27 +14,27 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ "BD0088", "BD9087", "BD8086", "BC5057", "BC4056" ]
+        "size" : 4,
+        "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "", "" ],
+      "equipments" : [ "", "", "ES2015", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU006",
+      "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 3,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU004",
+      "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
@@ -53,26 +43,26 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "WEI002",
-      "roleId" : "",
-      "hp" : 3,
+      "generalId" : "SHU001",
+      "roleId" : "Traitor",
+      "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Action",
+      "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-b",
-      "activePlayer" : "player-b",
+      "activePlayer" : "player-a",
       "dyingPlayer" : "",
       "showKill" : true
     },
     "gamePhase" : "Normal"
   },
-  "message" : "不出牌",
+  "message" : "發動八卦陣效果",
   "gameId" : "my-id",
-  "playerId" : "player-a"
+  "playerId" : "player-d"
 }

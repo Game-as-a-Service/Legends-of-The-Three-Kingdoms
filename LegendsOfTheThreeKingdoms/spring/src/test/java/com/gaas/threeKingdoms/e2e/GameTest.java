@@ -3,7 +3,7 @@ package com.gaas.threeKingdoms.e2e;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.RoundPhase;
+import com.gaas.threeKingdoms.round.RoundPhase;
 import com.gaas.threeKingdoms.controller.dto.GameRequest;
 import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.HandCard;

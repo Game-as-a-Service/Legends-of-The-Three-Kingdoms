@@ -6,6 +6,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,6 +59,10 @@ public class Player {
 
     public ArmorCard getEquipmentArmorCard() {
         return equipment.getArmor();
+    }
+
+    public WeaponCard getRquipmentWeaponCard() {
+        return equipment.getWeapon();
     }
 
     public void damage(int i) {

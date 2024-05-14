@@ -1,4 +1,4 @@
-package com.gaas.threeKingdoms.handcard.equipmentcard.armorcard;
+package com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.DomainEvent;
@@ -9,8 +9,8 @@ import java.util.List;
 /**
  * 諸葛連弩
  * */
-public class RepeatingCrossbowArmorCard extends ArmorCard {
-    public RepeatingCrossbowArmorCard(PlayCard playCard) {
+public class RepeatingCrossbowCard extends WeaponCard {
+    public RepeatingCrossbowCard(PlayCard playCard) {
         super(playCard);
     }
 
