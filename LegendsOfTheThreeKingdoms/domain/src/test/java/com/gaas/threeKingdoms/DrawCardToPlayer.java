@@ -9,10 +9,11 @@ import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.Graveyard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
-import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagrams;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
+import com.gaas.threeKingdoms.round.Round;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,8 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
-import static com.gaas.threeKingdoms.handcard.PlayCard.BH0036;
-import static com.gaas.threeKingdoms.handcard.PlayCard.BHK039;
+import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 
 public class DrawCardToPlayer {
@@ -62,7 +62,7 @@ public class DrawCardToPlayer {
         game.setPlayers(players);
         Deck deck = new Deck(new Stack());
         for (int i = 0; i < 2; i++) {
-            deck.add(Arrays.asList(new EightDiagrams(), new EightDiagrams()));
+            deck.add(Arrays.asList(new EightDiagramTactic(ES2015), new EightDiagramTactic(ES2015)));
         }
         game.setDeck(deck);
         game.setCurrentRound(new Round(player));
@@ -72,7 +72,7 @@ public class DrawCardToPlayer {
         game.drawCardToPlayer(player);
 
         //Then
-        Assertions.assertEquals(Arrays.asList(new Kill(BH0036), new EightDiagrams(), new EightDiagrams()), game.getPlayer("player-a").getHand().getCards());
+        Assertions.assertEquals(Arrays.asList(new Kill(BH0036), new EightDiagramTactic(ES2015), new EightDiagramTactic(ES2015)), game.getPlayer("player-a").getHand().getCards());
 
     }
 

@@ -1,9 +1,10 @@
-package com.gaas.threeKingdoms;
+package com.gaas.threeKingdoms.round;
 
 public enum RoundPhase {
 
     Judgement("Judgement"),
     Drawing("Drawing"),
+
     Action("Action"),
     Discard("Discard");
 

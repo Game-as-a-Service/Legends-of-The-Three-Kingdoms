@@ -27,7 +27,7 @@
         "size" : 5,
         "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039", "ES5018" ]
       },
-      "equipments" : [ "", "", "ECA066", "" ],
+      "equipments" : [ "", "", "", "ECA066" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",

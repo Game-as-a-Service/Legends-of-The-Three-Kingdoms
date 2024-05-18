@@ -5,13 +5,12 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
+import com.gaas.threeKingdoms.usecase.PlayCardUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.gaas.threeKingdoms.usecase.PlayCardUseCase;
 
 import java.util.*;
-
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
@@ -51,6 +50,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
         PeachViewModel peachViewModel = getPeachViewModel(events);
         PlayEquipmentCardViewModel playCardEquipmentViewModel = getPlayEquipmentViewModel(events);
+        AskPlayEquipmentEffectViewModel askPlayEquipmentEffectViewModel = getAskPlayEquipmentEffectViewModel(playCardDataViewModel, events);
 
         updateViewModels(
                 playCardViewModel,
@@ -68,25 +68,46 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
 
 
         for (PlayerDataViewModel viewModel : playerDataViewModels) {
+
             // 此 use case 的 data 物件
             GameDataViewModel gameDataViewModel = new GameDataViewModel(
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, playCardEvent.getGamePhase());
 
+            // 不是詢問裝備卡發動效果的目標玩家，不會看到八卦陣效果Effect
+            List<ViewModel> playerEventToViewModels = handleAskPlayEquipmentViewModelsWhenIsNotTargetPlayer(viewModel, playCardDataViewModel, askPlayEquipmentEffectViewModel);
+
             viewModels.add(new GameViewModel(
-                    eventToViewModels,
+                    playerEventToViewModels,
                     gameDataViewModel,
                     playCardEvent.getMessage(),
                     playCardEvent.getGameId(),
                     viewModel.getId()));
-
         }
     }
 
-   private void updateViewModels(ViewModel<?>... viewModels) {
-       Arrays.stream(viewModels)
-               .filter(Objects::nonNull)
-               .forEach(eventToViewModels::add);
+    // 不是詢問裝備卡發動效果的目標玩家，不會看到八卦陣效果Effect
+    private List<ViewModel> handleAskPlayEquipmentViewModelsWhenIsNotTargetPlayer(PlayerDataViewModel viewModel, PlayCardDataViewModel playCardDataViewModel, AskPlayEquipmentEffectViewModel askPlayEquipmentEffectViewModel) {
+        List<ViewModel> playerEventToViewModels = new ArrayList<>(eventToViewModels);
+        if (playCardDataViewModel.getTargetPlayerId().equals(viewModel.getId()) && askPlayEquipmentEffectViewModel != null) {
+            playerEventToViewModels.add(askPlayEquipmentEffectViewModel);
+        }
+        return playerEventToViewModels;
+    }
+
+    private AskPlayEquipmentEffectViewModel getAskPlayEquipmentEffectViewModel(PlayCardDataViewModel playCardDataViewModel, List<DomainEvent> events) {
+        return getEvent(events, AskPlayEquipmentEffectEvent.class)
+                .map(event -> {
+                    AskPlayEquipmentEffectDataViewModel askPlayEquipmentEffectDataViewModel = new AskPlayEquipmentEffectDataViewModel(event.getPlayerId(), event.getEquipmentCard().getId(), event.getEquipmentCard().getName());
+                    return new AskPlayEquipmentEffectViewModel(askPlayEquipmentEffectDataViewModel);
+                })
+                .orElse(null);
+    }
+
+    private void updateViewModels(ViewModel<?>... viewModels) {
+        Arrays.stream(viewModels)
+                .filter(Objects::nonNull)
+                .forEach(eventToViewModels::add);
     }
 
 
@@ -100,7 +121,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
     private PlayerDyingViewModel getPlayerDyingEventViewModel(List<DomainEvent> events) {
-        return getEvent(events,PlayerDyingEvent.class)
+        return getEvent(events, PlayerDyingEvent.class)
                 .map(event -> {
                     PlayerDyingDataViewModel playerDyingDataViewModel = new PlayerDyingDataViewModel(event.getPlayerId());
                     return new PlayerDyingViewModel(playerDyingDataViewModel);
@@ -110,7 +131,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
 
 
     private AskPeachViewModel getAskPeachViewModel(List<DomainEvent> events) {
-        return getEvent(events,AskPeachEvent.class)
+        return getEvent(events, AskPeachEvent.class)
                 .map(event -> {
                     AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(event.getPlayerId(), event.getDyingPlayerId());
                     return new AskPeachViewModel(askPeachDataViewModel);
@@ -119,14 +140,13 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
     private SettlementViewModel getSettlementViewModel(List<DomainEvent> events) {
-        return getEvent(events,SettlementEvent.class)
+        return getEvent(events, SettlementEvent.class)
                 .map(event -> {
                     SettlementDataViewModel settlementDataViewModel = new SettlementDataViewModel(event.getPlayerId(), event.getRole());
                     return new SettlementViewModel(settlementDataViewModel);
                 })
                 .orElse(null);
     }
-
 
 
     private GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
@@ -141,7 +161,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
     private PeachViewModel getPeachViewModel(List<DomainEvent> events) {
-        return getEvent(events,PeachEvent.class)
+        return getEvent(events, PeachEvent.class)
                 .map(event -> {
                     PeachDataViewModel peachDataViewModel = new PeachDataViewModel(event.getPlayerId(), event.getFrom(), event.getTo());
                     return new PeachViewModel(peachDataViewModel);
@@ -150,7 +170,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
     private PlayEquipmentCardViewModel getPlayEquipmentViewModel(List<DomainEvent> events) {
-        return getEvent(events,PlayEquipmentCardEvent.class)
+        return getEvent(events, PlayEquipmentCardEvent.class)
                 .map(event -> {
                     PlayEquipmentCardDataViewModel playEquipmentCardDataViewModel = new PlayEquipmentCardDataViewModel(event.getPlayerId(), event.getCardId(), event.getDeprecatedCardId());
                     return new PlayEquipmentCardViewModel(playEquipmentCardDataViewModel);
@@ -288,6 +308,24 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String cardId;
         private String deprecatedCardId;
     }
+
+
+    @Data
+    public static class AskPlayEquipmentEffectViewModel extends ViewModel<AskPlayEquipmentEffectDataViewModel> {
+        public AskPlayEquipmentEffectViewModel(AskPlayEquipmentEffectDataViewModel data) {
+            super("AskPlayEquipmentEffectEvent", data, String.format("請問要否要發動裝備卡%s的效果", data.getEquipmentCardName()));
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskPlayEquipmentEffectDataViewModel {
+        private String playerId;
+        private String equipmentCardId;
+        private String equipmentCardName;
+    }
+
 
     @Data
     @AllArgsConstructor

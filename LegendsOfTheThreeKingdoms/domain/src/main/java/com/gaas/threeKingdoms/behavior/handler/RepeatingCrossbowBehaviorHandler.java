@@ -5,7 +5,7 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.behavior.PlusMountsBehavior;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.RepeatingCrossbowArmorCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class RepeatingCrossbowBehaviorHandler extends PlayCardBehaviorHandler {
     protected boolean match(String playerId, String cardId, List<String> targetPlayerId, String playType) {
         Player player = getPlayer(playerId);
         Optional<HandCard> card = getCard(cardId, player);
-        return card.filter(handCard -> handCard instanceof RepeatingCrossbowArmorCard).isPresent();
+        return card.filter(handCard -> handCard instanceof RepeatingCrossbowCard).isPresent();
     }
 
     @Override

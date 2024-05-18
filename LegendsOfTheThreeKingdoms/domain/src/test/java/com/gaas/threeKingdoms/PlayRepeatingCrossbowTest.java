@@ -7,10 +7,11 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.RepeatingCrossbowArmorCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
+import com.gaas.threeKingdoms.round.Round;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +49,7 @@ public class PlayRepeatingCrossbowTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RepeatingCrossbowArmorCard(ECA066)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RepeatingCrossbowCard(ECA066)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -90,7 +91,7 @@ public class PlayRepeatingCrossbowTest {
         game.playerPlayCard(playerA.getId(), ECA066.getCardId(), playerA.getId(), "active");
 
         //Then
-        assertEquals(ECA066.getCardId(), game.getPlayer("player-a").getEquipmentArmorCard().getId());
+        assertEquals(ECA066.getCardId(), game.getPlayer("player-a").getRquipmentWeaponCard().getId());
     }
 
     @DisplayName("""
@@ -115,7 +116,7 @@ public class PlayRepeatingCrossbowTest {
         Game game = new Game();
 
         Equipment equipment = new Equipment();
-        equipment.setArmor(new RepeatingCrossbowArmorCard(ECA066));
+        equipment.setWeapon(new RepeatingCrossbowCard(ECA066));
 
         Player playerA = PlayerBuilder
                 .construct()
@@ -168,6 +169,8 @@ public class PlayRepeatingCrossbowTest {
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active");
         game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
+        assertEquals("player-a", game.getActivePlayer().getId());
+
         game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerD.getId(), "active");
         game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
 
@@ -197,7 +200,7 @@ public class PlayRepeatingCrossbowTest {
         Game game = new Game();
 
         Equipment equipment = new Equipment();
-        equipment.setArmor(new RepeatingCrossbowArmorCard(ECA066));
+        equipment.setWeapon(new RepeatingCrossbowCard(ECA066));
 
         Player playerA = PlayerBuilder
                 .construct()

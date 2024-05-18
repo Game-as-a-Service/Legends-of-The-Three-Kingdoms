@@ -1,8 +1,8 @@
-package com.gaas.threeKingdoms;
+package com.gaas.threeKingdoms.round;
 
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
-import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.RepeatingCrossbowArmorCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.Data;
 
@@ -17,17 +17,19 @@ public class Round {
     private Player dyingPlayer;
     private HandCard currentPlayCard;
     private boolean isShowKill;
+    private Stage stage;
 
     public Round (Player currentRoundPlayer) {
         this.roundPhase = RoundPhase.Judgement;
         this.currentRoundPlayer = currentRoundPlayer;
+        this.stage = Stage.Normal;
     }
     public boolean isPlayedValidCard(String cardId) {
         Optional<HandCard> handCardOptional = currentRoundPlayer.getHand().getCard(cardId);
         if (handCardOptional.isEmpty()) return false;
 
         HandCard handCard = handCardOptional.get();
-        if (handCard instanceof Kill &&  currentRoundPlayer.getEquipmentArmorCard() instanceof RepeatingCrossbowArmorCard) {
+        if (handCard instanceof Kill && currentRoundPlayer.getRquipmentWeaponCard() instanceof RepeatingCrossbowCard) {
             isShowKill = false;
         } else if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");

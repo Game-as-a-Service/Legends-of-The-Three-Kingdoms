@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaas.threeKingdoms.controller.dto.UseEquipmentRequest;
 import com.gaas.threeKingdoms.presenter.*;
 import com.gaas.threeKingdoms.usecase.StartGameUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,6 +135,19 @@ public class WebSocketBroadCast {
             }
         } catch (Exception e) {
             System.err.println("****************** pushDiscardCardEvent ");
+            e.printStackTrace();
+        }
+    }
+
+    public void pushEquipmentEffectEvent(UseEquipmentEffectPresenter presenter) {
+        List<UseEquipmentEffectPresenter.GameViewModel> useEquipmentViewModels = presenter.present();
+        try {
+            for (UseEquipmentEffectPresenter.GameViewModel useEquipmentViewModel : useEquipmentViewModels) {
+                String playerCardJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(useEquipmentViewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", useEquipmentViewModel.getGameId(), useEquipmentViewModel.getPlayerId()), playerCardJson);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushEquipmentEffectEvent ");
             e.printStackTrace();
         }
     }

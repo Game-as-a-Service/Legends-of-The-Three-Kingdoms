@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.presenter.common;
 
+import com.gaas.threeKingdoms.events.DomainEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -47,6 +47,10 @@ public abstract class Behavior {
         return isOneRound;
     }
 
+    public void setIsOneRound(boolean isOneRound) {
+        this.isOneRound = isOneRound;
+    }
+
     public boolean isTargetPlayerNeedToResponse() {
         return isTargetPlayerNeedToResponse;
     }

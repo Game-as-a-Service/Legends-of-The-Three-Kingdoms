@@ -1,7 +1,7 @@
 package com.gaas.threeKingdoms.e2e;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.Round;
+import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
