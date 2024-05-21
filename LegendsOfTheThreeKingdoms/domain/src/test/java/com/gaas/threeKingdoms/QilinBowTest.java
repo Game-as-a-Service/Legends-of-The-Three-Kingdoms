@@ -21,14 +21,14 @@ import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.EffectEvent;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class QilinBowTest {
 
@@ -226,7 +226,7 @@ public class QilinBowTest {
 
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
-                .withBloodCard(new BloodCard(4))
+                .withBloodCard(new BloodCard(3))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.TRAITOR))
@@ -235,7 +235,7 @@ public class QilinBowTest {
                 .build();
 
         Player playerE = PlayerBuilder.construct()
-                .withId("player-d")
+                .withId("player-e")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
@@ -245,7 +245,7 @@ public class QilinBowTest {
                 .build();
 
         Player playerF = PlayerBuilder.construct()
-                .withId("player-d")
+                .withId("player-f")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
@@ -255,7 +255,7 @@ public class QilinBowTest {
                 .build();
 
         Player playerG = PlayerBuilder.construct()
-                .withId("player-d")
+                .withId("player-g")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
@@ -265,7 +265,7 @@ public class QilinBowTest {
                 .build();
 
         List<Player> players = asList(
-                playerA, playerB, playerC, playerD);
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
         game.setPlayers(players);
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerA));
@@ -397,7 +397,7 @@ public class QilinBowTest {
         Game game = new Game();
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(ES2002)
+                        new RedRabbitHorse(BH3029)
                 )
         );
         game.setDeck(deck);
@@ -419,7 +419,7 @@ public class QilinBowTest {
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
-                .withBloodCard(new BloodCard(4))
+                .withBloodCard(new BloodCard(3))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
@@ -455,9 +455,12 @@ public class QilinBowTest {
 
         //When
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), EC2067.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
 
         //Then
-        assertEquals(EH5031.getCardId(), game.getPlayer("player-a").getEquipmentWeaponCard().getId());
+        assertTrue(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
+        assertEquals(3, game.getPlayer("player-b").getHP());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
     }
 
     @DisplayName("""
@@ -478,7 +481,7 @@ public class QilinBowTest {
     public void givenPlayerATurn_PlayerAHasQilinBow_PlayerBHpIs3_PlayerBHasDodge_WhenPlayerAAttacksPlayerB_PlayerBPlaysDodge_ThenPlayerBHpIs3() {
         Game game = new Game();
         Equipment equipment = new Equipment();
-        equipment.setWeapon(new RepeatingCrossbowCard(ECA066));
+        equipment.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -528,9 +531,11 @@ public class QilinBowTest {
         game.setCurrentRound(new Round(playerA));
 
         //When
-        game.playerPlayCard(playerA.getId(), EH5031.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
         //Then
-        assertEquals(EH5031.getCardId(), game.getPlayer("player-a").getEquipmentWeaponCard().getId());
+        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
     }
 }

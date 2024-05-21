@@ -74,11 +74,33 @@ public class Player {
     }
 
     public int judgeEscapeDistance() {
-        return 0;
+        PlusMountsCard plusOne = equipment.getPlusOne();
+        if (plusOne == null) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     public int judgeAttackDistance() {
-        return 1;
+        int weaponDis = getWeaponDistance();
+        int minusOne = getMinusOneDistance();
+        return weaponDis + minusOne + 1; // 初始攻擊距離 1
+    }
+
+    private int getWeaponDistance() {
+        if (getEquipmentWeaponCard() == null) return 0;
+        WeaponCard weaponCard = equipment.getWeapon();
+        return weaponCard.getWeaponDistance();
+    }
+
+    private int getMinusOneDistance() {
+        MinusMountsCard minusOne = equipment.getMinusOne();
+        if (minusOne == null) {
+            return 0;
+        } else {
+            return 1; // 我打別人的攻擊距離
+        }
     }
 
     public boolean hasAnyDelayScrollCard() {

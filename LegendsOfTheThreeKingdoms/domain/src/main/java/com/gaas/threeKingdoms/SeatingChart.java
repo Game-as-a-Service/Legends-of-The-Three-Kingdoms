@@ -24,43 +24,10 @@ public class SeatingChart {
         int seat2 = players.indexOf(targetPlayer);
 
         int totalSeats = players.size();
-        int equipmentDistance = getEquipmentDistance(player,targetPlayer);
         int distanceClockwise = (seat2 - seat1 + totalSeats) % totalSeats;
         int distanceCounterClockwise = (seat1 - seat2 + totalSeats) % totalSeats;
         // Return the shorter distance of clockwise and counterclockwise
-        return Math.min(distanceClockwise, distanceCounterClockwise) +  equipmentDistance;
-    }
-
-    private int getEquipmentDistance(Player player,Player targetPlayer) {
-        int minusCount = getMinusOneDistance(player);
-        int plusCount = getPlusDistance(targetPlayer);
-        int armorCount = getWeaponDistance(player);
-        return minusCount + plusCount + armorCount;
-    }
-
-    private int getWeaponDistance(Player player) {
-        if (player.getEquipment() == null) return 0;
-        WeaponCard weaponCard = player.getEquipment().getWeapon();
-        return weaponCard.getWeaponDistance();
-    }
-
-    private int getMinusOneDistance(Player player) {
-        if (player.getEquipment() == null) return 0;
-        MinusMountsCard minusOne = player.getEquipment().getMinusOne();
-        if (minusOne == null) {
-            return 0;
-        } else {
-            return -1;
-        }
-    }
-    private int getPlusDistance(Player player) {
-        if (player.getEquipment() == null) return 0;
-        PlusMountsCard plusOne = player.getEquipment().getPlusOne();
-        if (plusOne == null) {
-            return 0;
-        } else {
-            return 1;
-        }
+        return Math.min(distanceClockwise, distanceCounterClockwise);
     }
 
     public Player getNextPlayer(Player player) {
