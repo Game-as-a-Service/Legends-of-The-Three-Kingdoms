@@ -43,17 +43,16 @@ public class Game {
 
     public Game(String gameId, List<Player> players) {
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null, this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(null, this), this), this), this), this), this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null, this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(null, this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
     }
-
 
     public String getMonarchPlayerId() {
         return players.stream()

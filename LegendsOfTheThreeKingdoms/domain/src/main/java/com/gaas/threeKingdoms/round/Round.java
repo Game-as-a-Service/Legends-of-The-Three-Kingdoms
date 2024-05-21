@@ -29,7 +29,7 @@ public class Round {
         if (handCardOptional.isEmpty()) return false;
 
         HandCard handCard = handCardOptional.get();
-        if (handCard instanceof Kill && currentRoundPlayer.getRquipmentWeaponCard() instanceof RepeatingCrossbowCard) {
+        if (handCard instanceof Kill && currentRoundPlayer.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard) {
             isShowKill = false;
         } else if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");

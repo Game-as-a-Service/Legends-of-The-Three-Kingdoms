@@ -3,9 +3,9 @@ package com.gaas.threeKingdoms.behavior.handler;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.behavior.PlusMountsBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.EquipWeaponBehavior;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
@@ -13,9 +13,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class RepeatingCrossbowBehaviorHandler extends PlayCardBehaviorHandler {
+public class EquipWeaponBehaviorHandler extends PlayCardBehaviorHandler {
 
-    public RepeatingCrossbowBehaviorHandler(PlayCardBehaviorHandler next, Game game) {
+    public EquipWeaponBehaviorHandler(PlayCardBehaviorHandler next, Game game) {
         super(next, game);
     }
 
@@ -23,7 +23,7 @@ public class RepeatingCrossbowBehaviorHandler extends PlayCardBehaviorHandler {
     protected boolean match(String playerId, String cardId, List<String> targetPlayerId, String playType) {
         Player player = getPlayer(playerId);
         Optional<HandCard> card = getCard(cardId, player);
-        return card.filter(handCard -> handCard instanceof RepeatingCrossbowCard).isPresent();
+        return card.filter(handCard -> handCard instanceof WeaponCard).isPresent();
     }
 
     @Override
@@ -36,6 +36,6 @@ public class RepeatingCrossbowBehaviorHandler extends PlayCardBehaviorHandler {
 
         HandCard card = player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
 
-        return new PlusMountsBehavior(game, player, players, player, cardId, playType, card);
+        return new EquipWeaponBehavior(game, player, players, player, cardId, playType, card);
     }
 }

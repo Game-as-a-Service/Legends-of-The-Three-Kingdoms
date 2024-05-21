@@ -7,11 +7,12 @@ import com.gaas.threeKingdoms.handcard.PlayCard;
 import java.util.List;
 
 /**
- * 諸葛連弩
+ * 麒麟弓
  * */
-public class RepeatingCrossbowCard extends WeaponCard {
-    public RepeatingCrossbowCard(PlayCard playCard) {
-        super(playCard, 1);
+public class QilinBowCard extends WeaponCard {
+
+    public QilinBowCard(PlayCard playCard) {
+        super(playCard, 5);
     }
 
     @Override

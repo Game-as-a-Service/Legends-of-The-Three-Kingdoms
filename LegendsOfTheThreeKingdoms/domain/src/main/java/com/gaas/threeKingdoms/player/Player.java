@@ -61,7 +61,7 @@ public class Player {
         return equipment.getArmor();
     }
 
-    public WeaponCard getRquipmentWeaponCard() {
+    public WeaponCard getEquipmentWeaponCard() {
         return equipment.getWeapon();
     }
 

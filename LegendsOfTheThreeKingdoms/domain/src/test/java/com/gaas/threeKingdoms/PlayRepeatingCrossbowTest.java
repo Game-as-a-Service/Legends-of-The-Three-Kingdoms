@@ -91,7 +91,7 @@ public class PlayRepeatingCrossbowTest {
         game.playerPlayCard(playerA.getId(), ECA066.getCardId(), playerA.getId(), "active");
 
         //Then
-        assertEquals(ECA066.getCardId(), game.getPlayer("player-a").getRquipmentWeaponCard().getId());
+        assertEquals(ECA066.getCardId(), game.getPlayer("player-a").getEquipmentWeaponCard().getId());
     }
 
     @DisplayName("""

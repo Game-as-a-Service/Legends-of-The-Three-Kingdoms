@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
@@ -33,7 +34,14 @@ public class SeatingChart {
     private int getEquipmentDistance(Player player,Player targetPlayer) {
         int minusCount = getMinusOneDistance(player);
         int plusCount = getPlusDistance(targetPlayer);
-        return minusCount + plusCount;
+        int armorCount = getWeaponDistance(player);
+        return minusCount + plusCount + armorCount;
+    }
+
+    private int getWeaponDistance(Player player) {
+        if (player.getEquipment() == null) return 0;
+        WeaponCard weaponCard = player.getEquipment().getWeapon();
+        return weaponCard.getWeaponDistance();
     }
 
     private int getMinusOneDistance(Player player) {
