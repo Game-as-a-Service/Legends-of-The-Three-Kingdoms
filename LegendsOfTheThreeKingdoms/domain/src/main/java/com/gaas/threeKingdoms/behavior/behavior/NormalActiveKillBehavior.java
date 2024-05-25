@@ -1,13 +1,15 @@
 package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
@@ -17,17 +19,10 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
 
 
 public class NormalActiveKillBehavior extends Behavior {
-    private boolean hadUsedEightDiagramTactic;
 
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
     }
-
-
-//    @Override
-//    public List<DomainEvent> askTargetPlayerPlayCard() {
-//       return askTargetPlayerPlayCard(true);
-//    }
 
     @Override
     public List<DomainEvent> askTargetPlayerPlayCard() {
@@ -60,10 +55,23 @@ public class NormalActiveKillBehavior extends Behavior {
         int originalHp = damagedPlayer.getHP();
 
         if (isSkip(playType)) {
-            card.effect(damagedPlayer);
             Round currentRound = game.getCurrentRound();
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
+
+            // 麒麟弓要先發動效果，待麒麟弓效果發動後再扣血
+            if (isAskPlayerUseQilinBow(behaviorPlayer, damagedPlayer)) {
+                isOneRound = false;
+                currentRound.setActivePlayer(behaviorPlayer);
+                currentRound.setStage(Stage.Wait_Equipment_Effect);
+                RoundEvent roundEvent = new RoundEvent(currentRound);
+                EquipmentCard equipmentCard = behaviorPlayer.getEquipmentWeaponCard();
+                AskPlayEquipmentEffectEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(playerId, equipmentCard);
+                PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+                return List.of(playCardEvent, askPlayEquipmentEffectEvent);
+            }
+
             PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
+            card.effect(damagedPlayer);
 
             if (isPlayerStillAlive(damagedPlayer)) {
                 currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
@@ -108,8 +116,12 @@ public class NormalActiveKillBehavior extends Behavior {
 //        }
         else {
             //TODO:怕有其他效果或殺的其他case
-           return  new ArrayList<>();
+            return new ArrayList<>();
         }
+    }
+
+    private boolean isAskPlayerUseQilinBow(Player attackPlayer, Player damagedPlayer) {
+        return attackPlayer.getEquipmentWeaponCard() instanceof QilinBowCard && damagedPlayer.hasMountsCard();
     }
 
     private boolean isPlayerStillAlive(Player damagedPlayer) {

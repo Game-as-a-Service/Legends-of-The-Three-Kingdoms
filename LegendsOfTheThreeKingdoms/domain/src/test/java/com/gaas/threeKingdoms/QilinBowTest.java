@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
+import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.exception.DistanceErrorException;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
@@ -538,4 +539,668 @@ public class QilinBowTest {
         assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
         assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
     }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A已裝備麒麟弓
+        D玩家HP 3
+        D玩家距離A玩家3
+        D玩家有裝備赤兔馬
+        A攻擊D
+        
+        When
+        D 沒有出閃
+        
+        Then
+        系統詢問是否發動裝備卡效果
+    """)
+    @Test
+    public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorse_WhenPlayerAAttacksPlayerD_PlayerDNotPlayDodge_ThenSystemAskToTriggerEquipmentEffect() {
+        Game game = new Game();
+        Equipment equipmentA= new Equipment();
+        equipmentA.setWeapon(new QilinBowCard(EH5031));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipmentA)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Equipment equipmentD= new Equipment();
+        equipmentD.setMinusOne(new RedRabbitHorse(EH5044));
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(equipmentD)
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerG = PlayerBuilder.construct()
+                .withId("player-g")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerD.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
+
+        //Then
+        assertTrue(events.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+    }
+
+    @DisplayName("""
+       Given
+       A的回合
+       A已裝備麒麟弓
+       D玩家HP 3
+       D玩家距離A玩家3
+       D玩家沒有坐騎
+       A攻擊D
+       
+       When
+       D 沒有出閃
+       
+       Then
+       系統不會詢問是否發動裝備卡效果
+       D HP 2
+    """)
+    @Test
+    public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDNoMount_WhenPlayerAAttacksPlayerD_PlayerDNotPlayDodge_ThenSystemNotAskToTriggerEquipmentEffect_PlayerDHP2() {
+        Game game = new Game();
+        Equipment equipment = new Equipment();
+        equipment.setWeapon(new QilinBowCard(EH5031));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerG = PlayerBuilder.construct()
+                .withId("player-g")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerD.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
+
+        //Then
+        assertFalse(events.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+        assertEquals(2, game.getPlayer("player-d").getBloodCard().getHp());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A已裝備麒麟弓
+        D玩家HP 3
+        D玩家距離A玩家3
+        D玩家有赤兔馬
+        A攻擊D
+        D 沒有出閃
+        系統詢問是否發動裝備卡效果
+        
+        When
+        A決定不發動效果
+        
+        Then
+        殺攻擊到D
+        D HP 2
+    """)
+    @Test
+    public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorse_PlayerDNotPlayDodge_SystemAskToTriggerEquipmentEffect_WhenPlayerADecidesNotToTriggerEffect_ThenAttackHitsPlayerD_PlayerDHP2() {
+        Game game = new Game();
+        Equipment equipment = new Equipment();
+        equipment.setWeapon(new QilinBowCard(EH5031));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Equipment equipmentD= new Equipment();
+        equipmentD.setMinusOne(new RedRabbitHorse(EH5044));
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(equipmentD)
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerG = PlayerBuilder.construct()
+                .withId("player-g")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerD.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
+        List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+
+        //Then
+        assertEquals(2, game.getPlayer("player-d").getBloodCard().getHp());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A已裝備麒麟弓
+        D玩家HP 3
+        D玩家距離A玩家3
+        D玩家有赤兔馬
+        A攻擊D
+        D 沒有出閃
+        
+        When
+        A決定發動效果
+        
+        Then
+        D 的赤兔馬已棄置
+        殺成功， D HP 2
+    """)
+    @Test
+    public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorse_PlayerDNotPlayDodge_WhenPlayerADecidesToTriggerEffect_ThenPlayerDRedRabbitHorseDiscarded_AttackHitsPlayerD_PlayerDHP2() {
+        Game game = new Game();
+        Equipment equipment = new Equipment();
+        equipment.setWeapon(new QilinBowCard(EH5031));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Equipment equipmentD= new Equipment();
+        equipmentD.setMinusOne(new RedRabbitHorse(EH5044));
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(equipmentD)
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerG = PlayerBuilder.construct()
+                .withId("player-g")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerD.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
+        List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
+
+        //Then
+        assertEquals(2, game.getPlayer("player-d").getBloodCard().getHp());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A已裝備麒麟弓
+        D玩家HP 3
+        D玩家距離A玩家3
+        D玩家有赤兔馬 與 絕影
+        A攻擊D
+        D 沒有出閃
+        系統詢問是否發動裝備卡效果
+        
+        When
+        A決定發動效果
+        
+        Then
+        收到已推給被攻擊者的馬 的event
+    """)
+    @Test
+    public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorseAndShadowRunner_PlayerDNotPlayDodge_SystemAskToTriggerEquipmentEffect_WhenPlayerADecidesToTriggerEffect_ThenEventTriggeredForDiscardingAttackedPlayerMounts() {
+        Game game = new Game();
+        Equipment equipment = new Equipment();
+        equipment.setWeapon(new QilinBowCard(EH5031));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerG = PlayerBuilder.construct()
+                .withId("player-g")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        //Then
+        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A已裝備麒麟弓
+        D玩家HP 3
+        D玩家距離A玩家3
+        D玩家有赤兔馬 與 決影
+        A攻擊D
+        D 沒有出閃
+        系統詢問是否發動裝備卡效果
+        A決定發動效果
+        A玩家收到D玩家有赤兔馬與決影的event
+        
+        When
+        A選擇指定的馬 赤兔馬
+        
+        Then
+        D玩家 HP 2
+        D玩家有 決影 沒有赤兔馬
+    """)
+    @Test
+    public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorseAndShadowRunner_PlayerDNotPlayDodge_SystemAskToTriggerEquipmentEffect_PlayerAReceivesEventPlayerDEquippedRedRabbitHorseAndShadowRunner_WhenPlayerASelectsRedRabbitHorse_ThenPlayerDHP2_PlayerDHasShadowRunnerNoRedRabbitHorse() {
+        Game game = new Game();
+        Equipment equipment = new Equipment();
+        equipment.setWeapon(new QilinBowCard(EH5031));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerG = PlayerBuilder.construct()
+                .withId("player-g")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        //Then
+        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
 }

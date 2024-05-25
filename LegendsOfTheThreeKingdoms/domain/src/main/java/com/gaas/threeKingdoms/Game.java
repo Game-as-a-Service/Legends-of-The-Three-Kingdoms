@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
 import com.gaas.threeKingdoms.effect.EquipmentEffectHandler;
+import com.gaas.threeKingdoms.effect.QilinBowEquipmentEffectHandler;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -51,7 +52,7 @@ public class Game {
 
     public Game() {
         playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(null, this), this), this), this), this), this), this);
-        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
+        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
     public String getMonarchPlayerId() {
@@ -236,16 +237,13 @@ public class Game {
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
-//            List<DomainEvent> effectEvents = Optional.ofNullable(effectHandler.handle(playerId,cardId, targetPlayerId, PlayType.getPlayType(playType))).orElse(new ArrayList<>());
             List<DomainEvent> acceptedEvent = behavior.acceptedTargetPlayerPlayCard(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
             if (behavior.isOneRound()) {
                 topBehavior.pop();
-//                currentRound.setActivePlayer(null);
             } else {
                 // 把新打出的牌加到 stack ，如果是使用裝備卡則不會放入
                 updateTopBehavior(playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType));
             }
-//            effectEvents.addAll(acceptedEvent);
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);

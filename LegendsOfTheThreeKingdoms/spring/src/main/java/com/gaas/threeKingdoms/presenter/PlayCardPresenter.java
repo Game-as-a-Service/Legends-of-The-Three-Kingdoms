@@ -60,12 +60,12 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                 peachViewModel,
                 settlementViewModel,
                 gameOverViewModel,
-                playCardEquipmentViewModel
+                playCardEquipmentViewModel,
+                askPlayEquipmentEffectViewModel
         );
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
-
 
         for (PlayerDataViewModel viewModel : playerDataViewModels) {
 
@@ -74,25 +74,13 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, playCardEvent.getGamePhase());
 
-            // 不是詢問裝備卡發動效果的目標玩家，不會看到八卦陣效果Effect
-            List<ViewModel> playerEventToViewModels = handleAskPlayEquipmentViewModelsWhenIsNotTargetPlayer(viewModel, playCardDataViewModel, askPlayEquipmentEffectViewModel);
-
             viewModels.add(new GameViewModel(
-                    playerEventToViewModels,
+                    eventToViewModels,
                     gameDataViewModel,
                     playCardEvent.getMessage(),
                     playCardEvent.getGameId(),
                     viewModel.getId()));
         }
-    }
-
-    // 不是詢問裝備卡發動效果的目標玩家，不會看到八卦陣效果Effect
-    private List<ViewModel> handleAskPlayEquipmentViewModelsWhenIsNotTargetPlayer(PlayerDataViewModel viewModel, PlayCardDataViewModel playCardDataViewModel, AskPlayEquipmentEffectViewModel askPlayEquipmentEffectViewModel) {
-        List<ViewModel> playerEventToViewModels = new ArrayList<>(eventToViewModels);
-        if (playCardDataViewModel.getTargetPlayerId().equals(viewModel.getId()) && askPlayEquipmentEffectViewModel != null) {
-            playerEventToViewModels.add(askPlayEquipmentEffectViewModel);
-        }
-        return playerEventToViewModels;
     }
 
     private AskPlayEquipmentEffectViewModel getAskPlayEquipmentEffectViewModel(PlayCardDataViewModel playCardDataViewModel, List<DomainEvent> events) {
