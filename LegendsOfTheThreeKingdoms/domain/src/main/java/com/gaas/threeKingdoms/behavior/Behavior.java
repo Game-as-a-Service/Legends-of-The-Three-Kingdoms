@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public abstract class Behavior {
     protected Game game;
+    @Getter
     protected Player behaviorPlayer;
     @Getter
     protected List<String> reactionPlayers;

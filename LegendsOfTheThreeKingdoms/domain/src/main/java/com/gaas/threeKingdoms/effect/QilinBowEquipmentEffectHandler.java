@@ -1,21 +1,22 @@
 package com.gaas.threeKingdoms.effect;
+
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
-import com.gaas.threeKingdoms.behavior.Behavior;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class QilinBowEquipmentEffectHandler  extends EquipmentEffectHandler {
+public class QilinBowEquipmentEffectHandler extends EquipmentEffectHandler {
 
     public QilinBowEquipmentEffectHandler(EquipmentEffectHandler next, Game game) {
         super(next, game);
@@ -30,15 +31,52 @@ public class QilinBowEquipmentEffectHandler  extends EquipmentEffectHandler {
 
     @Override
     protected List<DomainEvent> doHandle(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
+        List<DomainEvent> events = new ArrayList<>();
         Round currentRound = game.getCurrentRound();
         Stage currentStage = currentRound.getStage();
         if (!currentStage.equals(Stage.Wait_Equipment_Effect)) {
             throw new IllegalStateException(String.format("CurrentRound stage not Wait_Equipment_Effect but [%s]", currentStage));
         }
-        currentRound.setStage(Stage.Normal);
-
         if (skipEquipmentEffect(playType)) {
+            Behavior behavior = game.peekTopBehavior();
+            Player damagedPlayer = game.getPlayer(behavior.getReactionPlayers().get(0));
+            HandCard card = behavior.getCard(); // Kill
+            int originalHp = damagedPlayer.getHP();
+            card.effect(damagedPlayer);
+            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
+            RoundEvent roundEvent;
+            if (isPlayerStillAlive(damagedPlayer)) {
+                currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+                roundEvent = new RoundEvent(currentRound);
+                behavior.setIsOneRound(true);
+                events.add(playerDamagedEvent);
+            } else {
+                PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
+                AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
+                game.enterPhase(new GeneralDying(game));
+                currentRound.setDyingPlayer(damagedPlayer);
+                currentRound.setActivePlayer(damagedPlayer);
+                roundEvent = new RoundEvent(currentRound);
+                behavior.setIsOneRound(false);
+                events.addAll(List.of(playerDamagedEvent, playerDyingEvent, askPeachEvent));
+            }
+            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
+            GameStatusEvent gameStatusEvent = new GameStatusEvent(game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+            events.add(gameStatusEvent);
+            return events;
+        }
+        Player player = getPlayer(playerId);
+        WeaponCard weaponCard = player.getEquipment().getWeapon();
+        events = weaponCard.equipmentEffect(game);
 
+//        //這時候 TopBehavior 應該是 NormalActiveKill
+//        game.peekTopBehavior().setIsOneRound(true);
+        return events;
+
+    }
+
+    private List<DomainEvent> getPlayerDamagedEvent(EquipmentPlayType playType, Round currentRound) {
+        if (skipEquipmentEffect(playType)) {
             Behavior behavior = game.peekTopBehavior();
             Player damagedPlayer = game.getPlayer(behavior.getReactionPlayers().get(0));
             HandCard card = behavior.getCard(); // Kill
@@ -58,17 +96,10 @@ public class QilinBowEquipmentEffectHandler  extends EquipmentEffectHandler {
                 currentRound.setActivePlayer(damagedPlayer);
                 RoundEvent roundEvent = new RoundEvent(currentRound);
                 behavior.setIsOneRound(false);
-                return List.of(playerDamagedEvent, playerDyingEvent, askPeachEvent);
+                return List.of(playerDamagedEvent, playerDyingEvent, askPeachEvent, roundEvent);
             }
         }
-        Player player = getPlayer(playerId);
-        WeaponCard weaponCard = player.getEquipment().getWeapon();
-
-        List<DomainEvent> domainEvents = weaponCard.equipmentEffect(game);
-
-        //這時候 TopBehavior 應該是 NormalActiveKill
-        game.peekTopBehavior().setIsOneRound(true);
-        return domainEvents;
+        return null;
     }
 
     private boolean isPlayerStillAlive(Player damagedPlayer) {

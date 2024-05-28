@@ -61,6 +61,24 @@ public class Player {
         return equipment.getMinusOne() != null || equipment.getPlusOne() != null;
     }
 
+    public boolean onlyHasOneMount() {
+        PlusMountsCard plusOne = equipment.getPlusOne();
+        MinusMountsCard minusOne = equipment.getMinusOne();
+        return (plusOne == null && minusOne != null) || (plusOne != null && minusOne == null);
+    }
+
+    public String removeOneMount() {
+        PlusMountsCard plusOne = equipment.getPlusOne();
+        MinusMountsCard minusOne = equipment.getMinusOne();
+        if (plusOne != null) {
+            equipment.setPlusOne(null);
+            return plusOne.getId();
+        } else {
+            equipment.setMinusOne(null);
+            return minusOne.getId();
+        }
+    }
+
     public ArmorCard getEquipmentArmorCard() {
         return equipment.getArmor();
     }

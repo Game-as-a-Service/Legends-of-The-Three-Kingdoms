@@ -58,7 +58,7 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
 
     public static class UseEquipmentEffectViewModel extends ViewModel<UseEquipmentEffectDataViewModel> {
         public UseEquipmentEffectViewModel(UseEquipmentEffectDataViewModel data) {
-            super("UseEquipmentEffectViewModel", data,"發動效果");
+            super("UseEquipmentEffectViewModel", data, String.format("發動效果 %s", data.isSuccess ? "成功" : "失敗"));
         }
     }
 
