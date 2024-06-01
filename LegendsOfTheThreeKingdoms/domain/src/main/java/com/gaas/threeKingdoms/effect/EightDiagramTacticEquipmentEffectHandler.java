@@ -50,6 +50,9 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
                 .allMatch(EffectEvent::isSuccess);
 
         game.peekTopBehavior().setIsOneRound(isEightDiagramTacticEffectSuccess);
+        if (isEightDiagramTacticEffectSuccess) {
+            game.removeTopBehavior();
+        }
         return domainEvents;
     }
 

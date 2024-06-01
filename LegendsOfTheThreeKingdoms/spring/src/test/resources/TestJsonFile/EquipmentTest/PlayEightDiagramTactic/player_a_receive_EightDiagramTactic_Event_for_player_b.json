@@ -27,8 +27,8 @@
       "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
-        "cardIds" : [ "BH3029", "BH4030", "BH2028" ]
+        "size" : 4,
+        "cardIds" : [ "BH3029", "BH4030", "BH2028", "ECA066" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]

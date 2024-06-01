@@ -605,4 +605,7 @@ public class EightDiagramTacticTest {
 
         assertThrows(IllegalStateException.class, () -> game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE));
     }
+
+
+
 }

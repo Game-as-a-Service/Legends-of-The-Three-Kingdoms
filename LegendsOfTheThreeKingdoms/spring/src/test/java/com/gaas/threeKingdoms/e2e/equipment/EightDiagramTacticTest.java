@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
@@ -115,6 +116,41 @@ public class EightDiagramTacticTest {
 
         //全部人收到 八卦陣效果抽到赤兔馬 (♥5) 的 Event ，並且效果成功
         whenPlayerAUseEightDiagramTacticAndSuccess();
+
+        //B 玩家在裝備諸葛連弩
+        whenPlayerBEquipRepeatingCrossbow();
+    }
+
+    @Test
+    private void whenPlayerBEquipRepeatingCrossbow() throws Exception {
+        // When B 玩家裝備諸葛連弩
+        String currentPlayer = "player-b";
+        String targetPlayerId = "player-b";
+        String playedCardId = "ECA066";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
+                .andExpect(status().isOk()).andReturn();
+
+        //Then B裝備有諸葛連弩
+        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_b_use_repeating_crossbow_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForA);
+
+        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_b_use_repeating_crossbow_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+
+        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_b_use_repeating_crossbow_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForC);
+
+        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_b_use_repeating_crossbow_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
     @Test
@@ -278,7 +314,7 @@ public class EightDiagramTacticTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
-                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RepeatingCrossbowCard(ECA066)
         );
 
         Player playerC = createPlayer(
@@ -324,7 +360,7 @@ public class EightDiagramTacticTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
-                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RepeatingCrossbowCard(ECA066)
         );
 
         Player playerC = createPlayer(

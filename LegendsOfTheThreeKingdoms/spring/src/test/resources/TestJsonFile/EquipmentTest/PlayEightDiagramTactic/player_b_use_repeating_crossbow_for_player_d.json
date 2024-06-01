@@ -2,20 +2,20 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
+      "playerId" : "player-b",
       "targetPlayerId" : "player-b",
-      "cardId" : "BH2028",
-      "playType" : "inactive"
+      "cardId" : "ECA066",
+      "playType" : "active"
     },
     "message" : "出牌"
   }, {
-    "event" : "PlayerDamagedEvent",
+    "event" : "PlayEquipmentEvent",
     "data" : {
-      "playerId" : "player-a",
-      "from" : 4,
-      "to" : 4
+      "playerId" : "player-b",
+      "cardId" : "ECA066",
+      "deprecatedCardId" : ""
     },
-    "message" : "扣血"
+    "message" : "玩家出裝備卡"
   } ],
   "data" : {
     "seats" : [ {
@@ -24,7 +24,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "ES2015", "" ],
@@ -35,30 +35,30 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 3,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "", "" ],
+      "equipments" : [ "", "", "", "ECA066" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU001",
-      "roleId" : "Rebel",
-      "hp" : 4,
-      "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
-      },
-      "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ ]
-    }, {
-      "id" : "player-d",
       "generalId" : "SHU001",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "Traitor",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -74,5 +74,5 @@
   },
   "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-c"
+  "playerId" : "player-d"
 }
