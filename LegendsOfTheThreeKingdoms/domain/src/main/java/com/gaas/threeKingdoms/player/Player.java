@@ -1,8 +1,11 @@
 package com.gaas.threeKingdoms.player;
 
 
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.RemoveHorseEvent;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
@@ -79,6 +82,21 @@ public class Player {
         }
     }
 
+    public DomainEvent removeMountsCard(String playerId, String cardId) {
+        EquipmentCard plusOne = equipment.getPlusOne();
+        EquipmentCard minusOne = equipment.getMinusOne();
+        if (plusOne.getId().equals(cardId)) {
+            equipment.setPlusOne(null);
+        } else if (minusOne.getId().equals(cardId)) {
+            equipment.setMinusOne(null);
+        }
+        return new RemoveHorseEvent("RemoveHorseEvent",
+                String.format("%s 玩家 已被%s 移除 %s 卡", id, playerId, cardId),
+                id,
+                cardId);
+    }
+
+
     public ArmorCard getEquipmentArmorCard() {
         return equipment.getArmor();
     }
@@ -149,5 +167,9 @@ public class Player {
         } else {
             return 0;
         }
+    }
+
+    public boolean isStillAlive() {
+        return this.getHP() > 0;
     }
 }

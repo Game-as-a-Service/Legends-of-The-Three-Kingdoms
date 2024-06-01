@@ -21,6 +21,7 @@ import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
+import com.gaas.threeKingdoms.round.Stage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -1208,15 +1209,16 @@ public class QilinBowTest {
         game.setPlayers(players);
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerA));
-
-        //When
-        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
-        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerD.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
         List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
-
+        //when
+        List<DomainEvent> chooseHorseEvents = game.playerChooseHorseForQilinBow("player-a", "EH5044");
         //Then
-        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
-        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(2, game.getPlayer("player-d").getBloodCard().getHp());
+        assertEquals(Stage.Normal, game.getCurrentRound().getStage());
+        assertNull(game.getPlayer("player-d").getEquipment().getMinusOne());
+        assertNotNull(game.getPlayer("player-d").getEquipment().getPlusOne());
     }
 
 }

@@ -56,8 +56,6 @@ public class NormalActiveKillBehavior extends Behavior {
 
         if (isSkip(playType)) {
             Round currentRound = game.getCurrentRound();
-            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-
             // 麒麟弓要先發動效果，待麒麟弓效果發動後再扣血
             if (isAskPlayerUseQilinBow(behaviorPlayer, damagedPlayer)) {
                 isOneRound = false;
@@ -66,29 +64,11 @@ public class NormalActiveKillBehavior extends Behavior {
                 RoundEvent roundEvent = new RoundEvent(currentRound);
                 EquipmentCard equipmentCard = behaviorPlayer.getEquipmentWeaponCard();
                 AskPlayEquipmentEffectEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(playerId, equipmentCard);
+                List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
                 PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
                 return List.of(playCardEvent, askPlayEquipmentEffectEvent);
             }
-
-            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-            card.effect(damagedPlayer);
-
-            if (isPlayerStillAlive(damagedPlayer)) {
-                currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
-                RoundEvent roundEvent = new RoundEvent(currentRound);
-                PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-                return List.of(playCardEvent, playerDamagedEvent);
-            } else {
-                PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
-                AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
-                game.enterPhase(new GeneralDying(game));
-                currentRound.setDyingPlayer(damagedPlayer);
-                currentRound.setActivePlayer(damagedPlayer);
-                RoundEvent roundEvent = new RoundEvent(currentRound);
-                PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-                isOneRound = false;
-                return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent);
-            }
+            return game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
         } else if (isDodgeCard(cardId)) {
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
@@ -100,20 +80,6 @@ public class NormalActiveKillBehavior extends Behavior {
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
             return List.of(playCardEvent, playerDamagedEvent);
         }
-//        else if (executeEquipmentEffect(playType)) {
-//            ArmorCard armorCard = damagedPlayer.getEquipment().getArmor();
-//            List<DomainEvent> domainEvents = armorCard.equipmentEffect(game);
-//
-//            isOneRound = domainEvents.stream()
-//                    .map(EffectEvent.class::cast)
-//                    .allMatch(EffectEvent::isSuccess);
-//
-//            return domainEvents;
-//        } else if (skipEquipmentEffect(playType)) {
-//            List<DomainEvent> events = askTargetPlayerPlayCardWhenSkipEquipmentEffect();
-//            isOneRound = false;
-//            return events;
-//        }
         else {
             //TODO:怕有其他效果或殺的其他case
             return new ArrayList<>();

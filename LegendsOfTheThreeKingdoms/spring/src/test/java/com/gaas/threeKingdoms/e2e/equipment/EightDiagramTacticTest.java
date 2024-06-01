@@ -125,8 +125,7 @@ public class EightDiagramTacticTest {
         //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
         whenBKillAThenAShouldHaveEquipmentEvent();
 
-        //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
-        whenPlayerAUseEightDiagramTacticAndFailed();
+        //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失whenPlayerAUseEightDiagramTacticAndFailed();
 
         //玩家A 出閃，血量不變
         whenPlayerAPlayDodgeAndHpKeep();
