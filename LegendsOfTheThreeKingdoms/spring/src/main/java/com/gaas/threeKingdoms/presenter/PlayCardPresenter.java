@@ -86,7 +86,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     private AskPlayEquipmentEffectViewModel getAskPlayEquipmentEffectViewModel(PlayCardDataViewModel playCardDataViewModel, List<DomainEvent> events) {
         return getEvent(events, AskPlayEquipmentEffectEvent.class)
                 .map(event -> {
-                    AskPlayEquipmentEffectDataViewModel askPlayEquipmentEffectDataViewModel = new AskPlayEquipmentEffectDataViewModel(event.getPlayerId(), event.getEquipmentCard().getId(), event.getEquipmentCard().getName());
+                    AskPlayEquipmentEffectDataViewModel askPlayEquipmentEffectDataViewModel = new AskPlayEquipmentEffectDataViewModel(event.getPlayerId(), event.getEquipmentCard().getId(), event.getEquipmentCard().getName(), event.getTargetPlayerIds());
                     return new AskPlayEquipmentEffectViewModel(askPlayEquipmentEffectDataViewModel);
                 })
                 .orElse(null);
@@ -312,6 +312,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String playerId;
         private String equipmentCardId;
         private String equipmentCardName;
+        private List<String> targetPlayerIds;
     }
 
 

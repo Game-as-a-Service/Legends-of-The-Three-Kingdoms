@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import static java.util.stream.Collectors.joining;
 import static org.springframework.http.HttpStatus.*;
 
@@ -17,7 +20,10 @@ public class LegendsOfTheThreeKingdomsAdvice {
     @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler({RuntimeException.class})
     public String badRequest(RuntimeException exception) {
-        return exception.getMessage();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        exception.printStackTrace(pw);
+        return sw.toString();
     }
 
     @ResponseStatus(BAD_REQUEST)
@@ -40,7 +46,10 @@ public class LegendsOfTheThreeKingdomsAdvice {
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ExceptionHandler({Exception.class})
     public String otherException(Exception exception) {
-        return exception.getMessage();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        exception.printStackTrace(pw);
+        return sw.toString();
     }
 
 }

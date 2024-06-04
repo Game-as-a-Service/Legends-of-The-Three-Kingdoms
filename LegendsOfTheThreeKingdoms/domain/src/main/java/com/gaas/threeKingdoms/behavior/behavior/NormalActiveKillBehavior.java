@@ -43,7 +43,7 @@ public class NormalActiveKillBehavior extends Behavior {
 
         if (isEquipmentHasSpecialEffect(targetPlayer)) {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
-            DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor());
+            DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
             events.add(askPlayEquipmentEffectEvent);
         }
         return events;
@@ -63,7 +63,7 @@ public class NormalActiveKillBehavior extends Behavior {
                 currentRound.setStage(Stage.Wait_Equipment_Effect);
                 RoundEvent roundEvent = new RoundEvent(currentRound);
                 EquipmentCard equipmentCard = behaviorPlayer.getEquipmentWeaponCard();
-                AskPlayEquipmentEffectEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(playerId, equipmentCard);
+                AskPlayEquipmentEffectEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(behaviorPlayer.getId(), equipmentCard, List.of(playerId));
                 List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
                 PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
                 return List.of(playCardEvent, askPlayEquipmentEffectEvent);

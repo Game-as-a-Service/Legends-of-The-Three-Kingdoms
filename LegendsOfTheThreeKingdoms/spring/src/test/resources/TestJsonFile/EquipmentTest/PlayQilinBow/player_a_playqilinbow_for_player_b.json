@@ -2,21 +2,20 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-b",
+      "playerId" : "player-a",
       "targetPlayerId" : "player-a",
-      "cardId" : "BS8008",
+      "cardId" : "EH5031",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
-    "event" : "AskPlayEquipmentEffectEvent",
+    "event" : "PlayEquipmentEvent",
     "data" : {
       "playerId" : "player-a",
-      "equipmentCardId" : "ES2015",
-      "equipmentCardName" : "八卦陣",
-      "targetPlayerIds" : [ "player-a" ]
+      "cardId" : "EH5031",
+      "deprecatedCardId" : ""
     },
-    "message" : "請問要否要發動裝備卡八卦陣的效果"
+    "message" : "玩家出裝備卡"
   } ],
   "data" : {
     "seats" : [ {
@@ -26,20 +25,20 @@
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "ES2015", "" ],
+      "equipments" : [ "", "", "", "EH5031" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "SHU001",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
-        "cardIds" : [ ]
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
       },
-      "equipments" : [ "", "", "", "" ],
+      "equipments" : [ "", "EH5044", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
@@ -69,11 +68,11 @@
       "currentRoundPlayer" : "player-b",
       "activePlayer" : "player-a",
       "dyingPlayer" : "",
-      "showKill" : true
+      "showKill" : false
     },
     "gamePhase" : "Normal"
   },
   "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-a"
+  "playerId" : "player-b"
 }
