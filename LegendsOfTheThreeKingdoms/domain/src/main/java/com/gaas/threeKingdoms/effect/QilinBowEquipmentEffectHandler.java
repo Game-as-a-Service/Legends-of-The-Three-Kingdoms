@@ -61,7 +61,7 @@ public class QilinBowEquipmentEffectHandler extends EquipmentEffectHandler {
                 events.addAll(List.of(playerDamagedEvent, playerDyingEvent, askPeachEvent));
             }
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-            GameStatusEvent gameStatusEvent = new GameStatusEvent(game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+            GameStatusEvent gameStatusEvent = new GameStatusEvent(game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName(), "發動");
             events.add(gameStatusEvent);
             return events;
         }

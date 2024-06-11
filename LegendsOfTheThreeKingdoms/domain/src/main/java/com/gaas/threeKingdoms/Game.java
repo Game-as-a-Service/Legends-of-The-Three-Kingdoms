@@ -11,7 +11,6 @@ import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
 import com.gaas.threeKingdoms.handcard.*;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -45,7 +44,7 @@ public class Game {
     private EquipmentEffectHandler equipmentEffectHandler;
 
     public Game(String gameId, List<Player> players) {
-        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
+        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
         playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(null, this), this), this), this), this), this), this);
         setGameId(gameId);
         setPlayers(players);
@@ -236,6 +235,7 @@ public class Game {
 
     public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         PlayType.checkPlayTypeIsValid(playType);
+        checkIsCurrentRoundValid(playerId);
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
@@ -254,6 +254,13 @@ public class Game {
         }
         List<DomainEvent> events = behavior.askTargetPlayerPlayCard();
         return events;
+    }
+
+    private void checkIsCurrentRoundValid(String playerId) {
+        Player activePlayer = currentRound.getActivePlayer();
+        if (!activePlayer.getId().equals(playerId)) {
+            throw new IllegalStateException("ActivePlayer is not " + playerId + " , now ActivePlayer is " + activePlayer.getId());
+        }
     }
 
     public List<DomainEvent> playerUseEquipment(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
@@ -582,6 +589,12 @@ public class Game {
         refreshDeckWhenCardsNumLessThen(1);
         List<HandCard> cards = deck.deal(1);
         return cards.get(0);
+    }
+
+    public GameStatusEvent getGameStatusEvent(String message) {
+        List<PlayerEvent> playerEvents = getPlayers().stream().map(PlayerEvent::new).toList();
+        RoundEvent roundEvent = new RoundEvent(currentRound);
+        return new GameStatusEvent(gameId, playerEvents, roundEvent, gamePhase.getPhaseName(), message);
     }
 }
 

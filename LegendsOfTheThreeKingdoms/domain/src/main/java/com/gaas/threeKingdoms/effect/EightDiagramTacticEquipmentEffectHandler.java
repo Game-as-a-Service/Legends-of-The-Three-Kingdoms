@@ -46,6 +46,7 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
         List<DomainEvent> domainEvents = armorCard.equipmentEffect(game);
 
         boolean isEightDiagramTacticEffectSuccess = domainEvents.stream()
+                .filter(event -> event instanceof EffectEvent)
                 .map(EffectEvent.class::cast)
                 .allMatch(EffectEvent::isSuccess);
 

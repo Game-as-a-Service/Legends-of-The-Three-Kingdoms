@@ -460,7 +460,10 @@ public class QilinBowTest {
         List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), EC2067.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
 
         //Then
-        assertTrue(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
+        assertTrue(events.stream()
+                .filter(event -> event instanceof EffectEvent)
+                .map(EffectEvent.class::cast)
+                .allMatch(EffectEvent::isSuccess));
         assertEquals(3, game.getPlayer("player-b").getHP());
         assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
     }

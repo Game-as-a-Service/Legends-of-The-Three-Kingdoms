@@ -8,8 +8,8 @@ import java.util.List;
 public class QilinBowCardEffectEvent extends EffectEvent {
     private final String mountCardId;
 
-    public QilinBowCardEffectEvent(String message, boolean isSuccess, String mountCardId, String gameId, List<PlayerEvent> seats, RoundEvent round, String gamePhase) {
-        super(isSuccess, message, gameId, seats, "QilinBowCardEffectEvent", round, gamePhase);
+    public QilinBowCardEffectEvent(String message, boolean isSuccess, String mountCardId) {
+        super(isSuccess, message, "QilinBowCardEffectEvent");
         this.mountCardId = mountCardId;
     }
 

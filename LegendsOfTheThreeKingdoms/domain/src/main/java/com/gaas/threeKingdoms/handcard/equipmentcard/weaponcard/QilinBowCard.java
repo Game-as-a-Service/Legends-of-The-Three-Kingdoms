@@ -44,36 +44,35 @@ public class QilinBowCard extends WeaponCard {
             if (isPlayerStillAlive(damagedPlayer)) {
                 currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
                 behavior.setIsOneRound(true);
-                RoundEvent roundEvent = new RoundEvent(currentRound);
-                List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-                QilinBowCardEffectEvent qilinBowCardEffectEvent = new QilinBowCardEffectEvent(message, true, removeMountCardId, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-                events.add(playerDamagedEvent);
+                QilinBowCardEffectEvent qilinBowCardEffectEvent = new QilinBowCardEffectEvent(message, true, removeMountCardId);
+                GameStatusEvent gameStatusEvent = game.getGameStatusEvent(message);
                 events.add(qilinBowCardEffectEvent);
+                events.add(playerDamagedEvent);
+                events.add(gameStatusEvent);
             } else {
                 PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
                 AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
                 game.enterPhase(new GeneralDying(game));
                 currentRound.setDyingPlayer(damagedPlayer);
                 currentRound.setActivePlayer(damagedPlayer);
-                List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-                RoundEvent roundEvent = new RoundEvent(currentRound);
-                QilinBowCardEffectEvent qilinBowCardEffectEvent = new QilinBowCardEffectEvent(message, true, removeMountCardId, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+                QilinBowCardEffectEvent qilinBowCardEffectEvent = new QilinBowCardEffectEvent(message, true, removeMountCardId);
                 behavior.setIsOneRound(false);
+                GameStatusEvent gameStatusEvent = game.getGameStatusEvent(message);
                 events.add(qilinBowCardEffectEvent);
                 events.add(playerDamagedEvent);
                 events.add(playerDyingEvent);
                 events.add(askPeachEvent);
+                events.add(gameStatusEvent);
             }
             return events;
         }
 
         DomainEvent askChooseMountEvent = askChooseMountEvent(damagedPlayer);
-
         Round round = game.getCurrentRound();
         round.setActivePlayer(behavior.getBehaviorPlayer());
         round.setStage(Stage.Wait_Accept_Equipment_Effect);
-
-        return List.of(askChooseMountEvent);
+        GameStatusEvent gameStatusEvent = game.getGameStatusEvent("請選擇要被捨棄的馬");
+        return List.of(askChooseMountEvent, gameStatusEvent);
     }
 
     private DomainEvent askChooseMountEvent(Player damagedPlayer) {

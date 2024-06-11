@@ -76,7 +76,7 @@
     "round" : {
       "roundPhase" : "Action",
       "currentRoundPlayer" : "player-c",
-      "activePlayer" : "",
+      "activePlayer" : "player-c",
       "dyingPlayer" : "",
       "showKill" : false
     },

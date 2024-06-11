@@ -1,0 +1,79 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-a",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "AskPlayEquipmentEffectEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "equipmentCardId" : "EH5031",
+      "equipmentCardName" : "麒麟弓",
+      "targetPlayerIds" : [ "player-b" ]
+    },
+    "message" : "請問要否要發動裝備卡麒麟弓的效果"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "EH5031" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
+      },
+      "equipments" : [ "", "EH5044", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : true
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "不出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-b"
+}

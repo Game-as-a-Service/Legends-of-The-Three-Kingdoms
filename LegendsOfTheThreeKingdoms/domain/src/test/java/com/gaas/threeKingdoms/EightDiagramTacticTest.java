@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
@@ -258,7 +259,10 @@ public class EightDiagramTacticTest {
         List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
 
         //Then
-        assertTrue(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
+        assertTrue(events.stream()
+                .filter(event -> event instanceof EffectEvent)
+                .map(EffectEvent.class::cast)
+                .allMatch(EffectEvent::isSuccess));
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
         assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());

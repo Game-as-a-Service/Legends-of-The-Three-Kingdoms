@@ -22,6 +22,7 @@ public class Round {
     public Round (Player currentRoundPlayer) {
         this.roundPhase = RoundPhase.Judgement;
         this.currentRoundPlayer = currentRoundPlayer;
+        this.activePlayer = currentRoundPlayer;
         this.stage = Stage.Normal;
     }
     public boolean isPlayedValidCard(String cardId) {

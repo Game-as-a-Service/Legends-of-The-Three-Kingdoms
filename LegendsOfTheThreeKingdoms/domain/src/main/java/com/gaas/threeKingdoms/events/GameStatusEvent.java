@@ -7,13 +7,13 @@ import java.util.List;
 @Getter
 public class GameStatusEvent extends DomainEvent {
     private String gameId;
-    private List<PlayerEvent> playerEvents;
+    private List<PlayerEvent> seats;
     private RoundEvent round;
     private String gamePhase;
-    public GameStatusEvent(String gameId, List<PlayerEvent> playerEvents, RoundEvent round, String gamePhase) {
-        super("GameStatusEvent", "遊戲狀態");
+    public GameStatusEvent(String gameId, List<PlayerEvent> seats, RoundEvent round, String gamePhase, String message) {
+        super("GameStatusEvent", message);
         this.gameId = gameId;
-        this.playerEvents = playerEvents;
+        this.seats = seats;
         this.round = round;
         this.gamePhase = gamePhase;
     }
