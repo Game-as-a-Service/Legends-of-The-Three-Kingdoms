@@ -8,9 +8,13 @@ import java.util.List;
 public class AskChooseMountCardEvent extends DomainEvent{
 
     private List<String> mountsCardIds;
+    private String chooseMountCardPlayerId;
+    private String targetPlayerId;
 
-    public AskChooseMountCardEvent(String name, String message, List<String> mountsCardIds) {
+    public AskChooseMountCardEvent(String name, String message, List<String> mountsCardIds, String chooseMountCardPlayerId, String targetPlayerId) {
         super(name, message);
+        this.chooseMountCardPlayerId = chooseMountCardPlayerId;
+        this.targetPlayerId = targetPlayerId;
         this.mountsCardIds = mountsCardIds;
     }
 }

@@ -24,11 +24,13 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         UseEquipmentEffectViewModel useEquipmentEffectViewModel = getEightDiagramTacticEffectEvent(events);
         UseQilinBowCardEffectViewModel useQilinBowCardEffectViewModel = getQilinBowCardEffectEvent(events);
         PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
+        AskChooseMountCardViewModel askChooseMountCardViewModel = getAskChooseMountCardEventViewModel(events);
 
         updateViewModels(
                 useEquipmentEffectViewModel,
                 useQilinBowCardEffectViewModel,
-                playerDamageEventViewModel
+                playerDamageEventViewModel,
+                askChooseMountCardViewModel
         );
 
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
@@ -88,6 +90,15 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
                 .orElse(null);
     }
 
+    private UseEquipmentEffectPresenter.AskChooseMountCardViewModel getAskChooseMountCardEventViewModel(List<DomainEvent> events) {
+        return getEvent(events, AskChooseMountCardEvent.class)
+                .map(event -> {
+                    UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel askChooseMountCardDataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(event.getChooseMountCardPlayerId(), event.getTargetPlayerId(), event.getMountsCardIds());
+                    return new UseEquipmentEffectPresenter.AskChooseMountCardViewModel(askChooseMountCardDataViewModel);
+                })
+                .orElse(null);
+    }
+
 
     @Override
     public List<UseEquipmentEffectPresenter.GameViewModel> present() {
@@ -98,6 +109,12 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
     public static class UseEquipmentEffectViewModel extends ViewModel<UseEquipmentEffectDataViewModel> {
         public UseEquipmentEffectViewModel(UseEquipmentEffectDataViewModel data) {
             super("UseEquipmentEffectViewModel", data, String.format("發動效果 %s", data.isSuccess ? "成功" : "失敗"));
+        }
+    }
+
+    public static class AskChooseMountCardViewModel extends ViewModel<AskChooseMountCardDataViewModel> {
+        public AskChooseMountCardViewModel(AskChooseMountCardDataViewModel data) {
+            super("AskChooseMountCardEvent", data, "選擇要移除哪匹馬");
         }
     }
 
@@ -112,6 +129,15 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
     @NoArgsConstructor
     public static class UseQilinBowCardEffectDataViewModel {
         private String mountCardId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskChooseMountCardDataViewModel {
+        private String chooseMountCardPlayerId;
+        private String targetPlayerId;
+        private List<String> mountCardIds;
     }
 
     @Data

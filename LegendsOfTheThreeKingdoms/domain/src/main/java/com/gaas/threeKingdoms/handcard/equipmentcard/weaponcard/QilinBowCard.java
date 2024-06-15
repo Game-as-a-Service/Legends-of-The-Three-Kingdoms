@@ -6,8 +6,6 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
@@ -67,7 +65,7 @@ public class QilinBowCard extends WeaponCard {
             return events;
         }
 
-        DomainEvent askChooseMountEvent = askChooseMountEvent(damagedPlayer);
+        DomainEvent askChooseMountEvent = askChooseMountEvent(damagedPlayer, behavior.getBehaviorPlayer());
         Round round = game.getCurrentRound();
         round.setActivePlayer(behavior.getBehaviorPlayer());
         round.setStage(Stage.Wait_Accept_Equipment_Effect);
@@ -75,10 +73,10 @@ public class QilinBowCard extends WeaponCard {
         return List.of(askChooseMountEvent, gameStatusEvent);
     }
 
-    private DomainEvent askChooseMountEvent(Player damagedPlayer) {
+    private DomainEvent askChooseMountEvent(Player damagedPlayer, Player chooseMountCardPlayer) {
         String plusOneMountsCardId = damagedPlayer.getEquipmentPlusOneMountsCard().getId();
         String minusOneMountsCardId = damagedPlayer.getEquipmentMinusOneMountsCard().getId();
-        return new AskChooseMountCardEvent("AskChooseMountCardEvent", "請選擇要被捨棄的馬", List.of(plusOneMountsCardId, minusOneMountsCardId));
+        return new AskChooseMountCardEvent("AskChooseMountCardEvent", "請選擇要被捨棄的馬", List.of(plusOneMountsCardId, minusOneMountsCardId), chooseMountCardPlayer.getId(), damagedPlayer.getId());
     }
 
     private boolean isPlayerStillAlive(Player damagedPlayer) {

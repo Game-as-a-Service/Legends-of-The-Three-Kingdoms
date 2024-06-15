@@ -65,6 +65,8 @@ public class QilinBowEquipmentEffectHandler extends EquipmentEffectHandler {
             events.add(gameStatusEvent);
             return events;
         }
+
+        //加 behavior 進 stack
         Player player = getPlayer(playerId);
         WeaponCard weaponCard = player.getEquipment().getWeapon();
         events = weaponCard.equipmentEffect(game);

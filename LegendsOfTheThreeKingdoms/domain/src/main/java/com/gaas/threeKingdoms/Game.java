@@ -267,6 +267,9 @@ public class Game {
         return Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
     }
 
+
+
+
     public List<DomainEvent> playerChooseHorseForQilinBow(String playerId, String cardId) {
         PlayCard playCard = PlayCard.valueOf(cardId);
         if (!playCard.isMountsCard()) {

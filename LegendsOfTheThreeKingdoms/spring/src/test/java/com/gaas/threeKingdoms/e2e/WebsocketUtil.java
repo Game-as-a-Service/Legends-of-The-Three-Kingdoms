@@ -37,10 +37,16 @@ public class WebsocketUtil {
         map.computeIfAbsent("player-b", k -> new LinkedBlockingQueue<>());
         map.computeIfAbsent("player-c", k -> new LinkedBlockingQueue<>());
         map.computeIfAbsent("player-d", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-e", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-f", k -> new LinkedBlockingQueue<>());
+        map.computeIfAbsent("player-g", k -> new LinkedBlockingQueue<>());
         setupClientSubscribe(gameId, "player-a");
         setupClientSubscribe(gameId, "player-b");
         setupClientSubscribe(gameId, "player-c");
         setupClientSubscribe(gameId, "player-d");
+        setupClientSubscribe(gameId, "player-e");
+        setupClientSubscribe(gameId, "player-f");
+        setupClientSubscribe(gameId, "player-g");
     }
 
     public String getValue(String key) {
