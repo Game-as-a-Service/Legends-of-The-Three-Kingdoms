@@ -343,4 +343,78 @@ public class PlayKillCardTest {
         assertTrue(game.getCurrentRound().isShowKill());
     }
 
+
+    @DisplayName("""
+            Given
+            輪到 A 玩家出牌
+
+            When
+            B 玩家對 A 玩家出殺
+                    
+            Then
+            拋出錯誤
+            """)
+    @Test
+    public void givenPlayerATurn_WhenPlayerBKillA_ThenException() {
+        //Given
+        Game game = new Game();
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        //When playerB 對 playerA打殺
+        //Then Exception
+        assertThrows(IllegalStateException.class,
+                () -> game.playerPlayCard(playerB.getId(), BS8008.getCardId(), playerA.getId(), "active"));
+
+    }
 }

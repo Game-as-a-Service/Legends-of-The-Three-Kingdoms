@@ -111,7 +111,7 @@ public class PlayPeachCardTest {
 
         playerA.damage(1);
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerB));
+        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
     }
 
 

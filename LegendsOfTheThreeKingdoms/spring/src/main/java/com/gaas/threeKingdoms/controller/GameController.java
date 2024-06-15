@@ -103,4 +103,12 @@ public class GameController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @PostMapping("/api/games/{gameId}/player:chooseHorseCard")
+    public ResponseEntity<?> playerChooseHorseCard(@PathVariable String gameId, @RequestBody UseEquipmentRequest useEquipmentRequest) {
+        UseEquipmentEffectPresenter equipmentEffectPresenter = new UseEquipmentEffectPresenter();
+        useEquipmentUseCase.execute(gameId,useEquipmentRequest.toUseEquipmentRequest(), equipmentEffectPresenter);
+        webSocketBroadCast.pushEquipmentEffectEvent(equipmentEffectPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
 }

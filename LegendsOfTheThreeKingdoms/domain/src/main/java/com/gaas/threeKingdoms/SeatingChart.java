@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
@@ -23,36 +24,10 @@ public class SeatingChart {
         int seat2 = players.indexOf(targetPlayer);
 
         int totalSeats = players.size();
-        int equipmentDistance = getEquipmentDistance(player,targetPlayer);
         int distanceClockwise = (seat2 - seat1 + totalSeats) % totalSeats;
         int distanceCounterClockwise = (seat1 - seat2 + totalSeats) % totalSeats;
         // Return the shorter distance of clockwise and counterclockwise
-        return Math.min(distanceClockwise, distanceCounterClockwise) +  equipmentDistance;
-    }
-
-    private int getEquipmentDistance(Player player,Player targetPlayer) {
-        int minusCount = getMinusOneDistance(player);
-        int plusCount = getPlusDistance(targetPlayer);
-        return minusCount + plusCount;
-    }
-
-    private int getMinusOneDistance(Player player) {
-        if (player.getEquipment() == null) return 0;
-        MinusMountsCard minusOne = player.getEquipment().getMinusOne();
-        if (minusOne == null) {
-            return 0;
-        } else {
-            return -1;
-        }
-    }
-    private int getPlusDistance(Player player) {
-        if (player.getEquipment() == null) return 0;
-        PlusMountsCard plusOne = player.getEquipment().getPlusOne();
-        if (plusOne == null) {
-            return 0;
-        } else {
-            return 1;
-        }
+        return Math.min(distanceClockwise, distanceCounterClockwise);
     }
 
     public Player getNextPlayer(Player player) {

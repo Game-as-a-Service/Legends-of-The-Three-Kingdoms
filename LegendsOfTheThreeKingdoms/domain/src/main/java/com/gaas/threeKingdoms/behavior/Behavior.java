@@ -5,17 +5,21 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.List;
 
 @AllArgsConstructor
 public abstract class Behavior {
     protected Game game;
+    @Getter
     protected Player behaviorPlayer;
+    @Getter
     protected List<String> reactionPlayers;
     protected Player currentReactionPlayer;
     protected String cardId;
     protected String playType;
+    @Getter
     protected HandCard card;
     // 別人要不要反應
     protected boolean isTargetPlayerNeedToResponse = true;

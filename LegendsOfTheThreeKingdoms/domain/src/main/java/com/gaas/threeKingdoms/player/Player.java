@@ -1,8 +1,11 @@
 package com.gaas.threeKingdoms.player;
 
 
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.RemoveHorseEvent;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
@@ -57,11 +60,48 @@ public class Player {
         return equipment.getMinusOne();
     }
 
+    public boolean hasMountsCard() {
+        return equipment.getMinusOne() != null || equipment.getPlusOne() != null;
+    }
+
+    public boolean onlyHasOneMount() {
+        PlusMountsCard plusOne = equipment.getPlusOne();
+        MinusMountsCard minusOne = equipment.getMinusOne();
+        return (plusOne == null && minusOne != null) || (plusOne != null && minusOne == null);
+    }
+
+    public String removeOneMount() {
+        PlusMountsCard plusOne = equipment.getPlusOne();
+        MinusMountsCard minusOne = equipment.getMinusOne();
+        if (plusOne != null) {
+            equipment.setPlusOne(null);
+            return plusOne.getId();
+        } else {
+            equipment.setMinusOne(null);
+            return minusOne.getId();
+        }
+    }
+
+    public DomainEvent removeMountsCard(String playerId, String cardId) {
+        EquipmentCard plusOne = equipment.getPlusOne();
+        EquipmentCard minusOne = equipment.getMinusOne();
+        if (plusOne.getId().equals(cardId)) {
+            equipment.setPlusOne(null);
+        } else if (minusOne.getId().equals(cardId)) {
+            equipment.setMinusOne(null);
+        }
+        return new RemoveHorseEvent("RemoveHorseEvent",
+                String.format("%s 玩家 已被%s 移除 %s 卡", id, playerId, cardId),
+                id,
+                cardId);
+    }
+
+
     public ArmorCard getEquipmentArmorCard() {
         return equipment.getArmor();
     }
 
-    public WeaponCard getRquipmentWeaponCard() {
+    public WeaponCard getEquipmentWeaponCard() {
         return equipment.getWeapon();
     }
 
@@ -74,11 +114,33 @@ public class Player {
     }
 
     public int judgeEscapeDistance() {
-        return 0;
+        PlusMountsCard plusOne = equipment.getPlusOne();
+        if (plusOne == null) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     public int judgeAttackDistance() {
-        return 1;
+        int weaponDis = getWeaponDistance();
+        int minusOne = getMinusOneDistance();
+        return weaponDis + minusOne + 1; // 初始攻擊距離 1
+    }
+
+    private int getWeaponDistance() {
+        if (getEquipmentWeaponCard() == null) return 0;
+        WeaponCard weaponCard = equipment.getWeapon();
+        return weaponCard.getWeaponDistance();
+    }
+
+    private int getMinusOneDistance() {
+        MinusMountsCard minusOne = equipment.getMinusOne();
+        if (minusOne == null) {
+            return 0;
+        } else {
+            return 1; // 我打別人的攻擊距離
+        }
     }
 
     public boolean hasAnyDelayScrollCard() {
@@ -105,5 +167,9 @@ public class Player {
         } else {
             return 0;
         }
+    }
+
+    public boolean isStillAlive() {
+        return this.getHP() > 0;
     }
 }

@@ -32,7 +32,7 @@ public class Hand {
  
     public Optional<HandCard> getCard(String cardId) {
         return cards.stream()
-                .filter(card -> cardId.equals(card.getId()))
+                .filter(card -> cardId != null && cardId.equals(card.getId()))
                 .findFirst();
     }
 //這邊的排是不是本來就棄掉了? 要改測資

@@ -10,8 +10,8 @@ import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
 
-public class RepeatingCrossbowBehavior extends Behavior {
-    public RepeatingCrossbowBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
+public class EquipArmorBehavior extends Behavior {
+    public EquipArmorBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
     }
 
@@ -29,15 +29,16 @@ public class RepeatingCrossbowBehavior extends Behavior {
         RoundEvent roundEvent = new RoundEvent(currentRound);
         List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
         return List.of(new PlayCardEvent(
-                        "出牌",
-                        behaviorPlayer.getId(),
-                        behaviorPlayer.getId(),
-                        cardId,
-                        playType,
-                        game.getGameId(),
-                        playerEvents,
-                        roundEvent,
-                        game.getGamePhase().getPhaseName()),
+                "出牌",
+                behaviorPlayer.getId(),
+                behaviorPlayer.getId(),
+                cardId,
+                playType,
+                game.getGameId(),
+                playerEvents,
+                roundEvent,
+                game.getGamePhase().getPhaseName()
+                ),
                 new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId));
     }
 

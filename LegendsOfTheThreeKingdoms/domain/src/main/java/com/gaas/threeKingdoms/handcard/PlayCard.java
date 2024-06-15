@@ -163,6 +163,10 @@ public enum PlayCard {
                 .filter(c->c.getCardName().equals("八卦陣"))
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
+    public boolean isMountsCard() {return Arrays.stream(PlayCard.values()).filter(c -> "赤兔".equals(c.getCardName()) || "絕影".equals(c.getCardName())).anyMatch(c->c.getCardId().equals(this.cardId));
+    }
+
+
 
 
 }

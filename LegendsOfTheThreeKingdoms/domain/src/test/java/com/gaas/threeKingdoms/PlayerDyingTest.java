@@ -223,6 +223,7 @@ public class PlayerDyingTest {
     @DisplayName("""
             Given
             A 玩家已瀕臨死亡且狀態是 Dying
+            A 玩家被詢問要不要出桃救A A skip
             B 玩家被詢問要不要出桃救A
                         
             When
@@ -298,6 +299,7 @@ public class PlayerDyingTest {
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
 
         //When
+        game.playerPlayCard(playerA.getId(), "", playerA.getId(), "skip");
         List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
         //Then
@@ -391,6 +393,7 @@ public class PlayerDyingTest {
 
         game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
+        game.playerPlayCard(playerA.getId(), "", playerA.getId(), "skip");
         game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
         //When
@@ -414,6 +417,7 @@ public class PlayerDyingTest {
             Given
             A 是主公，B 玩家是反賊，C玩家是忠臣，D玩家是內奸
             A 玩家已瀕臨死亡且狀態是 Dying
+            A 不出桃救自己
             B 玩家被詢問要不要出桃救A
             B 玩家不出桃救A
             C 玩家不出桃救A
@@ -485,6 +489,7 @@ public class PlayerDyingTest {
 
         game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
+        game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
         game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
         game.playerPlayCard(playerC.getId(), "", playerA.getId(), "skip");
 
@@ -503,11 +508,11 @@ public class PlayerDyingTest {
 
         String gameOverMessage =
                 """
-                 player-a Monarch
-                 player-b Minister
-                 player-c Minister
-                 player-d Minister
-                 反賊獲勝""";
+                        player-a Monarch
+                        player-b Minister
+                        player-c Minister
+                        player-d Minister
+                        反賊獲勝""";
         assertEquals(gameOverMessage, gameOverEvent.getMessage());
         assertEquals("GameOver", game.getGamePhase().getPhaseName());
     }

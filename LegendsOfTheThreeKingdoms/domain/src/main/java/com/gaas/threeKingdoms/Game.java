@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
 import com.gaas.threeKingdoms.effect.EquipmentEffectHandler;
+import com.gaas.threeKingdoms.effect.QilinBowEquipmentEffectHandler;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -18,6 +19,7 @@ import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.RoundPhase;
+import com.gaas.threeKingdoms.round.Stage;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,18 +44,17 @@ public class Game {
     private EquipmentEffectHandler equipmentEffectHandler;
 
     public Game(String gameId, List<Player> players) {
-        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null, this), this), this), this), this), this), this);
+        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(null, this), this), this), this), this), this), this);
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new RepeatingCrossbowBehaviorHandler(new EightDiagramTacticBehaviorHandler(null, this), this), this), this), this), this), this);
-        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(null, this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(null, this), this), this), this), this), this), this);
+        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
-
 
     public String getMonarchPlayerId() {
         return players.stream()
@@ -234,19 +235,17 @@ public class Game {
 
     public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         PlayType.checkPlayTypeIsValid(playType);
+        checkIsCurrentRoundValid(playerId);
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
-//            List<DomainEvent> effectEvents = Optional.ofNullable(effectHandler.handle(playerId,cardId, targetPlayerId, PlayType.getPlayType(playType))).orElse(new ArrayList<>());
             List<DomainEvent> acceptedEvent = behavior.acceptedTargetPlayerPlayCard(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
             if (behavior.isOneRound()) {
                 topBehavior.pop();
-//                currentRound.setActivePlayer(null);
             } else {
                 // 把新打出的牌加到 stack ，如果是使用裝備卡則不會放入
                 updateTopBehavior(playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType));
             }
-//            effectEvents.addAll(acceptedEvent);
             return acceptedEvent;
         }
         Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
@@ -257,8 +256,39 @@ public class Game {
         return events;
     }
 
+    private void checkIsCurrentRoundValid(String playerId) {
+        Player activePlayer = currentRound.getActivePlayer();
+        if (!activePlayer.getId().equals(playerId)) {
+            throw new IllegalStateException("ActivePlayer is not " + playerId + " , now ActivePlayer is " + activePlayer.getId());
+        }
+    }
+
     public List<DomainEvent> playerUseEquipment(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
         return Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
+    }
+
+
+
+
+    public List<DomainEvent> playerChooseHorseForQilinBow(String playerId, String cardId) {
+        PlayCard playCard = PlayCard.valueOf(cardId);
+        if (!playCard.isMountsCard()) {
+            throw new IllegalStateException("playCard is not mounts playCard type");
+        }
+        Player damagedPlayer = getPlayer(peekTopBehavior().getReactionPlayers().get(0));
+        if (damagedPlayer.getEquipmentMinusOneMountsCard().getId().equals(cardId) && damagedPlayer.getEquipmentPlusOneMountsCard().getId().equals(cardId)) {
+            throw new IllegalStateException("player doesn't equip this mount playCard");
+        }
+
+        DomainEvent removeHorseEvent = damagedPlayer.removeMountsCard(playerId,cardId);
+        Behavior behavior = topBehavior.pop();
+        int originalHp = damagedPlayer.getHP();
+        HandCard card = behavior.getCard();
+
+        List<DomainEvent> events = getDamagedEventForEquipmentEffect(card, originalHp, damagedPlayer,currentRound, behavior);
+        events.add(removeHorseEvent);
+        currentRound.setStage(Stage.Normal);
+        return events;
     }
 
     public void playerDeadSettlement() {
@@ -396,6 +426,81 @@ public class Game {
         return gameOverMessage;
     }
 
+    // TODO : 看這些參數可不可以抽到 behavior就好，這樣只需要傳behavior就可以
+    public List<DomainEvent> getDamagedEvent(String playerId,
+                                             String targetPlayerId,
+                                             String cardId,
+                                             HandCard card,
+                                             String playType,
+                                             int originalHp,
+                                             Player damagedPlayer,
+                                             Round currentRound,
+                                             Behavior behavior) {
+        card.effect(damagedPlayer);
+        PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
+        List<PlayerEvent> playerEvents = getPlayers().stream().map(PlayerEvent::new).toList();
+
+        if (damagedPlayer.isStillAlive()) {
+            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+            RoundEvent roundEvent = new RoundEvent(currentRound);
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, this.gameId, playerEvents, roundEvent, this.getGamePhase().getPhaseName());
+            return List.of(playCardEvent, playerDamagedEvent);
+        } else {
+            PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
+            AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
+            this.enterPhase(new GeneralDying(this));
+            currentRound.setDyingPlayer(damagedPlayer);
+            currentRound.setActivePlayer(damagedPlayer);
+            RoundEvent roundEvent = new RoundEvent(currentRound);
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, this.getGameId(), playerEvents, roundEvent, this.getGamePhase().getPhaseName());
+            behavior.setIsOneRound(false);
+            return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent);
+        }
+    }
+
+    public List<DomainEvent> getDamagedEventForEquipmentEffect(HandCard card,
+                                                               int originalHp,
+                                                               Player damagedPlayer,
+                                                               Round currentRound,
+                                                               Behavior behavior) {
+        List<DomainEvent> domainEvents = new ArrayList<>();
+        card.effect(damagedPlayer);
+        PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
+
+        if (damagedPlayer.isStillAlive()) {
+            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+            RoundEvent roundEvent = new RoundEvent(currentRound);
+            domainEvents.add(roundEvent);
+            domainEvents.add(playerDamagedEvent);
+            return domainEvents;
+        } else {
+            PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
+            AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
+            this.enterPhase(new GeneralDying(this));
+            currentRound.setDyingPlayer(damagedPlayer);
+            currentRound.setActivePlayer(damagedPlayer);
+            RoundEvent roundEvent = new RoundEvent(currentRound);
+            behavior.setIsOneRound(false);
+            domainEvents.add(roundEvent);
+            domainEvents.add(playerDamagedEvent);
+            domainEvents.add(playerDyingEvent);
+            domainEvents.add(askPeachEvent);
+            return domainEvents;
+        }
+    }
+
+    private PlayerDyingEvent createPlayerDyingEvent(Player player) {
+        return new PlayerDyingEvent(player.getId());
+    }
+
+    private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
+        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
+    }
+
+    private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
+        return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
+    }
+
 
     public SeatingChart getSeatingChart() {
         return seatingChart;
@@ -487,6 +592,12 @@ public class Game {
         refreshDeckWhenCardsNumLessThen(1);
         List<HandCard> cards = deck.deal(1);
         return cards.get(0);
+    }
+
+    public GameStatusEvent getGameStatusEvent(String message) {
+        List<PlayerEvent> playerEvents = getPlayers().stream().map(PlayerEvent::new).toList();
+        RoundEvent roundEvent = new RoundEvent(currentRound);
+        return new GameStatusEvent(gameId, playerEvents, roundEvent, gamePhase.getPhaseName(), message);
     }
 }
 

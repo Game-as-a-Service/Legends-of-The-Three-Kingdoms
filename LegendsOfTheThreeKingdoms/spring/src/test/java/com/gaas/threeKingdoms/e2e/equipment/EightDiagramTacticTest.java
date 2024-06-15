@@ -168,6 +168,21 @@ public class EightDiagramTacticTest {
         whenPlayerAPlayDodgeAndHpKeep();
     }
 
+    @Test
+    public void testPlayerAUseEightDiagramTacticAndEffectFailedAndThenSkip() throws Exception {
+        // Given A玩家已裝備一張八卦陣
+        givenPlayerAEquipedEightDiagramTacticAndWillfail();
+
+        //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
+        whenBKillAThenAShouldHaveEquipmentEvent();
+
+        //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
+        whenPlayerAUseEightDiagramTacticAndFailed();
+
+        //玩家A 出skip
+        whenPlayerASkipAndHpDecrease();
+    }
+
     private void whenBKillAThenAShouldHaveEquipmentEvent() throws Exception {
         // When B 玩家攻擊 A 玩家
         String currentPlayer = "player-b";
@@ -260,6 +275,37 @@ public class EightDiagramTacticTest {
 
         String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
         path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_play_dodge_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForD);
+
+    }
+
+    private void whenPlayerASkipAndHpDecrease() throws Exception {
+        String currentPlayer = "player-a";
+        String targetPlayerId = "";
+
+        // When A出閃
+        mockMvcUtil.playCardWithoutCardId(gameId, currentPlayer, targetPlayerId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        //Then A血量為Hp=3
+        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_when_eightdiagram_fail_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForA);
+
+        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_when_eightdiagram_fail_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+
+        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_when_eightdiagram_fail_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForC);
+
+        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_when_eightdiagram_fail_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
 

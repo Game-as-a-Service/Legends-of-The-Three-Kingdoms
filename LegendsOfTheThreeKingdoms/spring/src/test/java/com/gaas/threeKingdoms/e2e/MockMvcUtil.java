@@ -2,7 +2,6 @@ package com.gaas.threeKingdoms.e2e;
 
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -28,6 +27,16 @@ public class MockMvcUtil {
                           "cardId": "%s",
                           "playType": "%s"
                         }""", currentPlayerId, targetPlayerId, cardId, playType)));
+    }
+
+    public ResultActions playCardWithoutCardId(String gameId, String currentPlayerId, String targetPlayerId, String playType) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "targetPlayerId": "%s",
+                          "playType": "%s"
+                        }""", currentPlayerId, targetPlayerId, playType)));
     }
 
     public ResultActions useEquipment(String gameId, String currentPlayerId, String targetPlayerId, String cardId, EquipmentPlayType playType) throws Exception {

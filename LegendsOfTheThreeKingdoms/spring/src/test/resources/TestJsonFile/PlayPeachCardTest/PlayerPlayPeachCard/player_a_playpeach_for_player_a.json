@@ -65,7 +65,7 @@
     } ],
     "round" : {
       "roundPhase" : "Judgement",
-      "currentRoundPlayer" : "player-b",
+      "currentRoundPlayer" : "player-a",
       "activePlayer" : "player-a",
       "dyingPlayer" : "",
       "showKill" : false

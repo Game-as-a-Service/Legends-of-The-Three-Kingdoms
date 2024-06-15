@@ -22,6 +22,7 @@ public class Round {
     public Round (Player currentRoundPlayer) {
         this.roundPhase = RoundPhase.Judgement;
         this.currentRoundPlayer = currentRoundPlayer;
+        this.activePlayer = currentRoundPlayer;
         this.stage = Stage.Normal;
     }
     public boolean isPlayedValidCard(String cardId) {
@@ -29,7 +30,7 @@ public class Round {
         if (handCardOptional.isEmpty()) return false;
 
         HandCard handCard = handCardOptional.get();
-        if (handCard instanceof Kill && currentRoundPlayer.getRquipmentWeaponCard() instanceof RepeatingCrossbowCard) {
+        if (handCard instanceof Kill && currentRoundPlayer.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard) {
             isShowKill = false;
         } else if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");

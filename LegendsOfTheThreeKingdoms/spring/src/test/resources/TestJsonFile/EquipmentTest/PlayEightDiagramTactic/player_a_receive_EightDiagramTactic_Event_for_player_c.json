@@ -8,6 +8,15 @@
       "playType" : "active"
     },
     "message" : "出牌"
+  }, {
+    "event" : "AskPlayEquipmentEffectEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "equipmentCardId" : "ES2015",
+      "equipmentCardName" : "八卦陣",
+      "targetPlayerIds" : [ "player-a" ]
+    },
+    "message" : "請問要否要發動裝備卡八卦陣的效果"
   } ],
   "data" : {
     "seats" : [ {
