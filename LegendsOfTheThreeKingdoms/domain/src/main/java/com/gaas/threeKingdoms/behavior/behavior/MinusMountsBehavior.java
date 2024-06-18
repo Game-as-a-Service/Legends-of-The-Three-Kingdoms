@@ -17,7 +17,7 @@ public class MinusMountsBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> askTargetPlayerPlayCard() {
+    public List<DomainEvent> playerAction() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
         MinusMountsCard mountsCard = behaviorPlayer.getEquipment().getMinusOne();
         String originEquipmentId = "";
@@ -42,7 +42,7 @@ public class MinusMountsBehavior extends Behavior {
     }
 
     @Override
-    protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType) {
+    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         return null;
     }
 }

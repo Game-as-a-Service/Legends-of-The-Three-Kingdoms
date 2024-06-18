@@ -16,7 +16,7 @@ public class PeachBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> askTargetPlayerPlayCard() {
+    public List<DomainEvent> playerAction() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
         int originHp = behaviorPlayer.getHP();
         card.effect(behaviorPlayer);
@@ -36,7 +36,7 @@ public class PeachBehavior extends Behavior {
     }
 
     @Override
-    protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType) {
+    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerIdString, String cardId, String playType) {
         return null;
     }
 

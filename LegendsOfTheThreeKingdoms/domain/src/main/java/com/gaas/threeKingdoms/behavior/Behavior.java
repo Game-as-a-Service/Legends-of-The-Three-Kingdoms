@@ -10,35 +10,38 @@ import lombok.Getter;
 import java.util.List;
 
 @AllArgsConstructor
-public abstract class Behavior {
+@Getter
+public class Behavior {
     protected Game game;
-    @Getter
-    protected Player behaviorPlayer;
-    @Getter
-    protected List<String> reactionPlayers;
-    protected Player currentReactionPlayer;
+    protected Player behaviorPlayer; // 發動這個效果的人
+    protected List<String> reactionPlayers; // 受到效果、需要反應者
+    protected Player currentReactionPlayer; // 當前需要反應者
     protected String cardId;
-    protected String playType;
-    @Getter
+    protected String playType;  //com.gaas.threeKingdoms.handcard.PlayType
     protected HandCard card;
-    // 別人要不要反應
-    protected boolean isTargetPlayerNeedToResponse = true;
-    // 是不是一回合就結束
-    protected boolean isOneRound = true;
-    public abstract List<DomainEvent> askTargetPlayerPlayCard();
+    protected boolean isTargetPlayerNeedToResponse = true; // 別人要不要反應
+    protected boolean isOneRound = true; // 是不是一回合就結束
 
-    public List<DomainEvent> acceptedTargetPlayerPlayCard(String playerId, String targetPlayerIdString, String cardId, String playType){
-       throwExceptionWhenPlayerIsNotInReactionPlayers(playerId);
-       return doAcceptedTargetPlayerPlayCard(playerId,targetPlayerIdString,cardId,playType);
+    // hook
+    public List<DomainEvent> playerAction() {
+        return null;
+    };
+
+    // hook
+    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
+        return null;
     }
 
-    protected void throwExceptionWhenPlayerIsNotInReactionPlayers(String playerId) {
+    public List<DomainEvent> responseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType){
+        throwExceptionWhenPlayerIsNotInReactionPlayers(playerId);
+        return doResponseToPlayerAction(playerId,targetPlayerId,cardId,playType);
+    }
+
+    private void throwExceptionWhenPlayerIsNotInReactionPlayers(String playerId) {
         if (!reactionPlayers.contains(playerId)) {
             throw new IllegalStateException();
         }
     }
-
-    protected abstract List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType);
 
     protected void playerPlayCard(Player player, Player targetPlayer, String cardId) {
         HandCard handCard = player.playCard(cardId);

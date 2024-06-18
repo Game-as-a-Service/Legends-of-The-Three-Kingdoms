@@ -18,14 +18,14 @@ import java.util.List;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
 
 
-public class NormalActiveKillBehavior extends Behavior {
+public class  NormalActiveKillBehavior extends Behavior {
 
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
     }
 
     @Override
-    public List<DomainEvent> askTargetPlayerPlayCard() {
+    public List<DomainEvent> playerAction() {
         String targetPlayerId = reactionPlayers.get(0);
         Player targetPlayer = game.getPlayer(targetPlayerId);
 
@@ -50,7 +50,7 @@ public class NormalActiveKillBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType) {
+    public List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         Player damagedPlayer = game.getPlayer(playerId);
         int originalHp = damagedPlayer.getHP();
 
@@ -79,11 +79,18 @@ public class NormalActiveKillBehavior extends Behavior {
 
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
             return List.of(playCardEvent, playerDamagedEvent);
-        }
-        else {
+        } else if (isQilinBowSuccess(playType)) {
+            Round currentRound = game.getCurrentRound();
+
+            return game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+        } else {
             //TODO:怕有其他效果或殺的其他case
             return new ArrayList<>();
         }
+    }
+
+    private boolean isQilinBowSuccess(String playType) {
+        return  PlayType.QilinBow.getPlayType().equals(playType);
     }
 
     private boolean isAskPlayerUseQilinBow(Player attackPlayer, Player damagedPlayer) {
@@ -97,7 +104,6 @@ public class NormalActiveKillBehavior extends Behavior {
     private boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
     }
-
 
     private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
         return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());

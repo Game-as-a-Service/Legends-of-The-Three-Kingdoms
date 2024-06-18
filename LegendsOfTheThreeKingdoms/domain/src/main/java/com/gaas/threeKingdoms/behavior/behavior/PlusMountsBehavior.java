@@ -16,7 +16,7 @@ public class PlusMountsBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> askTargetPlayerPlayCard() {
+    public List<DomainEvent> playerAction() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
         PlusMountsCard mountsCard = behaviorPlayer.getEquipment().getPlusOne();
         String originEquipmentId = "";
@@ -42,7 +42,7 @@ public class PlusMountsBehavior extends Behavior {
     }
 
     @Override
-    protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType) {
+    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         return null;
     }
 }

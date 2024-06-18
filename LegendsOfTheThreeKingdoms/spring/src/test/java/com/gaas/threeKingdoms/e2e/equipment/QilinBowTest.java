@@ -195,6 +195,8 @@ public class QilinBowTest {
 
     private void whenAChooseHorse() {
 
+
+
     }
 
     private void playerAPlayQilinBowWhenBHaveTwoHorse() throws Exception {

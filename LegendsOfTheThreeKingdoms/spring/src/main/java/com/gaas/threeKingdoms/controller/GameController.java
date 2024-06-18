@@ -27,6 +27,7 @@ public class GameController {
     private final PlayCardUseCase playCardUseCase;
     private final FindGameByIdUseCase findGameUseCase;
     private final UseEquipmentUseCase useEquipmentUseCase;
+    private final ChooseHorseUseCase chooseHorseUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -104,10 +105,10 @@ public class GameController {
     }
 
     @PostMapping("/api/games/{gameId}/player:chooseHorseCard")
-    public ResponseEntity<?> playerChooseHorseCard(@PathVariable String gameId, @RequestBody UseEquipmentRequest useEquipmentRequest) {
-        UseEquipmentEffectPresenter equipmentEffectPresenter = new UseEquipmentEffectPresenter();
-        useEquipmentUseCase.execute(gameId,useEquipmentRequest.toUseEquipmentRequest(), equipmentEffectPresenter);
-        webSocketBroadCast.pushEquipmentEffectEvent(equipmentEffectPresenter);
+    public ResponseEntity<?> playerChooseHorseCard(@PathVariable String gameId, @RequestBody ChooseHorseRequest chooseHorseRequest) {
+        ChooseHorsePresenter chooseHorsePresenter = new ChooseHorsePresenter();
+        chooseHorseUseCase.execute(gameId, chooseHorseRequest.toChooseHorseRequest(), chooseHorsePresenter);
+        webSocketBroadCast.pushChooseHorseEvent(chooseHorsePresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
