@@ -89,6 +89,55 @@ public class QilinBowTest {
 
     }
 
+    @Test
+    public void testPlayerAPlayQilinBowPlayerBWithoutHorse() throws Exception {
+        givenPlayerAHaveQilinBowPlayerBHaveRedRabbitHorse();
+        // A 玩家出麒麟弓
+        playerAPlayQilinBow();
+
+        // A 玩家出殺 B 玩家沒有馬 不會收到發動裝備卡效果的 Event
+        whenAKillBThenAShouldNotHaveEquipmentEvent();
+
+    }
+
+    @Test
+    public void testPlayerAPlayQilinBowPlayerBWithTwoHorse() throws Exception {
+        //玩家 A 有麒麟弓 B 有裝備兩隻馬，B 有 4 HP
+        givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(4);
+
+        // A 玩家出麒麟弓
+        playerAPlayQilinBowWhenBHaveTwoHorse();
+
+        // A 玩家出殺
+        // B 玩家skip
+        whenAKillAndBSkip();
+
+        // A發動效果 B有兩隻馬
+        whenAUseEquipmentEffectAndBHaveTwoHorse();
+
+        // A玩家選擇一張馬
+        whenAChooseHorse();
+    }
+
+    @Test
+    public void testPlayerAPlayQilinBowPlayerBWithTwoHorseAndBDie() throws Exception {
+        //玩家 A 有麒麟弓 B 有裝備兩隻馬，B只有 1 HP
+        givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(1);
+
+        // A 玩家出麒麟弓
+        playerAPlayQilinBowWhenBHaveTwoHorse();
+
+        // A 玩家出殺
+        // B 玩家skip
+        whenAKillAndBSkip();
+
+        // A發動效果 B有兩隻馬
+        whenAUseEquipmentEffectAndBHaveTwoHorseNoCheck();
+
+        // A玩家選擇一張馬，B玩家瀕死
+        whenAChooseHorseAndBDie();
+    }
+
     private void playerAUseEquipmentEffect() throws Exception {
         // When A 玩家發動效果
         String currentPlayer = "player-a";
@@ -159,44 +208,47 @@ public class QilinBowTest {
         path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_receive_askqilinbow_event_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
-
-
     }
 
-    @Test
-    public void testPlayerAPlayQilinBowPlayerBWithoutHorse() throws Exception {
-        givenPlayerAHaveQilinBowPlayerBHaveRedRabbitHorse();
-        // A 玩家出麒麟弓
-        playerAPlayQilinBow();
+    private void whenAChooseHorseAndBDie() throws Exception {
+        // When A 選擇一張馬
+        String currentPlayerId = "player-a";
+        String cardId = "EH5044";
+        mockMvcUtil.chooseHorse(gameId, currentPlayerId, cardId)
+                .andExpect(status().isOk()).andReturn();
 
-        // A 玩家出殺 B 玩家沒有馬 不會收到發動裝備卡效果的 Event
-        whenAKillBThenAShouldNotHaveEquipmentEvent();
 
+        //Then A 收到選擇馬的event  B玩家瀕死
+        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_receive_removehorse_b_die_event_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForA);
     }
 
-    @Test
-    public void testPlayerAPlayQilinBowPlayerBWithTwoHorse() throws Exception {
-        //玩家 A 有麒麟弓 B 有裝備兩隻馬
-        givenPlayerAHaveQilinBowPlayerBHaveTwoHorse();
+    private void whenAChooseHorse() throws Exception {
 
-        // A 玩家出麒麟弓
-        playerAPlayQilinBowWhenBHaveTwoHorse();
-
-        // A 玩家出殺
-        // B 玩家skip
-        whenAKillAndBSkip();
-
-        // A發動效果 B有兩隻馬
-        whenAUseEquipmentEffectAndBHaveTwoHorse();
-
-        // A玩家選擇一張馬
-        whenAChooseHorse();
-    }
-
-    private void whenAChooseHorse() {
+        // When A 選擇一張馬
+        String currentPlayerId = "player-a";
+        String cardId = "EH5044";
+        mockMvcUtil.chooseHorse(gameId, currentPlayerId, cardId)
+                .andExpect(status().isOk()).andReturn();
 
 
+        //Then A 收到選擇馬的event
+        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_receive_removehorse_event_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForA);
 
+        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_receive_removehorse_event_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+
+        String playerAPlayPeachJsonForE = websocketUtil.getValue("player-e");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_receive_removehorse_event_for_player_e.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForE);
     }
 
     private void playerAPlayQilinBowWhenBHaveTwoHorse() throws Exception {
@@ -217,6 +269,24 @@ public class QilinBowTest {
         String playerAPlayQilinBowJsonForF = websocketUtil.getValue("player-f");
         String playerAPlayQilinBowJsonForG = websocketUtil.getValue("player-g");
 
+    }
+
+    private void whenAUseEquipmentEffectAndBHaveTwoHorseNoCheck() throws Exception {
+        // When A 玩家發動效果 B有兩隻馬
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-b";
+        String playedCardId = "EH5031";
+
+        mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+
+        String playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
+        String playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
+        String playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
+        String playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+        String playerAPlayKillJsonForE = websocketUtil.getValue("player-e");
+        String playerAPlayKillJsonForF = websocketUtil.getValue("player-f");
+        String playerAPlayKillJsonForG = websocketUtil.getValue("player-g");
     }
 
     private void whenAUseEquipmentEffectAndBHaveTwoHorse() throws Exception {
@@ -338,7 +408,7 @@ public class QilinBowTest {
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
-    private void givenPlayerAHaveQilinBowPlayerBHaveTwoHorse() {
+    private void givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(int playerBHP) {
         Player playerA = createPlayer(
                 "player-a",
                 4,
@@ -348,7 +418,7 @@ public class QilinBowTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)
         );
         Player playerB = createPlayer("player-b",
-                4,
+                playerBHP,
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MINISTER,

@@ -1,8 +1,9 @@
 package com.gaas.threeKingdoms.presenter;
 
-import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.events.GameStatusEvent;
+import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
+import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
+import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
 import com.gaas.threeKingdoms.usecase.ChooseHorseUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.gaas.threeKingdoms.presenter.PlayCardPresenter.*;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePresenter<List<ChooseHorsePresenter.GameViewModel>>{
@@ -23,10 +25,47 @@ public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePrese
     @Override
     public void renderEvents(List<DomainEvent> events) {
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
-//        ChooseHorseEffectViewModel chooseHorseEffectViewModel = getChooseHorseEffectEvent(events);
-//        updateViewModels(gameStatusEvent);
+        RemoveHorseEvent removeHorseEvent = getEvent(events, RemoveHorseEvent.class).orElseThrow();
+        RemoveHorseViewModel removeHorseViewModel = new RemoveHorseViewModel(new RemoveHorseDataViewModel(removeHorseEvent.getPlayerId(), removeHorseEvent.getMountCardId()));
+        PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
+        PlayCardPresenter.PlayerDyingViewModel playerDyingViewModel = getPlayerDyingEventViewModel(events);
+        PlayCardPresenter.AskPeachViewModel askPeachViewModel = getAskPeachViewModel(events);
+        PlayCardPresenter.SettlementViewModel settlementViewModel = getSettlementViewModel(events);
+        PlayCardPresenter.GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
+
+        updateViewModels(
+                removeHorseViewModel,
+                playerDamageEventViewModel,
+                playerDyingViewModel,
+                askPeachViewModel,
+                settlementViewModel,
+                gameOverViewModel
+        );
+
+        List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
+        RoundEvent roundEvent = gameStatusEvent.getRound();
+        List<PlayerDataViewModel> playerDataViewModels = playerEvents.stream().map(PlayerDataViewModel::new).toList();
+
+        // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
+        RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
+
+        for (PlayerDataViewModel viewModel : playerDataViewModels) {
+
+            // 此 use case 的 data 物件
+            GameDataViewModel gameDataViewModel = new GameDataViewModel(
+                    PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
+                            playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
+
+            viewModels.add(new ChooseHorsePresenter.GameViewModel(
+                    effectViewModels,
+                    gameDataViewModel,
+                    gameStatusEvent.getMessage(),
+                    gameStatusEvent.getGameId(),
+                    viewModel.getId()));
+        }
 
     }
+
 
     @Override
     public List<ChooseHorsePresenter.GameViewModel> present() {
@@ -39,6 +78,19 @@ public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePrese
                 .forEach(effectViewModels::add);
     }
 
+    public static class RemoveHorseViewModel extends ViewModel<RemoveHorseDataViewModel> {
+        public RemoveHorseViewModel(RemoveHorseDataViewModel data) {
+            super("RemoveHorseViewModel", data, "移除馬匹");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RemoveHorseDataViewModel {
+        private String playerId;
+        private String mountCardId;
+    }
 
     @Data
     @AllArgsConstructor

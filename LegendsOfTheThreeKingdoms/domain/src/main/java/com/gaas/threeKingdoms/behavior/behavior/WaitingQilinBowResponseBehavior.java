@@ -2,14 +2,12 @@ package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.events.*;
+import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Stage;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

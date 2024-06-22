@@ -275,11 +275,11 @@ public class Game {
         List<DomainEvent> qilingBowEvents = qilinBowbehavior.responseToPlayerAction(playerId, nomralKillbehavior.getReactionPlayers().get(0), cardId, EquipmentPlayType.ACTIVE.getPlayType());
 
         List<DomainEvent> normalKillEvents = nomralKillbehavior.responseToPlayerAction(nomralKillbehavior.getReactionPlayers().get(0), qilinBowbehavior.getCurrentReactionPlayer().getId(), cardId, PlayType.QilinBow.getPlayType());
-
         if (nomralKillbehavior.isOneRound()) { // 沒人死
             topBehavior.pop();
         }
-        return Stream.of(qilingBowEvents, normalKillEvents).flatMap(Collection::stream).collect(Collectors.toList());
+
+        return Stream.of(qilingBowEvents, normalKillEvents, getGameStatusEventInList("選擇馬")).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     public void playerDeadSettlement() {
@@ -589,6 +589,10 @@ public class Game {
         List<PlayerEvent> playerEvents = getPlayers().stream().map(PlayerEvent::new).toList();
         RoundEvent roundEvent = new RoundEvent(currentRound);
         return new GameStatusEvent(gameId, playerEvents, roundEvent, gamePhase.getPhaseName(), message);
+    }
+
+    public List<DomainEvent> getGameStatusEventInList(String message) {
+        return List.of(getGameStatusEvent(message));
     }
 }
 
