@@ -3,6 +3,8 @@ package com.gaas.threeKingdoms.handcard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
@@ -17,6 +19,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.ECA066;
+import static com.gaas.threeKingdoms.handcard.PlayCard.ES2015;
 
 @Data
 @AllArgsConstructor
@@ -31,7 +34,11 @@ public class Deck {
             cardDeck.add(new Dodge(PlayCard.BHK039));
             cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
             cardDeck.add(new ShadowHorse(PlayCard.ES5018));
+            cardDeck.add(new QilinBowCard(PlayCard.EH5031));
+        });
+        IntStream.range(0, 4).forEach(i -> {
             cardDeck.add(new RepeatingCrossbowCard(ECA066));
+            cardDeck.add(new EightDiagramTactic(ES2015));
         });
         shuffle();
     }
