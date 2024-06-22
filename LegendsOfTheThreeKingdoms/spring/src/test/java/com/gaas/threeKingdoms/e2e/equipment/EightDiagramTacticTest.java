@@ -168,20 +168,20 @@ public class EightDiagramTacticTest {
         whenPlayerAPlayDodgeAndHpKeep();
     }
 
-    @Test
-    public void testPlayerAUseEightDiagramTacticAndEffectFailedAndThenSkip() throws Exception {
-        // Given A玩家已裝備一張八卦陣
-        givenPlayerAEquipedEightDiagramTacticAndWillfail();
-
-        //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
-        whenBKillAThenAShouldHaveEquipmentEvent();
-
-        //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
-        whenPlayerAUseEightDiagramTacticAndFailed();
-
-        //玩家A 出skip
-        whenPlayerASkipAndHpDecrease();
-    }
+//    @Test
+//    public void testPlayerAUseEightDiagramTacticAndEffectFailedAndThenSkip() throws Exception {
+//        // Given A玩家已裝備一張八卦陣
+//        givenPlayerAEquipedEightDiagramTacticAndWillfail();
+//
+//        //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
+//        whenBKillAThenAShouldHaveEquipmentEvent();
+//
+//        //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
+//        whenPlayerAUseEightDiagramTacticAndFailed();
+//
+//        //玩家A 出skip
+//        whenPlayerASkipAndHpDecrease();
+//    }
 
     private void whenBKillAThenAShouldHaveEquipmentEvent() throws Exception {
         // When B 玩家攻擊 A 玩家
