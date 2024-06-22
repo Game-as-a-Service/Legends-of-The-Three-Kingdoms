@@ -2,10 +2,12 @@ package com.gaas.threeKingdoms.effect;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.behavior.WaitingQilinBowResponseBehavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
@@ -13,6 +15,7 @@ import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,11 +37,11 @@ public class QilinBowEquipmentEffectHandler extends EquipmentEffectHandler {
         List<DomainEvent> events = new ArrayList<>();
         Round currentRound = game.getCurrentRound();
         Stage currentStage = currentRound.getStage();
+        Behavior behavior = game.peekTopBehavior(); // NormalActiveKill
         if (!currentStage.equals(Stage.Wait_Equipment_Effect)) {
             throw new IllegalStateException(String.format("CurrentRound stage not Wait_Equipment_Effect but [%s]", currentStage));
         }
         if (skipEquipmentEffect(playType)) {
-            Behavior behavior = game.peekTopBehavior();
             Player damagedPlayer = game.getPlayer(behavior.getReactionPlayers().get(0));
             HandCard card = behavior.getCard(); // Kill
             int originalHp = damagedPlayer.getHP();
@@ -66,13 +69,12 @@ public class QilinBowEquipmentEffectHandler extends EquipmentEffectHandler {
             return events;
         }
 
-        //加 behavior 進 stack
         Player player = getPlayer(playerId);
         WeaponCard weaponCard = player.getEquipment().getWeapon();
         events = weaponCard.equipmentEffect(game);
-
-//        //這時候 TopBehavior 應該是 NormalActiveKill
-//        game.peekTopBehavior().setIsOneRound(true);
+        // 用作紀錄麒麟弓在遊戲內的狀態
+        game.updateTopBehavior(new WaitingQilinBowResponseBehavior(game, behavior.getBehaviorPlayer(), Collections.singletonList(behavior.getBehaviorPlayer().getId()), behavior.getCurrentReactionPlayer(),
+                cardId, PlayType.QilinBow.getPlayType(), weaponCard));
         return events;
 
     }

@@ -151,4 +151,17 @@ public class WebSocketBroadCast {
             e.printStackTrace();
         }
     }
+
+    public void pushChooseHorseEvent(ChooseHorsePresenter presenter) {
+        List<ChooseHorsePresenter.GameViewModel> chooseHorseViewModels = presenter.present();
+        try {
+            for (ChooseHorsePresenter.GameViewModel chooseHorseViewModel : chooseHorseViewModels) {
+                String chooseHorseJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(chooseHorseViewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", chooseHorseViewModel.getGameId(), chooseHorseViewModel.getPlayerId()), chooseHorseJson);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushEquipmentEffectEvent ");
+            e.printStackTrace();
+        }
+    }
 }

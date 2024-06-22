@@ -16,7 +16,7 @@ public class EquipArmorBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> askTargetPlayerPlayCard() {
+    public List<DomainEvent> playerAction() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
         ArmorCard armorCard = behaviorPlayer.getEquipment().getArmor();
         String originEquipmentId = "";
@@ -43,7 +43,7 @@ public class EquipArmorBehavior extends Behavior {
     }
 
     @Override
-    protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType) {
+    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         return null;
     }
 }

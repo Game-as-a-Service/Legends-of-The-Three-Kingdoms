@@ -83,6 +83,12 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         }
     }
 
+    private void updateViewModels(ViewModel<?>... viewModels) {
+        Arrays.stream(viewModels)
+                .filter(Objects::nonNull)
+                .forEach(eventToViewModels::add);
+    }
+
     private AskPlayEquipmentEffectViewModel getAskPlayEquipmentEffectViewModel(PlayCardDataViewModel playCardDataViewModel, List<DomainEvent> events) {
         return getEvent(events, AskPlayEquipmentEffectEvent.class)
                 .map(event -> {
@@ -92,14 +98,8 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                 .orElse(null);
     }
 
-    private void updateViewModels(ViewModel<?>... viewModels) {
-        Arrays.stream(viewModels)
-                .filter(Objects::nonNull)
-                .forEach(eventToViewModels::add);
-    }
 
-
-    private PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
+    public static PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
         return getEvent(events, PlayerDamagedEvent.class)
                 .map(event -> {
                     PlayerDamagedDataViewModel playerDamagedDataViewModel = new PlayerDamagedDataViewModel(event.getPlayerId(), event.getFrom(), event.getTo());
@@ -108,7 +108,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                 .orElse(null);
     }
 
-    private PlayerDyingViewModel getPlayerDyingEventViewModel(List<DomainEvent> events) {
+    public static PlayerDyingViewModel getPlayerDyingEventViewModel(List<DomainEvent> events) {
         return getEvent(events, PlayerDyingEvent.class)
                 .map(event -> {
                     PlayerDyingDataViewModel playerDyingDataViewModel = new PlayerDyingDataViewModel(event.getPlayerId());
@@ -118,7 +118,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
 
-    private AskPeachViewModel getAskPeachViewModel(List<DomainEvent> events) {
+    public static AskPeachViewModel getAskPeachViewModel(List<DomainEvent> events) {
         return getEvent(events, AskPeachEvent.class)
                 .map(event -> {
                     AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(event.getPlayerId(), event.getDyingPlayerId());
@@ -127,7 +127,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                 .orElse(null);
     }
 
-    private SettlementViewModel getSettlementViewModel(List<DomainEvent> events) {
+    public static SettlementViewModel getSettlementViewModel(List<DomainEvent> events) {
         return getEvent(events, SettlementEvent.class)
                 .map(event -> {
                     SettlementDataViewModel settlementDataViewModel = new SettlementDataViewModel(event.getPlayerId(), event.getRole());
@@ -137,7 +137,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
 
-    private GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
+    public static GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
         return getEvent(events, GameOverEvent.class)
                 .map(gameOverEvent -> {
                     GameOverDataViewModel gameOverDataViewModel = new GameOverDataViewModel(gameOverEvent.getPlayers().stream()

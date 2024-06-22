@@ -22,12 +22,12 @@ public class DyingAskPeachBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> askTargetPlayerPlayCard() {
+    public List<DomainEvent> playerAction() {
         return null;
     }
 
     @Override
-    protected List<DomainEvent> doAcceptedTargetPlayerPlayCard(String playerId, String targetPlayerId, String cardId, String playType) {
+    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         Player dyingPlayer = game.getPlayer(targetPlayerId);
         Player currentPlayer = game.getPlayer(playerId);
         int originalHp = dyingPlayer.getHP();

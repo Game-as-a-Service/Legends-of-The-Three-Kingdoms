@@ -26,6 +26,7 @@ import lombok.Builder;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Builder
 @AllArgsConstructor
@@ -239,7 +240,7 @@ public class Game {
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
-            List<DomainEvent> acceptedEvent = behavior.acceptedTargetPlayerPlayCard(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
+            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
             if (behavior.isOneRound()) {
                 topBehavior.pop();
             } else {
@@ -248,12 +249,13 @@ public class Game {
             }
             return acceptedEvent;
         }
-        Behavior behavior = playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType);
+        List<String> reActionPlayer = new ArrayList<>();
+        reActionPlayer.add(targetPlayerId);
+        Behavior behavior = playCardHandler.handle(playerId, cardId, reActionPlayer, playType);
         if (behavior.isTargetPlayerNeedToResponse()) {
             updateTopBehavior(behavior);
         }
-        List<DomainEvent> events = behavior.askTargetPlayerPlayCard();
-        return events;
+        return behavior.playerAction();
     }
 
     private void checkIsCurrentRoundValid(String playerId) {
@@ -267,28 +269,17 @@ public class Game {
         return Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
     }
 
-
-
-
     public List<DomainEvent> playerChooseHorseForQilinBow(String playerId, String cardId) {
-        PlayCard playCard = PlayCard.valueOf(cardId);
-        if (!playCard.isMountsCard()) {
-            throw new IllegalStateException("playCard is not mounts playCard type");
-        }
-        Player damagedPlayer = getPlayer(peekTopBehavior().getReactionPlayers().get(0));
-        if (damagedPlayer.getEquipmentMinusOneMountsCard().getId().equals(cardId) && damagedPlayer.getEquipmentPlusOneMountsCard().getId().equals(cardId)) {
-            throw new IllegalStateException("player doesn't equip this mount playCard");
+        Behavior qilinBowbehavior = topBehavior.pop(); //  麒麟弓 behavior
+        Behavior nomralKillbehavior = topBehavior.peek(); //  NormalKill
+        List<DomainEvent> qilingBowEvents = qilinBowbehavior.responseToPlayerAction(playerId, nomralKillbehavior.getReactionPlayers().get(0), cardId, EquipmentPlayType.ACTIVE.getPlayType());
+
+        List<DomainEvent> normalKillEvents = nomralKillbehavior.responseToPlayerAction(nomralKillbehavior.getReactionPlayers().get(0), qilinBowbehavior.getCurrentReactionPlayer().getId(), cardId, PlayType.QilinBow.getPlayType());
+        if (nomralKillbehavior.isOneRound()) { // 沒人死
+            topBehavior.pop();
         }
 
-        DomainEvent removeHorseEvent = damagedPlayer.removeMountsCard(playerId,cardId);
-        Behavior behavior = topBehavior.pop();
-        int originalHp = damagedPlayer.getHP();
-        HandCard card = behavior.getCard();
-
-        List<DomainEvent> events = getDamagedEventForEquipmentEffect(card, originalHp, damagedPlayer,currentRound, behavior);
-        events.add(removeHorseEvent);
-        currentRound.setStage(Stage.Normal);
-        return events;
+        return Stream.of(qilingBowEvents, normalKillEvents, getGameStatusEventInList("選擇馬")).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     public void playerDeadSettlement() {
@@ -458,36 +449,36 @@ public class Game {
         }
     }
 
-    public List<DomainEvent> getDamagedEventForEquipmentEffect(HandCard card,
-                                                               int originalHp,
-                                                               Player damagedPlayer,
-                                                               Round currentRound,
-                                                               Behavior behavior) {
-        List<DomainEvent> domainEvents = new ArrayList<>();
-        card.effect(damagedPlayer);
-        PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-
-        if (damagedPlayer.isStillAlive()) {
-            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
-            RoundEvent roundEvent = new RoundEvent(currentRound);
-            domainEvents.add(roundEvent);
-            domainEvents.add(playerDamagedEvent);
-            return domainEvents;
-        } else {
-            PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
-            AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
-            this.enterPhase(new GeneralDying(this));
-            currentRound.setDyingPlayer(damagedPlayer);
-            currentRound.setActivePlayer(damagedPlayer);
-            RoundEvent roundEvent = new RoundEvent(currentRound);
-            behavior.setIsOneRound(false);
-            domainEvents.add(roundEvent);
-            domainEvents.add(playerDamagedEvent);
-            domainEvents.add(playerDyingEvent);
-            domainEvents.add(askPeachEvent);
-            return domainEvents;
-        }
-    }
+//    public List<DomainEvent> getDamagedEventForEquipmentEffect(HandCard card,
+//                                                               int originalHp,
+//                                                               Player damagedPlayer,
+//                                                               Round currentRound,
+//                                                               Behavior behavior) {
+//        List<DomainEvent> domainEvents = new ArrayList<>();
+//        card.effect(damagedPlayer);
+//        PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
+//
+//        if (damagedPlayer.isStillAlive()) {
+//            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+//            RoundEvent roundEvent = new RoundEvent(currentRound);
+//            domainEvents.add(roundEvent);
+//            domainEvents.add(playerDamagedEvent);
+//            return domainEvents;
+//        } else {
+//            PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
+//            AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
+//            this.enterPhase(new GeneralDying(this));
+//            currentRound.setDyingPlayer(damagedPlayer);
+//            currentRound.setActivePlayer(damagedPlayer);
+//            RoundEvent roundEvent = new RoundEvent(currentRound);
+//            behavior.setIsOneRound(false);
+//            domainEvents.add(roundEvent);
+//            domainEvents.add(playerDamagedEvent);
+//            domainEvents.add(playerDyingEvent);
+//            domainEvents.add(askPeachEvent);
+//            return domainEvents;
+//        }
+//    }
 
     private PlayerDyingEvent createPlayerDyingEvent(Player player) {
         return new PlayerDyingEvent(player.getId());
@@ -598,6 +589,10 @@ public class Game {
         List<PlayerEvent> playerEvents = getPlayers().stream().map(PlayerEvent::new).toList();
         RoundEvent roundEvent = new RoundEvent(currentRound);
         return new GameStatusEvent(gameId, playerEvents, roundEvent, gamePhase.getPhaseName(), message);
+    }
+
+    public List<DomainEvent> getGameStatusEventInList(String message) {
+        return List.of(getGameStatusEvent(message));
     }
 }
 
