@@ -158,12 +158,22 @@ public enum PlayCard {
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
 
+    public static boolean isKillCard(String cardId){
+        return Arrays.stream(PlayCard.values())
+                .filter(c->c.getCardName().equals("殺"))
+                .anyMatch(c->c.getCardId().equals(cardId));
+    }
+
     public static boolean isEightDiagramTacticCard(String cardId){
         return Arrays.stream(PlayCard.values())
                 .filter(c->c.getCardName().equals("八卦陣"))
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
     public boolean isMountsCard() {return Arrays.stream(PlayCard.values()).filter(c -> "赤兔".equals(c.getCardName()) || "絕影".equals(c.getCardName())).anyMatch(c->c.getCardId().equals(this.cardId));
+    }
+
+    public static boolean isSkip(String playType) {
+        return PlayType.SKIP.getPlayType().equals(playType);
     }
 
 

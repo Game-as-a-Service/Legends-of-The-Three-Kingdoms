@@ -11,11 +11,13 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
+import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
 
 public class  NormalActiveKillBehavior extends Behavior {
@@ -99,10 +101,6 @@ public class  NormalActiveKillBehavior extends Behavior {
 
     private boolean isPlayerStillAlive(Player damagedPlayer) {
         return damagedPlayer.getHP() > 0;
-    }
-
-    private boolean isSkip(String playType) {
-        return PlayType.SKIP.getPlayType().equals(playType);
     }
 
     private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
