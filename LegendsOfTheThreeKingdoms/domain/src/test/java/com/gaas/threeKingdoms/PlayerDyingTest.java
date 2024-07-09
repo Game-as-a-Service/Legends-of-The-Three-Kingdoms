@@ -113,9 +113,10 @@ public class PlayerDyingTest {
         PlayerDamagedEvent playerDamagedEvent = getEvent(events, PlayerDamagedEvent.class).orElseThrow(RuntimeException::new);
         PlayerDyingEvent playerDyingEvent = getEvent(events, PlayerDyingEvent.class).orElseThrow(RuntimeException::new);
         AskPeachEvent askPeachEvent = getEvent(events, AskPeachEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
         assertNotNull(playCardEvent);
-        RoundEvent roundEvent = playCardEvent.getRound();
+        RoundEvent roundEvent = gameStatusEvent.getRound();
         assertEquals("player-a", playerDamagedEvent.getPlayerId());
         assertEquals("player-a", playerDyingEvent.getPlayerId());
         assertEquals("player-a", askPeachEvent.getPlayerId());
@@ -209,9 +210,10 @@ public class PlayerDyingTest {
         //Then
         PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
         AskPeachEvent askPeachEvent = getEvent(events, AskPeachEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
         assertNotNull(playCardEvent);
-        RoundEvent roundEvent = playCardEvent.getRound();
+        RoundEvent roundEvent = gameStatusEvent.getRound();
         assertEquals("player-b", askPeachEvent.getPlayerId());
         assertEquals("player-a", roundEvent.getDyingPlayer());
 
@@ -305,9 +307,10 @@ public class PlayerDyingTest {
         //Then
         PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
         AskPeachEvent askPeachEvent = getEvent(events, AskPeachEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
         assertNotNull(playCardEvent);
-        RoundEvent roundEvent = playCardEvent.getRound();
+        RoundEvent roundEvent = gameStatusEvent.getRound();
         assertEquals("player-c", askPeachEvent.getPlayerId());
         assertEquals("player-a", roundEvent.getDyingPlayer());
 
@@ -402,9 +405,10 @@ public class PlayerDyingTest {
         //Then
         PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
         AskPeachEvent askPeachEvent = getEvent(events, AskPeachEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
         assertNotNull(playCardEvent);
-        RoundEvent roundEvent = playCardEvent.getRound();
+        RoundEvent roundEvent = gameStatusEvent.getRound();
         assertEquals("player-d", askPeachEvent.getPlayerId());
         assertEquals("player-a", roundEvent.getDyingPlayer());
 

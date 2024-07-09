@@ -429,23 +429,22 @@ public class Game {
                                              Behavior behavior) {
         card.effect(damagedPlayer);
         PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-        List<PlayerEvent> playerEvents = getPlayers().stream().map(PlayerEvent::new).toList();
 
         if (damagedPlayer.isStillAlive()) {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
-            RoundEvent roundEvent = new RoundEvent(currentRound);
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, this.gameId, playerEvents, roundEvent, this.getGamePhase().getPhaseName());
-            return List.of(playCardEvent, playerDamagedEvent);
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
+            GameStatusEvent gameStatusEvent = getGameStatusEvent("扣血但還活著");
+            return List.of(playCardEvent, playerDamagedEvent, gameStatusEvent);
         } else {
             PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
             AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
             this.enterPhase(new GeneralDying(this));
             currentRound.setDyingPlayer(damagedPlayer);
             currentRound.setActivePlayer(damagedPlayer);
-            RoundEvent roundEvent = new RoundEvent(currentRound);
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, this.getGameId(), playerEvents, roundEvent, this.getGamePhase().getPhaseName());
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
+            GameStatusEvent gameStatusEvent = getGameStatusEvent("扣血已瀕臨死亡");
             behavior.setIsOneRound(false);
-            return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent);
+            return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent, gameStatusEvent);
         }
     }
 

@@ -24,19 +24,12 @@ public class BarbarianInvasionBehavior extends Behavior {
         String currentReactionPlayerId = currentReactionPlayer.getId();
         playerPlayCard(behaviorPlayer, currentReactionPlayer, cardId);
 
-        Round currentRound = game.getCurrentRound();
-        RoundEvent roundEvent = new RoundEvent(currentRound);
-        List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
         events.add(new PlayCardEvent(
                 "出牌",
                 behaviorPlayer.getId(),
                 currentReactionPlayerId,
                 cardId,
-                playType,
-                game.getGameId(),
-                playerEvents,
-                roundEvent,
-                game.getGamePhase().getPhaseName()));
+                playType));
         events.add(new AskKillEvent(currentReactionPlayerId));
         events.add(game.getGameStatusEvent("發動南蠻入侵"));
 
@@ -57,8 +50,9 @@ public class BarbarianInvasionBehavior extends Behavior {
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
             events.add(new AskKillEvent(currentReactionPlayer.getId()));
             events.add(game.getGameStatusEvent(playerId + "出skip"));
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), null, null, game.getGamePhase().getPhaseName());
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
             events.add(playCardEvent);
+            events.add(game.getGameStatusEvent("出牌"));
             return events;
         } else if (isKillCard(card.getId())) {
             List<DomainEvent> events = new ArrayList<>();

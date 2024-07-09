@@ -13,10 +13,6 @@ public abstract class GamePhase {
         this.game = game;
     }
 
-    public List<DomainEvent> playCard(String playerId, String cardId, String targetPlayerId, String playType) {
-        throw new UnsupportedOperationException("Method not implemented for this class");
-    }
-
     public void execute() {
         throw new UnsupportedOperationException("Method not implemented for this class");
     }

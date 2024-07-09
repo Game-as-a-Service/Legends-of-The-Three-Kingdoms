@@ -38,20 +38,17 @@ public class DyingAskPeachBehavior extends Behavior {
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isOneRound = true;
                 if (isMonarchDied(dyingPlayer)) {
-                    Round currentRound = game.getCurrentRound();
-                    RoundEvent roundEvent = new RoundEvent(currentRound);
-                    PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+                    PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole().getRoleName());
                     GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage(), getWinners(game.getPlayers()), playerEvents);
                     game.enterPhase(new GameOver(game));
-                    return List.of(playCardEvent, settlementEvent, gameOverEvent);
+                    return List.of(playCardEvent, settlementEvent, gameOverEvent, game.getGameStatusEvent("主公死亡"));
                 }
             }
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(game.getNextPlayer(currentPlayer));
-            RoundEvent roundEvent = new RoundEvent(currentRound);
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌",playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            return List.of(playCardEvent, askPeachEvent);
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌",playerId, targetPlayerId, cardId, playType);
+            return List.of(playCardEvent, askPeachEvent, game.getGameStatusEvent("不出牌"));
         } else if (isPeachCard(cardId)) {
 
             // Player use peach card
@@ -65,11 +62,9 @@ public class DyingAskPeachBehavior extends Behavior {
             game.enterPhase(new Normal(game));
 
             // Create Domain Events
-            RoundEvent roundEvent = new RoundEvent(game.getCurrentRound());
-            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
+            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
             PeachEvent peachEvent = new PeachEvent(targetPlayerId, originalHp, dyingPlayer.getHP());
-            return List.of(playCardEvent, peachEvent);
+            return List.of(playCardEvent, peachEvent, game.getGameStatusEvent("出牌"));
 
         } else {
             //TODO:怕有其他效果或殺的其他case

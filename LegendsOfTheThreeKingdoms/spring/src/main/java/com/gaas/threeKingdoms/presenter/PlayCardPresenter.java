@@ -37,9 +37,10 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         viewModels = new ArrayList<>();
 
         PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
-        List<PlayerDataViewModel> playerDataViewModels = playCardEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
-        RoundEvent roundEvent = playCardEvent.getRound();
+        List<PlayerDataViewModel> playerDataViewModels = gameStatusEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
+        RoundEvent roundEvent = gameStatusEvent.getRound();
 
         PlayCardDataViewModel playCardDataViewModel = new PlayCardDataViewModel(playCardEvent.getPlayerId(), playCardEvent.getTargetPlayerId(), playCardEvent.getCardId(), playCardEvent.getPlayType());
         PlayCardViewModel playCardViewModel = new PlayCardViewModel(playCardDataViewModel, playCardEvent.getMessage());
@@ -72,13 +73,13 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
             // 此 use case 的 data 物件
             GameDataViewModel gameDataViewModel = new GameDataViewModel(
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
-                            playerDataViewModels, viewModel.getId()), roundDataViewModel, playCardEvent.getGamePhase());
+                            playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
             viewModels.add(new GameViewModel(
                     eventToViewModels,
                     gameDataViewModel,
                     playCardEvent.getMessage(),
-                    playCardEvent.getGameId(),
+                    gameStatusEvent.getGameId(),
                     viewModel.getId()));
         }
     }
