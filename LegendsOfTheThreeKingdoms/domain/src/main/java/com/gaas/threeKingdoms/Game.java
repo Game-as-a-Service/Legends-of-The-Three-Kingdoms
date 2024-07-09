@@ -448,37 +448,6 @@ public class Game {
         }
     }
 
-//    public List<DomainEvent> getDamagedEventForEquipmentEffect(HandCard card,
-//                                                               int originalHp,
-//                                                               Player damagedPlayer,
-//                                                               Round currentRound,
-//                                                               Behavior behavior) {
-//        List<DomainEvent> domainEvents = new ArrayList<>();
-//        card.effect(damagedPlayer);
-//        PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-//
-//        if (damagedPlayer.isStillAlive()) {
-//            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
-//            RoundEvent roundEvent = new RoundEvent(currentRound);
-//            domainEvents.add(roundEvent);
-//            domainEvents.add(playerDamagedEvent);
-//            return domainEvents;
-//        } else {
-//            PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
-//            AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
-//            this.enterPhase(new GeneralDying(this));
-//            currentRound.setDyingPlayer(damagedPlayer);
-//            currentRound.setActivePlayer(damagedPlayer);
-//            RoundEvent roundEvent = new RoundEvent(currentRound);
-//            behavior.setIsOneRound(false);
-//            domainEvents.add(roundEvent);
-//            domainEvents.add(playerDamagedEvent);
-//            domainEvents.add(playerDyingEvent);
-//            domainEvents.add(askPeachEvent);
-//            return domainEvents;
-//        }
-//    }
-
     private PlayerDyingEvent createPlayerDyingEvent(Player player) {
         return new PlayerDyingEvent(player.getId());
     }
@@ -563,6 +532,13 @@ public class Game {
 
     public Behavior peekTopBehavior() {
         return topBehavior.peek();
+    }
+
+    public Behavior peekTopBehaviorSecondElement() {
+        if (topBehavior.size() < 2) {
+            return null;
+        }
+        return topBehavior.get(topBehavior.size() - 2);
     }
 
     public void removeTopBehavior() {

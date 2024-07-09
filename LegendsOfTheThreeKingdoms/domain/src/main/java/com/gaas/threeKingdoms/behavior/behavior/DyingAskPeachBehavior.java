@@ -11,6 +11,7 @@ import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ public class DyingAskPeachBehavior extends Behavior {
         Player dyingPlayer = game.getPlayer(targetPlayerId);
         Player currentPlayer = game.getPlayer(playerId);
         int originalHp = dyingPlayer.getHP();
-
+        List<DomainEvent> events = new ArrayList<>();
         if (isSkip(playType)) {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer);
@@ -48,7 +49,9 @@ public class DyingAskPeachBehavior extends Behavior {
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(game.getNextPlayer(currentPlayer));
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌",playerId, targetPlayerId, cardId, playType);
-            return List.of(playCardEvent, askPeachEvent, game.getGameStatusEvent("不出牌"));
+            events.addAll(List.of(playCardEvent, askPeachEvent, game.getGameStatusEvent("不出牌")));
+            addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+            return events;
         } else if (isPeachCard(cardId)) {
 
             // Player use peach card
@@ -64,11 +67,20 @@ public class DyingAskPeachBehavior extends Behavior {
             // Create Domain Events
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
             PeachEvent peachEvent = new PeachEvent(targetPlayerId, originalHp, dyingPlayer.getHP());
-            return List.of(playCardEvent, peachEvent, game.getGameStatusEvent("出牌"));
+            events.addAll(List.of(playCardEvent, peachEvent, game.getGameStatusEvent("出牌")));
+            addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+            return events;
 
         } else {
             //TODO:怕有其他效果或殺的其他case
             return null;
+        }
+    }
+
+    private void addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(List<DomainEvent> events) {
+        Behavior secondBehavior = game.peekTopBehaviorSecondElement();
+        if (secondBehavior instanceof BarbarianInvasionBehavior) {
+            events.add(new AskKillEvent(secondBehavior.getCurrentReactionPlayer().getId()));
         }
     }
 

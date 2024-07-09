@@ -20,6 +20,13 @@ public class DyingAskPeachBehaviorHandler extends PlayCardBehaviorHandler {
 
     @Override
     protected boolean match(String playerId, String cardId, List<String> targetPlayerId, String playType) {
+        if (!game.isTopBehaviorEmpty()) {
+            Behavior behavior = game.peekTopBehavior();
+            if (behavior instanceof DyingAskPeachBehavior) {
+                return false;
+            }
+        }
+
         return game.getGamePhase() instanceof GeneralDying;
     }
 

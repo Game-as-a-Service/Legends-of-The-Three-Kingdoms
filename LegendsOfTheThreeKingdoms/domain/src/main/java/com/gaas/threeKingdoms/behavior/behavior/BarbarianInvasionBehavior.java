@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
+import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
@@ -41,18 +42,15 @@ public class BarbarianInvasionBehavior extends Behavior {
 
         if (isSkip(playType)) {
             int originalHp = currentReactionPlayer.getHP();
-            card.effect(currentReactionPlayer);
-            List<DomainEvent> events = new ArrayList<>();
-            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, currentReactionPlayer);
-            events.add(playerDamagedEvent);
-
+            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), this);
             // Remove the current player to next player
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-            events.add(new AskKillEvent(currentReactionPlayer.getId()));
-            events.add(game.getGameStatusEvent(playerId + "出skip"));
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
-            events.add(playCardEvent);
-            events.add(game.getGameStatusEvent("出牌"));
+
+            List<DomainEvent> events = new ArrayList<>(damagedEvent);
+
+            if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) {
+                events.add(new AskKillEvent(currentReactionPlayer.getId()));
+            }
             return events;
         } else if (isKillCard(card.getId())) {
             List<DomainEvent> events = new ArrayList<>();
@@ -67,7 +65,4 @@ public class BarbarianInvasionBehavior extends Behavior {
         return null;
     }
 
-    private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
-        return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
-    }
 }
