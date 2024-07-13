@@ -12,10 +12,12 @@ import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class BarbarianInvasionBehaviorHandler extends PlayCardBehaviorHandler {
 
@@ -33,13 +35,15 @@ public class BarbarianInvasionBehaviorHandler extends PlayCardBehaviorHandler {
     @Override
     protected Behavior doHandle(String playerId, String cardId, List<String> targetPlayerId, String playType) {
         Player player = game.getPlayer(playerId);
-
-        List<String> reactivePlayers = game.getPlayers().stream()
-                .map(Player::getId)
-                .filter(id -> !id.equals(playerId))
-                .collect(Collectors.toList());
-
         Player currentReactionPlayer = game.getNextPlayer(player);
+        List<String> reactivePlayers = new ArrayList<>();
+
+        // 將所有玩家加入 reactivePlayers，除了當前玩家，且排序為當前玩家之後的玩家
+        Player tmpPlayer = currentReactionPlayer;
+        for (int i = 0; i < game.getPlayers().size() - 1; i++) {
+            reactivePlayers.add(tmpPlayer.getId());
+            tmpPlayer = game.getNextPlayer(tmpPlayer);
+        }
 
         HandCard card = player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
 

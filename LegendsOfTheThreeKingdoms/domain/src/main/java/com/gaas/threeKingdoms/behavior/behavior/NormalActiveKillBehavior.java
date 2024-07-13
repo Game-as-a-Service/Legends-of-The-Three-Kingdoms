@@ -63,6 +63,7 @@ public class  NormalActiveKillBehavior extends Behavior {
                 PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
                 return List.of(playCardEvent, askPlayEquipmentEffectEvent, game.getGameStatusEvent("出牌"));
             }
+
             return game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
         } else if (isDodgeCard(cardId)) {
             Round currentRound = game.getCurrentRound();

@@ -122,7 +122,7 @@ public class BarbarianInvasionTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
-                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new BarbarianInvasion(SSA007)
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new BarbarianInvasion(SS7007)
         );
         Equipment equipmentB= new Equipment();
         equipmentB.setMinusOne(new RedRabbitHorse(EH5044));

@@ -5,13 +5,10 @@ import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.events.PlayerDyingEvent;
-import com.gaas.threeKingdoms.exception.DistanceErrorException;
-import com.gaas.threeKingdoms.gamephase.GamePhase;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
-import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
@@ -24,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
@@ -66,7 +64,7 @@ public class BarbarianInvasionTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SSA007)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -95,7 +93,7 @@ public class BarbarianInvasionTest {
         game.setCurrentRound(new Round(playerB));
 
         //When
-        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), SSA007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         AskKillEvent askKillEvent = events.stream()
                 .filter(event -> event instanceof AskKillEvent)
@@ -147,7 +145,7 @@ public class BarbarianInvasionTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SSA007)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -175,7 +173,7 @@ public class BarbarianInvasionTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SSA007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         List<DomainEvent> events = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
@@ -234,7 +232,7 @@ public class BarbarianInvasionTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SSA007)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -262,7 +260,7 @@ public class BarbarianInvasionTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SSA007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         List<DomainEvent> events = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
@@ -321,7 +319,7 @@ public class BarbarianInvasionTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SSA007)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -351,7 +349,7 @@ public class BarbarianInvasionTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SSA007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
         game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         //When
@@ -412,7 +410,7 @@ public class BarbarianInvasionTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SSA007)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -423,8 +421,6 @@ public class BarbarianInvasionTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
-
-        playerC.getHand().addCardToHand(Arrays.asList(new Peach(BH3029)));
 
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
@@ -444,11 +440,11 @@ public class BarbarianInvasionTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SSA007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
         game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         //When
-        game.playerPlayCard(playerC.getId(), "", playerC.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
         List<DomainEvent> events = game.playerPlayCard(playerD.getId(), BH3029.getCardId(), playerC.getId(), "active");
 
         //Then
@@ -458,6 +454,7 @@ public class BarbarianInvasionTest {
                 .findFirst()
                 .orElseThrow();
 
+        assertEquals(1, playerC.getHP());
         assertEquals("player-d", askKillEvent.getPlayerId());
         assertEquals("Normal", game.getGamePhase().getPhaseName());
     }
@@ -481,13 +478,14 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseKill_ThenPlayerCHP3AndPlayerDReceiveKillEvent() {
         Game game = new Game();
-
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
-                .withHand(new Hand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039))))
-                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
                 .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
 
         Player playerB = PlayerBuilder.construct()
@@ -496,23 +494,30 @@ public class BarbarianInvasionTest {
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withEquipment(new Equipment())
                 .build();
 
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
+
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
-                .withBloodCard(new BloodCard(4))
+                .withBloodCard(new BloodCard(3))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
 
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
@@ -521,11 +526,110 @@ public class BarbarianInvasionTest {
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
         game.enterPhase(new Normal(game));
-        game.setCurrentRound(new Round(playerA));
+        game.setCurrentRound(new Round(playerB));
 
-        assertThrows(DistanceErrorException.class,
-                () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerC.getId(), "active"));
-        assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
+        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        List<DomainEvent> events = game.playerPlayCard(playerC.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        //Then
+        AskKillEvent askKillEvent = events.stream()
+                .filter(event -> event instanceof AskKillEvent)
+                .map(event -> (AskKillEvent) event)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(3, playerC.getHP());
+        assertEquals("player-d", askKillEvent.getPlayerId());
+    }
+
+    @DisplayName("""
+                Given
+                玩家ABCD
+                B的回合
+                C 玩家有一張殺
+                C 玩家 hp = 3
+                B玩家出南蠻入侵
+                When
+                
+                C玩家出 skip
+                
+                Then
+                
+                C玩家 hp = 2
+                D玩家收到要求出殺的event
+                Active player 是 D 玩家
+            """)
+    @Test
+    public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseSkip_ThenPlayerCHP2AndPlayerDReceiveKillEvent() {
+        Game game = new Game();
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerB));
+
+        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        List<DomainEvent> events = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+        //Then
+        AskKillEvent askKillEvent = events.stream()
+                .filter(event -> event instanceof AskKillEvent)
+                .map(event -> (AskKillEvent) event)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(2, playerC.getHP());
+        assertEquals("player-d", askKillEvent.getPlayerId());
+        assertEquals("player-d", game.getActivePlayer().getId());
+
     }
 
     @DisplayName("""
@@ -551,13 +655,14 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseKillAndPlayerDUseSkip_ThenPlayerDHP3AndPlayerAReceiveKillEvent() {
         Game game = new Game();
-
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
-                .withHand(new Hand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039))))
-                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
                 .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
 
         Player playerB = PlayerBuilder.construct()
@@ -566,23 +671,30 @@ public class BarbarianInvasionTest {
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withEquipment(new Equipment())
                 .build();
 
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
+
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
-                .withBloodCard(new BloodCard(4))
+                .withBloodCard(new BloodCard(3))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
 
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
@@ -591,11 +703,23 @@ public class BarbarianInvasionTest {
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
         game.enterPhase(new Normal(game));
-        game.setCurrentRound(new Round(playerA));
+        game.setCurrentRound(new Round(playerB));
 
-        assertThrows(DistanceErrorException.class,
-                () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerC.getId(), "active"));
-        assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
+        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        game.playerPlayCard(playerC.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+        //Then
+        AskKillEvent askKillEvent = events.stream()
+                .filter(event -> event instanceof AskKillEvent)
+                .map(event -> (AskKillEvent) event)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(3, playerD.getHP());
+        assertEquals("player-a", askKillEvent.getPlayerId());
     }
 
     @DisplayName("""
@@ -626,14 +750,17 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseKillAndPlayerDUseKillAndPlayerAUseKill_ThenPlayerAHP4AndPlayerBActivePlayer() {
         Game game = new Game();
-
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
-                .withHand(new Hand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039))))
-                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
                 .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BH0036), new Peach(BH3029), new BarbarianInvasion(SS7007)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -641,35 +768,59 @@ public class BarbarianInvasionTest {
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withEquipment(new Equipment())
                 .build();
 
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new BarbarianInvasion(SS7007)));
+
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
-                .withBloodCard(new BloodCard(4))
+                .withBloodCard(new BloodCard(3))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
 
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
+
+        playerD.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
 
         List<Player> players = asList(
                 playerA, playerB, playerC, playerD);
         game.setPlayers(players);
         game.enterPhase(new Normal(game));
-        game.setCurrentRound(new Round(playerA));
+        game.setCurrentRound(new Round(playerB));
 
-        assertThrows(DistanceErrorException.class,
-                () -> game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerC.getId(), "active"));
-        assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        game.playerPlayCard(playerC.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerD.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BH0036.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        //Then
+        Optional<AskKillEvent> askKillEvent = events.stream()
+                .filter(event -> event instanceof AskKillEvent)
+                .map(event -> (AskKillEvent) event)
+                .findFirst();
+        assertFalse(askKillEvent.isPresent());
+
+        assertEquals(4, playerA.getHP());
+        assertEquals("player-b", game.getCurrentRoundPlayer().getId());
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+
     }
 }

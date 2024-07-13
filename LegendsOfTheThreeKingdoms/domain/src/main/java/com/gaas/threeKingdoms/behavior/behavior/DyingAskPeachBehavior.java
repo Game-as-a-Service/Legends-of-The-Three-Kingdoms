@@ -81,6 +81,7 @@ public class DyingAskPeachBehavior extends Behavior {
         Behavior secondBehavior = game.peekTopBehaviorSecondElement();
         if (secondBehavior instanceof BarbarianInvasionBehavior) {
             events.add(new AskKillEvent(secondBehavior.getCurrentReactionPlayer().getId()));
+            //game.getCurrentRound().setActivePlayer(secondBehavior.getCurrentReactionPlayer());
         }
     }
 

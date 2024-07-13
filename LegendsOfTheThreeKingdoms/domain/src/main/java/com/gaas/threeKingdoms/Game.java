@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
 import com.gaas.threeKingdoms.effect.EquipmentEffectHandler;
@@ -243,9 +244,6 @@ public class Game {
             List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
             if (behavior.isOneRound()) {
                 topBehavior.pop();
-            } else {
-                // 把新打出的牌加到 stack ，如果是使用裝備卡則不會放入
-                updateTopBehavior(playCardHandler.handle(playerId, cardId, List.of(targetPlayerId), playType));
             }
             return acceptedEvent;
         }
@@ -444,6 +442,12 @@ public class Game {
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
             GameStatusEvent gameStatusEvent = getGameStatusEvent("扣血已瀕臨死亡");
             behavior.setIsOneRound(false);
+
+            if (getGamePhase() instanceof GeneralDying) {
+                updateTopBehavior(new DyingAskPeachBehavior(this, damagedPlayer, getPlayers().stream().map(Player::getId).toList(),
+                        damagedPlayer, cardId, playType, null));
+            }
+
             return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent, gameStatusEvent);
         }
     }
