@@ -444,7 +444,9 @@ public class BarbarianInvasionTest {
         game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         //When
-        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> eventsOfSkipPlayPeach = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+
         List<DomainEvent> events = game.playerPlayCard(playerD.getId(), BH3029.getCardId(), playerC.getId(), "active");
 
         //Then

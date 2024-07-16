@@ -28,7 +28,7 @@ public class BarbarianInvasionBehavior extends Behavior {
         events.add(new PlayCardEvent(
                 "出牌",
                 behaviorPlayer.getId(),
-                currentReactionPlayerId,
+                "",
                 cardId,
                 playType));
         events.add(new AskKillEvent(currentReactionPlayerId));
@@ -68,8 +68,8 @@ public class BarbarianInvasionBehavior extends Behavior {
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
             events.add(game.getGameStatusEvent(playerId + "出skip"));
             AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
+            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
             events.add(askKillEvent);
-
             // 最後一個人，結束此behavior，askKillEvent不再出現
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isOneRound = true;

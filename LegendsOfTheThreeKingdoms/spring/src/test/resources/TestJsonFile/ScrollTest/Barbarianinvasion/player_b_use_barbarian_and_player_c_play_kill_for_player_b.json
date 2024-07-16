@@ -3,28 +3,20 @@
     "event" : "PlayCardEvent",
     "data" : {
       "playerId" : "player-a",
-      "targetPlayerId" : "player-a",
-      "cardId" : "BH3029",
-      "playType" : "inactive"
+      "targetPlayerId" : "player-b",
+      "cardId" : "BS8008",
+      "playType" : "active"
     },
     "message" : "出牌"
-  }, {
-    "event" : "PeachEvent",
-    "data" : {
-      "playerId" : "player-a",
-      "from" : 0,
-      "to" : 1
-    },
-    "message" : "玩家出桃"
   } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 1,
+      "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 5,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -35,8 +27,8 @@
       "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
-        "cardIds" : [ "BH3029", "BH4030", "BH2028" ]
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -44,7 +36,7 @@
       "id" : "player-c",
       "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 4,
+      "hp" : 3,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
@@ -68,11 +60,11 @@
       "currentRoundPlayer" : "player-b",
       "activePlayer" : "player-b",
       "dyingPlayer" : "",
-      "showKill" : true
+      "showKill" : false
     },
     "gamePhase" : "Normal"
   },
   "message" : "出牌",
-  "gameId" : "dyingTestGame",
+  "gameId" : "my-id",
   "playerId" : "player-b"
 }
