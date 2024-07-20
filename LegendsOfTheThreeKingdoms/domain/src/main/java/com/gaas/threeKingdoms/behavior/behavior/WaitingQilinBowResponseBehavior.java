@@ -40,6 +40,7 @@ public class WaitingQilinBowResponseBehavior extends Behavior {
 
         DomainEvent removeHorseEvent = damagedPlayer.removeMountsCard(playerId, cardId);
         game.getCurrentRound().setStage(Stage.Normal);
+        isOneRound = true;
         return Collections.singletonList(removeHorseEvent);
     }
 

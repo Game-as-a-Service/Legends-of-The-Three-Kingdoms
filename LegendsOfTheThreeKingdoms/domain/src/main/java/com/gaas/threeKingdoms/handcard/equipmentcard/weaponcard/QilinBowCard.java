@@ -2,15 +2,18 @@ package com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.behavior.WaitingQilinBowResponseBehavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,6 +65,8 @@ public class QilinBowCard extends WeaponCard {
                 events.add(askPeachEvent);
                 events.add(gameStatusEvent);
             }
+            // 移除NormalActiveKill
+            game.removeTopBehavior();
             return events;
         }
 

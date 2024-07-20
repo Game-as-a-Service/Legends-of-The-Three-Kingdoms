@@ -21,7 +21,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "EH5031" ],

@@ -71,10 +71,14 @@ public class QilinBowEquipmentEffectHandler extends EquipmentEffectHandler {
 
         Player player = getPlayer(playerId);
         WeaponCard weaponCard = player.getEquipment().getWeapon();
+        boolean onlyHasOneMount = game.getPlayer(targetPlayerId).onlyHasOneMount();
         events = weaponCard.equipmentEffect(game);
         // 用作紀錄麒麟弓在遊戲內的狀態
-        game.updateTopBehavior(new WaitingQilinBowResponseBehavior(game, behavior.getBehaviorPlayer(), Collections.singletonList(behavior.getBehaviorPlayer().getId()), behavior.getCurrentReactionPlayer(),
-                cardId, PlayType.QilinBow.getPlayType(), weaponCard));
+        if (!onlyHasOneMount) {
+            game.updateTopBehavior(new WaitingQilinBowResponseBehavior(game, behavior.getBehaviorPlayer(), Collections.singletonList(behavior.getBehaviorPlayer().getId()), behavior.getCurrentReactionPlayer(),
+                    cardId, PlayType.QilinBow.getPlayType(), weaponCard));
+        }
+
         return events;
 
     }
