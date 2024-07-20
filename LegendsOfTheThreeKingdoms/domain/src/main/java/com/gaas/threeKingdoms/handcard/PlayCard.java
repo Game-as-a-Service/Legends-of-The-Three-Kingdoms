@@ -9,7 +9,7 @@ public enum PlayCard {
     SS4004("SS4004", "過河拆橋", Suit.SPADE, Rank.FOUR),
     ES5005("ES5005", "青龍偃月刀", Suit.SPADE, Rank.FIVE),
     SS6006("SS6006", "樂不思蜀", Suit.SPADE, Rank.SIX),
-    SSA007("SSA007", "南蠻入侵", Suit.SPADE, Rank.SEVEN),
+    SS7007("SS7007", "南蠻入侵", Suit.SPADE, Rank.SEVEN),
     BS8008("BS8008", "殺", Suit.SPADE, Rank.EIGHT),
     BS8009("BS8009", "殺", Suit.SPADE, Rank.NINE),
     BS8010("BS8010", "殺", Suit.SPADE, Rank.TEN),
@@ -158,12 +158,22 @@ public enum PlayCard {
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
 
+    public static boolean isKillCard(String cardId){
+        return Arrays.stream(PlayCard.values())
+                .filter(c->c.getCardName().equals("殺"))
+                .anyMatch(c->c.getCardId().equals(cardId));
+    }
+
     public static boolean isEightDiagramTacticCard(String cardId){
         return Arrays.stream(PlayCard.values())
                 .filter(c->c.getCardName().equals("八卦陣"))
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
     public boolean isMountsCard() {return Arrays.stream(PlayCard.values()).filter(c -> "赤兔".equals(c.getCardName()) || "絕影".equals(c.getCardName())).anyMatch(c->c.getCardId().equals(this.cardId));
+    }
+
+    public static boolean isSkip(String playType) {
+        return PlayType.SKIP.getPlayType().equals(playType);
     }
 
 

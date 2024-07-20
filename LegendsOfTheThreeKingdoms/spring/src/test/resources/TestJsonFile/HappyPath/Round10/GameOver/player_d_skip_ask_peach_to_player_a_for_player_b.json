@@ -120,7 +120,7 @@
       "dyingPlayer" : "player-a",
       "showKill" : true
     },
-    "gamePhase" : "GeneralDying"
+    "gamePhase" : "GameOver"
   },
   "message" : "不出牌",
   "gameId" : "my-id",

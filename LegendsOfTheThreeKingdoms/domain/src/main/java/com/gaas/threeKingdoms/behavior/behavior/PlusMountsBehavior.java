@@ -25,19 +25,13 @@ public class PlusMountsBehavior extends Behavior {
         }
         card.effect(behaviorPlayer);
 
-        Round currentRound = game.getCurrentRound();
-        RoundEvent roundEvent = new RoundEvent(currentRound);
-        List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-        return List.of(new PlayCardEvent(
+        return List.of(game.getGameStatusEvent("出牌"),
+                new PlayCardEvent(
                 "出牌",
                 behaviorPlayer.getId(),
                 behaviorPlayer.getId(),
                 cardId,
-                playType,
-                game.getGameId(),
-                playerEvents,
-                roundEvent,
-                game.getGamePhase().getPhaseName()),
+                playType),
                 new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId));
     }
 

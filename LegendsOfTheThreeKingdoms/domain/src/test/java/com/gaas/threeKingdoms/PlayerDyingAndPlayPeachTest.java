@@ -108,7 +108,7 @@ public class PlayerDyingAndPlayPeachTest {
         //Then
         Round currentRound = game.getCurrentRound();
         assertEquals(1, playerA.getHP());
-        assertNull(currentRound.getActivePlayer());
+        assertEquals("player-b", currentRound.getActivePlayer().getId());
         assertEquals("player-b", currentRound.getCurrentRoundPlayer().getId());
         assertNull(currentRound.getDyingPlayer());
         assertEquals("Normal", game.getGamePhase().getPhaseName());
@@ -202,7 +202,7 @@ public class PlayerDyingAndPlayPeachTest {
         //Then
         Round currentRound = game.getCurrentRound();
         assertEquals(1, playerA.getHP());
-        assertNull(currentRound.getActivePlayer());
+        assertEquals("player-b", currentRound.getActivePlayer().getId());
         assertEquals("player-b", currentRound.getCurrentRoundPlayer().getId());
         assertNull(currentRound.getDyingPlayer());
         assertEquals("Normal", game.getGamePhase().getPhaseName());
@@ -303,7 +303,7 @@ public class PlayerDyingAndPlayPeachTest {
         //Then
         Round currentRound = game.getCurrentRound();
         assertEquals(1, playerA.getHP());
-        assertNull(currentRound.getActivePlayer());
+        assertEquals("player-b", currentRound.getActivePlayer().getId());
         assertEquals("player-b", currentRound.getCurrentRoundPlayer().getId());
         assertNull(currentRound.getDyingPlayer());
         assertEquals("Normal", game.getGamePhase().getPhaseName());
@@ -410,7 +410,7 @@ public class PlayerDyingAndPlayPeachTest {
         //Then
         Round currentRound = game.getCurrentRound();
         assertEquals(1, playerA.getHP());
-        assertNull(currentRound.getActivePlayer());
+        assertEquals("player-b", currentRound.getActivePlayer().getId());
         assertEquals("player-b", currentRound.getCurrentRoundPlayer().getId());
         assertNull(currentRound.getDyingPlayer());
         assertEquals("Normal", game.getGamePhase().getPhaseName());

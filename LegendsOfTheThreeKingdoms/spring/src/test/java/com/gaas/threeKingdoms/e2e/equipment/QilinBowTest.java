@@ -39,6 +39,7 @@ import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -87,6 +88,45 @@ public class QilinBowTest {
         // B玩家只有一隻馬，棄置馬，並扣血
         playerAUseEquipmentEffect();
 
+        // A 玩家裝備赤兔馬
+        playAUseRedRabbitHorse();
+
+    }
+
+    @Test
+    public void testPlayerAPlayQilinBowAndPlayerUseIt() throws Exception {
+        // Given A玩家有麒麟弓
+        givenPlayerAHaveQilinBowPlayerBHaveRedRabbitHorse();
+
+        // A 玩家出麒麟弓
+        // B 有赤兔馬
+        playerAPlayQilinBow();
+
+        // A 玩家出殺
+        // B 玩家出skip
+        playerAAskUseEquipmentEffect();
+
+        // B決定要發動效果
+        String currentPlayer = "player-b";
+        String targetPlayerId = "player-b";
+        String playedCardId = "BS8008";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
+                .andExpect(status().is4xxClientError()).andReturn();
+
+    }
+
+    private void playAUseRedRabbitHorse() throws Exception {
+        // When A 玩家裝備赤兔馬
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-a";
+        String playedCardId = "EH5044";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
+                .andExpect(status().isOk()).andReturn();
+
+
+
     }
 
     @Test
@@ -117,6 +157,64 @@ public class QilinBowTest {
 
         // A玩家選擇一張馬
         whenAChooseHorse();
+
+        // A 玩家裝備赤兔馬
+        playAUseRedRabbitHorse();
+    }
+
+    @Test
+    public void testPlayerAPlayQilinBowAndSkipEquipmentEffect() throws Exception {
+        //玩家 A 有麒麟弓 B 有裝備兩隻馬，B 有 4 HP
+        givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(4);
+
+        // A 玩家出麒麟弓
+        playerAPlayQilinBowWhenBHaveTwoHorse();
+
+        // A 玩家出殺
+        // B 玩家skip
+        whenAKillAndBSkip();
+
+        // A不發動效果
+        whenASkipEquipmentEffect();
+
+    }
+
+    private void whenASkipEquipmentEffect() throws Exception {
+        // When A 玩家發動效果 B有兩隻馬
+        String currentPlayer = "player-a";
+        String playedCardId = "EH5031";
+
+        mockMvcUtil.useEquipment(gameId, currentPlayer, playedCardId, EquipmentPlayType.SKIP)
+                .andExpect(status().isOk()).andReturn();
+
+
+        String playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
+        String playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
+        String playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
+        String playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+    }
+
+
+    @Test
+    public void testPlayerAPlayQilinBowPlayerBWithTwoHorseAndPlayerBChooseIt() throws Exception {
+        //玩家 A 有麒麟弓 B 有裝備兩隻馬，B 有 4 HP
+        givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(4);
+
+        // A 玩家出麒麟弓
+        playerAPlayQilinBowWhenBHaveTwoHorse();
+
+        // A 玩家出殺
+        // B 玩家skip
+        whenAKillAndBSkip();
+
+        // A發動效果 B有兩隻馬
+        whenAUseEquipmentEffectAndBHaveTwoHorse();
+
+        // B玩家選擇一張馬 ERROR
+        String currentPlayerId = "player-b";
+        String cardId = "EH5044";
+        mockMvcUtil.chooseHorse(gameId, currentPlayerId, cardId)
+                .andExpect(status().is4xxClientError()).andReturn();
     }
 
     @Test
@@ -415,7 +513,7 @@ public class QilinBowTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031), new RedRabbitHorse(EH5044)
         );
         Player playerB = createPlayer("player-b",
                 playerBHP,
@@ -480,7 +578,7 @@ public class QilinBowTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031), new RedRabbitHorse(EH5044)
         );
         Player playerB = createPlayer("player-b",
                 4,

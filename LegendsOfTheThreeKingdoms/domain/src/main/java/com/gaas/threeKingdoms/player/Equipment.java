@@ -18,7 +18,7 @@ public class Equipment {
     private WeaponCard weapon;
 
     public List<String> getAllEquipmentCardIds() {
-        return Stream.of(plusOne, minusOne, armor, weapon)
+        return Stream.of(weapon, armor, plusOne, minusOne)
                 .map(equipment -> equipment != null ? equipment.getId() : "")
                 .collect(Collectors.toList());
     }

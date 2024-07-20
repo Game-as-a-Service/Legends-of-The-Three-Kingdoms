@@ -11,11 +11,13 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
+import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
 
 public class  NormalActiveKillBehavior extends Behavior {
@@ -33,19 +35,14 @@ public class  NormalActiveKillBehavior extends Behavior {
 
         Round currentRound = game.getCurrentRound();
 
-        RoundEvent roundEvent = new RoundEvent(currentRound);
-
-        List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-
-
         List<DomainEvent> events = new ArrayList<>();
-        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName()));
-
+        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType));
         if (isEquipmentHasSpecialEffect(targetPlayer)) {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
             events.add(askPlayEquipmentEffectEvent);
         }
+        events.add(game.getGameStatusEvent("出牌"));
         return events;
     }
 
@@ -61,28 +58,25 @@ public class  NormalActiveKillBehavior extends Behavior {
                 isOneRound = false;
                 currentRound.setActivePlayer(behaviorPlayer);
                 currentRound.setStage(Stage.Wait_Equipment_Effect);
-                RoundEvent roundEvent = new RoundEvent(currentRound);
                 EquipmentCard equipmentCard = behaviorPlayer.getEquipmentWeaponCard();
                 AskPlayEquipmentEffectEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(behaviorPlayer.getId(), equipmentCard, List.of(playerId));
-                List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-                PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-                return List.of(playCardEvent, askPlayEquipmentEffectEvent);
+                PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
+                return List.of(playCardEvent, askPlayEquipmentEffectEvent, game.getGameStatusEvent("出牌"));
             }
+
             return game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
         } else if (isDodgeCard(cardId)) {
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             damagedPlayer.playCard(cardId);
-            RoundEvent roundEvent = new RoundEvent(currentRound);
             PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-
-            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType, game.getGameId(), playerEvents, roundEvent, game.getGamePhase().getPhaseName());
-            return List.of(playCardEvent, playerDamagedEvent);
+            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
+            return List.of(playCardEvent, playerDamagedEvent, game.getGameStatusEvent("出牌"));
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();
-
-            return game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            //playerDyingEvent
+            return events;
         } else {
             //TODO:怕有其他效果或殺的其他case
             return new ArrayList<>();
@@ -99,10 +93,6 @@ public class  NormalActiveKillBehavior extends Behavior {
 
     private boolean isPlayerStillAlive(Player damagedPlayer) {
         return damagedPlayer.getHP() > 0;
-    }
-
-    private boolean isSkip(String playType) {
-        return PlayType.SKIP.getPlayType().equals(playType);
     }
 
     private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {

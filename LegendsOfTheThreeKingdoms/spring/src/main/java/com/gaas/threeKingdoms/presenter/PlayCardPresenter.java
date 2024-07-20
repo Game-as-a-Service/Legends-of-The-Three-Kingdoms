@@ -37,9 +37,10 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         viewModels = new ArrayList<>();
 
         PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
-        List<PlayerDataViewModel> playerDataViewModels = playCardEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
-        RoundEvent roundEvent = playCardEvent.getRound();
+        List<PlayerDataViewModel> playerDataViewModels = gameStatusEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
+        RoundEvent roundEvent = gameStatusEvent.getRound();
 
         PlayCardDataViewModel playCardDataViewModel = new PlayCardDataViewModel(playCardEvent.getPlayerId(), playCardEvent.getTargetPlayerId(), playCardEvent.getCardId(), playCardEvent.getPlayType());
         PlayCardViewModel playCardViewModel = new PlayCardViewModel(playCardDataViewModel, playCardEvent.getMessage());
@@ -51,6 +52,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         PeachViewModel peachViewModel = getPeachViewModel(events);
         PlayEquipmentCardViewModel playCardEquipmentViewModel = getPlayEquipmentViewModel(events);
         AskPlayEquipmentEffectViewModel askPlayEquipmentEffectViewModel = getAskPlayEquipmentEffectViewModel(playCardDataViewModel, events);
+        AskKillViewModel askKillViewModel = getAskKillViewModel(events);
 
         updateViewModels(
                 playCardViewModel,
@@ -61,7 +63,8 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                 settlementViewModel,
                 gameOverViewModel,
                 playCardEquipmentViewModel,
-                askPlayEquipmentEffectViewModel
+                askPlayEquipmentEffectViewModel,
+                askKillViewModel
         );
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
@@ -72,13 +75,13 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
             // 此 use case 的 data 物件
             GameDataViewModel gameDataViewModel = new GameDataViewModel(
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
-                            playerDataViewModels, viewModel.getId()), roundDataViewModel, playCardEvent.getGamePhase());
+                            playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
             viewModels.add(new GameViewModel(
                     eventToViewModels,
                     gameDataViewModel,
                     playCardEvent.getMessage(),
-                    playCardEvent.getGameId(),
+                    gameStatusEvent.getGameId(),
                     viewModel.getId()));
         }
     }
@@ -87,6 +90,15 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         Arrays.stream(viewModels)
                 .filter(Objects::nonNull)
                 .forEach(eventToViewModels::add);
+    }
+
+    public static AskKillViewModel getAskKillViewModel(List<DomainEvent> events) {
+        return getEvent(events, AskKillEvent.class)
+                .map(event -> {
+                    AskKillDataViewModel askKillDataViewModel = new AskKillDataViewModel(event.getPlayerId());
+                    return new AskKillViewModel(askKillDataViewModel);
+                })
+                .orElse(null);
     }
 
     private AskPlayEquipmentEffectViewModel getAskPlayEquipmentEffectViewModel(PlayCardDataViewModel playCardDataViewModel, List<DomainEvent> events) {
@@ -313,6 +325,20 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String equipmentCardId;
         private String equipmentCardName;
         private List<String> targetPlayerIds;
+    }
+
+    @Data
+    public static class AskKillViewModel extends ViewModel<AskKillDataViewModel> {
+        public AskKillViewModel(AskKillDataViewModel data) {
+            super("AskKillEvent", data, String.format("請問 %s 要否要出殺", data.getPlayerId()));
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskKillDataViewModel {
+        private String playerId;
     }
 
 

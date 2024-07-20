@@ -22,10 +22,10 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
-        "cardIds" : [ "BH3029", "BH2028", "BHK039" ]
+        "size" : 4,
+        "cardIds" : [ "BH3029", "BH2028", "BHK039", "EH5044" ]
       },
-      "equipments" : [ "", "", "", "EH5031" ],
+      "equipments" : [ "EH5031", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
@@ -36,7 +36,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ "ES5018", "", "", "" ],
+      "equipments" : [ "", "", "ES5018", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
@@ -103,7 +103,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "選擇馬",
+  "message" : "扣血但還活著",
   "gameId" : "my-id",
   "playerId" : "player-a"
 }
