@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
@@ -18,8 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.gaas.threeKingdoms.handcard.PlayCard.ECA066;
-import static com.gaas.threeKingdoms.handcard.PlayCard.ES2015;
+import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 @Data
 @AllArgsConstructor
@@ -35,6 +35,8 @@ public class Deck {
             cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
             cardDeck.add(new ShadowHorse(PlayCard.ES5018));
             cardDeck.add(new QilinBowCard(PlayCard.EH5031));
+            cardDeck.add(new BarbarianInvasion(SSK013));
+            cardDeck.add(new BarbarianInvasion(SC7072));
         });
         IntStream.range(0, 4).forEach(i -> {
             cardDeck.add(new RepeatingCrossbowCard(ECA066));
