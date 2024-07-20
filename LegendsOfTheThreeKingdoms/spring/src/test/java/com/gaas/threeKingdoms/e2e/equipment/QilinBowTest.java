@@ -157,6 +157,64 @@ public class QilinBowTest {
 
         // A玩家選擇一張馬
         whenAChooseHorse();
+
+        // A 玩家裝備赤兔馬
+        playAUseRedRabbitHorse();
+    }
+
+    @Test
+    public void testPlayerAPlayQilinBowAndSkipEquipmentEffect() throws Exception {
+        //玩家 A 有麒麟弓 B 有裝備兩隻馬，B 有 4 HP
+        givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(4);
+
+        // A 玩家出麒麟弓
+        playerAPlayQilinBowWhenBHaveTwoHorse();
+
+        // A 玩家出殺
+        // B 玩家skip
+        whenAKillAndBSkip();
+
+        // A不發動效果
+        whenASkipEquipmentEffect();
+
+    }
+
+    private void whenASkipEquipmentEffect() throws Exception {
+        // When A 玩家發動效果 B有兩隻馬
+        String currentPlayer = "player-a";
+        String playedCardId = "EH5031";
+
+        mockMvcUtil.useEquipment(gameId, currentPlayer, playedCardId, EquipmentPlayType.SKIP)
+                .andExpect(status().isOk()).andReturn();
+
+
+        String playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
+        String playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
+        String playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
+        String playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+    }
+
+
+    @Test
+    public void testPlayerAPlayQilinBowPlayerBWithTwoHorseAndPlayerBChooseIt() throws Exception {
+        //玩家 A 有麒麟弓 B 有裝備兩隻馬，B 有 4 HP
+        givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(4);
+
+        // A 玩家出麒麟弓
+        playerAPlayQilinBowWhenBHaveTwoHorse();
+
+        // A 玩家出殺
+        // B 玩家skip
+        whenAKillAndBSkip();
+
+        // A發動效果 B有兩隻馬
+        whenAUseEquipmentEffectAndBHaveTwoHorse();
+
+        // B玩家選擇一張馬 ERROR
+        String currentPlayerId = "player-b";
+        String cardId = "EH5044";
+        mockMvcUtil.chooseHorse(gameId, currentPlayerId, cardId)
+                .andExpect(status().is4xxClientError()).andReturn();
     }
 
     @Test
@@ -455,7 +513,7 @@ public class QilinBowTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031), new RedRabbitHorse(EH5044)
         );
         Player playerB = createPlayer("player-b",
                 playerBHP,

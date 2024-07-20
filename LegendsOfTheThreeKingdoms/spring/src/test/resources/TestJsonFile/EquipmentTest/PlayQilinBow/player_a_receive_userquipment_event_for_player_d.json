@@ -24,7 +24,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "", "EH5031" ],
+      "equipments" : [ "EH5031", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",

@@ -268,11 +268,11 @@ public class Game {
     }
 
     public List<DomainEvent> playerChooseHorseForQilinBow(String playerId, String cardId) {
-        Behavior qilinBowbehavior = topBehavior.pop(); //  麒麟弓 behavior
+        Behavior waitingQilinBowResponsebehavior = topBehavior.pop(); //  麒麟弓 behavior
         Behavior nomralKillbehavior = topBehavior.peek(); //  NormalKill
-        List<DomainEvent> qilingBowEvents = qilinBowbehavior.responseToPlayerAction(playerId, nomralKillbehavior.getReactionPlayers().get(0), cardId, EquipmentPlayType.ACTIVE.getPlayType());
+        List<DomainEvent> qilingBowEvents = waitingQilinBowResponsebehavior.responseToPlayerAction(playerId, nomralKillbehavior.getReactionPlayers().get(0), cardId, EquipmentPlayType.ACTIVE.getPlayType());
 
-        List<DomainEvent> normalKillEvents = nomralKillbehavior.responseToPlayerAction(nomralKillbehavior.getReactionPlayers().get(0), qilinBowbehavior.getCurrentReactionPlayer().getId(), cardId, PlayType.QilinBow.getPlayType());
+        List<DomainEvent> normalKillEvents = nomralKillbehavior.responseToPlayerAction(nomralKillbehavior.getReactionPlayers().get(0), waitingQilinBowResponsebehavior.getCurrentReactionPlayer().getId(), cardId, PlayType.QilinBow.getPlayType());
         if (nomralKillbehavior.isOneRound()) { // 沒人死
             topBehavior.pop();
         }
@@ -432,6 +432,7 @@ public class Game {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
             GameStatusEvent gameStatusEvent = getGameStatusEvent("扣血但還活著");
+            behavior.setIsOneRound(true);
             return List.of(playCardEvent, playerDamagedEvent, gameStatusEvent);
         } else {
             PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);

@@ -74,8 +74,9 @@ public class  NormalActiveKillBehavior extends Behavior {
             return List.of(playCardEvent, playerDamagedEvent, game.getGameStatusEvent("出牌"));
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();
-
-            return game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            //playerDyingEvent
+            return events;
         } else {
             //TODO:怕有其他效果或殺的其他case
             return new ArrayList<>();

@@ -28,7 +28,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "", "EH5031" ],
+      "equipments" : [ "EH5031", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
@@ -39,7 +39,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "EH5044", "", "" ],
+      "equipments" : [ "", "", "", "EH5044" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",

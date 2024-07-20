@@ -27,7 +27,7 @@
         "size" : 4,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "ES2015", "" ],
+      "equipments" : [ "", "ES2015", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
@@ -38,7 +38,7 @@
         "size" : 3,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "", "ECA066" ],
+      "equipments" : [ "ECA066", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
