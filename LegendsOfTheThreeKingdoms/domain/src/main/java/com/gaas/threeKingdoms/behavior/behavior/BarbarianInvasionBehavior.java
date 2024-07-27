@@ -53,6 +53,7 @@ public class BarbarianInvasionBehavior extends Behavior {
                 AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
                 events.add(new AskKillEvent(currentReactionPlayer.getId()));
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+                isOneRound = false;
 
                 // 最後一個人
                 if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {

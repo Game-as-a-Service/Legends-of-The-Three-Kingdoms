@@ -5,11 +5,13 @@ import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
 import com.gaas.threeKingdoms.e2e.MockMvcUtil;
 import com.gaas.threeKingdoms.e2e.WebsocketUtil;
 import com.gaas.threeKingdoms.generalcard.General;
+import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
@@ -138,6 +140,61 @@ public class QilinBowTest {
         // A 玩家出殺 B 玩家沒有馬 不會收到發動裝備卡效果的 Event
         whenAKillBThenAShouldNotHaveEquipmentEvent();
 
+    }
+
+    @Test
+    public void testPlayerAPlayerQilinBowAndPlayerBHaveEightDiagram() throws Exception {
+        givenPlayerAHasQilinBowAndPlayerBHasEightDiagram();
+
+        // A 玩家出殺
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-b";
+        String playedCardId = "BS8008";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        String playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
+        String playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
+        String playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
+        String playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+
+        // B 發動八卦陣，八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
+        currentPlayer = "player-b";
+        targetPlayerId = "player-a";
+        playedCardId = "ES2015";
+
+        mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+
+        playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
+        playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
+        playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
+        playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+
+        // B 玩家出閃，血量不變
+        currentPlayer = "player-b";
+        targetPlayerId = "player-a";
+        playedCardId = "BH2028";
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
+        playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
+        playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
+        playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+
+        // A 玩家出桃
+        currentPlayer = "player-a";
+        targetPlayerId = "player-a";
+        playedCardId = "BH3029";
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
+        playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
+        playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
+        playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
     }
 
     @Test
@@ -504,6 +561,54 @@ public class QilinBowTest {
         path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_playqilinbow_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
+    }
+
+    private void givenPlayerAHasQilinBowAndPlayerBHasEightDiagram() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
+
+        Player playerB = createPlayer("player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+        );
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck(
+                List.of(
+                        new Kill(BS7020)
+                )
+        );
+        game.setDeck(deck);
+        Mockito.when(repository.findById(gameId)).thenReturn(game);
     }
 
     private void givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(int playerBHP) {

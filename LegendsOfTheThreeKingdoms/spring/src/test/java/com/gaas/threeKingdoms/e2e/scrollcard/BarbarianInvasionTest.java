@@ -147,6 +147,46 @@ public class BarbarianInvasionTest {
     }
 
     @Test
+    public void testPlayerBPlayBarbarianAndEveryOneSkip() throws Exception {
+        // Given A玩家有南蠻入侵
+        // 玩家ABCD
+        // B的回合
+        // C 玩家沒有殺，有桃
+        // C 玩家 hp = 3
+        // B 玩家出南蠻入侵
+        // C 玩家出skip殺
+        // D 玩家出skip殺
+
+        givenPlayerBHaveBarbarianInvasion(3);
+
+        // B 出南蠻入侵
+        playerPlayBPlayBarbarian();
+        popAllPlayerMessage();
+
+        // C 玩家出skip
+        mockMvcUtil.playCard(gameId, "player-c", "", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        popAllPlayerMessage();
+
+        // D 玩家出skip
+        mockMvcUtil.playCard(gameId, "player-d", "", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // A 玩家出skip
+        mockMvcUtil.playCard(gameId, "player-a", "", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // B 玩家出桃
+        mockMvcUtil.playCard(gameId, "player-b", "player-b", BH3029.getCardId(), PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+    }
+
+
+    @Test
     public void testPlayerBPlayBarbarianAndPlayerCDying() throws Exception {
         // Given A玩家有南蠻入侵
         // 玩家ABCD
