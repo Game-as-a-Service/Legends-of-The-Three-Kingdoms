@@ -29,6 +29,14 @@ public class MockMvcUtil {
                         }""", currentPlayerId, targetPlayerId, cardId, playType)));
     }
 
+    public ResultActions finishAction(String gameId, String playerId) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:finishAction")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s"
+                        }""", playerId)));
+    }
+
     public ResultActions playCardWithoutCardId(String gameId, String currentPlayerId, String targetPlayerId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)

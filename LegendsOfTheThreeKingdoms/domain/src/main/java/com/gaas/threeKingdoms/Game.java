@@ -315,6 +315,10 @@ public class Game {
             throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
         }
 
+        if (!topBehavior.isEmpty()) {
+            throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
+        }
+
         resetActivePlayer();
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->

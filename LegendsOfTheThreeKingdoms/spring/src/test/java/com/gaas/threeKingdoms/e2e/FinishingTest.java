@@ -68,43 +68,22 @@ public class FinishingTest {
 
 
     @Test
-    public void testPlayerAIsEnterDyingStatus() throws Exception {
-        givenPlayerAIsEnterDyingStatus();
-        //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+    public void testPlayerAIsCurrentRoundPlayerAndFinishActionBeforePlayerBSkip() throws Exception {
+        //Given A 是當前回合玩家
+        givenPlayerAIsCurrentRoundPlayer();
 
-        //When A玩家出桃
+        // A 對 B 出殺
         String currentPlayer = "player-a";
-        String targetPlayerId = "player-a";
-        String playedCardId = "BH3029";
+        String targetPlayerId = "player-b";
+        String playedCardId = "BS8008";
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active");
 
-        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "inactive")
-                .andExpect(status().isOk()).andReturn();
-
-        //Then A玩家還有一滴血
-        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_a.json");
-        String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForA);
-
-        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_b.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForB);
-
-        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_c.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForC);
-
-        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForD);
+        // A玩家結束回合，不等 B skip
+        mockMvcUtil.finishAction(gameId, currentPlayer)
+            .andExpect(status().is4xxClientError()).andReturn();
     }
 
-
-    private void givenPlayerAIsEnterDyingStatus() {
+    private void givenPlayerAIsCurrentRoundPlayer() {
         Player playerA = createPlayer(
                 "player-a",
                 1,
@@ -141,13 +120,8 @@ public class FinishingTest {
         );
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Game game = initGame(gameId, players, playerB);
+        Game game = initGame(gameId, players, playerA);
 
-        // B對A出殺
-        game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");
-
-        // A玩家出skip
-        game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
         Mockito.when(repository.findById(gameId)).thenReturn(game);
     }
 
