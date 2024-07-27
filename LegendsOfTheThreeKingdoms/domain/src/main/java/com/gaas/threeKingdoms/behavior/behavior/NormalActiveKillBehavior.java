@@ -71,6 +71,7 @@ public class  NormalActiveKillBehavior extends Behavior {
             damagedPlayer.playCard(cardId);
             PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
+            isOneRound = true;
             return List.of(playCardEvent, playerDamagedEvent, game.getGameStatusEvent("出牌"));
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();

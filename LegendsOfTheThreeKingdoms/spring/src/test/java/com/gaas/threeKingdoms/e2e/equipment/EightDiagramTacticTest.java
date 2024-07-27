@@ -166,6 +166,20 @@ public class EightDiagramTacticTest {
 
         //玩家A 出閃，血量不變
         whenPlayerAPlayDodgeAndHpKeep();
+
+        //玩家B 出諸葛連弩
+        whenPlayerBPlayRepeatingCrossbow();
+
+    }
+
+    private void whenPlayerBPlayRepeatingCrossbow() throws Exception {
+        // When A發動裝備卡
+        String currentPlayer = "player-b";
+        String targetPlayerId = "player-b";
+        String playedCardId = "ECA066";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
     }
 
 //    @Test
