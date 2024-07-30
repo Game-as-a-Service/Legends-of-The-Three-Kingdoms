@@ -22,7 +22,6 @@ public class EightDiagramTactic extends ArmorCard {
         HandCard card = game.drawCardForEightDiagramTactic();
         boolean isEffectSuccess = isEffectSuccess(card);
         List<DomainEvent> events = new ArrayList<>();
-        List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
         Round currentRound = game.getCurrentRound();
         if (isEffectSuccess) {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());

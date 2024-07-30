@@ -25,12 +25,14 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         UseQilinBowCardEffectViewModel useQilinBowCardEffectViewModel = getQilinBowCardEffectEvent(events);
         PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
         AskChooseMountCardViewModel askChooseMountCardViewModel = getAskChooseMountCardEventViewModel(events);
+        SkipEquipmentEffectViewModel skipEquipmentEffectViewModel = getSkipEquipmentEffectViewModel(events);
 
         updateViewModels(
                 useEquipmentEffectViewModel,
                 useQilinBowCardEffectViewModel,
                 playerDamageEventViewModel,
-                askChooseMountCardViewModel
+                askChooseMountCardViewModel,
+                skipEquipmentEffectViewModel
         );
 
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
@@ -99,6 +101,14 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
                 .orElse(null);
     }
 
+    private UseEquipmentEffectPresenter.SkipEquipmentEffectViewModel getSkipEquipmentEffectViewModel(List<DomainEvent> events) {
+        return getEvent(events, SkipEquipmentEffectEvent.class)
+                .map(event -> {
+                    UseEquipmentEffectPresenter.SkipEquipmentEffectDataViewModel skipEquipmentEffectDataViewModel = new UseEquipmentEffectPresenter.SkipEquipmentEffectDataViewModel(event.getPlayerId(), event.getCardId());
+                    return new UseEquipmentEffectPresenter.SkipEquipmentEffectViewModel(skipEquipmentEffectDataViewModel);
+                })
+                .orElse(null);
+    }
 
     @Override
     public List<UseEquipmentEffectPresenter.GameViewModel> present() {
@@ -122,6 +132,21 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         public UseQilinBowCardEffectViewModel(UseQilinBowCardEffectDataViewModel data) {
             super("UseQilinBowCardEffectViewModel", data, "發動效果麒麟弓效果");
         }
+    }
+
+    public static class SkipEquipmentEffectViewModel extends ViewModel<SkipEquipmentEffectDataViewModel> {
+        public SkipEquipmentEffectViewModel(SkipEquipmentEffectDataViewModel data) {
+            super("SkipEquipmentEffectViewModel", data, "跳過裝備效果");
+        }
+    }
+
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SkipEquipmentEffectDataViewModel {
+        private String playerId;
+        private String cardId;
     }
 
     @Data
