@@ -51,7 +51,7 @@ public class BarbarianInvasionBehavior extends Behavior {
 
             if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) { // 如果受到傷害且沒死亡
                 AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
-                events.add(new AskKillEvent(currentReactionPlayer.getId()));
+                events.add(askKillEvent);
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
                 isOneRound = false;
 

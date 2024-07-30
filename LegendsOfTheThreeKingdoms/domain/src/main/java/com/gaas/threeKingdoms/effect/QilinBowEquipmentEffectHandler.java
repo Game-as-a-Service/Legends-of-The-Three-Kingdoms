@@ -42,6 +42,7 @@ public class QilinBowEquipmentEffectHandler extends EquipmentEffectHandler {
             throw new IllegalStateException(String.format("CurrentRound stage not Wait_Equipment_Effect but [%s]", currentStage));
         }
         if (skipEquipmentEffect(playType)) {
+            events.add(new SkipEquipmentEffectEvent(playerId, cardId));
             Player damagedPlayer = game.getPlayer(behavior.getReactionPlayers().get(0));
             HandCard card = behavior.getCard(); // Kill
             int originalHp = damagedPlayer.getHP();

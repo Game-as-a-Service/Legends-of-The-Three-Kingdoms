@@ -172,6 +172,57 @@ public class EightDiagramTacticTest {
 
     }
 
+    @Test
+    public void testPlayerANotUseEightDiagramTactic() throws Exception {
+        // Given A玩家已裝備一張八卦陣
+        givenPlayerAEquipedEightDiagramTacticAndWillfail();
+
+        //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
+        whenBKillAThenAShouldHaveEquipmentEvent();
+
+        //A不發動效果
+        whenPlayerANotUseEightDiagram();
+
+        //玩家A 出閃，血量不變
+        whenPlayerAPlayDodgeAndHpKeep();
+
+        //玩家B 出諸葛連弩
+        whenPlayerBPlayRepeatingCrossbow();
+
+    }
+
+    private void whenPlayerANotUseEightDiagram() throws Exception {
+        // When A不發動裝備卡
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-a";
+        String playedCardId = "ES2015";
+
+        mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.SKIP)
+                .andExpect(status().isOk()).andReturn();
+
+        //Then A不發動八卦陣的效果
+        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForA);
+
+        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+
+        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForC);
+
+        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerAPlayPeachJsonForD);
+
+    }
+
     private void whenPlayerBPlayRepeatingCrossbow() throws Exception {
         // When A發動裝備卡
         String currentPlayer = "player-b";
@@ -181,21 +232,6 @@ public class EightDiagramTacticTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
     }
-
-//    @Test
-//    public void testPlayerAUseEightDiagramTacticAndEffectFailedAndThenSkip() throws Exception {
-//        // Given A玩家已裝備一張八卦陣
-//        givenPlayerAEquipedEightDiagramTacticAndWillfail();
-//
-//        //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
-//        whenBKillAThenAShouldHaveEquipmentEvent();
-//
-//        //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
-//        whenPlayerAUseEightDiagramTacticAndFailed();
-//
-//        //玩家A 出skip
-//        whenPlayerASkipAndHpDecrease();
-//    }
 
     private void whenBKillAThenAShouldHaveEquipmentEvent() throws Exception {
         // When B 玩家攻擊 A 玩家
