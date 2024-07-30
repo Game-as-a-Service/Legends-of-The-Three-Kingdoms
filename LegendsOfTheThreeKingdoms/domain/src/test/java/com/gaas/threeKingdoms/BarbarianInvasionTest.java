@@ -722,6 +722,7 @@ public class BarbarianInvasionTest {
 
         assertEquals(3, playerD.getHP());
         assertEquals("player-a", askKillEvent.getPlayerId());
+        assertEquals("player-a", game.getActivePlayer().getId());
     }
 
     @DisplayName("""

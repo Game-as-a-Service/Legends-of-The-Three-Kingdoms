@@ -4,12 +4,14 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.GameStatusEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isKillCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
@@ -53,6 +55,11 @@ public class BarbarianInvasionBehavior extends Behavior {
                 AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
                 events.add(askKillEvent);
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+
+                // Remove GameStatusEvent from damagedEvent because active player is changed. Need to add GameStatusEvent again.
+                events = events.stream().filter(event -> !(event instanceof GameStatusEvent)).collect(Collectors.toList());
+                events.add(game.getGameStatusEvent("不使用殺"));
+
                 isOneRound = false;
 
                 // 最後一個人
