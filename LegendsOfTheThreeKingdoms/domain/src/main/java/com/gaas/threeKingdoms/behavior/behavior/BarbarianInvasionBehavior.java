@@ -43,16 +43,15 @@ public class BarbarianInvasionBehavior extends Behavior {
         if (isSkip(playType)) {
             int originalHp = currentReactionPlayer.getHP();
             List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), this);
-
             // Remove the current player to next player
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
 
             List<DomainEvent> events = new ArrayList<>(damagedEvent);
-
             if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) { // 如果受到傷害且沒死亡
                 AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
                 events.add(askKillEvent);
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+                events.add(game.getGameStatusEvent("扣血但還活著"));
                 isOneRound = false;
 
                 // 最後一個人
@@ -60,6 +59,8 @@ public class BarbarianInvasionBehavior extends Behavior {
                     isOneRound = true;
                     events.remove(askKillEvent);
                 }
+            } else {
+                events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
             }
 
             return events;

@@ -72,7 +72,7 @@ public class BarbarianInvasionTest {
 
     @Test
     public void testPlayerBPlayBarbarian() throws Exception {
-        // Given A玩家有南蠻入侵
+//        Given A玩家有南蠻入侵
 //        玩家ABCD
 //        B的回合
 //        C 玩家有一張殺
@@ -166,6 +166,12 @@ public class BarbarianInvasionTest {
         // C 玩家出skip
         mockMvcUtil.playCard(gameId, "player-c", "", "", PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
+
+        // D玩家收到要求出殺的event
+        String actualJsonForA = websocketUtil.getValue("player-d");
+        Path path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_use_barbarian_player_c_skip_for_player_d.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, actualJsonForA);
 
         popAllPlayerMessage();
 
