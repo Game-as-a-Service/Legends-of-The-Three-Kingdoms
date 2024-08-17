@@ -97,7 +97,7 @@ public class DyingTest {
         assertEquals(expectedJson, playerAPlayPeachJsonForC);
 
         String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_a_playpeach_for_player_d.json");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
