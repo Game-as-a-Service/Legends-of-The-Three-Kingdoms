@@ -20,6 +20,12 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 public class DyingAskPeachBehavior extends Behavior {
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
+        List<Player> players = game.getPlayers();
+        int damagedPlayerIndex = game.getPlayers().indexOf(behaviorPlayer);
+        List<Player> reorderedPlayerList = new ArrayList<>();
+        reorderedPlayerList.addAll(players.subList(damagedPlayerIndex, players.size()));
+        reorderedPlayerList.addAll(players.subList(0, damagedPlayerIndex));
+        this.reactionPlayers = reorderedPlayerList.stream().map(Player::getId).toList();
     }
 
     @Override
@@ -50,7 +56,7 @@ public class DyingAskPeachBehavior extends Behavior {
             }
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(game.getNextPlayer(currentPlayer));
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌",playerId, targetPlayerId, cardId, playType);
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
             events.addAll(List.of(playCardEvent, askPeachEvent, game.getGameStatusEvent("不出牌")));
             return events;
         } else if (isPeachCard(cardId)) {

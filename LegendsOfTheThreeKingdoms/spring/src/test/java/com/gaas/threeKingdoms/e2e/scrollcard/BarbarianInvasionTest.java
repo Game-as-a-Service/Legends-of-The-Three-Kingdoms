@@ -284,6 +284,58 @@ public class BarbarianInvasionTest {
         websocketUtil.getValue("player-d");
     }
 
+    @Test
+    public void testPlayerBPlayBarbarianAndPlayerCDyingPlayerAPlaySkip() throws Exception {
+        // Given A玩家有南蠻入侵
+        // 玩家ABCD
+        // B的回合
+        // C 玩家沒有殺，有桃
+        // C 玩家 hp = 1
+        // B玩家出南蠻入侵
+        // C 玩家出skip殺 (for 南蠻入侵)
+        // C 玩家 hp = 0 ，進入瀕臨死亡
+        // C 玩家出skip (for 瀕臨死亡出桃)
+        // D 玩家出skip (for 瀕臨死亡出桃)
+        // A 玩家出skip (for 瀕臨死亡出桃)
+
+        givenPlayerBHaveBarbarianInvasion(1);
+
+        // B 出南蠻入侵
+        playerPlayBPlayBarbarian();
+        popAllPlayerMessage();
+
+        // C 玩家出skip
+        mockMvcUtil.playCard(gameId, "player-c", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // C 玩家 hp = 0 瀕臨死亡
+        popAllPlayerMessage();
+
+        // C 玩家出skip
+        mockMvcUtil.playCard(gameId, "player-c", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // D 玩家出skip
+        mockMvcUtil.playCard(gameId, "player-d", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // When
+        // A 玩家出Skip
+        mockMvcUtil.playCard(gameId, "player-a", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        mockMvcUtil.playCard(gameId, "player-b", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        // Then
+        // 不會報錯
+        // C玩家死亡
+    }
+
+
     private void popAllPlayerMessage() {
         websocketUtil.getValue("player-a");
         websocketUtil.getValue("player-b");
