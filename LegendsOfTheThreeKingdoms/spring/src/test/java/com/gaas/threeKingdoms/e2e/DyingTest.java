@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.e2e;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.generalcard.General;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
@@ -101,6 +102,73 @@ public class DyingTest {
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
+    @Test
+    public void testPlayerAIsEnterDyingStatusAndNoPlayPeach() throws Exception {
+        givenPlayerAIsEnterDyingStatus();
+        //Given A玩家瀕臨死亡
+        Game game = repository.findById(gameId);
+
+        //When A玩家出skip
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-a";
+        String playedCardId = "";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        String playerASkipJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
+        String expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerASkipJsonForA);
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        //When B玩家出skip
+        currentPlayer = "player-b";
+        targetPlayerId = "player-a";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        playerASkipJsonForA = websocketUtil.getValue("player-a");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
+        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerASkipJsonForA);
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+
+        //When C玩家出skip
+        currentPlayer = "player-c";
+        targetPlayerId = "player-a";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        playerASkipJsonForA = websocketUtil.getValue("player-a");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerASkipJsonForA);
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        currentPlayer = "player-d";
+        targetPlayerId = "player-a";
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        playerASkipJsonForA = websocketUtil.getValue("player-a");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
+        expectedJson = Files.readString(path);
+//        assertEquals(expectedJson, playerASkipJsonForA);
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+    }
 
     private void givenPlayerAIsEnterDyingStatus() {
         Player playerA = createPlayer(
@@ -143,9 +211,18 @@ public class DyingTest {
 
         // B對A出殺
         game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
 
         // A玩家出skip
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
         Mockito.when(repository.findById(gameId)).thenReturn(game);
     }
 

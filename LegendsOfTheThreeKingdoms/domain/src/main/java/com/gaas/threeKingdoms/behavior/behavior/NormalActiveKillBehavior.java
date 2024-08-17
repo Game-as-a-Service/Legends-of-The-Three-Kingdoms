@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
+import com.gaas.threeKingdoms.gamephase.GamePhase;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
@@ -64,7 +65,10 @@ public class  NormalActiveKillBehavior extends Behavior {
                 return List.of(playCardEvent, askPlayEquipmentEffectEvent, game.getGameStatusEvent("出牌"));
             }
 
-            return game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
+            events.add(game.getGameStatusEvent(message));
+            return events;
         } else if (isDodgeCard(cardId)) {
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
@@ -77,6 +81,8 @@ public class  NormalActiveKillBehavior extends Behavior {
             Round currentRound = game.getCurrentRound();
             List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
             //playerDyingEvent
+            String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
+            events.add(game.getGameStatusEvent(message));
             return events;
         } else {
             //TODO:怕有其他效果或殺的其他case

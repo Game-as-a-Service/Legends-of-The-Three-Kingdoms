@@ -431,13 +431,13 @@ public class Game {
                                              Behavior behavior) {
         card.effect(damagedPlayer);
         PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
-
+        List<DomainEvent> events = new ArrayList<>();
         if (damagedPlayer.isStillAlive()) {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
-            GameStatusEvent gameStatusEvent = getGameStatusEvent("扣血但還活著");
             behavior.setIsOneRound(true);
-            return List.of(playCardEvent, playerDamagedEvent, gameStatusEvent);
+            events.addAll(List.of(playCardEvent, playerDamagedEvent));
+            return events;
         } else {
             PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
             AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
@@ -445,15 +445,14 @@ public class Game {
             currentRound.setDyingPlayer(damagedPlayer);
             currentRound.setActivePlayer(damagedPlayer);
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
-            GameStatusEvent gameStatusEvent = getGameStatusEvent("扣血已瀕臨死亡");
             behavior.setIsOneRound(false);
 
             if (getGamePhase() instanceof GeneralDying) {
                 updateTopBehavior(new DyingAskPeachBehavior(this, damagedPlayer, getPlayers().stream().map(Player::getId).toList(),
                         damagedPlayer, cardId, playType, null));
             }
-
-            return List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent, gameStatusEvent);
+            events.addAll(List.of(playCardEvent, playerDamagedEvent, playerDyingEvent, askPeachEvent));
+            return events;
         }
     }
 
