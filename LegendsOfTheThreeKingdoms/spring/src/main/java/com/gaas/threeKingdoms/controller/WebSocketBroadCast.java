@@ -164,4 +164,8 @@ public class WebSocketBroadCast {
             e.printStackTrace();
         }
     }
+
+    public void pushEquipmentEffectEvent(UseBorrowedSwordEffectPresenter borrowedSwordEffectPresenter) {
+
+    }
 }

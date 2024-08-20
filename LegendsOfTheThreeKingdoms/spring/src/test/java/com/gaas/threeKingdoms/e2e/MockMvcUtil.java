@@ -18,6 +18,16 @@ public class MockMvcUtil {
         this.mockMvc = mockMvc;
     }
 
+    public ResultActions useBorrowedSword(String gameId, String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useBorrowedSword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "currentPlayerId": "%s",
+                          "borrowedPlayerId": "%s",
+                          "attackTargetPlayerId": "%s"
+                        }""", currentPlayerId, borrowedPlayerId, attackTargetPlayerId)));
+    }
+
     public ResultActions playCard(String gameId, String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)

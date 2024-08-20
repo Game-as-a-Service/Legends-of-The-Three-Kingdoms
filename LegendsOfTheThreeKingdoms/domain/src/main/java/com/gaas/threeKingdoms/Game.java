@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 @Builder
 @AllArgsConstructor
 public class Game {
+
     private String gameId;
     private List<Player> players;
     private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
@@ -54,7 +55,7 @@ public class Game {
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(null, this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(null, this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -576,6 +577,11 @@ public class Game {
 
     public List<DomainEvent> getGameStatusEventInList(String message) {
         return List.of(getGameStatusEvent(message));
+    }
+
+    public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {
+
+        return null;
     }
 }
 

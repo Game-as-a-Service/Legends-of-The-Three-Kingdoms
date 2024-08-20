@@ -28,6 +28,7 @@ public class GameController {
     private final FindGameByIdUseCase findGameUseCase;
     private final UseEquipmentUseCase useEquipmentUseCase;
     private final ChooseHorseUseCase chooseHorseUseCase;
+    private final UseBorrowedSwordEffectUseCase useBorrowedSwordEffectUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -112,4 +113,11 @@ public class GameController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @PostMapping("/api/games/{gameId}/player:useBorrowedSword")
+    public ResponseEntity<?> playerUseBorrowedSwordEffect(@PathVariable String gameId, @RequestBody UseBorrowedSwordRequest useBorrowedSwordRequest) {
+        UseBorrowedSwordEffectPresenter borrowedSwordEffectPresenter = new UseBorrowedSwordEffectPresenter();
+        useBorrowedSwordEffectUseCase.execute(gameId, useBorrowedSwordRequest.toUseBorrowedSwordRequest(), borrowedSwordEffectPresenter);
+        webSocketBroadCast.pushEquipmentEffectEvent(borrowedSwordEffectPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
 }
