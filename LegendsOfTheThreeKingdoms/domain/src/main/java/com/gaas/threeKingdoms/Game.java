@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.behavior.BorrowedSwordBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
@@ -469,6 +470,9 @@ public class Game {
         return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
     }
 
+    public Stack<Behavior> getTopBehavior() {
+        return topBehavior;
+    }
 
     public SeatingChart getSeatingChart() {
         return seatingChart;
@@ -580,8 +584,23 @@ public class Game {
     }
 
     public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {
+        Behavior behavior = topBehavior.peek();
+        Player borrowedPlayer = getPlayer(borrowedPlayerId);
+        if (behavior instanceof BorrowedSwordBehavior &&
+            currentRound.getActivePlayer().getId().equals(currentPlayerId) &&
+            isPlayerHasWeapon(borrowedPlayerId)
+        ) {
+            if (!isInAttackRange(borrowedPlayer, getPlayer(attackTargetPlayerId))) {
+                throw new IllegalStateException(String.format("%s 不在攻擊範圍", attackTargetPlayerId));
+            }
+            currentRound.setActivePlayer(borrowedPlayer);
+            return List.of(new AskKillEvent(borrowedPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
+        }
+        throw new IllegalStateException("UseBorrowedSwordEffect error.");
+    }
 
-        return null;
+    private boolean isPlayerHasWeapon(String playerId) {
+        return getPlayer(playerId).getEquipmentWeaponCard() != null;
     }
 }
 

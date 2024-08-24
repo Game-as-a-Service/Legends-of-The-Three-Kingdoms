@@ -12,14 +12,14 @@ import java.util.List;
 
 public class BorrowedSwordBehavior extends Behavior {
     public BorrowedSwordBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
     }
 
 
     @Override
     public List<DomainEvent> playerAction() {
         String targetPlayerId = reactionPlayers.get(0);
-        playerPlayCard(behaviorPlayer, game.getPlayer(targetPlayerId), cardId);
+        playerPlayCardNotUpdateActivePlayer(behaviorPlayer, cardId);
         List<DomainEvent> events = new ArrayList<>();
         events.add(new PlayCardEvent("出借刀殺人", behaviorPlayer.getId(), targetPlayerId, cardId, playType));
         events.add(game.getGameStatusEvent("出借刀殺人"));
@@ -28,6 +28,7 @@ public class BorrowedSwordBehavior extends Behavior {
 
     @Override
     protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
+
         return super.doResponseToPlayerAction(playerId, targetPlayerId, cardId, playType);
     }
 }
