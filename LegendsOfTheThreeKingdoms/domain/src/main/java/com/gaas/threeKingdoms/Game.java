@@ -243,10 +243,9 @@ public class Game {
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
-            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
-            if (behavior.isOneRound()) {
-                topBehavior.pop();
-            }
+            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType);
+            //  確認topBehavior是否有需要pop掉的behavior
+            removeCompletedBehaviors();
             return acceptedEvent;
         }
         List<String> reActionPlayer = new ArrayList<>();
@@ -256,6 +255,17 @@ public class Game {
             updateTopBehavior(behavior);
         }
         return behavior.playerAction();
+    }
+
+    private void removeCompletedBehaviors() {
+        while (!topBehavior.isEmpty()) {
+            Behavior nextBehavior = topBehavior.peek();
+            if (nextBehavior.isOneRound()) {
+                topBehavior.pop();
+            } else {
+                break;
+            }
+        }
     }
 
     private void checkIsCurrentRoundValid(String playerId) {

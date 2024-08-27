@@ -113,11 +113,11 @@ public class GameController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PostMapping("/api/games/{gameId}/player:useBorrowedSword")
-    public ResponseEntity<?> playerUseBorrowedSwordEffect(@PathVariable String gameId, @RequestBody UseBorrowedSwordRequest useBorrowedSwordRequest) {
-        UseBorrowedSwordEffectPresenter borrowedSwordEffectPresenter = new UseBorrowedSwordEffectPresenter();
-        useBorrowedSwordEffectUseCase.execute(gameId, useBorrowedSwordRequest.toUseBorrowedSwordRequest(), borrowedSwordEffectPresenter);
-        webSocketBroadCast.pushEquipmentEffectEvent(borrowedSwordEffectPresenter);
-        return ResponseEntity.ok(HttpStatus.OK);
-    }
+//    @PostMapping("/api/games/{gameId}/player:useBorrowedSword")
+//    public ResponseEntity<?> playerUseBorrowedSwordEffect(@PathVariable String gameId, @RequestBody UseBorrowedSwordRequest useBorrowedSwordRequest) {
+//        UseBorrowedSwordEffectPresenter borrowedSwordEffectPresenter = new UseBorrowedSwordEffectPresenter();
+//        useBorrowedSwordEffectUseCase.execute(gameId, useBorrowedSwordRequest.toUseBorrowedSwordRequest(), borrowedSwordEffectPresenter);
+//        webSocketBroadCast.pushUseBorrowedSwordEffectEvent(borrowedSwordEffectPresenter);
+//        return ResponseEntity.ok(HttpStatus.OK);
+//    }
 }

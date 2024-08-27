@@ -165,7 +165,16 @@ public class WebSocketBroadCast {
         }
     }
 
-    public void pushEquipmentEffectEvent(UseBorrowedSwordEffectPresenter borrowedSwordEffectPresenter) {
-
-    }
+//    public void pushUseBorrowedSwordEffectEvent(UseBorrowedSwordEffectPresenter presenter) {
+//        List<UseBorrowedSwordEffectPresenter.GameViewModel> useBorrowedSwordEffectViewModels = presenter.present();
+//        try {
+//            for (UseBorrowedSwordEffectPresenter.GameViewModel useBorrowedSwordEffectViewModel : useBorrowedSwordEffectViewModels) {
+//                String useBorrowedSwordEffectJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(useBorrowedSwordEffectViewModel);
+//                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", useBorrowedSwordEffectViewModel.getGameId(), useBorrowedSwordEffectViewModel.getPlayerId()), useBorrowedSwordEffectJson);
+//            }
+//        } catch (Exception e) {
+//            System.err.println("****************** pushUseBorrowedSwordEffectEvent ");
+//            e.printStackTrace();
+//        }
+//    }
 }
