@@ -478,4 +478,93 @@ public class BorrowedSwordTest {
         assertEquals(game.getActivePlayer().getId(), "player-a");
     }
 
+    @DisplayName("""
+        Given
+        玩家ABCD
+        A的回合
+        A有借刀殺人
+        B 有裝備武器，沒有殺，B攻擊範圍內
+        有 C 可以殺
+        
+        When
+        A 出借刀殺人,指定 B 殺 C
+        
+        Then
+        ABCD 玩家收到 B 玩家的武器卡給 A的 event
+        B的武器卡是空的
+        A有B的武器卡
+        stack裡面要沒有借刀殺人的behavior
+        active player 是 A
+            """)
+    @Test
+    public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBToKillC_AndPlayerHaveNoKill_ThenPlayersABCDReceivePlayerBWeaponCardGivenToPlayerAEvent() {
+        Game game = new Game();
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new BorrowedSword(SCK065)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setWeapon(new RepeatingCrossbowCard(ECA066));
+        playerB.setEquipment(equipmentB);
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+
+        //When A出借刀殺人, 指定B殺C
+        List<DomainEvent> firstEvents = game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> secondEvents = game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
+
+        //Then
+        assertTrue(secondEvents.stream().anyMatch(event -> event instanceof PlayCardEvent));
+        assertTrue(secondEvents.stream().anyMatch(event -> event instanceof WeaponUsurpationEvent));
+        assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
+        assertNull(playerB.getEquipmentWeaponCard());
+        assertEquals("ECA066", playerA.getEquipmentWeaponCard().getId());
+        assertFalse(game.getTopBehavior().stream().anyMatch(behavior -> behavior instanceof BorrowedSwordBehavior));
+        assertEquals(game.getCurrentRound().getCurrentRoundPlayer().getId(), "player-a");
+        assertEquals(game.getActivePlayer().getId(), "player-a");
+    }
+
 }

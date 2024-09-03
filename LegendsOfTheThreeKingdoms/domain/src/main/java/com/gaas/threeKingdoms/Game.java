@@ -13,6 +13,8 @@ import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
 import com.gaas.threeKingdoms.handcard.*;
+import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -603,6 +605,14 @@ public class Game {
             if (!isInAttackRange(borrowedPlayer, getPlayer(attackTargetPlayerId))) {
                 throw new IllegalStateException(String.format("%s 不在攻擊範圍", attackTargetPlayerId));
             }
+
+            //判斷B有沒有殺，若玩家B沒出殺，則玩家A取得玩家B當前的武器
+            if (borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)) {
+                List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(borrowedPlayerId, currentPlayerId, "",  PlayType.SKIP.getPlayType());
+                removeCompletedBehaviors();
+                return acceptedEvent;
+            }
+
             currentRound.setActivePlayer(borrowedPlayer);
             return List.of(new AskKillEvent(borrowedPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
         }
