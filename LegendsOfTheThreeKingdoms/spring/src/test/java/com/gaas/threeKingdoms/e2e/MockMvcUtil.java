@@ -18,8 +18,8 @@ public class MockMvcUtil {
         this.mockMvc = mockMvc;
     }
 
-    public ResultActions useBorrowedSword(String gameId, String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) throws Exception {
-        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useBorrowedSword")
+    public ResultActions useBorrowedSwordEffect(String gameId, String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useBorrowedSwordEffect")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
                         { "currentPlayerId": "%s",

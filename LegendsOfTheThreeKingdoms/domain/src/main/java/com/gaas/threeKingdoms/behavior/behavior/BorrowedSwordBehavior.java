@@ -46,10 +46,10 @@ public class BorrowedSwordBehavior extends Behavior {
             isOneRound = true;
             List<DomainEvent> events = new ArrayList<>();
             events.add(new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType));
-            events.add(new WeaponUsurpationEvent(behaviorPlayer.getId(), playerId, targetWeaponCard.getId()));
-            events.add(game.getGameStatusEvent("跳過"));
+            events.add(new WeaponUsurpationEvent(playerId, behaviorPlayer.getId(), targetWeaponCard.getId()));
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+            events.add(game.getGameStatusEvent("跳過"));
             return events;
         }
 

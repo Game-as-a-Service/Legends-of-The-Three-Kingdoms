@@ -29,7 +29,6 @@ public class UseBorrowedSwordEffectUseCase {
     @AllArgsConstructor
     public static class UseBorrowedSwordRequest {
         private String currentPlayerId;
-        private String cardId;
         private String borrowedPlayerId;
         private String attackTargetPlayerId;
     }

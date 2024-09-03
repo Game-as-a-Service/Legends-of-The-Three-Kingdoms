@@ -1,13 +1,10 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
+    "event" : "AskKillEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-b",
-      "cardId" : "SCK065",
-      "playType" : "active"
+      "playerId" : "player-b"
     },
-    "message" : "出借刀殺人"
+    "message" : "請問 player-b 要否要出殺"
   } ],
   "data" : {
     "seats" : [ {
@@ -17,18 +14,18 @@
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "SHU001",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "EH5031", "", "", "" ],
       "delayScrolls" : [ ]
@@ -58,13 +55,13 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-a",
+      "activePlayer" : "player-b",
       "dyingPlayer" : "",
       "showKill" : false
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出借刀殺人",
+  "message" : "要求 player-b 出殺",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-a"
 }

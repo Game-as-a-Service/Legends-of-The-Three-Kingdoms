@@ -22,7 +22,7 @@ import java.util.List;
 public class QilinBowCard extends WeaponCard {
 
     public QilinBowCard(PlayCard playCard) {
-        super(playCard, 5);
+        super(playCard, 4);
     }
 
     @Override

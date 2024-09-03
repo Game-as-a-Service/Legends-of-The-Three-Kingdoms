@@ -2,12 +2,20 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-b",
-      "cardId" : "SCK065",
-      "playType" : "active"
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-a",
+      "cardId" : "",
+      "playType" : "skip"
     },
-    "message" : "出借刀殺人"
+    "message" : "不出牌"
+  }, {
+    "event" : "WeaponUsurpationViewModel",
+    "data" : {
+      "givenWeaponPlayerId" : "player-b",
+      "takenWeaponPlayerId" : "player-a",
+      "weaponCardId" : "ECA066"
+    },
+    "message" : "玩家 player-a 搶奪了 玩家 player-b 的 諸葛連弩"
   } ],
   "data" : {
     "seats" : [ {
@@ -17,20 +25,20 @@
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
-      "equipments" : [ "", "", "", "" ],
+      "equipments" : [ "ECA066", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "SHU001",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
+        "cardIds" : [ ]
       },
-      "equipments" : [ "EH5031", "", "", "" ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
@@ -64,7 +72,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出借刀殺人",
+  "message" : "不出牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-a"
 }

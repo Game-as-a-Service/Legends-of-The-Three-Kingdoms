@@ -1,6 +1,5 @@
 package com.gaas.threeKingdoms.handcard.scrollcard;
 
-import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.player.Player;
 

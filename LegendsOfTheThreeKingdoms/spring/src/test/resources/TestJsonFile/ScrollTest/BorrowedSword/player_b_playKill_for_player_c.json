@@ -2,12 +2,12 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-b",
-      "cardId" : "SCK065",
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-c",
+      "cardId" : "BS8008",
       "playType" : "active"
     },
-    "message" : "出借刀殺人"
+    "message" : "出牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -24,22 +24,22 @@
     }, {
       "id" : "player-b",
       "generalId" : "SHU001",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
+        "size" : 3,
+        "cardIds" : [ ]
       },
-      "equipments" : [ "EH5031", "", "", "" ],
+      "equipments" : [ "ECA066", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU001",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 3,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -58,13 +58,13 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-a",
+      "activePlayer" : "player-c",
       "dyingPlayer" : "",
       "showKill" : false
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出借刀殺人",
+  "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-c"
 }
