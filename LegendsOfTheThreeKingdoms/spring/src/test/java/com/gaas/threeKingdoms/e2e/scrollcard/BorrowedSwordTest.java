@@ -288,6 +288,87 @@ public class BorrowedSwordTest {
         assertEquals(expectedJson, playerBPlayKillJsonForD);
     }
 
+    @Test
+    public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBToKillC_AndPlayerHaveNoKillCard_ThenPlayersABCDReceivePlayerBWeaponCardGivenToPlayerAEvent() throws Exception {
+        // Given
+        // 玩家ABCD
+        // A的回合
+        // A有借刀殺人
+        // B有裝備武器，沒有殺，B攻擊範圍內
+        givenPlayerAHaveBorrowedSwordAndPlayerBEquipedQilinBowButNoKill(3);
+
+        // When
+        // A出借刀殺人, 指定B殺C
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", borrowedSwordCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.useBorrowedSwordEffect(gameId, "player-a", "player-b", "player-c").andExpect(status().isOk()).andReturn();
+
+        // Then
+        // ABCD玩家收到B玩家的武器卡給A的event
+        String playerBPlayKillJsonForA = websocketUtil.getValue("player-a");
+        Path path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_a_get_weapon_if_player_b_no_kill_for_player_a.json");
+        String expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBPlayKillJsonForA);
+
+        String playerBPlayKillJsonForB = websocketUtil.getValue("player-b");
+        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_a_get_weapon_if_player_b_no_kill_for_player_b.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBPlayKillJsonForB);
+
+        String playerBPlayKillJsonForC = websocketUtil.getValue("player-c");
+        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_a_get_weapon_if_player_b_no_kill_for_player_c.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBPlayKillJsonForC);
+
+        String playerBPlayKillJsonForD = websocketUtil.getValue("player-d");
+        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_a_get_weapon_if_player_b_no_kill_for_player_d.json");
+        expectedJson = Files.readString(path);
+        assertEquals(expectedJson, playerBPlayKillJsonForD);
+    }
+
+    private void givenPlayerAHaveBorrowedSwordAndPlayerBEquipedQilinBowButNoKill(int playerCHp) {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new BorrowedSword(SCK065)
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Peach(BH3029), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                playerCHp,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setWeapon(new RepeatingCrossbowCard(ECA066));
+        playerB.setEquipment(equipmentB);
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Mockito.when(repository.findById(gameId)).thenReturn(game);
+    }
+
     private void givenPlayerAHaveBorrowedSwordAndPlayerCAEquipedShadowHorse(int playerCHp) {
         Player playerA = createPlayer(
                 "player-a",

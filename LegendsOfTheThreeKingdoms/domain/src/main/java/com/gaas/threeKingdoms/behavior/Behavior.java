@@ -50,6 +50,12 @@ public class Behavior {
         game.getGraveyard().add(handCard);
     }
 
+    protected void playerPlayEquipmentCard(Player player, Player targetPlayer, String cardId) {
+        HandCard handCard = player.playCard(cardId);
+        card = handCard;
+        game.updateRoundInformation(targetPlayer, handCard);
+    }
+
     protected void playerPlayCardNotUpdateActivePlayer(Player player, String cardId) {
         HandCard handCard = player.playCard(cardId);
         card = handCard;

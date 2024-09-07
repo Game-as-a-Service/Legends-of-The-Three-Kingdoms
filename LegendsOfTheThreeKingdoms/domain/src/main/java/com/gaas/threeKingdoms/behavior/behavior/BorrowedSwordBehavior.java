@@ -42,7 +42,7 @@ public class BorrowedSwordBehavior extends Behavior {
         } else if (isSkip(playType)) {
             WeaponCard targetWeaponCard = player.getEquipmentWeaponCard();
             player.getEquipment().setWeapon(null);
-            behaviorPlayer.getEquipment().setWeapon(targetWeaponCard);
+            behaviorPlayer.getHand().addCardToHand(targetWeaponCard);
             isOneRound = true;
             List<DomainEvent> events = new ArrayList<>();
             events.add(new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType));

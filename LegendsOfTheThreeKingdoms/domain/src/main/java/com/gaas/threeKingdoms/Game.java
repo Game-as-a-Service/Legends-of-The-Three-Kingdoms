@@ -258,7 +258,7 @@ public class Game {
         return behavior.playerAction();
     }
 
-    private void removeCompletedBehaviors() {
+    public void removeCompletedBehaviors() {
         while (!topBehavior.isEmpty()) {
             Behavior nextBehavior = topBehavior.peek();
             if (nextBehavior.isOneRound()) {

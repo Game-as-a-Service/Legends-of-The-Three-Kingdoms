@@ -2,41 +2,48 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-b",
-      "cardId" : "SCK065",
-      "playType" : "active"
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-a",
+      "cardId" : "",
+      "playType" : "skip"
     },
-    "message" : "出借刀殺人"
+    "message" : "不出牌"
+  }, {
+    "event" : "AskPeachEvent",
+    "data" : {
+      "playerId" : "player-c",
+      "dyingPlayerId" : "player-a"
+    },
+    "message" : "要求玩家出桃"
   } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 4,
+      "hp" : 0,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "SHU001",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
+        "size" : 3,
+        "cardIds" : [ ]
       },
-      "equipments" : [ "ECA066", "", "", "" ],
+      "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
@@ -57,14 +64,14 @@
     } ],
     "round" : {
       "roundPhase" : "Judgement",
-      "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-a",
-      "dyingPlayer" : "",
-      "showKill" : false
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-c",
+      "dyingPlayer" : "player-a",
+      "showKill" : true
     },
-    "gamePhase" : "Normal"
+    "gamePhase" : "GeneralDying"
   },
-  "message" : "出借刀殺人",
-  "gameId" : "my-id",
-  "playerId" : "player-b"
+  "message" : "不出牌",
+  "gameId" : "dyingTestGame",
+  "playerId" : "player-a"
 }

@@ -117,7 +117,7 @@ public class DyingTest {
                 .andExpect(status().isOk()).andReturn();
 
         String playerASkipJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
+        Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_a_skip_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
         websocketUtil.getValue("player-b");
@@ -132,7 +132,7 @@ public class DyingTest {
                 .andExpect(status().isOk()).andReturn();
 
         playerASkipJsonForA = websocketUtil.getValue("player-a");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_b_skip_for_player_a.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
         websocketUtil.getValue("player-b");
@@ -161,7 +161,7 @@ public class DyingTest {
                 .andExpect(status().isOk()).andReturn();
 
         playerASkipJsonForA = websocketUtil.getValue("player-a");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
+        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_d_skip_for_player_a.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
         websocketUtil.getValue("player-b");

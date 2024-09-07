@@ -17,7 +17,7 @@ public class EquipArmorBehavior extends Behavior {
 
     @Override
     public List<DomainEvent> playerAction() {
-        playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
+        playerPlayEquipmentCard(behaviorPlayer, behaviorPlayer, cardId);
         ArmorCard armorCard = behaviorPlayer.getEquipment().getArmor();
         String originEquipmentId = "";
         if (armorCard != null) {
