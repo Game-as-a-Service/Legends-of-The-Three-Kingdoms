@@ -9,6 +9,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbo
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
@@ -37,6 +38,8 @@ public class Deck {
             cardDeck.add(new QilinBowCard(PlayCard.EH5031));
             cardDeck.add(new BarbarianInvasion(SSK013));
             cardDeck.add(new BarbarianInvasion(SC7072));
+            cardDeck.add(new BorrowedSword(SCK065));
+            cardDeck.add(new BorrowedSword(SCQ064));
         });
         IntStream.range(0, 4).forEach(i -> {
             cardDeck.add(new RepeatingCrossbowCard(ECA066));
