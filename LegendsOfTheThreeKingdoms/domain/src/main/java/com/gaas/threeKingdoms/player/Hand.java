@@ -29,7 +29,11 @@ public class Hand {
     public void addCardToHand(List<HandCard> cards) {
         this.cards.addAll(cards);
     }
- 
+
+    public void addCardToHand(HandCard card) {
+        this.cards.add(card);
+    }
+
     public Optional<HandCard> getCard(String cardId) {
         return cards.stream()
                 .filter(card -> cardId != null && cardId.equals(card.getId()))

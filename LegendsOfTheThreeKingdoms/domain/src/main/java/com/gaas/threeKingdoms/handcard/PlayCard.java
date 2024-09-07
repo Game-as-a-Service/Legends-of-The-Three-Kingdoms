@@ -176,7 +176,12 @@ public enum PlayCard {
         return PlayType.SKIP.getPlayType().equals(playType);
     }
 
-
-
+    public static String getCardName(String cardId) {
+        return Arrays.stream(PlayCard.values())
+                .filter(c -> c.getCardId().equals(cardId))
+                .map(PlayCard::getCardName)
+                .findFirst()
+                .orElseThrow();
+    }
 
 }

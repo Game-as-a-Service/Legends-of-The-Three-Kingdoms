@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.behavior.BorrowedSwordBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
@@ -12,6 +13,8 @@ import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
 import com.gaas.threeKingdoms.handcard.*;
+import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -32,6 +35,7 @@ import java.util.stream.Stream;
 @Builder
 @AllArgsConstructor
 public class Game {
+
     private String gameId;
     private List<Player> players;
     private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
@@ -46,15 +50,14 @@ public class Game {
     private EquipmentEffectHandler equipmentEffectHandler;
 
     public Game(String gameId, List<Player> players) {
-        equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(null, this), this), this), this), this), this), this), this);
+        this();
         setGameId(gameId);
         setPlayers(players);
         enterPhase(new Initial(this));
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(null, this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(null, this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -241,10 +244,9 @@ public class Game {
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
-            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType); //throw Exception When isNotValid
-            if (behavior.isOneRound()) {
-                topBehavior.pop();
-            }
+            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType);
+            //  確認topBehavior是否有需要pop掉的behavior
+            removeCompletedBehaviors();
             return acceptedEvent;
         }
         List<String> reActionPlayer = new ArrayList<>();
@@ -254,6 +256,17 @@ public class Game {
             updateTopBehavior(behavior);
         }
         return behavior.playerAction();
+    }
+
+    public void removeCompletedBehaviors() {
+        while (!topBehavior.isEmpty()) {
+            Behavior nextBehavior = topBehavior.peek();
+            if (nextBehavior.isOneRound()) {
+                topBehavior.pop();
+            } else {
+                break;
+            }
+        }
     }
 
     private void checkIsCurrentRoundValid(String playerId) {
@@ -468,6 +481,9 @@ public class Game {
         return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
     }
 
+    public Stack<Behavior> getTopBehavior() {
+        return topBehavior;
+    }
 
     public SeatingChart getSeatingChart() {
         return seatingChart;
@@ -576,6 +592,34 @@ public class Game {
 
     public List<DomainEvent> getGameStatusEventInList(String message) {
         return List.of(getGameStatusEvent(message));
+    }
+
+    public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {
+        Behavior behavior = topBehavior.peek();
+        Player borrowedPlayer = getPlayer(borrowedPlayerId);
+        if (behavior instanceof BorrowedSwordBehavior &&
+            currentRound.getActivePlayer().getId().equals(currentPlayerId) &&
+            isPlayerHasWeapon(borrowedPlayerId)
+        ) {
+            if (!isInAttackRange(borrowedPlayer, getPlayer(attackTargetPlayerId))) {
+                throw new IllegalStateException(String.format("%s 不在攻擊範圍", attackTargetPlayerId));
+            }
+
+            //判斷B有沒有殺，若玩家B沒出殺，則玩家A取得玩家B當前的武器
+            if (borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)) {
+                List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(borrowedPlayerId, currentPlayerId, "",  PlayType.SKIP.getPlayType());
+                removeCompletedBehaviors();
+                return acceptedEvent;
+            }
+
+            currentRound.setActivePlayer(borrowedPlayer);
+            return List.of(new AskKillEvent(borrowedPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
+        }
+        throw new IllegalStateException("UseBorrowedSwordEffect error.");
+    }
+
+    private boolean isPlayerHasWeapon(String playerId) {
+        return getPlayer(playerId).getEquipmentWeaponCard() != null;
     }
 }
 

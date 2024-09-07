@@ -11,7 +11,7 @@ import java.util.List;
  * */
 public class RepeatingCrossbowCard extends WeaponCard {
     public RepeatingCrossbowCard(PlayCard playCard) {
-        super(playCard, 1);
+        super(playCard, 0);
     }
 
     @Override

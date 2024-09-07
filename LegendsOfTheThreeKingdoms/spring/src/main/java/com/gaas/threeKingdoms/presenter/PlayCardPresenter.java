@@ -53,6 +53,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         PlayEquipmentCardViewModel playCardEquipmentViewModel = getPlayEquipmentViewModel(events);
         AskPlayEquipmentEffectViewModel askPlayEquipmentEffectViewModel = getAskPlayEquipmentEffectViewModel(playCardDataViewModel, events);
         AskKillViewModel askKillViewModel = getAskKillViewModel(events);
+        UseBorrowedSwordEffectPresenter.WeaponUsurpationViewModel weaponUsurpationViewModel = UseBorrowedSwordEffectPresenter.getWeaponUsurpationEventViewModel(events);
 
         updateViewModels(
                 playCardViewModel,
@@ -64,7 +65,8 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                 gameOverViewModel,
                 playCardEquipmentViewModel,
                 askPlayEquipmentEffectViewModel,
-                askKillViewModel
+                askKillViewModel,
+                weaponUsurpationViewModel
         );
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel

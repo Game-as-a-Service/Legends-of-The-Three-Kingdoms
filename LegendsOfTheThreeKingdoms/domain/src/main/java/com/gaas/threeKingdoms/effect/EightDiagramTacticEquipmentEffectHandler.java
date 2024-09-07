@@ -58,7 +58,7 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
 
         game.peekTopBehavior().setIsOneRound(isEightDiagramTacticEffectSuccess);
         if (isEightDiagramTacticEffectSuccess) {
-            game.removeTopBehavior();
+            game.removeCompletedBehaviors();
         }
         return domainEvents;
     }

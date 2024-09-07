@@ -1,0 +1,128 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-d",
+      "targetPlayerId" : "player-a",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "SettlementEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "role" : "Monarch"
+    },
+    "message" : "結算"
+  }, {
+    "event" : "GameOverEvent",
+    "data" : {
+      "players" : [ {
+        "id" : "player-a",
+        "generalId" : "SHU001",
+        "roleId" : "Monarch",
+        "hp" : 0,
+        "hand" : {
+          "size" : 4,
+          "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        },
+        "equipments" : [ "", "", "", "" ],
+        "delayScrolls" : [ ]
+      }, {
+        "id" : "player-b",
+        "generalId" : "SHU001",
+        "roleId" : "Minister",
+        "hp" : 4,
+        "hand" : {
+          "size" : 3,
+          "cardIds" : [ "BH3029", "BH4030", "BH2028" ]
+        },
+        "equipments" : [ "", "", "", "" ],
+        "delayScrolls" : [ ]
+      }, {
+        "id" : "player-c",
+        "generalId" : "SHU001",
+        "roleId" : "Rebel",
+        "hp" : 4,
+        "hand" : {
+          "size" : 4,
+          "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        },
+        "equipments" : [ "", "", "", "" ],
+        "delayScrolls" : [ ]
+      }, {
+        "id" : "player-d",
+        "generalId" : "SHU001",
+        "roleId" : "Traitor",
+        "hp" : 4,
+        "hand" : {
+          "size" : 4,
+          "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        },
+        "equipments" : [ "", "", "", "" ],
+        "delayScrolls" : [ ]
+      } ],
+      "winners" : [ "player-c" ]
+    },
+    "message" : "遊戲結束"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 0,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-d",
+      "dyingPlayer" : "player-a",
+      "showKill" : true
+    },
+    "gamePhase" : "GameOver"
+  },
+  "message" : "不出牌",
+  "gameId" : "dyingTestGame",
+  "playerId" : "player-a"
+}

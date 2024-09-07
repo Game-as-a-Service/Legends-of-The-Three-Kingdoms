@@ -17,7 +17,7 @@ public class MinusMountsBehavior extends Behavior {
 
     @Override
     public List<DomainEvent> playerAction() {
-        playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
+        playerPlayEquipmentCard(behaviorPlayer, behaviorPlayer, cardId);
         MinusMountsCard mountsCard = behaviorPlayer.getEquipment().getMinusOne();
         String originEquipmentId = "";
         if (mountsCard != null) {

@@ -24,7 +24,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 public class  NormalActiveKillBehavior extends Behavior {
 
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
     }
 
     @Override
@@ -68,6 +68,7 @@ public class  NormalActiveKillBehavior extends Behavior {
             List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
             String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
             events.add(game.getGameStatusEvent(message));
+            isOneRound = true;
             return events;
         } else if (isDodgeCard(cardId)) {
             Round currentRound = game.getCurrentRound();
@@ -83,6 +84,7 @@ public class  NormalActiveKillBehavior extends Behavior {
             //playerDyingEvent
             String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
             events.add(game.getGameStatusEvent(message));
+            isOneRound = true;
             return events;
         } else {
             //TODO:怕有其他效果或殺的其他case
