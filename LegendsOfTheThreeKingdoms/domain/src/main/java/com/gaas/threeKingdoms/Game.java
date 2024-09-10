@@ -530,6 +530,10 @@ public class Game {
         seatingChart = new SeatingChart(players);
     }
 
+    public void removeDyingPlayer(Player player) {
+        seatingChart.getPlayers().remove(player);
+    }
+
     public void setDeck(Deck deck) {
         this.deck = deck;
     }

@@ -6,6 +6,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
@@ -197,4 +198,81 @@ public class FinishActionTest {
         assertEquals(RoundPhase.Discard, game.getCurrentRound().getRoundPhase());
     }
 
+
+    @DisplayName("""
+            Given
+            B 已經死了
+            當前回合玩家是 A ， Active Player 也是 A
+                        
+            When
+            A 玩家結束出牌
+                        
+            Then
+            當前回合玩家是 C ， Active Player 也是 C
+            """)
+    @Test
+    public void playerBisDying_WhenPlayerAFinishAction_ThenCurrentActivePlayerIsC() {
+        //Given
+        Game game = new Game();
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(5))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8009), new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        game.setPlayers(asList(playerA, playerB, playerC, playerD));
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+        //When
+        List<DomainEvent> events = game.finishAction(playerA.getId());
+
+        //Then
+        assertEquals("Normal", game.getGamePhase().getPhaseName());
+        assertEquals("player-c", game.getCurrentRound().getCurrentRoundPlayer().getId());
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId());
+    }
 }

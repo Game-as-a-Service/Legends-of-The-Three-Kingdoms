@@ -16,7 +16,7 @@ public class JsonFileWriterUtil {
      * @param filePathTemplate 檔案路徑模板，包含 %s 佔位符對應 playerId
      * @throws IOException 當寫入檔案發生錯誤時
      */
-    public static void writeJsonToFile(WebsocketUtil websocketUtil, String playerId, String filePathTemplate) throws IOException {
+    public static String writeJsonToFile(WebsocketUtil websocketUtil, String playerId, String filePathTemplate) throws IOException {
         // 檢查輸入是否為 null
         String jsonContent = websocketUtil.getValue(playerId);
         Objects.requireNonNull(jsonContent, "JSON 內容不能為 null");
@@ -24,6 +24,7 @@ public class JsonFileWriterUtil {
         Objects.requireNonNull(filePathTemplate, "檔案路徑模板不能為 null");
 
         // 使用 playerId 替換模板中的 %s 來動態生成檔案路徑
+        playerId = playerId.replace("-", "_");
         String filePath = String.format(filePathTemplate, playerId);
 
         // 獲取 Path 物件
@@ -37,6 +38,6 @@ public class JsonFileWriterUtil {
         // 將 JSON 字符串寫入檔案，若檔案已存在則覆寫
         Files.writeString(path, jsonContent, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-        System.out.println("JSON 檔案已成功寫入到: " + filePath);
+        return jsonContent;
     }
 }
