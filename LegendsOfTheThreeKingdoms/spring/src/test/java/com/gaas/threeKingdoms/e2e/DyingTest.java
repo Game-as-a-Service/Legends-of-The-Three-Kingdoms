@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
@@ -100,6 +101,7 @@ public class DyingTest {
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
+
     }
 
     @Test
@@ -157,6 +159,7 @@ public class DyingTest {
 
         currentPlayer = "player-d";
         targetPlayerId = "player-a";
+        //When d玩家出skip
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
@@ -167,7 +170,122 @@ public class DyingTest {
         websocketUtil.getValue("player-b");
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
+    }
 
+    @Test
+    public void testPlayerBIsEnterDyingStatusAndNoPlayPeach() throws Exception {
+        givenPlayerBIsEnterDyingStatus();
+        //Given B玩家瀕臨死亡
+        Game game = repository.findById(gameId);
+
+        //When B玩家出skip
+        String currentPlayer = "player-b";
+        String targetPlayerId = "player-b";
+        String playedCardId = "";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        //When C玩家出skip
+        currentPlayer = "player-c";
+        targetPlayerId = "player-b";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+
+        //When D玩家出skip
+        currentPlayer = "player-d";
+        targetPlayerId = "player-b";
+
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        currentPlayer = "player-a";
+        targetPlayerId = "player-b";
+        //When A玩家出skip
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // Then B 玩家死亡，active player 是 C
+        List<Player> players = game.getPlayers();
+        String filePathTemplate = "src/test/resources/TestJsonFile/DyingTest/PlayerBDyingAndSkipPeach/player_a_skip_for_%s.json";
+        for (Player player : players) {
+            String testPlayerId = player.getId();
+            String testPlayerJson = "";
+            //testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+        // Player C 裝備諸葛連弩
+        currentPlayer = "player-c";
+        targetPlayerId = "player-c";
+        playedCardId = "ECA066";
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        String testPlayerJson = websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        // Player C finishAction
+        currentPlayer = "player-c";
+        mockMvcUtil.finishAction(gameId, currentPlayer);
+        String testPlayerJson2 = websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        // Player D finishAction
+        currentPlayer = "player-d";
+        mockMvcUtil.finishAction(gameId, currentPlayer);
+        String testPlayerJson3 = websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        // Player A finishAction
+        currentPlayer = "player-a";
+        mockMvcUtil.finishAction(gameId, currentPlayer);
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        // Player B finishAction
+        currentPlayer = "player-b";
+        mockMvcUtil.finishAction(gameId, currentPlayer);
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        // Player C finishAction
+        currentPlayer = "player-c";
+        mockMvcUtil.finishAction(gameId, currentPlayer);
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
     }
 
     private void givenPlayerAIsEnterDyingStatus() {
@@ -218,6 +336,62 @@ public class DyingTest {
 
         // A玩家出skip
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        Mockito.when(repository.findById(gameId)).thenReturn(game);
+    }
+
+    private void givenPlayerBIsEnterDyingStatus() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        Player playerB = createPlayer("player-b",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+        );
+
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RepeatingCrossbowCard(ECA066)
+        );
+
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerC);
+
+        // C對B出殺
+        game.playerPlayCard(playerC.getId(), "BS8008", playerB.getId(), "active");
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        // B玩家出skip
+        game.playerPlayCard(playerB.getId(), "", playerC.getId(), "skip");
         websocketUtil.getValue("player-a");
         websocketUtil.getValue("player-b");
         websocketUtil.getValue("player-c");

@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.EffectEvent;
+import com.gaas.threeKingdoms.events.PlayerDamagedEvent;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -305,6 +306,8 @@ public class EightDiagramTacticTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
 
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BD2093)));
+
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
                 .withBloodCard(new BloodCard(4))
@@ -352,6 +355,10 @@ public class EightDiagramTacticTest {
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
         assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());
+
+        List<DomainEvent> secondEvents = game.playerPlayCard(playerA.getId(), BD2093.getCardId(), playerB.getId(), PlayType.INACTIVE.getPlayType());
+
+        assertFalse(secondEvents.stream().anyMatch(event -> event instanceof PlayerDamagedEvent));
     }
 
     @DisplayName("""

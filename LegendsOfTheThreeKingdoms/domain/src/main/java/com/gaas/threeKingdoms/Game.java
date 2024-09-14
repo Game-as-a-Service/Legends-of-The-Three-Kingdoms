@@ -527,7 +527,11 @@ public class Game {
 
     public void setPlayers(List<Player> players) {
         this.players = players;
-        seatingChart = new SeatingChart(players);
+        seatingChart = new SeatingChart(new ArrayList<>(players));
+    }
+
+    public void removeDyingPlayer(Player player) {
+        seatingChart.getPlayers().remove(player);
     }
 
     public void setDeck(Deck deck) {

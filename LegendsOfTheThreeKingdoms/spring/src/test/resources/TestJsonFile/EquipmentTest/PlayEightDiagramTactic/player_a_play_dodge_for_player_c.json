@@ -8,14 +8,6 @@
       "playType" : "inactive"
     },
     "message" : "出牌"
-  }, {
-    "event" : "PlayerDamagedEvent",
-    "data" : {
-      "playerId" : "player-a",
-      "from" : 4,
-      "to" : 4
-    },
-    "message" : "扣血"
   } ],
   "data" : {
     "seats" : [ {

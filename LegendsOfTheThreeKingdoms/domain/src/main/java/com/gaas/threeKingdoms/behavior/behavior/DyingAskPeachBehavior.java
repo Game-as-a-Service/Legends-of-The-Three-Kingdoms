@@ -20,8 +20,8 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 public class DyingAskPeachBehavior extends Behavior {
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
-        List<Player> players = game.getPlayers();
-        int damagedPlayerIndex = game.getPlayers().indexOf(behaviorPlayer);
+        List<Player> players = game.getSeatingChart().getPlayers();
+        int damagedPlayerIndex = players.indexOf(behaviorPlayer);
         List<Player> reorderedPlayerList = new ArrayList<>();
         reorderedPlayerList.addAll(players.subList(damagedPlayerIndex, players.size()));
         reorderedPlayerList.addAll(players.subList(0, damagedPlayerIndex));
@@ -41,9 +41,10 @@ public class DyingAskPeachBehavior extends Behavior {
         List<DomainEvent> events = new ArrayList<>();
         if (isSkip(playType)) {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
-            AskPeachEvent askPeachEvent = createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer);
-            if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+            Round currentRound = game.getCurrentRound();
+            if (isLastReactionPlayer(playerId)) {
                 isOneRound = true;
+                game.removeDyingPlayer(dyingPlayer);
                 if (isMonarchDied(dyingPlayer)) {
                     PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole().getRoleName());
@@ -53,11 +54,14 @@ public class DyingAskPeachBehavior extends Behavior {
                     events.addAll(List.of(playCardEvent, settlementEvent, gameOverEvent, game.getGameStatusEvent("主公死亡")));
                     return events;
                 }
+                game.enterPhase(new Normal(game));
+                currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+            } else {
+                events.add(createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer));
+                currentRound.setActivePlayer(game.getNextPlayer(currentPlayer));
             }
-            Round currentRound = game.getCurrentRound();
-            currentRound.setActivePlayer(game.getNextPlayer(currentPlayer));
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
-            events.addAll(List.of(playCardEvent, askPeachEvent, game.getGameStatusEvent("不出牌")));
+            events.addAll(List.of(playCardEvent, game.getGameStatusEvent("不出牌")));
             return events;
         } else if (isPeachCard(cardId)) {
 
@@ -83,6 +87,10 @@ public class DyingAskPeachBehavior extends Behavior {
             //TODO:怕有其他效果或殺的其他case
             return null;
         }
+    }
+
+    private boolean isLastReactionPlayer(String playerId) {
+        return reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
     }
 
     private void addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(List<DomainEvent> events) {

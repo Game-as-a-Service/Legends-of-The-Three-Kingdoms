@@ -121,7 +121,6 @@ public class EightDiagramTacticTest {
         whenPlayerBEquipRepeatingCrossbow();
     }
 
-    @Test
     private void whenPlayerBEquipRepeatingCrossbow() throws Exception {
         // When B 玩家裝備諸葛連弩
         String currentPlayer = "player-b";
@@ -366,7 +365,6 @@ public class EightDiagramTacticTest {
         String currentPlayer = "player-a";
         String targetPlayerId = "player-a";
         String playedCardId = "ES2015";
-
         mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.ACTIVE)
                 .andExpect(status().isOk()).andReturn();
 

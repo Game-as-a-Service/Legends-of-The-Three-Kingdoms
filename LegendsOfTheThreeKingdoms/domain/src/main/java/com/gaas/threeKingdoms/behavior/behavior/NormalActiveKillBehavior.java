@@ -74,10 +74,10 @@ public class  NormalActiveKillBehavior extends Behavior {
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             damagedPlayer.playCard(cardId);
-            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
+//            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
             isOneRound = true;
-            return List.of(playCardEvent, playerDamagedEvent, game.getGameStatusEvent("出牌"));
+            return List.of(playCardEvent, game.getGameStatusEvent("出牌"));
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();
             List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);

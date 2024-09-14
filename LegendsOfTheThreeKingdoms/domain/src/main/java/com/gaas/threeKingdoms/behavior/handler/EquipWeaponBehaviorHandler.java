@@ -30,7 +30,7 @@ public class EquipWeaponBehaviorHandler extends PlayCardBehaviorHandler {
     protected Behavior doHandle(String playerId, String cardId, List<String> targetPlayerId, String playType) {
         Player player = game.getPlayer(playerId);
 
-        List<String> players = game.getPlayers().stream()
+        List<String> players = game.getSeatingChart().getPlayers().stream()
                 .map(Player::getId)
                 .collect(Collectors.toList());
 
