@@ -534,7 +534,7 @@ public class PlayerDyingTest {
                         
             Then
             系統向所有玩家發出 player-d PlayCardEvent
-            GameStatus Event裡沒有player-a
+            SeatingChart 裡沒有player-a
             """)
     @Test
     public void playerADying2_WhenPlayerDPlayCardSkip_ThenGameOver() {
