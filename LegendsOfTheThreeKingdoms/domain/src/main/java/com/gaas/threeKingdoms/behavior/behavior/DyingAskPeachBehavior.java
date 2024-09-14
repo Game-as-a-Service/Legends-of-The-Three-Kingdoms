@@ -20,8 +20,8 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 public class DyingAskPeachBehavior extends Behavior {
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
-        List<Player> players = game.getPlayers();
-        int damagedPlayerIndex = game.getPlayers().indexOf(behaviorPlayer);
+        List<Player> players = game.getSeatingChart().getPlayers();
+        int damagedPlayerIndex = players.indexOf(behaviorPlayer);
         List<Player> reorderedPlayerList = new ArrayList<>();
         reorderedPlayerList.addAll(players.subList(damagedPlayerIndex, players.size()));
         reorderedPlayerList.addAll(players.subList(0, damagedPlayerIndex));
@@ -44,6 +44,7 @@ public class DyingAskPeachBehavior extends Behavior {
             Round currentRound = game.getCurrentRound();
             if (isLastReactionPlayer(playerId)) {
                 isOneRound = true;
+                game.removeDyingPlayer(dyingPlayer);
                 if (isMonarchDied(dyingPlayer)) {
                     PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole().getRoleName());

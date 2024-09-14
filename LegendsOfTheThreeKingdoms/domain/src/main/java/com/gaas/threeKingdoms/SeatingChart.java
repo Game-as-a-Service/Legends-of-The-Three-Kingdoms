@@ -5,13 +5,14 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SeatingChart {
 
-    private List<Player> players;
+    private ArrayList<Player> players;
 
-    public SeatingChart(List<Player> players) {
+    public SeatingChart(ArrayList<Player> players) {
         this.players = players;
     }
 

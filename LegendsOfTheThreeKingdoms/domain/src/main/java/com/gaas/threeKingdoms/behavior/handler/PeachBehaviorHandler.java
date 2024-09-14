@@ -31,7 +31,7 @@ public class PeachBehaviorHandler extends PlayCardBehaviorHandler {
     protected Behavior doHandle(String playerId, String cardId, List<String> reactionPlayers, String playType) {
         Player player = game.getPlayer(playerId);
 
-        List<String> players = game.getPlayers().stream()
+        List<String> players = game.getSeatingChart().getPlayers().stream()
                 .map(Player::getId)
                 .collect(Collectors.toList());
 

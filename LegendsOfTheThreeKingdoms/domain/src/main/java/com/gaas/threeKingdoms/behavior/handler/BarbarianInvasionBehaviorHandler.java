@@ -40,7 +40,8 @@ public class BarbarianInvasionBehaviorHandler extends PlayCardBehaviorHandler {
 
         // 將所有玩家加入 reactivePlayers，除了當前玩家，且排序為當前玩家之後的玩家
         Player tmpPlayer = currentReactionPlayer;
-        for (int i = 0; i < game.getPlayers().size() - 1; i++) {
+        List<Player> players = game.getSeatingChart().getPlayers();
+        for (int i = 0; i < players.size() - 1; i++) {
             reactivePlayers.add(tmpPlayer.getId());
             tmpPlayer = game.getNextPlayer(tmpPlayer);
         }

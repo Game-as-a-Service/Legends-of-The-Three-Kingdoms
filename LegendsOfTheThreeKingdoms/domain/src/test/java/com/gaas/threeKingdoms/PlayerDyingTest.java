@@ -586,7 +586,6 @@ public class PlayerDyingTest {
                 .withEquipment(new Equipment())
                 .build();
 
-
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         game.setPlayers(players);
         game.setCurrentRound(new Round(playerB));
@@ -602,8 +601,7 @@ public class PlayerDyingTest {
         List<DomainEvent> events = game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
 
         //Then
-        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
-        assertFalse(gameStatusEvent.getSeats().stream().anyMatch(seat -> seat.getId().equals("player-c")));
+        assertFalse(game.getSeatingChart().getPlayers().stream().anyMatch(seat -> seat.getId().equals("player-a")));
     }
 }
 
