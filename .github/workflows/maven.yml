@@ -117,3 +117,71 @@ jobs:
             whoami
             pwd
             sudo systemctl restart ${{ env.SYSTEMD_SERVICE_NAME }}
+
+  send-to-discord-webhook-url:
+    runs-on: ubuntu-latest
+    steps:
+      - name: crawl-commit-message-headers
+        id: crawl-commit-message-headers
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commits = context.payload.commits;
+            const issueRegex = /\#(\d+)/g;
+            const messages = commits.map(commit => {
+              const message = commit.message.split('\n')[0];
+              const issueMatches = commit.message.match(issueRegex);
+              console.log('issueMatches: ', issueMatches);
+              const issues = issueMatches ? issueMatches.map(match => match.slice(1)) : []; // 提取 issue number
+              return { message, issues };
+            });
+            console.log(commits, messages);
+            console.log('context: ', context)
+            core.exportVariable('messages', JSON.stringify(messages));
+      - name: build-discord-webhook-payload
+        id: build-discord-webhook-payload
+        uses: actions/github-script@v7
+        env:
+          # # sandbox webhook url
+          # DISCORD_WEBHOOK_URL: ${{ secrets.SANDBOX_DISCORD_WEBHOOK_URL }}
+          # real webhook url
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          script: |
+            const { messages } = process.env;
+            const jsonMessages = JSON.parse(messages);
+            const icons = {
+              feat: '<:thumb:1239951662832156752>',
+              fix: ':construction_site:',
+              style: ':paintbrush:',
+              default: ':hammer_and_wrench:'
+            };
+            
+            const iconMessages = jsonMessages.map(({ message, issues }) => {
+              const [commitType, ...rest] = message.split(': ');
+              if (commitType !== 'feat' && commitType !== 'fix' && commitType !== 'style' && commitType !== 'refactor') {
+                return;
+              }
+              const icon = icons[commitType] || icons.default;
+              const issueLinks = issues.map(issue => `[#${issue}](${context.payload.repository.html_url}/issues/${issue})`).join(', ');
+              return icon + ' ' + rest.join(': ') + (issueLinks ? ' (' + issueLinks + ')' : ''); 
+            }).filter(Boolean);
+            
+            const discordWebhookPayload = {
+              content: '## 信使傳來了前線情報' + '\n' + iconMessages.join('\n') + '\n\n馬上去看看 :point_right: [三國殺](https://3k.parsons125.in/)',
+              username: '甄姬',
+              avatar_url: 'https://3k.parsons125.in/zhen-ji.png'
+            };
+            
+            const req = new Request(process.env.DISCORD_WEBHOOK_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(discordWebhookPayload)
+            });
+            
+            const res = await fetch(req);
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
