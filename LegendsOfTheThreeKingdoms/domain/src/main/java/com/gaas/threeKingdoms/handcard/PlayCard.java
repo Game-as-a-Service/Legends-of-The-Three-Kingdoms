@@ -1,6 +1,20 @@
 package com.gaas.threeKingdoms.handcard;
 
+import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
+import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public enum PlayCard {
     SSA001("SSA001", "決鬥", Suit.SPADE, Rank.ACE),
@@ -113,9 +127,38 @@ public enum PlayCard {
     BDJ102("BDJ102", "閃", Suit.DIAMOND, Rank.J),
     EDQ103("EDQ103", "方天畫戟", Suit.DIAMOND, Rank.Q),
     EDK104("EDK104", "紫騂", Suit.DIAMOND, Rank.K),
-
-
     ;
+
+    private static final Map<String, HandCard> CARD_FACTORY_MAP = new HashMap<>();
+
+    static {
+        CARD_FACTORY_MAP.put("BS8008", new Kill(BS8008));
+        CARD_FACTORY_MAP.put("BS8009", new Kill(BS8009));
+        CARD_FACTORY_MAP.put("BS8010", new Kill(BS8010));
+        CARD_FACTORY_MAP.put("BH0049", new Kill(BH0049));
+        CARD_FACTORY_MAP.put("BH0036", new Kill(BH0036));
+        CARD_FACTORY_MAP.put("BHJ037", new Kill(BHJ037));
+        CARD_FACTORY_MAP.put("BH4030", new Peach(BH4030));
+        CARD_FACTORY_MAP.put("BH3029", new Peach(BH3029));
+        CARD_FACTORY_MAP.put("BH6032", new Peach(BH6032));
+        CARD_FACTORY_MAP.put("BH7033", new Peach(BH7033));
+        CARD_FACTORY_MAP.put("BH8034", new Peach(BH8034));
+        CARD_FACTORY_MAP.put("BH9035", new Peach(BH9035));
+        CARD_FACTORY_MAP.put("BHQ038", new Peach(BHQ038));
+        CARD_FACTORY_MAP.put("BHJ102", new Dodge(BDJ102));
+        CARD_FACTORY_MAP.put("BH2041", new Dodge(BH2041));
+        CARD_FACTORY_MAP.put("BH2028", new Dodge(BH2028));
+        CARD_FACTORY_MAP.put("BHK039", new Dodge(BHK039));
+        CARD_FACTORY_MAP.put("EH5044", new RedRabbitHorse(EH5044));
+        CARD_FACTORY_MAP.put("ES5018", new ShadowHorse(ES5018));
+        CARD_FACTORY_MAP.put("EH5031", new QilinBowCard(EH5031));
+        CARD_FACTORY_MAP.put("SSK013", new BarbarianInvasion(SSK013));
+        CARD_FACTORY_MAP.put("SC7072", new BarbarianInvasion(SC7072));
+        CARD_FACTORY_MAP.put("SCK065", new BorrowedSword(SCK065));
+        CARD_FACTORY_MAP.put("SCQ064", new BorrowedSword(SCQ064));
+        CARD_FACTORY_MAP.put("ECA066", new RepeatingCrossbowCard(ECA066));
+        CARD_FACTORY_MAP.put("ES2015", new EightDiagramTactic(ES2015));
+    }
 
     private final String cardId;
     private final String cardName;
@@ -182,6 +225,10 @@ public enum PlayCard {
                 .map(PlayCard::getCardName)
                 .findFirst()
                 .orElseThrow();
+    }
+
+    public static HandCard findById(String cardId) {
+        return CARD_FACTORY_MAP.get(cardId);
     }
 
 }
