@@ -1,15 +1,14 @@
-package com.gaas.threeKingdoms.mogodb.game;
+package com.gaas.threeKingdoms.mogodb;
 
-public class GamePo {
+public class GameData {
 
 
     private String gameId;
-    private List<Pl>
 
 
 
 
 
-    public GamePo() {
+    public GameData() {
     }
 }

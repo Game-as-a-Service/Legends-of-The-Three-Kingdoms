@@ -1,2 +1,4 @@
-package com.gaas.threeKingdoms.mogodb;public class PlayerData {
+package com.gaas.threeKingdoms.mogodb;
+
+public class PlayerData {
 }

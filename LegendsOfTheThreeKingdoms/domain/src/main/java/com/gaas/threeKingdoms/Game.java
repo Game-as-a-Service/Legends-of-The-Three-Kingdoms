@@ -45,8 +45,8 @@ public class Game {
     private Round currentRound;
     private GamePhase gamePhase;
     private List<Player> winners;
-    private PlayCardBehaviorHandler playCardHandler;
     private Stack<Behavior> topBehavior = new Stack<>();
+    private PlayCardBehaviorHandler playCardHandler;
     private EquipmentEffectHandler equipmentEffectHandler;
 
     public Game(String gameId, List<Player> players) {

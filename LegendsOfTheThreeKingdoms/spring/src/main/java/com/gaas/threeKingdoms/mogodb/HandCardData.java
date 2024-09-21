@@ -1,2 +1,4 @@
-package com.gaas.threeKingdoms.mogodb;public class HandCardData {
+package com.gaas.threeKingdoms.mogodb;
+
+public class HandCardData {
 }

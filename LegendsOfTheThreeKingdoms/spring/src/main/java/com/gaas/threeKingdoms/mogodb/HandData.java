@@ -1,2 +1,4 @@
-package com.gaas.threeKingdoms.mogodb;public class HandData {
+package com.gaas.threeKingdoms.mogodb;
+
+public class HandData {
 }
