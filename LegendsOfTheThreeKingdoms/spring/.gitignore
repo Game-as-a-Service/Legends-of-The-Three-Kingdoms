@@ -1,2 +1,2 @@
+# To hide mogodb uri
 src/main/resources/application.properties
-src/main/resources/123.txt
