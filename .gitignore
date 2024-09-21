@@ -139,6 +139,4 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains+all,osx,maven
 
-# application.properties
-/LegendsOfTheThreeKingdoms/spring/src/main/resources/application.properties
 
