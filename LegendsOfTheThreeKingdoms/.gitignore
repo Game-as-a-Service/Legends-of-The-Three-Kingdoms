@@ -33,4 +33,4 @@ build/
 .vscode/
 
 
-/LegendsOfTheThreeKingdoms/spring/src/main/resources/application.properties
+/spring/src/main/resources/application.properties
