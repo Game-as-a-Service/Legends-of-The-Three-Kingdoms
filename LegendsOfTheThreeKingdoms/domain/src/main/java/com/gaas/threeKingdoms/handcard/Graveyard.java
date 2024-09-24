@@ -2,12 +2,13 @@ package com.gaas.threeKingdoms.handcard;
 
 
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-
+@Data
 public class Graveyard {
     private Stack<HandCard> graveYardDeck = new Stack<>();
 
