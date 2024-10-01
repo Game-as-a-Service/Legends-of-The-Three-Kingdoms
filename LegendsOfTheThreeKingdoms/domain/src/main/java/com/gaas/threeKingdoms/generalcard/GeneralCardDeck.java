@@ -12,11 +12,7 @@ public class GeneralCardDeck {
 
     private Stack<GeneralCard> generalStack = new Stack<>();
 
-    public GeneralCardDeck() {
-        initGeneralCardDeck();
-    }
-
-    private void initGeneralCardDeck() {
+    public void initGeneralCardDeck() {
         General[] generalNames = General.values();
         for (int i = generalNames.length - 1; i >= 3; i--) {
             GeneralCard generalCard = new GeneralCard(generalNames[i]);

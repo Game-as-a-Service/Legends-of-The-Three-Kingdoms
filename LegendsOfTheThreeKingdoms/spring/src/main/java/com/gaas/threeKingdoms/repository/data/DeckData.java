@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 @Data
@@ -16,25 +18,24 @@ import java.util.Stack;
 @AllArgsConstructor
 public class DeckData {
 
-    private Stack<String> cardDeck = new Stack<>();  // Store card IDs as strings
+    private List<String> cardDeck = new ArrayList<>();  // Store card IDs as strings
 
     public Deck toDomain() {
         Deck deck = new Deck();
-        for (String cardId : this.cardDeck) {
-            deck.getCardDeck().push(PlayCard.findById(cardId));
+        for (int i = cardDeck.size() - 1; i >= 0; i--) {
+            deck.getCardDeck().push(PlayCard.findById(cardDeck.get(i)));
         }
         return deck;
     }
 
+
     public static DeckData fromDomain(Deck deck) {
         DeckData deckData = new DeckData();
-        Stack<String> cardIds = new Stack<>();
+        List<String> cardIds = new ArrayList<>();
         for (HandCard handCard : deck.getCardDeck()) {
-            cardIds.push(handCard.getId());  // Assuming HandCard has getId method
+            cardIds.add(handCard.getId());
         }
         deckData.setCardDeck(cardIds);
         return deckData;
     }
-
-
 }

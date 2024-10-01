@@ -58,6 +58,7 @@ public class Game {
 
     public Game() {
         deck.init();
+        generalCardDeck.initGeneralCardDeck();
         playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(null, this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
@@ -486,6 +487,10 @@ public class Game {
         return topBehavior;
     }
 
+    public void setTopBehavior(Stack<Behavior> topBehavior) {
+        this.topBehavior = topBehavior;
+    }
+
     public SeatingChart getSeatingChart() {
         return seatingChart;
     }
@@ -537,6 +542,10 @@ public class Game {
 
     public void setDeck(Deck deck) {
         this.deck = deck;
+    }
+
+    public Deck getDeck() {
+        return deck;
     }
 
     public Player getPlayer(String playerId) {
