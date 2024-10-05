@@ -3,18 +3,13 @@ package com.gaas.threeKingdoms.repository.data;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.gamephase.*;
-import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
-import com.gaas.threeKingdoms.handcard.Deck;
-import com.gaas.threeKingdoms.handcard.PlayCard;
+import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -45,7 +40,7 @@ public class GameData {
                 .seatingChart(this.seatingChart.toDomain())
                 .currentRound(this.round.toDomain())
                 .gamePhase(enterGamePhase(this.gamePhase, game))
-                .winners(this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()))
+                .winners(this.winners != null ? this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()) : new ArrayList<>())
                 .build();
 
         Stack<Behavior> topBehaviors = new Stack<>();
@@ -58,6 +53,9 @@ public class GameData {
     }
 
     public static GameData fromDomain(Game game) {
+        List<Player> winner = Optional.ofNullable(game.getWinners()).orElseGet(Collections::emptyList);
+        List<PlayerData> winnerData = winner.stream().map(PlayerData::fromDomain).collect(Collectors.toList());
+
         return GameData.builder()
                 .gameId(game.getGameId())
                 .players(game.getPlayers().stream().map(PlayerData::fromDomain).collect(Collectors.toList()))
@@ -67,7 +65,7 @@ public class GameData {
                 .seatingChart(SeatingChartData.fromDomain(game.getSeatingChart()))
                 .round(RoundData.fromDomain(game.getCurrentRound()))
                 .gamePhase(game.getGamePhase().getPhaseName())
-                .winners(game.getWinners().stream().map(PlayerData::fromDomain).collect(Collectors.toList()))
+                .winners(winnerData)
                 .topBehaviors(game.getTopBehavior().stream().map(BehaviorData::fromDomain).collect(Collectors.toCollection(ArrayList::new)))
                 .build();
     }

@@ -21,9 +21,7 @@ import java.util.List;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BehaviorDataTest {
 
@@ -53,16 +51,14 @@ public class BehaviorDataTest {
         Game game = MockUtil.initGame("123456", List.of(playerA, playerB), playerA);
 
         Kill currentPlayCard = new Kill(PlayCard.BS8008);
-        Behavior behavior = new Behavior(
+        Behavior behavior = new BarbarianInvasionBehavior(
                 game,
                 playerA,
                 reactionPlayers,
                 playerB,
                 "BS8008",
                 PlayType.ACTIVE.getPlayType(),
-                currentPlayCard,
-                true,
-                true
+                currentPlayCard
         );
 
         // Act
@@ -75,7 +71,7 @@ public class BehaviorDataTest {
         assertEquals("active", behaviorData.getPlayType());
         assertEquals(reactionPlayers, behaviorData.getReactionPlayers());
         assertTrue(behaviorData.isTargetPlayerNeedToResponse());
-        assertTrue(behaviorData.isOneRound());
+        assertFalse(behaviorData.isOneRound());
     }
 
     @Test
@@ -105,14 +101,14 @@ public class BehaviorDataTest {
         PlayerData currentReactionPlayerData = PlayerData.fromDomain(playerB);
 
         BehaviorData behaviorData = BehaviorData.builder()
-                .className(BarbarianInvasionBehavior.class.getName())
+                .behaviorName(BarbarianInvasionBehavior.class.getSimpleName())
                 .behaviorPlayer(behaviorPlayerData)
                 .currentReactionPlayer(currentReactionPlayerData)
                 .reactionPlayers(reactionPlayers)
                 .cardId("BS8008")
                 .playType(PlayType.ACTIVE.getPlayType())
                 .isTargetPlayerNeedToResponse(true)
-                .isOneRound(true)
+                .isOneRound(false)
                 .build();
 
         Game game = initGame("123456", List.of(playerA, playerB), playerB);
@@ -127,6 +123,6 @@ public class BehaviorDataTest {
         assertEquals("active", behavior.getPlayType());
         assertEquals(reactionPlayers, behavior.getReactionPlayers());
         assertTrue(behavior.isTargetPlayerNeedToResponse());
-        assertTrue(behavior.isOneRound());
+        assertFalse(behavior.isOneRound());
     }
 }

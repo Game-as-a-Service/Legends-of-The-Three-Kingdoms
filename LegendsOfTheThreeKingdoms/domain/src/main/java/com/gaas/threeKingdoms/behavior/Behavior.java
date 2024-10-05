@@ -74,4 +74,8 @@ public class Behavior {
     public boolean isTargetPlayerNeedToResponse() {
         return isTargetPlayerNeedToResponse;
     }
+
+    public void setIsTargetPlayerNeedToResponse(boolean isTargetPlayerNeedToResponse) {
+        this.isTargetPlayerNeedToResponse = isTargetPlayerNeedToResponse;
+    }
 }

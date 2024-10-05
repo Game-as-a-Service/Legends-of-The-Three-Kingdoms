@@ -1,6 +1,5 @@
 package com.gaas.threeKingdoms.repository.data;
 
-import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
@@ -23,6 +22,10 @@ public class PlayerData {
     private EquipmentData equipment;
 
     public static PlayerData fromDomain(com.gaas.threeKingdoms.player.Player player) {
+        if (player == null) {
+            return null;
+        }
+
         return PlayerData.builder()
                 .hand(HandData.fromDomain(player.getHand()))
                 .id(player.getId())
