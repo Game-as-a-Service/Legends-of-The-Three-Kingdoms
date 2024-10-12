@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
@@ -122,7 +123,7 @@ public class FinishingTest {
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
 
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 }

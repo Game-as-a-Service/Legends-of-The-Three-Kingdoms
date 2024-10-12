@@ -49,6 +49,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAHasQilinBow_WhenPlayerAPlayQilinBow_ThenPlayerAEquipQilinBow() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -118,6 +119,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAEquippedRepeatingCrossbow_WhenPlayerAPlayQilinBow_ThenPlayerAHaveQilinBow() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new RepeatingCrossbowCard(ECA066));
         Player playerA = PlayerBuilder
@@ -192,6 +194,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerATurn_PlayerAEquippedWithQilinBow_PlayerDHP3_PlayerDDistanceFromPlayerA3_WhenPlayerAAttacksPlayerD_PlayerDDoesNotPlayDodge_ThenPlayerDHP2() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
@@ -295,6 +298,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerATurn_PlayerDHP3_PlayerDDistanceFromPlayerA3_WhenPlayerAAttacksPlayerD_ThenException() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         Player playerA = PlayerBuilder
                 .construct()
@@ -397,6 +401,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerATurn_PlayerAHasQilinBow_PlayerBHpIs3_PlayerBHasEightDiagramTactic_WhenPlayerAAttacksPlayerB_PlayerBActivatesEightDiagramTacticSuccessfully_ThenPlayerBHpIs3() {
         Game game = new Game();
+        game.initDeck();
         Deck deck = new Deck(
                 List.of(
                         new RedRabbitHorse(BH3029)
@@ -485,6 +490,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerATurn_PlayerAHasQilinBow_PlayerBHpIs3_PlayerBHasDodge_WhenPlayerAAttacksPlayerB_PlayerBPlaysDodge_ThenPlayerBHpIs3() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
@@ -562,6 +568,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorse_WhenPlayerAAttacksPlayerD_PlayerDNotPlayDodge_ThenSystemAskToTriggerEquipmentEffect() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipmentA= new Equipment();
         equipmentA.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
@@ -671,6 +678,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDNoMount_WhenPlayerAAttacksPlayerD_PlayerDNotPlayDodge_ThenSystemNotAskToTriggerEquipmentEffect_PlayerDHP2() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
@@ -783,6 +791,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorse_PlayerDNotPlayDodge_SystemAskToTriggerEquipmentEffect_WhenPlayerADecidesNotToTriggerEffect_ThenAttackHitsPlayerD_PlayerDHP2() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
@@ -896,6 +905,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorse_PlayerDNotPlayDodge_WhenPlayerADecidesToTriggerEffect_ThenPlayerDRedRabbitHorseDiscarded_AttackHitsPlayerD_PlayerDHP2() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
@@ -1010,6 +1020,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorseAndShadowRunner_PlayerDNotPlayDodge_SystemAskToTriggerEquipmentEffect_WhenPlayerADecidesToTriggerEffect_ThenEventTriggeredForDiscardingAttackedPlayerMounts() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new QilinBowCard(EH5031));
         Player playerA = PlayerBuilder
@@ -1128,6 +1139,7 @@ public class QilinBowTest {
     @Test
     public void givenPlayerAEquippedQilinBow_PlayerDHP3_PlayerDDistance3_PlayerDEquippedRedRabbitHorseAndShadowRunner_PlayerDNotPlayDodge_SystemAskToTriggerEquipmentEffect_PlayerAReceivesEventPlayerDEquippedRedRabbitHorseAndShadowRunner_WhenPlayerASelectsRedRabbitHorse_ThenPlayerDHP2_PlayerDHasShadowRunnerNoRedRabbitHorse() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setWeapon(new QilinBowCard(EH5031));
 

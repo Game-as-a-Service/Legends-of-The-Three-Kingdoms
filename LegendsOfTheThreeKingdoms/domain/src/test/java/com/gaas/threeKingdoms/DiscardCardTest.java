@@ -41,6 +41,7 @@ public class DiscardCardTest {
     public void givenAPlayerWithKillAndDodge_WhenDiscardCard_ThenAPlayerOnlyWithKill() {
         //Given
         var game = new Game();
+        game.initDeck();
 
         Player playerA = PlayerBuilder
                 .construct()

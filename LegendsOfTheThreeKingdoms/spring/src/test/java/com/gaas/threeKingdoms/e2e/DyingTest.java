@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.exception.NotFoundException;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
@@ -71,7 +72,8 @@ public class DyingTest {
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+        Game game = repository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出桃
         String currentPlayer = "player-a";
@@ -108,7 +110,8 @@ public class DyingTest {
     public void testPlayerAIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+        Game game = repository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出skip
         String currentPlayer = "player-a";
@@ -176,7 +179,8 @@ public class DyingTest {
     public void testPlayerBIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerBIsEnterDyingStatus();
         //Given B玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+        Game game = repository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When B玩家出skip
         String currentPlayer = "player-b";
@@ -341,7 +345,7 @@ public class DyingTest {
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
 
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerBIsEnterDyingStatus() {
@@ -397,7 +401,7 @@ public class DyingTest {
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
 
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 }

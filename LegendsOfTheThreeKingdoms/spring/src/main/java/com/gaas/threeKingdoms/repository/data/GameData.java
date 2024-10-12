@@ -2,12 +2,14 @@ package com.gaas.threeKingdoms.repository.data;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class GameData {
 
+    @Id  // 將 gameId 作為 MongoDB 的主鍵
     private String gameId;
     private List<PlayerData> players;
     private GeneralCardDeckData generalCardDeck;
@@ -30,18 +33,27 @@ public class GameData {
     private List<BehaviorData> topBehaviors;
 
     public Game toDomain() {
-        Game game = null;
+        Game game = new Game();
+        game.setGameId(this.gameId);
+        game.setPlayers(this.players.stream().map(PlayerData::toDomain).collect(Collectors.toList()));
+        game.setDeck(this.deck.toDomain());
+        game.setGraveyard(this.graveyard.toDomain());
+        game.setSeatingChart(this.seatingChart.toDomain());
+        game.setCurrentRound(this.round.toDomain());
+        game.setGamePhase(enterGamePhase(this.gamePhase, game));
+        game.setWinners(this.winners != null ? this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()) : new ArrayList<>());
 
-        game = Game.builder()
-                .gameId(this.gameId)
-                .players(this.players.stream().map(PlayerData::toDomain).collect(Collectors.toList()))
-                .deck(this.deck.toDomain())
-                .graveyard(this.graveyard.toDomain())
-                .seatingChart(this.seatingChart.toDomain())
-                .currentRound(this.round.toDomain())
-                .gamePhase(enterGamePhase(this.gamePhase, game))
-                .winners(this.winners != null ? this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()) : new ArrayList<>())
-                .build();
+//        game = Game.builder()
+//                .gameId(this.gameId)
+//                .players()
+//                .deck()
+//                .graveyard(this.graveyard.toDomain())
+//                .seatingChart(this.seatingChart.toDomain())
+//                .currentRound(this.round.toDomain())
+//                .gamePhase(enterGamePhase(this.gamePhase, game))
+//                .winners(this.winners != null ? this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()) : new ArrayList<>())
+//                .build();
+
 
         Stack<Behavior> topBehaviors = new Stack<>();
         for (int i = this.topBehaviors.size() - 1; i >= 0; i--) {

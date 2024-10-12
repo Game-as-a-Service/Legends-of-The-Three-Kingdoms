@@ -383,7 +383,7 @@ public class BarbarianInvasionTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerB);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 

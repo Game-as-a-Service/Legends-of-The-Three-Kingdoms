@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.usecase;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.exception.NotFoundException;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import jakarta.inject.Named;
@@ -20,7 +21,8 @@ public class ChooseHorseUseCase {
     private final GameRepository gameRepository;
 
     public void execute(String gameId, ChooseHorseUseCase.ChooseHorseRequest request, ChooseHorsePresenter presenter) {
-        Game game = gameRepository.findById(gameId);
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         List<DomainEvent> events = game.playerChooseHorseForQilinBow(request.playerId, request.cardId);
         gameRepository.save(game);
         presenter.renderEvents(events);

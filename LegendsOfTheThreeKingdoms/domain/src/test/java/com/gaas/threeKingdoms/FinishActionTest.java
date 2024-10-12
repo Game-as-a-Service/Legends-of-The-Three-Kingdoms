@@ -50,6 +50,7 @@ public class FinishActionTest {
     public void playerA5HPAndHas5Cards_WhenPlayerAFinishAction_ThenDiscardCountIs0() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(5))
@@ -142,6 +143,7 @@ public class FinishActionTest {
     public void playerA5HpAndHas6Cards_WhenPlayerAFinishAction_ThenDiscardCountIs1() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(5))
@@ -214,6 +216,7 @@ public class FinishActionTest {
     public void playerBisDying_WhenPlayerAFinishAction_ThenCurrentActivePlayerIsC() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(5))

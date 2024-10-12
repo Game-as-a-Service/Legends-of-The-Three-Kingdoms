@@ -43,6 +43,7 @@ public class PlayShadowHorseTest {
     @Test
     public void givenPlayerAHaveShadowHorse_WhenPlayerAPlayShadowHorse_ThenPlayerAEquipShadowHorse() {
         Game game = new Game();
+        game.initDeck();
 
         Player playerA = PlayerBuilder
                 .construct()
@@ -113,6 +114,7 @@ public class PlayShadowHorseTest {
     @Test
     public void testRedRabbitHorseCoverageEffect() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setMinusOne(new RedRabbitHorse(EH5044));
         Player playerA = PlayerBuilder
@@ -188,6 +190,7 @@ public class PlayShadowHorseTest {
     @Test
     public void givenPlayerAHasRedRabbitHorse_WhenPlayerAAttackPlayerC_ThenCHpIs3(){
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setMinusOne(new RedRabbitHorse(EH5044));
         Player playerA = PlayerBuilder
@@ -263,6 +266,7 @@ public class PlayShadowHorseTest {
     @Test
     public void givenPlayerAHasRedRabbitHorse_WhenPlayerAAttackPlayerD_ThenExceptionError(){
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setPlusOne(new ShadowHorse(ES5018));
         Player playerA = PlayerBuilder

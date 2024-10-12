@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.e2e;
 
+import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
@@ -32,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class PlayPeachCardTest {
 
-    @MockBean
+    @Autowired
     private GameRepository repository;
 
     @Autowired
@@ -111,7 +113,10 @@ public class PlayPeachCardTest {
 
         playerA.damage(1);
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
+
+//        Mockito.when(repository.findById(gameId)).thenReturn(Optional.of(initGame(gameId, players, playerA)));
     }
 
 

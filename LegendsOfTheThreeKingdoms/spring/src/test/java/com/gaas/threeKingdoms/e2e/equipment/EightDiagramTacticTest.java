@@ -436,7 +436,7 @@ public class EightDiagramTacticTest {
                 )
         );
         game.setDeck(deck);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAEquipedEightDiagramTacticAndWillfail() {
@@ -482,7 +482,7 @@ public class EightDiagramTacticTest {
                 )
         );
         game.setDeck(deck);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHasEightDiagramTactic() {
@@ -521,6 +521,7 @@ public class EightDiagramTacticTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
     }
 }

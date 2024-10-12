@@ -32,7 +32,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Builder
 @AllArgsConstructor
 public class Game {
 
@@ -57,10 +56,13 @@ public class Game {
     }
 
     public Game() {
-        deck.init();
-        generalCardDeck.initGeneralCardDeck();
         playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(null, this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
+    }
+
+    public void initDeck() {
+        deck.init();
+        generalCardDeck.initGeneralCardDeck();
     }
 
     public String getMonarchPlayerId() {
@@ -240,6 +242,8 @@ public class Game {
         this.graveyard = graveyard;
     }
 
+    public void setSeatingChart(SeatingChart seatingChart) {this.seatingChart = seatingChart;}
+
     public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         PlayType.checkPlayTypeIsValid(playType);
         checkIsCurrentRoundValid(playerId);
@@ -302,6 +306,10 @@ public class Game {
             gamePhase.execute();
             // TODO 主動推反賊獲勝訊息給前端
         }
+    }
+
+    public void setGamePhase(GamePhase gamePhase) {
+        this.gamePhase = gamePhase;
     }
 
     public void judgementHealthStatus(Player targetPlayer) {

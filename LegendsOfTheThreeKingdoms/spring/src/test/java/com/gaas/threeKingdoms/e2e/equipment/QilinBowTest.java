@@ -621,7 +621,7 @@ public class QilinBowTest {
                 )
         );
         game.setDeck(deck);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(int playerBHP) {
@@ -686,7 +686,7 @@ public class QilinBowTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD, playerE, playerF, playerG);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveQilinBowPlayerBHaveRedRabbitHorse() {
@@ -726,7 +726,7 @@ public class QilinBowTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 
@@ -764,7 +764,7 @@ public class QilinBowTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 }

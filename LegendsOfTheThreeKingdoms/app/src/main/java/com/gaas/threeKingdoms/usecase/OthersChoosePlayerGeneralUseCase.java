@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.usecase;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.exception.NotFoundException;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import jakarta.inject.Named;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,8 @@ public class OthersChoosePlayerGeneralUseCase {
     private final GameRepository repository;
 
     public void execute(String gameId, MonarchChooseGeneralUseCase.MonarchChooseGeneralRequest request, InitialEndPresenter initialEndPresenter, RoundStartPresenter roundStartPresenter) {
-        Game game = repository.findById(gameId);
+        Game game = repository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         List<DomainEvent> events = game.othersChoosePlayerGeneral(request.getPlayerId(), request.getGeneralId());
         repository.save(game);
         initialEndPresenter.renderEvents(events);

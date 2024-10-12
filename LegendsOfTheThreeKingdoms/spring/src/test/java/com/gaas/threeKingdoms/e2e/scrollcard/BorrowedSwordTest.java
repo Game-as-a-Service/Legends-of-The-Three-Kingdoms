@@ -366,7 +366,7 @@ public class BorrowedSwordTest {
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveBorrowedSwordAndPlayerCAEquipedShadowHorse(int playerCHp) {
@@ -414,7 +414,7 @@ public class BorrowedSwordTest {
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveBorrowedSwordAndPlayerBEquipedQilinBow(int playerCHp) {
@@ -456,7 +456,7 @@ public class BorrowedSwordTest {
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveBorrowedSwordAndPlayerBWithoutEquipedWeapon(int playerCHp) {
@@ -497,7 +497,7 @@ public class BorrowedSwordTest {
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveBorrowedSwordAndPlayerBEquipedQilinBowAndRedRabbitHorse(int playerCHp) {
@@ -540,7 +540,7 @@ public class BorrowedSwordTest {
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void popAllPlayerMessage() {

@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
+import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
 import com.gaas.threeKingdoms.e2e.MockMvcUtil;
 import com.gaas.threeKingdoms.e2e.WebsocketUtil;
@@ -137,6 +138,7 @@ public class PlayRedRabbitHorseTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
     }
 }

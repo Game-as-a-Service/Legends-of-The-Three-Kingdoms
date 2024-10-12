@@ -3,6 +3,8 @@ package com.gaas.threeKingdoms.e2e;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.exception.NotFoundException;
+import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.round.RoundPhase;
 import com.gaas.threeKingdoms.controller.dto.GameRequest;
 import com.gaas.threeKingdoms.handcard.Deck;
@@ -77,7 +79,7 @@ public class GameTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private InMemoryGameRepository inMemoryGameRepository;
+    private GameRepository inMemoryGameRepository;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -217,7 +219,8 @@ public class GameTest {
                 .filter(x -> x.getCardName().equals("殺"))
                 .map(Kill::new)
                 .forEach(stack::push);
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         game.setDeck(new Deck(stack));
 
         assertEquals(Role.MONARCH, game.getPlayer("player-a").getRoleCard().getRole());
@@ -327,7 +330,8 @@ public class GameTest {
                 .andReturn();
 
         // Then 玩家A武將為劉備 ((主公general是 SHU001 is true)
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         assertEquals("SHU001", game.getPlayer("player-a").getGeneralCard().getGeneralId());
         // 牌堆不能有 SHU001
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
@@ -360,7 +364,8 @@ public class GameTest {
     }
 
     private void shouldGetGeneralCardsByOthers() throws Exception {
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         List<Player> otherPlayers = game.getPlayers().stream().filter(player -> player.getRoleCard().getRole() != Role.MONARCH).collect(Collectors.toList());
         for (Player player : otherPlayers) {
             String getGeneralCardByOthersMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
@@ -402,7 +407,8 @@ public class GameTest {
                 .andReturn();
 
         // Then 玩家B武將為馬超 ((玩家B general是 general1 is true)
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         assertEquals("SHU006", game.getPlayer("player-b").getGeneralCard().getGeneralId());
         // 牌堆不能有 general1
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
@@ -459,7 +465,8 @@ public class GameTest {
         List<Integer> hps = List.of(5, 4, 3, 3);
         List<String> generals = List.of("SHU001", "SHU006", "SHU004", "WEI002");
 
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         for (int i = 0; i < game.getPlayers().size(); i++) {
             Player currentPlayer = game.getPlayers().get(i);
             String initialEndViewModelMessageT = map.get(currentPlayer.getId()).poll(5, TimeUnit.SECONDS);
@@ -653,7 +660,8 @@ public class GameTest {
     }
 
     private void shouldDrawCardToPlayer(int expectHandSize) {
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         String playerId = game.getCurrentRoundPlayer().getId();
         assertEquals(RoundPhase.Action, game.getCurrentRoundPhase());
         assertEquals(expectHandSize, game.getPlayer(playerId).getHandSize());
@@ -671,7 +679,8 @@ public class GameTest {
         Then
         A 玩家進入棄牌階段
         */
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         String currentPlayerId = game.getCurrentRoundPlayer().getId();
         this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -726,7 +735,8 @@ public class GameTest {
         Then
         B 玩家進入棄牌階段
         */
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         String currentPlayerId = game.getCurrentRoundPlayer().getId();
         this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -906,7 +916,8 @@ public class GameTest {
         Then
         C 玩家進入棄牌階段
         */
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         String currentPlayerId = game.getCurrentRoundPlayer().getId();
         this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -1049,7 +1060,8 @@ public class GameTest {
         */
 
         // given
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為 c 不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-d").getHand().getCards();
@@ -1094,7 +1106,8 @@ public class GameTest {
            B Phase 是判斷階段
     */
         // given
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為這邊不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-a").getHand().getCards();
@@ -1140,7 +1153,8 @@ public class GameTest {
            C Phase 是判斷階段
     */
         // given
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為這邊不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-b").getHand().getCards();
@@ -1184,7 +1198,8 @@ public class GameTest {
                D Phase 是判斷階段
             */
         // given
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為 c 不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-c").getHand().getCards();
@@ -1231,7 +1246,8 @@ public class GameTest {
         */
 
         // given
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為 c 不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-d").getHand().getCards();
@@ -1276,7 +1292,8 @@ public class GameTest {
            B Phase 是判斷階段
     */
         // given
-        Game game = inMemoryGameRepository.findById("my-id");
+        Game game = inMemoryGameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為這邊不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
         List<HandCard> cards = game.getPlayer("player-a").getHand().getCards();

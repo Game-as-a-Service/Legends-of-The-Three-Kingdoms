@@ -38,7 +38,7 @@ public class RoundData {
         Round round = new Round(currentRoundPlayer.toDomain());
         round.setRoundPhase(RoundPhase.valueOf(this.roundPhase));
         round.setActivePlayer(activePlayer.toDomain());
-        round.setDyingPlayer(dyingPlayer.toDomain());
+        round.setDyingPlayer(dyingPlayer == null ? null : dyingPlayer.toDomain());
         round.setCurrentPlayCard(PlayCard.findById(currentPlayCard));
         round.setShowKill(isShowKill);
         round.setStage(Stage.valueOf(this.stage));
