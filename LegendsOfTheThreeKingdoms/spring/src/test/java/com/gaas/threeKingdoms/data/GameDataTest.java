@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.data;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
@@ -20,8 +21,7 @@ import java.util.*;
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GameDataTest {
 
@@ -106,7 +106,18 @@ public class GameDataTest {
                 .build();
 
         // Create a mock behavior
-        BehaviorData behaviorData = BehaviorData.builder()
+        BehaviorData behaviorData1 = BehaviorData.builder()
+                .behaviorName("NormalActiveKillBehavior")
+                .behaviorPlayer(playerData1)
+                .currentReactionPlayer(playerData2)
+                .reactionPlayers(new ArrayList<>(Arrays.asList("player2")))
+                .cardId("BS8008")
+                .playType("active")
+                .isTargetPlayerNeedToResponse(true)
+                .isOneRound(false)
+                .build();
+
+        BehaviorData behaviorData2 = BehaviorData.builder()
                 .behaviorName("BarbarianInvasionBehavior")
                 .behaviorPlayer(playerData1)
                 .currentReactionPlayer(playerData2)
@@ -126,7 +137,7 @@ public class GameDataTest {
                 .graveyard(graveyardData)
                 .seatingChart(seatingChartData)
                 .round(roundData)
-                .topBehaviors(new ArrayList<>(Collections.singletonList(behaviorData)))
+                .topBehaviors(new ArrayList<>(List.of(behaviorData1, behaviorData2)))
                 .build();
 
         // Act
@@ -138,7 +149,9 @@ public class GameDataTest {
         assertEquals(2, game.getPlayers().size());
         assertEquals("Normal", game.getGamePhase().getPhaseName());
         assertEquals("player1", game.getCurrentRound().getCurrentRoundPlayer().getId());
-        assertEquals(1, game.getTopBehavior().size());
+        assertEquals(2, game.getTopBehavior().size());
+        assertEquals("BarbarianInvasionBehavior", game.peekTopBehavior().getClass().getSimpleName());
+
         assertEquals("BS8008", game.getTopBehavior().peek().getCardId());
         assertEquals("player1", game.getPlayers().get(0).getId());
         assertEquals("player2", game.getPlayers().get(1).getId());
@@ -189,7 +202,7 @@ public class GameDataTest {
         List<String> reactionPlayers = Arrays.asList("player-b");
 
         Kill currentPlayCard = new Kill(PlayCard.BS8008);
-        Behavior behavior = new BarbarianInvasionBehavior(
+        Behavior behavior1 = new NormalActiveKillBehavior(
                 game,
                 playerA,
                 reactionPlayers,
@@ -198,8 +211,17 @@ public class GameDataTest {
                 PlayType.ACTIVE.getPlayType(),
                 currentPlayCard
         );
-        game.updateTopBehavior(behavior);
-
+        game.updateTopBehavior(behavior1);
+        Behavior behavior2 = new BarbarianInvasionBehavior(
+                game,
+                playerA,
+                reactionPlayers,
+                playerB,
+                "BS8008",
+                PlayType.ACTIVE.getPlayType(),
+                currentPlayCard
+        );
+        game.updateTopBehavior(behavior2);
         // Act
         GameData gameData = GameData.fromDomain(game);
 
@@ -208,9 +230,10 @@ public class GameDataTest {
         assertEquals(4, gameData.getPlayers().size());
         assertEquals("player-a", gameData.getPlayers().get(0).getId());
         assertEquals("Normal", gameData.getGamePhase());
-        assertEquals(1, gameData.getTopBehaviors().size());
+        assertEquals(2, gameData.getTopBehaviors().size());
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
-
+        assertEquals("NormalActiveKillBehavior", gameData.getTopBehaviors().get(0).getBehaviorName());
+        assertEquals("BarbarianInvasionBehavior", gameData.getTopBehaviors().get(1).getBehaviorName());
     }
 
 }

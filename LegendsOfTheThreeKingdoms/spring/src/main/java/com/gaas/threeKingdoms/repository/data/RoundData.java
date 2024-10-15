@@ -23,6 +23,10 @@ public class RoundData {
     private String stage;
 
     public static RoundData fromDomain(Round round) {
+        if (round == null) {
+            return null;
+        }
+
         return RoundData.builder()
                 .roundPhase(round.getRoundPhase().name())
                 .currentRoundPlayer(PlayerData.fromDomain(round.getCurrentRoundPlayer()))

@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.usecase;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.GetMonarchGeneralCardsEvent;
 import com.gaas.threeKingdoms.outport.GameRepository;
+import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.Player;
 import jakarta.inject.Named;
 import lombok.AllArgsConstructor;
@@ -23,12 +24,14 @@ public class StartGameUseCase {
         // 創建遊戲
         List<Player> players = createGameRequest.getPlayers().stream().map(playerId -> {
             Player player = new Player();
+            player.setHand(new Hand());
             player.setId(playerId);
             return player;
         }).collect(Collectors.toList());
 
         // 改
         Game game = new Game(createGameRequest.getGameId(), players);
+        game.initDeck();
         game.assignRoles();
 
         // 存
@@ -39,6 +42,9 @@ public class StartGameUseCase {
 
         // 主公抽可選擇的武將牌
         GetMonarchGeneralCardsEvent event = game.getMonarchCanChooseGeneralCards();
+
+        // 存
+        gameRepository.save(game);
 
         // 推播給主公
         getMonarchGeneralCardPresenter.renderGame(event, game.getGameId(), game.getMonarchPlayerId());

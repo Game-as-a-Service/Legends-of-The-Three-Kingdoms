@@ -18,20 +18,24 @@ public class SeatingChartData {
     private ArrayList<PlayerData> playerDataList;
 
     public static SeatingChartData fromDomain(SeatingChart seatingChart) {
+        if (seatingChart.getPlayers() == null) {
+            throw new IllegalArgumentException("PlayerList cannot be null");
+        }
+
         return SeatingChartData.builder()
-                .playerDataList(seatingChart.getPlayers() != null ?
-                        seatingChart.getPlayers().stream()
-                                .map(PlayerData::fromDomain)
-                                .collect(Collectors.toCollection(ArrayList::new))
-                        : new ArrayList<>())
+                .playerDataList(seatingChart.getPlayers().stream()
+                        .map(PlayerData::fromDomain)
+                        .collect(Collectors.toCollection(ArrayList::new)))
                 .build();
     }
 
     public SeatingChart toDomain() {
-        return new SeatingChart(this.playerDataList != null ?
-                this.playerDataList.stream()
-                        .map(PlayerData::toDomain)
-                        .collect(Collectors.toCollection(ArrayList::new))
-                : new ArrayList<>());
+        if (playerDataList == null) {
+            throw new IllegalArgumentException("PlayerDataList cannot be null");
+        }
+
+        return new SeatingChart(this.playerDataList.stream()
+                .map(PlayerData::toDomain)
+                .collect(Collectors.toCollection(ArrayList::new)));
     }
 }

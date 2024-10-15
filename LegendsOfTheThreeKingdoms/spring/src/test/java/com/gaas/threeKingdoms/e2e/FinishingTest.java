@@ -10,29 +10,22 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
-import static com.gaas.threeKingdoms.handcard.PlayCard.BHK039;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -41,8 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FinishingTest {
 
 
-    @MockBean
-    private GameRepository repository;
+    @Autowired
+    private GameRepository gameRepository;
 
     private WebsocketUtil websocketUtil;
 
@@ -67,6 +60,10 @@ public class FinishingTest {
         Thread.sleep(1000);
     }
 
+    @AfterEach
+    public void deleteMockGame() {
+        gameRepository.deleteById(gameId);
+    }
 
     @Test
     public void testPlayerAIsCurrentRoundPlayerAndFinishActionBeforePlayerBSkip() throws Exception {
@@ -81,7 +78,7 @@ public class FinishingTest {
 
         // A玩家結束回合，不等 B skip
         mockMvcUtil.finishAction(gameId, currentPlayer)
-            .andExpect(status().is4xxClientError()).andReturn();
+                .andExpect(status().is4xxClientError()).andReturn();
     }
 
     private void givenPlayerAIsCurrentRoundPlayer() {
@@ -123,7 +120,7 @@ public class FinishingTest {
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
 
-        repository.save(game);
+        gameRepository.save(game);
     }
 
 }

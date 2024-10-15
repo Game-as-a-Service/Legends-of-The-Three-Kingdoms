@@ -18,14 +18,13 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -46,8 +45,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class EightDiagramTacticTest {
 
-    @MockBean
-    private GameRepository repository;
+    @Autowired
+    private GameRepository gameRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -70,6 +69,10 @@ public class EightDiagramTacticTest {
         Thread.sleep(1000);
     }
 
+    @AfterEach
+    public void deleteMockGame() {
+        gameRepository.deleteById(gameId);
+    }
 
     @Test
     public void testPlayerAPlayEightDiagramTactic() throws Exception {
@@ -436,7 +439,7 @@ public class EightDiagramTacticTest {
                 )
         );
         game.setDeck(deck);
-        repository.save(game);
+        gameRepository.save(game);
     }
 
     private void givenPlayerAEquipedEightDiagramTacticAndWillfail() {
@@ -482,7 +485,7 @@ public class EightDiagramTacticTest {
                 )
         );
         game.setDeck(deck);
-        repository.save(game);
+        gameRepository.save(game);
     }
 
     private void givenPlayerAHasEightDiagramTactic() {
@@ -522,6 +525,6 @@ public class EightDiagramTacticTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        repository.save(game);
+        gameRepository.save(game);
     }
 }

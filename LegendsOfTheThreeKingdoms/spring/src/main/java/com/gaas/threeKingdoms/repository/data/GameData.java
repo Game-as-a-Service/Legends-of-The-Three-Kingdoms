@@ -2,7 +2,6 @@ package com.gaas.threeKingdoms.repository.data;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.gamephase.*;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
@@ -39,25 +38,14 @@ public class GameData {
         game.setDeck(this.deck.toDomain());
         game.setGraveyard(this.graveyard.toDomain());
         game.setSeatingChart(this.seatingChart.toDomain());
-        game.setCurrentRound(this.round.toDomain());
+        game.setCurrentRound(round == null ? null : this.round.toDomain());
         game.setGamePhase(enterGamePhase(this.gamePhase, game));
         game.setWinners(this.winners != null ? this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()) : new ArrayList<>());
 
-//        game = Game.builder()
-//                .gameId(this.gameId)
-//                .players()
-//                .deck()
-//                .graveyard(this.graveyard.toDomain())
-//                .seatingChart(this.seatingChart.toDomain())
-//                .currentRound(this.round.toDomain())
-//                .gamePhase(enterGamePhase(this.gamePhase, game))
-//                .winners(this.winners != null ? this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()) : new ArrayList<>())
-//                .build();
-
-
         Stack<Behavior> topBehaviors = new Stack<>();
-        for (int i = this.topBehaviors.size() - 1; i >= 0; i--) {
-            topBehaviors.push(this.topBehaviors.get(i).toDomain(game));
+
+        for (BehaviorData behaviorData : this.topBehaviors) {
+            topBehaviors.push(behaviorData.toDomain(game));
         }
         game.setTopBehavior(topBehaviors);
 

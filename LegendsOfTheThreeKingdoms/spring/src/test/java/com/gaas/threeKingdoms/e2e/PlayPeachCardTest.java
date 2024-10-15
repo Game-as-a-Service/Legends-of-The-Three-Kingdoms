@@ -9,6 +9,8 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -56,6 +58,11 @@ public class PlayPeachCardTest {
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
         Thread.sleep(1000);
+    }
+
+    @AfterEach
+    public void deleteMockGame() {
+        repository.deleteById(gameId);
     }
 
     @Test
@@ -115,8 +122,6 @@ public class PlayPeachCardTest {
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
         repository.save(game);
-
-//        Mockito.when(repository.findById(gameId)).thenReturn(Optional.of(initGame(gameId, players, playerA)));
     }
 
 

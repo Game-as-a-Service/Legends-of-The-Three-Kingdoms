@@ -26,6 +26,10 @@ public class GeneralCardData {
 
     // Convert from domain object
     public static GeneralCardData fromDomain(GeneralCard generalCard) {
+        if (generalCard == null) {
+            return null;
+        }
+
         return GeneralCardData.builder()
                 .generalId(generalCard.getGeneralId())
                 .generalName(generalCard.getGeneralName())

@@ -27,4 +27,9 @@ public class SpringGameRepository implements GameRepository {
         return gameDAO.findById(gameId)
                 .map(GameData::toDomain);
     }
+
+    @Override
+    public void deleteById(String gameId) {
+        gameDAO.deleteById(gameId);
+    }
 }

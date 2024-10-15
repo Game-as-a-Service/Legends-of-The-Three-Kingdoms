@@ -1,5 +1,7 @@
 package com.gaas.threeKingdoms.repository.data;
 
+import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
@@ -26,13 +28,14 @@ public class PlayerData {
             return null;
         }
 
+        HealthStatus healthStatus = player.getHealthStatus();
         return PlayerData.builder()
                 .hand(HandData.fromDomain(player.getHand()))
                 .id(player.getId())
                 .role(RoleCardData.fromDomain(player.getRoleCard()))
                 .general(GeneralCardData.fromDomain(player.getGeneralCard()))
                 .blood(BloodCardData.fromDomain(player.getBloodCard()))
-                .healthStatus(player.getHealthStatus().name())
+                .healthStatus(healthStatus == null ? null : player.getHealthStatus().name())
                 .equipment(EquipmentData.fromDomain(player.getEquipment()))
                 .build();
     }
@@ -42,9 +45,9 @@ public class PlayerData {
         player.setHand(this.hand.toDomain());
         player.setId(this.id);
         player.setRoleCard(this.role.toDomain());
-        player.setGeneralCard(this.general.toDomain());
-        player.setBloodCard(this.blood.toDomain());
-        player.setHealthStatus(HealthStatus.valueOf(this.healthStatus));
+        player.setGeneralCard(general == null ? null : general.toDomain());
+        player.setBloodCard(blood == null ? null : blood.toDomain());
+        player.setHealthStatus(healthStatus == null ? null : HealthStatus.valueOf(this.healthStatus));
         player.setEquipment(this.equipment.toDomain());
         return player;
     }

@@ -23,6 +23,10 @@ public class BloodCardData {
 
     // Convert from domain object
     public static BloodCardData fromDomain(BloodCard bloodCard) {
+        if (bloodCard == null) {
+            return null;
+        }
+
         return BloodCardData.builder()
                 .maxHp(bloodCard.getMaxHp())
                 .hp(bloodCard.getHp())

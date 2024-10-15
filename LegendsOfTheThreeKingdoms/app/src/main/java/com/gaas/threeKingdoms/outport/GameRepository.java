@@ -10,4 +10,6 @@ public interface GameRepository {
     Game save(Game game);
 
     Optional<Game> findById(String gameId);
+
+    void deleteById(String gameId);
 }
