@@ -65,8 +65,8 @@ public class BehaviorDataTest {
         BehaviorData behaviorData = BehaviorData.fromDomain(behavior);
 
         // Assert
-        assertEquals("player-a", behaviorData.getBehaviorPlayer().getId());
-        assertEquals("player-b", behaviorData.getCurrentReactionPlayer().getId());
+        assertEquals("player-a", behaviorData.getBehaviorPlayerId());
+        assertEquals("player-b", behaviorData.getCurrentReactionPlayerId());
         assertEquals("BS8008", behaviorData.getCardId());
         assertEquals("active", behaviorData.getPlayType());
         assertEquals(reactionPlayers, behaviorData.getReactionPlayers());
@@ -97,13 +97,10 @@ public class BehaviorDataTest {
 
         List<String> reactionPlayers = Arrays.asList("player-b");
 
-        PlayerData behaviorPlayerData = PlayerData.fromDomain(playerA);
-        PlayerData currentReactionPlayerData = PlayerData.fromDomain(playerB);
-
         BehaviorData behaviorData = BehaviorData.builder()
                 .behaviorName(BarbarianInvasionBehavior.class.getSimpleName())
-                .behaviorPlayer(behaviorPlayerData)
-                .currentReactionPlayer(currentReactionPlayerData)
+                .behaviorPlayerId(playerA.getId())
+                .currentReactionPlayerId(playerB.getId())
                 .reactionPlayers(reactionPlayers)
                 .cardId("BS8008")
                 .playType(PlayType.ACTIVE.getPlayType())

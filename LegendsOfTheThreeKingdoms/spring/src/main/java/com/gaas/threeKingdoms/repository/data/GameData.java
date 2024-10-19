@@ -36,6 +36,7 @@ public class GameData {
         game.setGameId(this.gameId);
         game.setPlayers(this.players.stream().map(PlayerData::toDomain).collect(Collectors.toList()));
         game.setDeck(this.deck.toDomain());
+        game.setGeneralCardDeck(this.generalCardDeck == null ? null : generalCardDeck.toDomain());
         game.setGraveyard(this.graveyard.toDomain());
         game.setSeatingChart(this.seatingChart.toDomain());
         game.setCurrentRound(round == null ? null : this.round.toDomain());

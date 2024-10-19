@@ -157,10 +157,10 @@ public class EightDiagramTacticTest {
 
     @Test
     public void testPlayerAUseEightDiagramTacticAndEffectFailed() throws Exception {
-        // Given A玩家已裝備一張八卦陣
+        // Given A 玩家已裝備一張八卦陣
         givenPlayerAEquipedEightDiagramTacticAndWillfail();
 
-        //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
+        //B 玩家攻擊 A 玩家，A 收到要不要發動裝備卡的event
         whenBKillAThenAShouldHaveEquipmentEvent();
 
         //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
@@ -435,7 +435,7 @@ public class EightDiagramTacticTest {
         Game game = initGame(gameId, players, playerB);
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(BH3029)
+                        new RedRabbitHorse(EH5044)
                 )
         );
         game.setDeck(deck);

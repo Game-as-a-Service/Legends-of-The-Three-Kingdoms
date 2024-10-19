@@ -22,7 +22,7 @@ public class DeckData {
 
     public Deck toDomain() {
         Deck deck = new Deck();
-        for (int i = cardDeck.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < cardDeck.size(); i++) {
             deck.getCardDeck().push(PlayCard.findById(cardDeck.get(i)));
         }
         return deck;
@@ -32,8 +32,19 @@ public class DeckData {
     public static DeckData fromDomain(Deck deck) {
         DeckData deckData = new DeckData();
         List<String> cardIds = new ArrayList<>();
-        for (HandCard handCard : deck.getCardDeck()) {
-            cardIds.add(handCard.getId());
+        List<HandCard> handCards = deck.getCardDeck();
+        for (int i =0; i < handCards.size(); i++) {
+            HandCard handCard = handCards.get(i);
+            if (handCard == null) {
+                System.out.println("Null handCard: " + i);
+            }
+
+            try {
+                cardIds.add(handCard.getId());
+            } catch (Exception e) {
+                System.out.println("Error processing handCard at index: " + i + ". HandCard: " + handCard);
+                e.printStackTrace(); // Log stack trace to see the actual error
+            }
         }
         deckData.setCardDeck(cardIds);
         return deckData;

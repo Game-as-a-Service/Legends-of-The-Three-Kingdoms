@@ -216,7 +216,8 @@ public class GameTest {
                     .andExpect(status().isOk());
         }
 
-
+        Game game = gameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         Stack<HandCard> stack = new Stack<>();
         Arrays.stream(values())
                 .filter(x -> x.getCardName().equals("閃"))
@@ -226,9 +227,10 @@ public class GameTest {
                 .filter(x -> x.getCardName().equals("殺"))
                 .map(Kill::new)
                 .forEach(stack::push);
-        Game game = gameRepository.findById("my-id")
-                .orElseThrow(() -> new NotFoundException("Game not found"));
         game.setDeck(new Deck(stack));
+        gameRepository.save(game);
+
+        Game game1 = gameRepository.findById("my-id").get();
 
         assertEquals(Role.MONARCH, game.getPlayer("player-a").getRoleCard().getRole());
         assertEquals(Role.MINISTER, game.getPlayer("player-b").getRoleCard().getRole());
@@ -260,8 +262,12 @@ public class GameTest {
         this.mockMvc.perform(get("/api/games/my-id?playerId=player-a")).andDo(print())
                 .andExpect(status().isOk());
 
+
+        Game game2 = gameRepository.findById("my-id").get();
+
         // WebSocket 推播給前端資訊
         checkGetGameEvent();
+        Game game3 = gameRepository.findById("my-id").get();
     }
 
     private void checkPlayerAGetCreateGameEvent() throws InterruptedException, JsonProcessingException {
@@ -325,6 +331,8 @@ public class GameTest {
 
          拿到可以選的武將牌
          */
+
+        Game game2 = gameRepository.findById("my-id").get();
         this.mockMvc.perform(post("/api/games/my-id/player:monarchChooseGeneral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -368,6 +376,9 @@ public class GameTest {
                                 """))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
+
+
+        Game game3 = gameRepository.findById("my-id").get();
     }
 
     private void shouldGetGeneralCardsByOthers() throws Exception {
@@ -423,8 +434,6 @@ public class GameTest {
                 .count());
 
         // 玩家C選諸葛亮
-//        this.mockMvc.perform(post("/api/games/my-id/player-c/general/SHU004")).andDo(print())
-//                .andExpect(status().isOk());
         this.mockMvc.perform(post("/api/games/my-id/player:otherChooseGeneral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -436,6 +445,8 @@ public class GameTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        game = gameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         // Then 玩家C武將為諸葛亮 ((玩家C genera1是 general18 is true)
         assertEquals("SHU004", game.getPlayer("player-c").getGeneralCard().getGeneralId());
         // 牌堆不能有 general1
@@ -444,8 +455,6 @@ public class GameTest {
                 .count());
 
         // 玩家D選司馬懿
-//        this.mockMvc.perform(post("/api/games/my-id/player-d/general/WEI002")).andDo(print())
-//                .andExpect(status().isOk());
         this.mockMvc.perform(post("/api/games/my-id/player:otherChooseGeneral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -456,6 +465,9 @@ public class GameTest {
                                 """))
                 .andExpect(status().isOk())
                 .andReturn();
+
+        game = gameRepository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         // Then 玩家D武將為司馬懿 ((玩家D general是 general1 is true)
         assertEquals("WEI002", game.getPlayer("player-d").getGeneralCard().getGeneralId());

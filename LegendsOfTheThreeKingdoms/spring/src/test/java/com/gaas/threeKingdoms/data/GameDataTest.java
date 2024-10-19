@@ -108,8 +108,8 @@ public class GameDataTest {
         // Create a mock behavior
         BehaviorData behaviorData1 = BehaviorData.builder()
                 .behaviorName("NormalActiveKillBehavior")
-                .behaviorPlayer(playerData1)
-                .currentReactionPlayer(playerData2)
+                .behaviorPlayerId(playerData1.getId())
+                .currentReactionPlayerId(playerData2.getId())
                 .reactionPlayers(new ArrayList<>(Arrays.asList("player2")))
                 .cardId("BS8008")
                 .playType("active")
@@ -119,8 +119,8 @@ public class GameDataTest {
 
         BehaviorData behaviorData2 = BehaviorData.builder()
                 .behaviorName("BarbarianInvasionBehavior")
-                .behaviorPlayer(playerData1)
-                .currentReactionPlayer(playerData2)
+                .behaviorPlayerId(playerData1.getId())
+                .currentReactionPlayerId(playerData2.getId())
                 .reactionPlayers(new ArrayList<>(Arrays.asList("player2")))
                 .cardId("BS8008")
                 .playType("active")

@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 @Data
@@ -20,7 +22,7 @@ import java.util.Stack;
 @AllArgsConstructor
 public class GeneralCardDeckData {
 
-    private Stack<String> generalStack = new Stack<>();
+    private List<String> generalStack = new ArrayList<>();
 
     public GeneralCardDeck toDomain() {
         GeneralCardDeck deck = new GeneralCardDeck();
@@ -32,9 +34,9 @@ public class GeneralCardDeckData {
 
     public static GeneralCardDeckData fromDomain(GeneralCardDeck deck) {
         GeneralCardDeckData deckData = new GeneralCardDeckData();
-        Stack<String> cardIds = new Stack<>();
+        List<String> cardIds = new ArrayList<>();
         for (GeneralCard generalCard : deck.getGeneralStack()) {
-            cardIds.push(generalCard.getGeneralId());
+            cardIds.add(generalCard.getGeneralId());
         }
         deckData.setGeneralStack(cardIds);
         return deckData;

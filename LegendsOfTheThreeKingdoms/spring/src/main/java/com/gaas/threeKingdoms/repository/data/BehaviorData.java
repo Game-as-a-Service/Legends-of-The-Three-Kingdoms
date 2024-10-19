@@ -17,9 +17,9 @@ import java.util.List;
 @AllArgsConstructor
 public class BehaviorData {
     private String behaviorName;
-    private PlayerData behaviorPlayer;
+    private String behaviorPlayerId;
     private List<String> reactionPlayers;
-    private PlayerData currentReactionPlayer;
+    private String currentReactionPlayerId;
     private String cardId;
     private String playType;
     private boolean isTargetPlayerNeedToResponse;
@@ -34,90 +34,90 @@ public class BehaviorData {
             case "BarbarianInvasionBehavior" ->
                 new BarbarianInvasionBehavior(
                         game,
-                        behaviorPlayer.toDomain(),
+                        game.getPlayer(behaviorPlayerId),
                         reactionPlayers,
-                        currentReactionPlayer.toDomain(),
+                        game.getPlayer(currentReactionPlayerId),
                         cardId,
                         playType,
                         PlayCard.findById(cardId)
                 );
             case "BorrowedSwordBehavior" -> new BorrowedSwordBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "DyingAskPeachBehavior" -> new DyingAskPeachBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "EquipArmorBehavior" -> new EquipArmorBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "EquipWeaponBehavior" -> new EquipWeaponBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "MinusMountsBehavior" -> new MinusMountsBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "NormalActiveKillBehavior" -> new NormalActiveKillBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "PeachBehavior" -> new PeachBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "PlusMountsBehavior" -> new PlusMountsBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
             );
             case "WaitingQilinBowResponseBehavior" -> new WaitingQilinBowResponseBehavior(
                     game,
-                    behaviorPlayer.toDomain(),
+                    game.getPlayer(behaviorPlayerId),
                     reactionPlayers,
-                    currentReactionPlayer.toDomain(),
+                    game.getPlayer(currentReactionPlayerId),
                     cardId,
                     playType,
                     PlayCard.findById(cardId)
@@ -133,9 +133,9 @@ public class BehaviorData {
     public static BehaviorData fromDomain(Behavior behavior) {
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())
-                .behaviorPlayer(PlayerData.fromDomain(behavior.getBehaviorPlayer()))
+                .behaviorPlayerId(behavior.getBehaviorPlayer().getId())
                 .reactionPlayers(behavior.getReactionPlayers())
-                .currentReactionPlayer(PlayerData.fromDomain(behavior.getCurrentReactionPlayer()))
+                .currentReactionPlayerId(behavior.getCurrentReactionPlayer().getId())
                 .cardId(behavior.getCardId())
                 .playType(behavior.getPlayType())
                 .isTargetPlayerNeedToResponse(behavior.isTargetPlayerNeedToResponse())

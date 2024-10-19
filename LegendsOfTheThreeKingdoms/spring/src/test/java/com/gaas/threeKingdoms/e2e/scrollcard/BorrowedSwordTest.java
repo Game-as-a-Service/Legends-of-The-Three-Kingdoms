@@ -303,12 +303,17 @@ public class BorrowedSwordTest {
         // B有裝備武器，沒有殺，B攻擊範圍內
         givenPlayerAHaveBorrowedSwordAndPlayerBEquipedQilinBowButNoKill(3);
 
+        Game game = repository.findById(gameId).get();
+
         // When
         // A出借刀殺人, 指定B殺C
         mockMvcUtil.playCard(gameId, "player-a", "player-b", borrowedSwordCardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
         popAllPlayerMessage();
         mockMvcUtil.useBorrowedSwordEffect(gameId, "player-a", "player-b", "player-c").andExpect(status().isOk()).andReturn();
+
+
+
 
         // Then
         // ABCD玩家收到B玩家的武器卡給A的event

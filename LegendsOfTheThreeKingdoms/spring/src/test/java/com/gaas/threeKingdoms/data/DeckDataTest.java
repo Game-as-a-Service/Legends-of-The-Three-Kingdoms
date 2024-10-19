@@ -45,9 +45,9 @@ class DeckDataTest {
         //Then
         assertEquals(deckData.getCardDeck().size(), deck.getCardDeck().size());
 
-        assertEquals("BHK039", deck.getCardDeck().get(0).getId());
+        assertEquals("BHK039", deck.getCardDeck().get(2).getId());
         assertEquals("BH4030", deck.getCardDeck().get(1).getId());
-        assertEquals("BS8008", deck.getCardDeck().get(2).getId());
+        assertEquals("BS8008", deck.getCardDeck().get(0).getId());
 
     }
 

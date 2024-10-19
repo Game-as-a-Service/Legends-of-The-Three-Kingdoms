@@ -564,9 +564,11 @@ public class BorrowedSwordTest {
         List<DomainEvent> firstEvents = game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         List<DomainEvent> secondEvents = game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
 
+
         //Then
         assertTrue(secondEvents.stream().anyMatch(event -> event instanceof PlayCardEvent));
         assertTrue(secondEvents.stream().anyMatch(event -> event instanceof WeaponUsurpationEvent));
+        assertEquals(1, game.getPlayer("player-a").getHand().size());
         assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
         assertNull(playerB.getEquipmentWeaponCard());
         assertTrue(playerA.getHand().getCards().stream().anyMatch(card -> card.getId().equals("ECA066")));

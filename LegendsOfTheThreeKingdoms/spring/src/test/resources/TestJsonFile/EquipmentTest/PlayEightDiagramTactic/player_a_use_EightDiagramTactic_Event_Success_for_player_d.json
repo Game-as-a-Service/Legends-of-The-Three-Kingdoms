@@ -2,7 +2,7 @@
   "events" : [ {
     "event" : "UseEquipmentEffectViewModel",
     "data" : {
-      "drawCardId" : "BH3029",
+      "drawCardId" : "EH5044",
       "success" : true
     },
     "message" : "發動效果 成功"

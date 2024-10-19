@@ -37,7 +37,7 @@ public class Game {
 
     private String gameId;
     private List<Player> players;
-    private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
+    private GeneralCardDeck generalCardDeck = new GeneralCardDeck();
     private Deck deck = new Deck();
     private Graveyard graveyard = new Graveyard();
     private SeatingChart seatingChart;
@@ -240,6 +240,10 @@ public class Game {
 
     public void setGraveyard(Graveyard graveyard) {
         this.graveyard = graveyard;
+    }
+
+    public void setGeneralCardDeck(GeneralCardDeck generalCardDeck) {
+        this.generalCardDeck = generalCardDeck;
     }
 
     public void setSeatingChart(SeatingChart seatingChart) {this.seatingChart = seatingChart;}
