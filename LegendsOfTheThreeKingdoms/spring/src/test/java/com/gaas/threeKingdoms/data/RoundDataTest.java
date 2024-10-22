@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.data;
 
+import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
@@ -15,6 +16,9 @@ import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.RoundPhase;
 import com.gaas.threeKingdoms.round.Stage;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -77,9 +81,9 @@ public class RoundDataTest {
 
         // Assert
         assertEquals("Judgement", roundData.getRoundPhase());  // Default phase in the constructor
-        assertEquals("player-a", roundData.getCurrentRoundPlayer().getId());
-        assertEquals("player-b", roundData.getActivePlayer().getId());
-        assertEquals("player-c", roundData.getDyingPlayer().getId());
+        assertEquals("player-a", roundData.getCurrentRoundPlayer());
+        assertEquals("player-b", roundData.getActivePlayer());
+        assertEquals("player-c", roundData.getDyingPlayer());
         assertEquals("BS8008", roundData.getCurrentPlayCard());
         assertTrue(roundData.isShowKill());
         assertEquals("Normal", roundData.getStage());
@@ -87,6 +91,8 @@ public class RoundDataTest {
 
     @Test
     public void testRoundDataToRoundConversion() {
+        Game game = new Game();
+
         // Arrange
         Player playerA = createPlayer(
                 "player-a",
@@ -122,23 +128,22 @@ public class RoundDataTest {
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
-        PlayerData currentRoundPlayerData = PlayerData.fromDomain(playerA);
-        PlayerData activePlayerData = PlayerData.fromDomain(playerB);
-        PlayerData dyingPlayerData = PlayerData.fromDomain(playerC);
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
 
         // Create RoundData object
         RoundData roundData = RoundData.builder()
                 .roundPhase("Judgement")
-                .currentRoundPlayer(currentRoundPlayerData)
-                .activePlayer(activePlayerData)
-                .dyingPlayer(dyingPlayerData)
+                .currentRoundPlayer("player-a")
+                .activePlayer("player-b")
+                .dyingPlayer("player-c")
                 .currentPlayCard("BS8008")
                 .isShowKill(true)
                 .stage("Normal")
                 .build();
 
         // Act: Convert to Round domain object
-        Round round = roundData.toDomain();
+        Round round = roundData.toDomain(game);
 
         // Assert
         assertEquals(RoundPhase.Judgement, round.getRoundPhase());

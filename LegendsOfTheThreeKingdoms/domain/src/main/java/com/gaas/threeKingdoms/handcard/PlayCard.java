@@ -162,6 +162,7 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("BC9074", new Kill(BC9074));
         CARD_FACTORY_MAP.put("BC0075", new Kill(BC0075));
         CARD_FACTORY_MAP.put("BCJ076", new Kill(BCJ076));
+        CARD_FACTORY_MAP.put("BS7020", new Kill(BS7020));
         CARD_FACTORY_MAP.put("BH4030", new Peach(BH4030));
         CARD_FACTORY_MAP.put("BH3029", new Peach(BH3029));
         CARD_FACTORY_MAP.put("BH6032", new Peach(BH6032));

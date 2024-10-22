@@ -1,7 +1,9 @@
 package com.gaas.threeKingdoms.data;
 
+import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.SeatingChart;
 import com.gaas.threeKingdoms.generalcard.General;
+import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -23,6 +26,28 @@ public class SeatingChartDataTest {
 
     @Test
     public void testSeatingChartDataToDomainConversion() {
+        Game game = new Game();
+        Player player1 = createPlayer(
+                "player1",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(PlayCard.BS8008), new Peach(PlayCard.BH3029)
+        );
+
+        Player player2 = createPlayer(
+                "player2",
+                3,
+                General.張飛,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(PlayCard.BS8009), new Peach(PlayCard.BH4030)
+        );
+
+        List<Player> players = Arrays.asList(player1, player2);
+        game.setPlayers(players);
+
         // Arrange
         PlayerData playerData1 = PlayerData.builder()
                 .hand(new HandData(Arrays.asList("BS8008", "BH4030")))
@@ -55,11 +80,11 @@ public class SeatingChartDataTest {
                 .build();
 
         SeatingChartData seatingChartData = SeatingChartData.builder()
-                .playerDataList(new ArrayList<>(Arrays.asList(playerData1, playerData2)))
+                .playerList(new ArrayList<>(Arrays.asList("player1", "player2")))
                 .build();
 
         // Act
-        SeatingChart seatingChart = seatingChartData.toDomain();
+        SeatingChart seatingChart = seatingChartData.toDomain(game);
 
         // Assert
         assertEquals(2, seatingChart.getPlayers().size());
@@ -112,10 +137,8 @@ public class SeatingChartDataTest {
         SeatingChartData seatingChartData = SeatingChartData.fromDomain(seatingChart);
 
         // Assert
-        assertEquals(4, seatingChartData.getPlayerDataList().size());
-        assertEquals("player-a", seatingChartData.getPlayerDataList().get(0).getId());
-        assertEquals("player-b", seatingChartData.getPlayerDataList().get(1).getId());
-        Assertions.assertTrue(seatingChartData.getPlayerDataList().get(0).getHand().getCards().contains("BS8008"));
-        Assertions.assertTrue(seatingChartData.getPlayerDataList().get(1).getHand().getCards().contains("BH2028"));
+        assertEquals(4, seatingChartData.getPlayerList().size());
+        assertEquals("player-a", seatingChartData.getPlayerList().get(0));
+        assertEquals("player-b", seatingChartData.getPlayerList().get(1));
     }
 }

@@ -28,7 +28,7 @@ public class GameData {
     private SeatingChartData seatingChart;
     private RoundData round;
     private String gamePhase;
-    private List<PlayerData> winners;
+    private List<String> winners;
     private List<BehaviorData> topBehaviors;
 
     public Game toDomain() {
@@ -38,10 +38,10 @@ public class GameData {
         game.setDeck(this.deck.toDomain());
         game.setGeneralCardDeck(this.generalCardDeck == null ? null : generalCardDeck.toDomain());
         game.setGraveyard(this.graveyard.toDomain());
-        game.setSeatingChart(this.seatingChart.toDomain());
-        game.setCurrentRound(round == null ? null : this.round.toDomain());
+        game.setSeatingChart(this.seatingChart.toDomain(game));
+        game.setCurrentRound(round == null ? null : this.round.toDomain(game));
         game.setGamePhase(enterGamePhase(this.gamePhase, game));
-        game.setWinners(this.winners != null ? this.winners.stream().map(PlayerData::toDomain).collect(Collectors.toList()) : new ArrayList<>());
+        game.setWinners(this.winners != null ? this.winners.stream().map(game::getPlayer).collect(Collectors.toList()) : new ArrayList<>());
 
         Stack<Behavior> topBehaviors = new Stack<>();
 
@@ -55,7 +55,7 @@ public class GameData {
 
     public static GameData fromDomain(Game game) {
         List<Player> winner = Optional.ofNullable(game.getWinners()).orElseGet(Collections::emptyList);
-        List<PlayerData> winnerData = winner.stream().map(PlayerData::fromDomain).collect(Collectors.toList());
+        List<String> winnerData = winner.stream().map(Player::getId).collect(Collectors.toList());
 
         return GameData.builder()
                 .gameId(game.getGameId())

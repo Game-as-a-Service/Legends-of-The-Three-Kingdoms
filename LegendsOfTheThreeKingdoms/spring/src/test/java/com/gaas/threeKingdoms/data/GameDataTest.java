@@ -91,15 +91,15 @@ public class GameDataTest {
 
         // Create a mock seating chart
         SeatingChartData seatingChartData = SeatingChartData.builder()
-                .playerDataList(new ArrayList<>(Arrays.asList(playerData1, playerData2)))
+                .playerList(new ArrayList<>(Arrays.asList("player1", "player2")))
                 .build();
 
         // Create a mock round
         RoundData roundData = RoundData.builder()
                 .roundPhase("Judgement")
-                .currentRoundPlayer(playerData1)
-                .activePlayer(playerData2)
-                .dyingPlayer(playerData1)
+                .currentRoundPlayer("player1")
+                .activePlayer("player2")
+                .dyingPlayer("player1")
                 .currentPlayCard("BS8008")
                 .isShowKill(true)
                 .stage("Normal")

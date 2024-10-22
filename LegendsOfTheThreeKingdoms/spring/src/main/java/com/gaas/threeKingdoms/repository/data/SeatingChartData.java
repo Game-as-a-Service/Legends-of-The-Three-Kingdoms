@@ -1,6 +1,8 @@
 package com.gaas.threeKingdoms.repository.data;
 
+import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.SeatingChart;
+import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class SeatingChartData {
 
-    private ArrayList<PlayerData> playerDataList;
+    private ArrayList<String> playerList;
 
     public static SeatingChartData fromDomain(SeatingChart seatingChart) {
         if (seatingChart.getPlayers() == null) {
@@ -23,19 +25,19 @@ public class SeatingChartData {
         }
 
         return SeatingChartData.builder()
-                .playerDataList(seatingChart.getPlayers().stream()
-                        .map(PlayerData::fromDomain)
+                .playerList(seatingChart.getPlayers().stream()
+                        .map(Player::getId)
                         .collect(Collectors.toCollection(ArrayList::new)))
                 .build();
     }
 
-    public SeatingChart toDomain() {
-        if (playerDataList == null) {
+    public SeatingChart toDomain(Game game) {
+        if (playerList == null) {
             throw new IllegalArgumentException("PlayerDataList cannot be null");
         }
 
-        return new SeatingChart(this.playerDataList.stream()
-                .map(PlayerData::toDomain)
+        return new SeatingChart(this.playerList.stream()
+                .map(game::getPlayer)
                 .collect(Collectors.toCollection(ArrayList::new)));
     }
 }

@@ -6,8 +6,8 @@
   }, {
     "event" : "NotifyDiscardEvent",
     "data" : {
-      "discardCount" : 2,
-      "discardPlayerId" : "player-b"
+      "discardCount" : 3,
+      "discardPlayerId" : "player-a"
     },
     "message" : "通知棄牌"
   } ],
@@ -16,29 +16,29 @@
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 4,
+      "hp" : 1,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU006",
+      "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU004",
+      "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
@@ -47,26 +47,26 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "WEI002",
+      "generalId" : "SHU001",
       "roleId" : "Traitor",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BC9061", "BC8060", "BC7059", "BC6058" ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     } ],
     "round" : {
       "roundPhase" : "Discard",
-      "currentRoundPlayer" : "player-b",
-      "activePlayer" : "player-b",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
       "dyingPlayer" : "",
-      "showKill" : true
+      "showKill" : false
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-b 需要棄 2 張牌",
-  "gameId" : "my-id",
+  "message" : "玩家 player-a 需要棄 3 張牌",
+  "gameId" : "dyingTestGame",
   "playerId" : "player-d"
 }

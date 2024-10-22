@@ -346,8 +346,6 @@ public class Game {
             throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
         }
 
-        resetActivePlayer();
-
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
                         p.getGeneralCard().getGeneralId(),

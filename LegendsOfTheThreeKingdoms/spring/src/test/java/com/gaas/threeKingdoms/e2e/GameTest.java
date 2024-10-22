@@ -332,7 +332,6 @@ public class GameTest {
          拿到可以選的武將牌
          */
 
-        Game game2 = gameRepository.findById("my-id").get();
         this.mockMvc.perform(post("/api/games/my-id/player:monarchChooseGeneral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -378,7 +377,6 @@ public class GameTest {
                 .andReturn();
 
 
-        Game game3 = gameRepository.findById("my-id").get();
     }
 
     private void shouldGetGeneralCardsByOthers() throws Exception {

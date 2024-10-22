@@ -20,12 +20,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -79,6 +83,31 @@ public class FinishingTest {
         // A玩家結束回合，不等 B skip
         mockMvcUtil.finishAction(gameId, currentPlayer)
                 .andExpect(status().is4xxClientError()).andReturn();
+    }
+
+    @Test
+    public void testPlayerAIsCurrentRoundPlayerAndFinishAction() throws Exception {
+        //Given A 是當前回合玩家
+        givenPlayerAIsCurrentRoundPlayer();
+
+        // A 對 B 出殺
+        String currentPlayer = "player-a";
+
+        // A玩家結束回合，不等 B skip
+        mockMvcUtil.finishAction(gameId, currentPlayer)
+                .andExpect(status().is2xxSuccessful()).andReturn();
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/FinishingTest/PlayerAIsCurrentRoundPlayer/player_a_finish_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
     }
 
     private void givenPlayerAIsCurrentRoundPlayer() {
