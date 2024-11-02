@@ -67,7 +67,6 @@ public class BarbarianInvasionTest extends AbstractBaseIntegrationTest {
         mockMvcUtil = new MockMvcUtil(mockMvc);
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
-        Thread.sleep(1000);
     }
 
     @AfterEach
