@@ -19,8 +19,6 @@ public abstract class AbstractBaseIntegrationTest {
 
     public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:latest").withExposedPorts(27017);
 
-    
-
     @DynamicPropertySource
     static void containersProperties(DynamicPropertyRegistry registry) {
         mongoDBContainer.start();

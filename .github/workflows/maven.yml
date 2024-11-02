@@ -6,6 +6,7 @@ env:
   JAR_FILENAME: LegendsOfTheThreeKingdoms
   ARTIFACT_NAME: backend-app
   SYSTEMD_SERVICE_NAME: ThreeKingdoms
+  MONGODB_URI: ${{ secrets.MONGODB_URI }}
 
 jobs:
   build:
