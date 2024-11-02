@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.e2e;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.exception.NotFoundException;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.round.RoundPhase;
@@ -61,10 +62,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class GameTest {
+public class GameTest extends AbstractBaseIntegrationTest {
 
     @Value(value = "${local.server.port}")
     private Integer port;

@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -32,10 +33,8 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class FinishingTest {
+public class FinishingTest extends AbstractBaseIntegrationTest {
 
 
     @Autowired
@@ -64,10 +63,10 @@ public class FinishingTest {
         Thread.sleep(1000);
     }
 
-    @AfterEach
-    public void deleteMockGame() {
-        gameRepository.deleteById(gameId);
-    }
+//    @AfterEach
+//    public void deleteMockGame() {
+//        gameRepository.deleteById(gameId);
+//    }
 
     @Test
     public void testPlayerAIsCurrentRoundPlayerAndFinishActionBeforePlayerBSkip() throws Exception {
