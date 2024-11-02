@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.usecase;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.exception.NotFoundException;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import jakarta.inject.Named;
@@ -18,7 +19,8 @@ public class UseEquipmentUseCase {
     private final GameRepository gameRepository;
 
     public void execute(String gameId, UseEquipmentRequest request, UseEquipmentPresenter presenter) {
-        Game game = gameRepository.findById(gameId);
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         List<DomainEvent> events = game.playerUseEquipment(request.playerId, request.cardId, request.targetPlayerId, request.playType);
         gameRepository.save(game);
         presenter.renderEvents(events);

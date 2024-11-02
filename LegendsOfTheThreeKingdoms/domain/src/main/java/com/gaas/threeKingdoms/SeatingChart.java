@@ -1,9 +1,7 @@
 package com.gaas.threeKingdoms;
 
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
+import lombok.Builder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +14,10 @@ public class SeatingChart {
         this.players = players;
     }
 
-    public List<Player> getPlayers(){
+    public List<Player> getPlayers() {
         return players;
     }
+
     // Calculate the distance between two players
     public int calculateDistance(Player player, Player targetPlayer) {
         int seat1 = players.indexOf(player);

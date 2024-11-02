@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
 import com.gaas.threeKingdoms.e2e.MockMvcUtil;
 import com.gaas.threeKingdoms.e2e.WebsocketUtil;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
@@ -17,6 +18,7 @@ import com.gaas.threeKingdoms.player.Equipment;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,12 +43,10 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.BHK039;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class BarbarianInvasionTest {
+public class BarbarianInvasionTest extends AbstractBaseIntegrationTest {
 
-    @MockBean
+    @Autowired
     private GameRepository repository;
 
     @Autowired
@@ -68,6 +68,11 @@ public class BarbarianInvasionTest {
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
         Thread.sleep(1000);
+    }
+
+    @AfterEach
+    public void deleteMockGame() {
+        repository.deleteById(gameId);
     }
 
     @Test
@@ -383,7 +388,7 @@ public class BarbarianInvasionTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerB);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 

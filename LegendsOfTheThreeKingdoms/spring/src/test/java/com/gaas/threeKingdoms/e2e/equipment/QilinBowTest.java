@@ -1,9 +1,11 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
 import com.gaas.threeKingdoms.e2e.MockMvcUtil;
 import com.gaas.threeKingdoms.e2e.WebsocketUtil;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
@@ -20,6 +22,7 @@ import com.gaas.threeKingdoms.player.Equipment;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -43,12 +46,10 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class QilinBowTest {
+public class QilinBowTest extends AbstractBaseIntegrationTest {
 
-    @MockBean
+    @Autowired
     private GameRepository repository;
 
     @Autowired
@@ -70,6 +71,11 @@ public class QilinBowTest {
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
         Thread.sleep(1000);
+    }
+
+    @AfterEach
+    public void deleteMockGame() {
+        repository.deleteById(gameId);
     }
 
     @Test
@@ -617,11 +623,11 @@ public class QilinBowTest {
         Game game = initGame(gameId, players, playerA);
         Deck deck = new Deck(
                 List.of(
-                        new Kill(BS7020)
+                        new Kill(BS8008)
                 )
         );
         game.setDeck(deck);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveQilinBowPlayerBHaveTwoHorse(int playerBHP) {
@@ -686,7 +692,7 @@ public class QilinBowTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD, playerE, playerF, playerG);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveQilinBowPlayerBHaveRedRabbitHorse() {
@@ -726,7 +732,7 @@ public class QilinBowTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 
@@ -764,7 +770,7 @@ public class QilinBowTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        repository.save(game);
     }
 
 }

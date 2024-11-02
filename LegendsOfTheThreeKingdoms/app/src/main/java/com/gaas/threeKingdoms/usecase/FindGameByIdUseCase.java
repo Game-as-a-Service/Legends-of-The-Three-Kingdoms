@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.usecase;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.exception.NotFoundException;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import jakarta.inject.Named;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,8 @@ public class FindGameByIdUseCase {
     private final GameRepository repository;
 
     public void findGameById(String gameId, String playerId, FindGamePresenter presenter) {
-        Game game = repository.findById(gameId);
+        Game game = repository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
         presenter.renderGame(game, playerId);
     }
 

@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -10,14 +11,13 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,18 +30,15 @@ import java.util.List;
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
-import static com.gaas.threeKingdoms.handcard.PlayCard.BHK039;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class FinishingTest {
+public class FinishingTest extends AbstractBaseIntegrationTest {
 
 
-    @MockBean
-    private GameRepository repository;
+    @Autowired
+    private GameRepository gameRepository;
 
     private WebsocketUtil websocketUtil;
 
@@ -66,6 +63,10 @@ public class FinishingTest {
         Thread.sleep(1000);
     }
 
+//    @AfterEach
+//    public void deleteMockGame() {
+//        gameRepository.deleteById(gameId);
+//    }
 
     @Test
     public void testPlayerAIsCurrentRoundPlayerAndFinishActionBeforePlayerBSkip() throws Exception {
@@ -80,7 +81,32 @@ public class FinishingTest {
 
         // A玩家結束回合，不等 B skip
         mockMvcUtil.finishAction(gameId, currentPlayer)
-            .andExpect(status().is4xxClientError()).andReturn();
+                .andExpect(status().is4xxClientError()).andReturn();
+    }
+
+    @Test
+    public void testPlayerAIsCurrentRoundPlayerAndFinishAction() throws Exception {
+        //Given A 是當前回合玩家
+        givenPlayerAIsCurrentRoundPlayer();
+
+        // A 對 B 出殺
+        String currentPlayer = "player-a";
+
+        // A玩家結束回合，不等 B skip
+        mockMvcUtil.finishAction(gameId, currentPlayer)
+                .andExpect(status().is2xxSuccessful()).andReturn();
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/FinishingTest/PlayerAIsCurrentRoundPlayer/player_a_finish_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
     }
 
     private void givenPlayerAIsCurrentRoundPlayer() {
@@ -122,7 +148,7 @@ public class FinishingTest {
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
 
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        gameRepository.save(game);
     }
 
 }

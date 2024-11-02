@@ -2,6 +2,8 @@ package com.gaas.threeKingdoms.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
+import com.gaas.threeKingdoms.exception.NotFoundException;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
@@ -12,14 +14,13 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,13 +36,11 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class DyingTest {
+public class DyingTest extends AbstractBaseIntegrationTest {
 
-    @MockBean
-    private GameRepository repository;
+    @Autowired
+    private GameRepository gameRepository;
 
     private WebsocketUtil websocketUtil;
 
@@ -58,7 +57,6 @@ public class DyingTest {
 
     private final String gameId = "dyingTestGame";
 
-
     @BeforeEach
     public void setup() throws Exception {
         websocketUtil = new WebsocketUtil(port, gameId);
@@ -66,12 +64,17 @@ public class DyingTest {
         Thread.sleep(1000);
     }
 
+    @AfterEach
+    public void deleteMockGame() {
+        gameRepository.deleteById(gameId);
+    }
 
     @Test
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出桃
         String currentPlayer = "player-a";
@@ -108,7 +111,8 @@ public class DyingTest {
     public void testPlayerAIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出skip
         String currentPlayer = "player-a";
@@ -176,7 +180,8 @@ public class DyingTest {
     public void testPlayerBIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerBIsEnterDyingStatus();
         //Given B玩家瀕臨死亡
-        Game game = repository.findById(gameId);
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When B玩家出skip
         String currentPlayer = "player-b";
@@ -341,7 +346,7 @@ public class DyingTest {
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
 
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        gameRepository.save(game);
     }
 
     private void givenPlayerBIsEnterDyingStatus() {
@@ -397,7 +402,7 @@ public class DyingTest {
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
 
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        gameRepository.save(game);
     }
 
 }

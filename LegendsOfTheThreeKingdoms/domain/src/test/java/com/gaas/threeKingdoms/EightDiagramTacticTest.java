@@ -47,6 +47,7 @@ public class EightDiagramTacticTest {
     @Test
     public void givenPlayerAHasEightDiagramTactic_WhenPlayerAPlayEightDiagramTactic_ThenPlayerAHaveEightDiagramTactic() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -120,6 +121,7 @@ public class EightDiagramTacticTest {
     @Test
     public void givenPlayerAHasRedRabbitHorse_WhenPlayerAAttackPlayerC_ThenCHpIs3() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setArmor(new EightDiagramTactic(ES2015));
         Player playerA = PlayerBuilder
@@ -198,6 +200,7 @@ public class EightDiagramTacticTest {
     @Test
     public void givenPlayerAUesEightDiagramTactic_WhenGetRedRabbitHorse_ThenPlayerADontNeedToDodgeAndHpIs4() {
         Game game = new Game();
+        game.initDeck();
         Deck deck = new Deck(
                 List.of(
                         new RedRabbitHorse(BH3029)
@@ -287,6 +290,7 @@ public class EightDiagramTacticTest {
     @Test
     public void givenPlayerAUesEightDiagramTactic_WhenGetBig2_ThenPlayerABeenAskIfWantToDodge() {
         Game game = new Game();
+        game.initDeck();
         Deck deck = new Deck(
                 List.of(
                         new RedRabbitHorse(ES2002)
@@ -380,6 +384,7 @@ public class EightDiagramTacticTest {
     @Test
     public void givenPlayerAHaveEightDiagramTactic_WhenANotUseEightDiagramTacticAndNotUseDodge_ThenPlayerAHpIs3AndCurrentRoundIsB() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setArmor(new EightDiagramTactic(ES2015));
         Player playerA = PlayerBuilder
@@ -464,6 +469,7 @@ public class EightDiagramTacticTest {
     @Test
     public void givenPlayerAHaveEightDiagramTactic_WhenANotUseEightDiagramTacticAndUseDodge_ThenPlayerAHpIs4AndCurrentRoundIsB() {
         Game game = new Game();
+        game.initDeck();
         Equipment equipment = new Equipment();
         equipment.setArmor(new EightDiagramTactic(ES2015));
         Player playerA = PlayerBuilder
@@ -550,6 +556,7 @@ public class EightDiagramTacticTest {
     @Test
     public void givenPlayerAUesEightDiagramTacticAndAlreadyUsedEightDiagramTactic_WhenUseEightDiagramTacticAgain_ThenThrowException() {
         Game game = new Game();
+        game.initDeck();
         Deck deck = new Deck(
                 List.of(
                         new RedRabbitHorse(ES2002)

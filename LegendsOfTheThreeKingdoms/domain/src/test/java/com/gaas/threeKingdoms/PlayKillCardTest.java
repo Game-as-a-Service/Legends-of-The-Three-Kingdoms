@@ -41,6 +41,7 @@ public class PlayKillCardTest {
     @Test
     public void givenPlayerAAndPlayerCDistance2_WhenPlayerAKillB_ThenPlayerAFail() {
         Game game = new Game();
+        game.initDeck();
 
         Player playerA = PlayerBuilder
                 .construct()
@@ -106,6 +107,7 @@ public class PlayKillCardTest {
     public void givenPlayerAKilledPlayerB_WhenPlayerAKillB_ThenPlayerAFail() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
@@ -186,6 +188,7 @@ public class PlayKillCardTest {
     public void givenPlayerAKilledPlayerB_AndPlayerBSkip_ThenPlayerBDecreaseHp() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
@@ -270,6 +273,7 @@ public class PlayKillCardTest {
     public void givenPlayerAKilledPlayerB_AndPlayerBSDodge_ThenPlayerBSameHp() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withDefault()
@@ -358,6 +362,7 @@ public class PlayKillCardTest {
     public void givenPlayerATurn_WhenPlayerBKillA_ThenException() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))

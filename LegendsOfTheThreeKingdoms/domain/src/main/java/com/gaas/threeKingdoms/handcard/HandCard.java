@@ -21,5 +21,8 @@ public abstract class HandCard {
         this.rank = playCard.getRank();
     }
 
+
+
     public abstract void effect(Player player);
+
 }

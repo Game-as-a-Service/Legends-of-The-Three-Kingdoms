@@ -1,5 +1,7 @@
 package com.gaas.threeKingdoms.e2e;
 
+import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -8,6 +10,8 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,18 +25,17 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class PlayPeachCardTest {
+public class PlayPeachCardTest extends AbstractBaseIntegrationTest {
 
-    @MockBean
+    @Autowired
     private GameRepository repository;
 
     @Autowired
@@ -54,6 +57,11 @@ public class PlayPeachCardTest {
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
         Thread.sleep(1000);
+    }
+
+    @AfterEach
+    public void deleteMockGame() {
+        repository.deleteById(gameId);
     }
 
     @Test
@@ -111,7 +119,8 @@ public class PlayPeachCardTest {
 
         playerA.damage(1);
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
     }
 
 

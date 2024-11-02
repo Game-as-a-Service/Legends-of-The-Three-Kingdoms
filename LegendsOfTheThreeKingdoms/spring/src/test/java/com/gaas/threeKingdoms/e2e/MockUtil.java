@@ -31,7 +31,6 @@ public class MockUtil {
     }
 
     public static Game initGame(String gameId, List<Player> players, Player currentRoundPlayer) {
-//        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = new Game(gameId, players);
         game.setCurrentRound(new Round(currentRoundPlayer));
         game.enterPhase(new Normal(game));

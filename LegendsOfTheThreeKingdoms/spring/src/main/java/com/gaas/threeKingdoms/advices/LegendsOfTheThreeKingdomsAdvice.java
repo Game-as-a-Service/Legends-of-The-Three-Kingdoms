@@ -1,7 +1,7 @@
 package com.gaas.threeKingdoms.advices;
 
+import com.gaas.threeKingdoms.exception.NotFoundException;
 import io.micrometer.common.util.StringUtils;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,8 +38,8 @@ public class LegendsOfTheThreeKingdomsAdvice {
     }
 
     @ResponseStatus(NOT_FOUND)
-    @ExceptionHandler({ChangeSetPersister.NotFoundException.class})
-    public String notFound(ChangeSetPersister.NotFoundException exception) {
+    @ExceptionHandler({NotFoundException.class})
+    public String notFound(NotFoundException exception) {
         return exception.getMessage();
     }
 

@@ -172,4 +172,20 @@ public class Player {
     public boolean isStillAlive() {
         return this.getHP() > 0;
     }
+
+    // 覆寫 equals 方法
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true; // 檢查是否為同一個物件
+        if (obj == null || getClass() != obj.getClass()) return false; // 類型不同則不相等
+
+        Player player = (Player) obj;
+        return id != null && id.equals(player.id); // 根據 id 屬性來判斷
+    }
+
+    // 覆寫 hashCode 方法
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0; // 根據 id 的 hashCode 計算
+    }
 }

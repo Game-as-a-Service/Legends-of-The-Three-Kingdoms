@@ -51,6 +51,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerAHasBorrowedSword_WhenPlayerAPlayBorrowedSword_ThenPlayerABCDAcceptBorrowedSwordEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -149,6 +150,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerAHasBorrowedSword_WhenPlayerAPlayBorrowedSwordButPlayerBHaveNoPlayer_ThenThrowError() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -235,6 +237,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBWithoutWeaponToKillC_ThenThrowError() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -313,6 +316,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBToKillC_AndPlayerBPlaysKill_ThenPlayersABCDReceivePlayerBPlaysKillEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -408,6 +412,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBToKillC_AndPlayerBSkips_ThenPlayersABCDReceivePlayerBWeaponCardGivenToPlayerAEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -501,6 +506,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBToKillC_AndPlayerHaveNoKill_ThenPlayersABCDReceivePlayerBWeaponCardGivenToPlayerAEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -558,9 +564,11 @@ public class BorrowedSwordTest {
         List<DomainEvent> firstEvents = game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         List<DomainEvent> secondEvents = game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
 
+
         //Then
         assertTrue(secondEvents.stream().anyMatch(event -> event instanceof PlayCardEvent));
         assertTrue(secondEvents.stream().anyMatch(event -> event instanceof WeaponUsurpationEvent));
+        assertEquals(1, game.getPlayer("player-a").getHand().size());
         assertEquals(4, game.getPlayer("player-c").getBloodCard().getHp());
         assertNull(playerB.getEquipmentWeaponCard());
         assertTrue(playerA.getHand().getCards().stream().anyMatch(card -> card.getId().equals("ECA066")));
@@ -594,6 +602,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBToKillWithCHaveEightDiagramTactic_AndPlayerBPlaysKill_ThenPlayersABCDReceivePlayerCPlaysEightDiagramTacticWithSuccessEvent() {
         Game game = new Game();
+        game.initDeck();
         Deck deck = new Deck(
                 List.of(
                         new RedRabbitHorse(BH3029)
@@ -704,6 +713,7 @@ public class BorrowedSwordTest {
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasBorrowedSword_WhenPlayerAPlaysBorrowedSwordAndAssignsBToKillC_AndPlayerBPlaysKill_AndCActivatesBaguaFailsAndPlaysSkip_ThenCPlayerHPIs3_StillPlayerATurn_StackHasNoBorrowedSwordBehavior_ActivePlayerIsA() {
         Game game = new Game();
+        game.initDeck();
         Deck deck = new Deck(
                 List.of(
                         new RedRabbitHorse(ES2002)

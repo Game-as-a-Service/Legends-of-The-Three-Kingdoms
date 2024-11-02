@@ -3,9 +3,13 @@ package com.gaas.threeKingdoms.outport;
 
 import com.gaas.threeKingdoms.Game;
 
+import java.util.Optional;
+
 public interface GameRepository {
 
     Game save(Game game);
 
-    Game findById(String gameId);
+    Optional<Game> findById(String gameId);
+
+    void deleteById(String gameId);
 }

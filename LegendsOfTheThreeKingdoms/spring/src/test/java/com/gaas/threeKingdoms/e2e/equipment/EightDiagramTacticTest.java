@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
 import com.gaas.threeKingdoms.e2e.MockMvcUtil;
 import com.gaas.threeKingdoms.e2e.WebsocketUtil;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
@@ -20,13 +21,9 @@ import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.file.Files;
@@ -41,13 +38,11 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class EightDiagramTacticTest {
+public class EightDiagramTacticTest extends AbstractBaseIntegrationTest {
 
-    @MockBean
-    private GameRepository repository;
+    @Autowired
+    private GameRepository gameRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -69,7 +64,6 @@ public class EightDiagramTacticTest {
         helper = new JsonFileValidateHelper(websocketUtil);
         Thread.sleep(1000);
     }
-
 
     @Test
     public void testPlayerAPlayEightDiagramTactic() throws Exception {
@@ -154,10 +148,10 @@ public class EightDiagramTacticTest {
 
     @Test
     public void testPlayerAUseEightDiagramTacticAndEffectFailed() throws Exception {
-        // Given A玩家已裝備一張八卦陣
+        // Given A 玩家已裝備一張八卦陣
         givenPlayerAEquipedEightDiagramTacticAndWillfail();
 
-        //B 玩家攻擊 A 玩家，A收到要不要發動裝備卡的event
+        //B 玩家攻擊 A 玩家，A 收到要不要發動裝備卡的event
         whenBKillAThenAShouldHaveEquipmentEvent();
 
         //全部人收到 八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
@@ -432,11 +426,11 @@ public class EightDiagramTacticTest {
         Game game = initGame(gameId, players, playerB);
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(BH3029)
+                        new RedRabbitHorse(EH5044)
                 )
         );
         game.setDeck(deck);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        gameRepository.save(game);
     }
 
     private void givenPlayerAEquipedEightDiagramTacticAndWillfail() {
@@ -482,7 +476,7 @@ public class EightDiagramTacticTest {
                 )
         );
         game.setDeck(deck);
-        Mockito.when(repository.findById(gameId)).thenReturn(game);
+        gameRepository.save(game);
     }
 
     private void givenPlayerAHasEightDiagramTactic() {
@@ -521,6 +515,7 @@ public class EightDiagramTacticTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
+        Game game = initGame(gameId, players, playerA);
+        gameRepository.save(game);
     }
 }

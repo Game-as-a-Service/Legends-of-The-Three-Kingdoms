@@ -1,8 +1,10 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
+import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
 import com.gaas.threeKingdoms.e2e.MockMvcUtil;
 import com.gaas.threeKingdoms.e2e.WebsocketUtil;
+import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -13,6 +15,7 @@ import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,12 +39,10 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 @AutoConfigureMockMvc
-public class RepeatingCrossbowTest {
+public class RepeatingCrossbowTest extends AbstractBaseIntegrationTest {
 
-    @MockBean
+    @Autowired
     private GameRepository repository;
 
     @Autowired
@@ -63,6 +64,11 @@ public class RepeatingCrossbowTest {
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
         Thread.sleep(1000);
+    }
+
+    @AfterEach
+    public void deleteMockGame() {
+        repository.deleteById(gameId);
     }
 
     @Test
@@ -136,7 +142,8 @@ public class RepeatingCrossbowTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
-        Mockito.when(repository.findById(gameId)).thenReturn(initGame(gameId, players, playerA));
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
     }
 
 }

@@ -32,21 +32,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Builder
 @AllArgsConstructor
 public class Game {
 
     private String gameId;
     private List<Player> players;
-    private final GeneralCardDeck generalCardDeck = new GeneralCardDeck();
+    private GeneralCardDeck generalCardDeck = new GeneralCardDeck();
     private Deck deck = new Deck();
     private Graveyard graveyard = new Graveyard();
     private SeatingChart seatingChart;
     private Round currentRound;
     private GamePhase gamePhase;
     private List<Player> winners;
-    private PlayCardBehaviorHandler playCardHandler;
     private Stack<Behavior> topBehavior = new Stack<>();
+    private PlayCardBehaviorHandler playCardHandler;
     private EquipmentEffectHandler equipmentEffectHandler;
 
     public Game(String gameId, List<Player> players) {
@@ -59,6 +58,11 @@ public class Game {
     public Game() {
         playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(null, this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
+    }
+
+    public void initDeck() {
+        deck.init();
+        generalCardDeck.initGeneralCardDeck();
     }
 
     public String getMonarchPlayerId() {
@@ -238,6 +242,12 @@ public class Game {
         this.graveyard = graveyard;
     }
 
+    public void setGeneralCardDeck(GeneralCardDeck generalCardDeck) {
+        this.generalCardDeck = generalCardDeck;
+    }
+
+    public void setSeatingChart(SeatingChart seatingChart) {this.seatingChart = seatingChart;}
+
     public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         PlayType.checkPlayTypeIsValid(playType);
         checkIsCurrentRoundValid(playerId);
@@ -302,6 +312,10 @@ public class Game {
         }
     }
 
+    public void setGamePhase(GamePhase gamePhase) {
+        this.gamePhase = gamePhase;
+    }
+
     public void judgementHealthStatus(Player targetPlayer) {
         if (targetPlayer.getHP() <= 0) {
             targetPlayer.setHealthStatus(HealthStatus.DYING);
@@ -331,8 +345,6 @@ public class Game {
         if (!topBehavior.isEmpty()) {
             throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
         }
-
-        resetActivePlayer();
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
@@ -485,6 +497,10 @@ public class Game {
         return topBehavior;
     }
 
+    public void setTopBehavior(Stack<Behavior> topBehavior) {
+        this.topBehavior = topBehavior;
+    }
+
     public SeatingChart getSeatingChart() {
         return seatingChart;
     }
@@ -536,6 +552,10 @@ public class Game {
 
     public void setDeck(Deck deck) {
         this.deck = deck;
+    }
+
+    public Deck getDeck() {
+        return deck;
     }
 
     public Player getPlayer(String playerId) {

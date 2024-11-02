@@ -20,7 +20,8 @@ public class AssignRoleTest {
     @Test
     void givenFourPlayers_WhenAssignRole_ThenOneMonarchOneMinisterOneRebelOneTraitors() {
         //Given
-        var game = new Game();
+        Game game = new Game();
+        game.initDeck();
         List<Player> players = asList(
                 PlayerBuilder.construct()
                         .withId("player-a")
@@ -50,6 +51,7 @@ public class AssignRoleTest {
     void givenThreePlayers_WhenAssignRoles_ThenThrowException() {
         //Given
         var game = new Game();
+        game.initDeck();
         List<Player> players = asList(
                 PlayerBuilder.construct()
                         .withId("player-a")
@@ -72,6 +74,7 @@ public class AssignRoleTest {
     void givenFourPlayers_WhenAssignRole_EveryOneShouldHaveOne() {
         //Given
         var game = new Game();
+        game.initDeck();
         List<Player> players = asList(
                 PlayerBuilder.construct()
                         .withId("player-a")

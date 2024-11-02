@@ -41,6 +41,7 @@ public class PlayPeachCardTest {
 
         //Given
         Game game = new Game();
+        game.initDeck();
 
         Player playerA = PlayerBuilder
                 .construct()
@@ -117,6 +118,7 @@ public class PlayPeachCardTest {
 
         //Given
         Game game = new Game();
+        game.initDeck();
 
         Player playerA = PlayerBuilder
                 .construct()

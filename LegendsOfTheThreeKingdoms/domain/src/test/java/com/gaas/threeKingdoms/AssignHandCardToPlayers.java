@@ -42,6 +42,7 @@ public class AssignHandCardToPlayers {
     void givenFourPlayers_WhenAssignHandCard_ThenPlayersHaveFourSpecificHandCard() {
         //Given
         var game = new Game();
+        game.initDeck();
         List<Player> players = asList(
                 PlayerBuilder.construct()
                         .withId("player-a")

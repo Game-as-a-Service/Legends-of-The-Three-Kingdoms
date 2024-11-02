@@ -44,6 +44,7 @@ public class DrawCardToPlayer {
     public void givenAPlayerWithKillAndEightDiagrams_WhenDrawCard_ThenPlayerHaveKillAndEightDiagrams() {
         //Given
         var game = new Game();
+        game.initDeck();
 
         Player player = PlayerBuilder
                 .construct()
@@ -95,6 +96,7 @@ public class DrawCardToPlayer {
     public void givenEmptyZeroAndDiscardDeckHaveTwo_WhenPlayerDrawCard_ThenPlayerHaveThreeCards() {
         // given
         Game game = new Game();
+        game.initDeck();
         Deck deck = new Deck(new Stack<>());
         Graveyard graveyard = new Graveyard();
         graveyard.add(Arrays.asList(new Kill(BH0036), new Kill(BH0036)));

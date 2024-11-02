@@ -1,0 +1,72 @@
+{
+  "events" : [ {
+    "event" : "FinishActionEvent",
+    "data" : "",
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 3,
+      "discardPlayerId" : "player-a"
+    },
+    "message" : "通知棄牌"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 1,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Discard",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : false
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "玩家 player-a 需要棄 3 張牌",
+  "gameId" : "dyingTestGame",
+  "playerId" : "player-b"
+}

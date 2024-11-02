@@ -51,6 +51,7 @@ public class PlayerDyingTest {
     public void playerAHas1HP_WhenPlayerAPlayCardSkip_ThenPlayerADyingAndAskPlayerBPeach() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -148,6 +149,7 @@ public class PlayerDyingTest {
     public void playerADying_WhenPlayerAPlayCardSkip_ThenAskPlayerBPeach() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -244,6 +246,7 @@ public class PlayerDyingTest {
     public void playerADying_WhenPlayerBPlayCardSkip_ThenAskPlayerCPeach() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -341,6 +344,7 @@ public class PlayerDyingTest {
     public void playerADying_WhenPlayerCPlayCardSkip_ThenAskPlayerDPeach() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -438,6 +442,7 @@ public class PlayerDyingTest {
     public void playerADying_WhenPlayerDPlayCardSkip_ThenGameOver() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -540,6 +545,7 @@ public class PlayerDyingTest {
     public void playerADying2_WhenPlayerDPlayCardSkip_ThenGameOver() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))

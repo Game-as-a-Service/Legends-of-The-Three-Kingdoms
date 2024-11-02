@@ -1,5 +1,8 @@
 package com.gaas.threeKingdoms.generalcard;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum General {
     劉備("劉備",4, "SHU001"),
     曹操("曹操",4,"WEI001"),
@@ -33,10 +36,26 @@ public enum General {
     public final int healthPoint;
     public final String generalId;
 
+    private static final Map<String, General> GENERAL_MAP = new HashMap<>();
+
+    static {
+        for (General general : General.values()) {
+            GENERAL_MAP.put(general.getGeneralId(), general);
+        }
+    }
+
     General(String generalName, int healthPoint, String generalId) {
         this.generalName = generalName;
         this.healthPoint = healthPoint;
         this.generalId = generalId;
+    }
+
+    public static General findById(String generalId) {
+        General general = GENERAL_MAP.get(generalId);
+        if (general == null) {
+            throw new IllegalArgumentException("General with ID " + generalId + " not found.");
+        }
+        return general;
     }
 
     public String getGeneralName() {

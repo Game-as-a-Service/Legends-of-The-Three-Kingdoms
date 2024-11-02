@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
+import lombok.NoArgsConstructor;
 
 import java.util.Stack;
 import java.util.List;
@@ -23,11 +24,12 @@ import java.util.stream.Stream;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class Deck {
     private Stack<HandCard> cardDeck = new Stack<>();
 
-    public Deck() {
+    public void init() {
         // TODO: Enum values should be used instead of hard-coded values.
         IntStream.range(0, 8).forEach(i -> {
             cardDeck.add(new Kill(PlayCard.BS8008));
@@ -47,6 +49,8 @@ public class Deck {
         });
         shuffle();
     }
+
+
 
     public Deck(List<HandCard> handCards) {
         cardDeck.addAll(handCards);

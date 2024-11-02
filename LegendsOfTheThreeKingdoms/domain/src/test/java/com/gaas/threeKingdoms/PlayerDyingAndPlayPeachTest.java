@@ -43,6 +43,7 @@ public class PlayerDyingAndPlayPeachTest {
     public void playerADying_WhenPlayerAPlayPeach_ThenPlayerAlive() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -134,6 +135,7 @@ public class PlayerDyingAndPlayPeachTest {
     public void playerADying_WhenPlayerBPlayPeach_ThenPlayerAlive() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -230,6 +232,7 @@ public class PlayerDyingAndPlayPeachTest {
     public void playerADying_WhenPlayerCPlayPeach_ThenPlayerAlive() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))
@@ -332,6 +335,7 @@ public class PlayerDyingAndPlayPeachTest {
     public void playerADying_WhenPlayerDPlayPeach_ThenPlayerAlive() {
         //Given
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(1))

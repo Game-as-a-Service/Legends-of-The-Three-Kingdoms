@@ -39,6 +39,7 @@ public class PlayRepeatingCrossbowTest {
     @Test
     public void givenPlayerAHaveRepeatingCrossbow_WhenPlayerAPlayRepeatingCrossbow_ThenPlayerAEquipRepeatingCrossbow() {
         Game game = new Game();
+        game.initDeck();
 
         Player playerA = PlayerBuilder
                 .construct()
@@ -114,6 +115,7 @@ public class PlayRepeatingCrossbowTest {
     @Test
     public void givenPlayerAHaveRepeatingCrossbow_WhenPlayerAPlayKillToBAndD_ThenPlayerBandDHPEqualThree() {
         Game game = new Game();
+        game.initDeck();
 
         Equipment equipment = new Equipment();
         equipment.setWeapon(new RepeatingCrossbowCard(ECA066));
@@ -198,6 +200,7 @@ public class PlayRepeatingCrossbowTest {
     @Test
     public void givenPlayerAHaveRepeatingCrossbow_WhenPlayerAPlayKillToBFourTimesAndD_ThenPlayerBHPEqualZero() {
         Game game = new Game();
+        game.initDeck();
 
         Equipment equipment = new Equipment();
         equipment.setWeapon(new RepeatingCrossbowCard(ECA066));

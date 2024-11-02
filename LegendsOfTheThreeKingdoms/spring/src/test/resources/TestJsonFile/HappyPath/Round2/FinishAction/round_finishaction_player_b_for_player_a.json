@@ -60,7 +60,7 @@
     "round" : {
       "roundPhase" : "Discard",
       "currentRoundPlayer" : "player-b",
-      "activePlayer" : "",
+      "activePlayer" : "player-b",
       "dyingPlayer" : "",
       "showKill" : true
     },

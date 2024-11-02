@@ -44,6 +44,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerBHasBarbarianInvasion_WhenPlayerBPlayBarbarianInvasion_ThenPlayerABCDAcceptBarbarianInvasionEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -125,6 +126,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasion_ThenPlayerCHP2AndPlayerDReceiveKillEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -212,6 +214,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasion_ThenPlayerCHP0AndPlayerCEnterDyingState() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -299,6 +302,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUsePeach_ThenPlayerDReceiveKillEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -390,6 +394,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCEnterDyingStateAndPlayerDUsePeach_ThenPlayerCHP1AndPlayerDReceiveKillEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -480,6 +485,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseKill_ThenPlayerCHP3AndPlayerDReceiveKillEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -566,6 +572,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseSkip_ThenPlayerCHP2AndPlayerDReceiveKillEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -657,6 +664,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseKillAndPlayerDUseSkip_ThenPlayerDHP3AndPlayerAReceiveKillEvent() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -752,6 +760,7 @@ public class BarbarianInvasionTest {
     @Test
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseKillAndPlayerDUseKillAndPlayerAUseKill_ThenPlayerAHP4AndPlayerBActivePlayer() {
         Game game = new Game();
+        game.initDeck();
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
