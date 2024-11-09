@@ -28,7 +28,7 @@ jobs:
       # 替換 application.properties 中的參數
       - name: 替換 application.properties 參數
         run: |
-          sed -i "s|^mongodb.uri=.*|mongodb.uri=${{ secrets.MONGODB_URI }}|" LegendsOfTheThreeKingdoms/src/main/resources/application.properties
+          sed -i "s|^mongodb.uri=.*|mongodb.uri=${{ secrets.MONGODB_URI }}|" LegendsOfTheThreeKingdoms/spring/src/main/resources/application.properties
 
       # 確認替換後的文件內容
       - name: 確認 application.properties 的修改
