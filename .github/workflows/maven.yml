@@ -25,6 +25,15 @@ jobs:
           java-version: "17"
           distribution: "corretto"
 
+      # 替換 application.properties 中的參數
+      - name: 替換 application.properties 參數
+        run: |
+          sed -i "s|^mongodb.uri=.*|mongodb.uri=${{ env.MONGODB_URI }}|" LegendsOfTheThreeKingdoms/spring/src/main/resources/application.properties
+
+      # 確認替換後的文件內容
+      - name: 確認 application.properties 的修改
+        run: cat LegendsOfTheThreeKingdoms/spring/src/main/resources/application.properties
+
       # List Pom.xml
       - name: List LegendsOfTheThreeKingdoms Files
         run: ls
