@@ -63,10 +63,10 @@ public class FinishingTest extends AbstractBaseIntegrationTest {
         Thread.sleep(1000);
     }
 
-//    @AfterEach
-//    public void deleteMockGame() {
-//        gameRepository.deleteById(gameId);
-//    }
+    @AfterEach
+    public void deleteMockGame() {
+        gameRepository.deleteById(gameId);
+    }
 
     @Test
     public void testPlayerAIsCurrentRoundPlayerAndFinishActionBeforePlayerBSkip() throws Exception {

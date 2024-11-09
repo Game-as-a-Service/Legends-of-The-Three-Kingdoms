@@ -97,6 +97,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         setupClientSubscribe("my-id", "player-b");
         setupClientSubscribe("my-id", "player-c");
         setupClientSubscribe("my-id", "player-d");
+        Thread.sleep(1000);
     }
 
     @AfterEach
