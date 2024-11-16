@@ -45,4 +45,9 @@ public class Hand {
         int index = cards.indexOf(handCard);
         return cards.remove(index);
     }
+
+    public boolean hasTypeInHand(Class<?> classType) {
+        return cards.stream().anyMatch(classType::isInstance);
+    }
+
 }
