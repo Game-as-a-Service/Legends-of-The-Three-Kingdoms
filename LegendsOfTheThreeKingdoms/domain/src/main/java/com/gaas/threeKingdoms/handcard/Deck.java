@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
@@ -38,11 +39,16 @@ public class Deck {
             cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
             cardDeck.add(new ShadowHorse(PlayCard.ES5018));
             cardDeck.add(new QilinBowCard(PlayCard.EH5031));
-            cardDeck.add(new BarbarianInvasion(SSK013));
-            cardDeck.add(new BarbarianInvasion(SC7072));
-            cardDeck.add(new BorrowedSword(SCK065));
-            cardDeck.add(new BorrowedSword(SCQ064));
+            cardDeck.add(new Duel(SSA001));
+            cardDeck.add(new Duel(SCA053));
+            cardDeck.add(new Duel(SDA079));
         });
+        cardDeck.add(new BarbarianInvasion(SSK013));
+        cardDeck.add(new BarbarianInvasion(SC7072));
+        cardDeck.add(new BarbarianInvasion(SS7007));
+        cardDeck.add(new BorrowedSword(SCK065));
+        cardDeck.add(new BorrowedSword(SCQ064));
+
         IntStream.range(0, 4).forEach(i -> {
             cardDeck.add(new RepeatingCrossbowCard(ECA066));
             cardDeck.add(new EightDiagramTactic(ES2015));

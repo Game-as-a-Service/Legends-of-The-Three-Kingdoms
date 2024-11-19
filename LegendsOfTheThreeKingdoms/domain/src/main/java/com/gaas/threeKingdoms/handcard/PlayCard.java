@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -138,7 +139,6 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("BH0049", new Kill(BH0049));
         CARD_FACTORY_MAP.put("BH0036", new Kill(BH0036));
         CARD_FACTORY_MAP.put("BHJ037", new Kill(BHJ037));
-        CARD_FACTORY_MAP.put("SSA001", new Kill(SSA001));
         CARD_FACTORY_MAP.put("BS9022", new Kill(BS9022));
         CARD_FACTORY_MAP.put("BS8021", new Kill(BS8021));
         CARD_FACTORY_MAP.put("BS0023", new Kill(BS0023));
@@ -195,6 +195,9 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SCQ064", new BorrowedSword(SCQ064));
         CARD_FACTORY_MAP.put("ECA066", new RepeatingCrossbowCard(ECA066));
         CARD_FACTORY_MAP.put("ES2015", new EightDiagramTactic(ES2015));
+        CARD_FACTORY_MAP.put("SSA001", new Duel(SSA001));
+        CARD_FACTORY_MAP.put("SCA053", new Duel(SCA053));
+        CARD_FACTORY_MAP.put("SDA079", new Duel(SDA079));
     }
 
     private final String cardId;
