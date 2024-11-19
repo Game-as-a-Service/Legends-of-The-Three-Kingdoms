@@ -49,6 +49,8 @@ public class DuelBehavior extends Behavior {
                     game.getCurrentRound(),
                     this);
             events.addAll(damagedEvents);
+        } else {
+            events.add(new AskKillEvent(currentReactionPlayerId));
         }
 
         events.add(game.getGameStatusEvent("發動決鬥"));

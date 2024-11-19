@@ -122,6 +122,15 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "DuelBehavior" -> new DuelBehavior(
+                    game,
+                    game.getPlayer(behaviorPlayerId),
+                    reactionPlayers,
+                    game.getPlayer(currentReactionPlayerId),
+                    cardId,
+                    playType,
+                    PlayCard.findById(cardId)
+            );
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);

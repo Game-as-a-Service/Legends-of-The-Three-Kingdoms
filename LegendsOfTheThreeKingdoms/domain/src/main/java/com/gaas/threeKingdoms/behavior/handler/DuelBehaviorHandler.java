@@ -3,10 +3,8 @@ package com.gaas.threeKingdoms.behavior.handler;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.DuelBehavior;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.Player;
 
@@ -33,6 +31,11 @@ public class DuelBehaviorHandler extends PlayCardBehaviorHandler {
         Player currentReactionPlayer = game.getPlayer(targetPlayerId.get(0));
 
         HandCard card = player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
+
+        // 決鬥不可以對自己使用
+        if (playerId.equals(targetPlayerId.get(0))) {
+            throw new IllegalArgumentException("不能對自己使用決鬥");
+        }
 
         targetPlayerId.add(playerId); // 自己也是需要反應者
 

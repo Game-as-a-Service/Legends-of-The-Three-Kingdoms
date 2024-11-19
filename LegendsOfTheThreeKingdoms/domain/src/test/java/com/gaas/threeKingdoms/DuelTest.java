@@ -16,6 +16,7 @@ import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -342,8 +343,14 @@ public class DuelTest {
         game.setCurrentRound(new Round(playerA));
 
         //When
-        game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
-        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), BS8008.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        //Then 要求 player-b 出殺 AskKillEvent
+        AskKillEvent askKillEvent = getEvent(events, AskKillEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-b", askKillEvent.getPlayerId());
+
+        //When player-b 出殺
+        events = game.playerPlayCard(playerB.getId(), BS8008.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //Then
         assertEquals("player-a", game.getActivePlayer().getId());
@@ -600,47 +607,161 @@ public class DuelTest {
 
     @DisplayName("""
             Given
-            玩家ABCD
+            玩家A B C D
             A的回合
             A有決鬥 x 1,殺 x 1, A 4hp
-                    
+            
             B 殺 x 2，B 4hp
-                    
+            
             When
             A 出決鬥，指定 B
             B 出殺
             A 出殺
             B 不出殺
-                    
-                    
+            
             Then
             A 沒扣血, A 4hp
             B 扣血, B 3hp
                     """)
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasDuelAndKillWith4HP_BPlayerHasTwoKillsAnd4HP_WhenPlayerAPlaysDuelAndAssignsB_AndPlayersAlternateKillsUntilBDoesNotPlayKill_ThenPlayerADoesNotLoseHPAndRemainsAt4HPWhilePlayerBLoses1HPAndIsAt3HP() {
+        Game game = new Game();
+        game.initDeck();
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .build();
 
+        playerA.getHand().addCardToHand(Arrays.asList(new Peach(BH3029), new Kill(BS8008), new Dodge(BH2028), new Dodge(BHK039), new Duel(SSA001)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8008), new Dodge(BHK039), new Duel(SSA001)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), "BS8008", playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        //Then
+        assertEquals("player-a", game.getActivePlayer().getId());
+        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
+        assertEquals(4, game.getPlayer("player-a").getBloodCard().getHp());
 
     }
 
     @DisplayName("""
             Given
-            玩家ABCD
+            玩家A B C D
             A的回合
             A有決鬥 x 1,殺 x 1, A 4hp
-                    
+            
             B 殺 x 2，B 4hp
-                    
+            
             When
             A 出決鬥，指定 A
-                    
-                    
+            
             Then
             拋錯，錯誤操作
-                    """)
+            """)
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasDuelAndKillWith4HP_BPlayerHasTwoKillsAnd4HP_WhenPlayerAPlaysDuelAndAssignsSelf_ThenThrowIllegalOperationException() {
 
+        Game game = new Game();
+        game.initDeck();
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Peach(BH3029), new Kill(BS8008), new Dodge(BH2028), new Dodge(BHK039), new Duel(SSA001)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8008), new Dodge(BHK039), new Duel(SSA001)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        //Then
+        Assertions.assertThrows(IllegalArgumentException.class, () -> game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType()));
 
     }
 }
