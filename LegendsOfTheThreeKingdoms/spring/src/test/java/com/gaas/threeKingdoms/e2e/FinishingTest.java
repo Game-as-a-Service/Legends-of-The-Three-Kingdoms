@@ -33,39 +33,17 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 public class FinishingTest extends AbstractBaseIntegrationTest {
 
-
-    @Autowired
-    private GameRepository gameRepository;
-
-    private WebsocketUtil websocketUtil;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    private MockMvcUtil mockMvcUtil;
-
-    @Value(value = "${local.server.port}")
-    private Integer port;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    private final String gameId = "dyingTestGame";
-
+    FinishingTest() {
+        this.gameId = "dyingTestGame";
+    }
 
     @BeforeEach
     public void setup() throws Exception {
         websocketUtil = new WebsocketUtil(port, gameId);
         mockMvcUtil = new MockMvcUtil(mockMvc);
         Thread.sleep(1000);
-    }
-
-    @AfterEach
-    public void deleteMockGame() {
-        gameRepository.deleteById(gameId);
     }
 
     @Test
@@ -148,7 +126,7 @@ public class FinishingTest extends AbstractBaseIntegrationTest {
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
 
-        gameRepository.save(game);
+        repository.save(game);
     }
 
 }

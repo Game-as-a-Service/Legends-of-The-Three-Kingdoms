@@ -6,63 +6,20 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 public class PlayPeachCardTest extends AbstractBaseIntegrationTest {
-
-    @Autowired
-    private GameRepository repository;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    private MockMvcUtil mockMvcUtil;
-
-    private JsonFileValidateHelper helper;
-
-    private WebsocketUtil websocketUtil;
-
-    @Value(value = "${local.server.port}")
-    private Integer port;
-    private final String gameId = "my-id";
-
-    @BeforeEach
-    public void setup() throws Exception {
-        mockMvcUtil = new MockMvcUtil(mockMvc);
-        websocketUtil = new WebsocketUtil(port, gameId);
-        helper = new JsonFileValidateHelper(websocketUtil);
-        Thread.sleep(1000);
-    }
-
-    @AfterEach
-    public void deleteMockGame() {
-        repository.deleteById(gameId);
-    }
 
     @Test
     public void testPlayerAPlayPeachCard() throws Exception {

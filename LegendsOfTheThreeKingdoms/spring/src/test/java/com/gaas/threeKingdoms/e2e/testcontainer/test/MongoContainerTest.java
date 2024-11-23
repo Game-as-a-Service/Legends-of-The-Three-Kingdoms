@@ -23,9 +23,6 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 public class MongoContainerTest extends AbstractBaseIntegrationTest {
 
-    @Autowired
-    private GameRepository gameRepository;
-
     @Test
     public void testMongoContainer() {
         Player playerA = createPlayer(
@@ -65,7 +62,7 @@ public class MongoContainerTest extends AbstractBaseIntegrationTest {
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame("gameId", players, playerC);
-        gameRepository.save(game);
+        repository.save(game);
     }
 
 }

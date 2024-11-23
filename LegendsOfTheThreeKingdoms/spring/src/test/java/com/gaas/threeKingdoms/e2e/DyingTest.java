@@ -1,6 +1,5 @@
 package com.gaas.threeKingdoms.e2e;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.exception.NotFoundException;
@@ -10,19 +9,10 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
-import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,44 +26,18 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 public class DyingTest extends AbstractBaseIntegrationTest {
 
-    @Autowired
-    private GameRepository gameRepository;
-
-    private WebsocketUtil websocketUtil;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    private MockMvcUtil mockMvcUtil;
-
-    @Value(value = "${local.server.port}")
-    private Integer port;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    private final String gameId = "dyingTestGame";
-
-    @BeforeEach
-    public void setup() throws Exception {
-        websocketUtil = new WebsocketUtil(port, gameId);
-        mockMvcUtil = new MockMvcUtil(mockMvc);
-        Thread.sleep(1000);
+    DyingTest() {
+        this.gameId = "dyingTestGame";
     }
 
-    @AfterEach
-    public void deleteMockGame() {
-        gameRepository.deleteById(gameId);
-    }
 
     @Test
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = gameRepository.findById(gameId)
+        Game game = repository.findById(gameId)
                 .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出桃
@@ -111,7 +75,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
     public void testPlayerAIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = gameRepository.findById(gameId)
+        Game game = repository.findById(gameId)
                 .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出skip
@@ -180,7 +144,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
     public void testPlayerBIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerBIsEnterDyingStatus();
         //Given B玩家瀕臨死亡
-        Game game = gameRepository.findById(gameId)
+        Game game = repository.findById(gameId)
                 .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When B玩家出skip
@@ -346,7 +310,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
 
-        gameRepository.save(game);
+        repository.save(game);
     }
 
     private void givenPlayerBIsEnterDyingStatus() {
@@ -402,7 +366,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
 
-        gameRepository.save(game);
+        repository.save(game);
     }
 
 }
