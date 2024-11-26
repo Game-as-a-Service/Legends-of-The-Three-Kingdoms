@@ -28,10 +28,4 @@ public class PeachBehavior extends Behavior {
                 cardId,
                 playType), new PeachEvent(behaviorPlayer.getId(), originHp, behaviorPlayer.getHP()));
     }
-
-    @Override
-    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerIdString, String cardId, String playType) {
-        return null;
-    }
-
 }

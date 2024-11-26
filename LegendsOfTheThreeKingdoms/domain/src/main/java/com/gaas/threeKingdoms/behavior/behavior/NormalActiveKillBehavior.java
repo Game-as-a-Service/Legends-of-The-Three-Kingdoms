@@ -16,6 +16,7 @@ import com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
@@ -97,22 +98,6 @@ public class  NormalActiveKillBehavior extends Behavior {
 
     private boolean isAskPlayerUseQilinBow(Player attackPlayer, Player damagedPlayer) {
         return attackPlayer.getEquipmentWeaponCard() instanceof QilinBowCard && damagedPlayer.hasMountsCard();
-    }
-
-    private boolean isPlayerStillAlive(Player damagedPlayer) {
-        return damagedPlayer.getHP() > 0;
-    }
-
-    private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
-        return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
-    }
-
-    private PlayerDyingEvent createPlayerDyingEvent(Player player) {
-        return new PlayerDyingEvent(player.getId());
-    }
-
-    private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
-        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
     }
 
     private boolean isEquipmentHasSpecialEffect(Player targetPlayer) {
