@@ -637,7 +637,7 @@ public class Game {
             }
 
             currentRound.setActivePlayer(borrowedPlayer);
-            return List.of(new AskKillEvent(borrowedPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
+            return List.of(new BorrowedSwordEvent(behavior.getCardId(), borrowedPlayerId,attackTargetPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
         }
         throw new IllegalStateException("UseBorrowedSwordEffect error.");
     }
