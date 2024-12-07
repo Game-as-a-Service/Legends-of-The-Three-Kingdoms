@@ -7,9 +7,11 @@ import com.gaas.threeKingdoms.events.DomainEvent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-@AllArgsConstructor
 @Getter
 public class Behavior {
     protected Game game;
@@ -21,20 +23,36 @@ public class Behavior {
     protected HandCard card;
     protected boolean isTargetPlayerNeedToResponse = true; // 別人要不要反應
     protected boolean isOneRound = true; // 是不是一回合就結束
+    private final Map<String, Object> params;
+
+    public Behavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer,
+                    String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse,
+                    boolean isOneRound) {
+        this.game = game;
+        this.behaviorPlayer = behaviorPlayer;
+        this.reactionPlayers = reactionPlayers;
+        this.currentReactionPlayer = currentReactionPlayer;
+        this.cardId = cardId;
+        this.playType = playType;
+        this.card = card;
+        this.isTargetPlayerNeedToResponse = isTargetPlayerNeedToResponse;
+        this.isOneRound = isOneRound;
+        this.params = new HashMap<>();
+    }
 
     // hook
     public List<DomainEvent> playerAction() {
         return null;
-    };
+    }
 
     // hook
     protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         return null;
     }
 
-    public List<DomainEvent> responseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType){
+    public List<DomainEvent> responseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         throwExceptionWhenPlayerIsNotInReactionPlayers(playerId);
-        return doResponseToPlayerAction(playerId,targetPlayerId,cardId,playType);
+        return doResponseToPlayerAction(playerId, targetPlayerId, cardId, playType);
     }
 
     private void throwExceptionWhenPlayerIsNotInReactionPlayers(String playerId) {
@@ -61,6 +79,14 @@ public class Behavior {
         card = handCard;
         game.getCurrentRound().setCurrentPlayCard(card);
         game.getGraveyard().add(handCard);
+    }
+
+    public void putParam(String key, Object value) {
+        params.put(key, value);
+    }
+
+    public Object getParam(String key) {
+        return params.get(key);
     }
 
     public boolean isOneRound() {

@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.behavior.BorrowedSwordBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.DismantleBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
@@ -14,7 +15,6 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
 import com.gaas.threeKingdoms.handcard.*;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
-import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -23,10 +23,8 @@ import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.RoundPhase;
-import com.gaas.threeKingdoms.round.Stage;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,7 +54,7 @@ public class Game {
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -265,7 +263,9 @@ public class Game {
         if (behavior.isTargetPlayerNeedToResponse()) {
             updateTopBehavior(behavior);
         }
-        return behavior.playerAction();
+        List<DomainEvent> events = behavior.playerAction();
+        removeCompletedBehaviors();
+        return events;
     }
 
     public void removeCompletedBehaviors() {
@@ -640,6 +640,21 @@ public class Game {
             return List.of(new AskKillEvent(borrowedPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
         }
         throw new IllegalStateException("UseBorrowedSwordEffect error.");
+    }
+
+    public List<DomainEvent> useDismantleEffect(String currentPlayerId, String targetPlayerId, String cardId, Integer targetCardIndex) {
+        Behavior behavior = topBehavior.peek();
+
+        if (behavior instanceof DismantleBehavior &&
+            currentRound.getActivePlayer().getId().equals(currentPlayerId)
+        ) {
+            behavior.putParam(UserCommand.CHOOSE_HAND_CARD_INDEX.name(), targetCardIndex);
+            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(currentPlayerId, targetPlayerId, cardId, PlayType.ACTIVE.getPlayType());
+            removeCompletedBehaviors();
+            return acceptedEvent;
+        }
+        throw new IllegalStateException("UseDismantleEffect error.");
+
     }
 
     private boolean isPlayerHasWeapon(String playerId) {

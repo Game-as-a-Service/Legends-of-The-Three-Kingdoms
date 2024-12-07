@@ -62,25 +62,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@AutoConfigureMockMvc
 public class GameTest extends AbstractBaseIntegrationTest {
 
-    @Value(value = "${local.server.port}")
-    private Integer port;
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
     final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private GameRepository gameRepository;
-
-    private final String gameId = "my-id";
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -98,11 +87,6 @@ public class GameTest extends AbstractBaseIntegrationTest {
         setupClientSubscribe("my-id", "player-c");
         setupClientSubscribe("my-id", "player-d");
         Thread.sleep(1000);
-    }
-
-    @AfterEach
-    public void deleteMockGame() {
-        gameRepository.deleteById(gameId);
     }
 
     private void setupClientSubscribe(String gameId, String playerId) throws Exception {
@@ -216,7 +200,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                     .andExpect(status().isOk());
         }
 
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         Stack<HandCard> stack = new Stack<>();
         Arrays.stream(values())
@@ -228,9 +212,9 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .map(Kill::new)
                 .forEach(stack::push);
         game.setDeck(new Deck(stack));
-        gameRepository.save(game);
+        repository.save(game);
 
-        Game game1 = gameRepository.findById("my-id").get();
+        Game game1 = repository.findById("my-id").get();
 
         assertEquals(Role.MONARCH, game.getPlayer("player-a").getRoleCard().getRole());
         assertEquals(Role.MINISTER, game.getPlayer("player-b").getRoleCard().getRole());
@@ -263,11 +247,11 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk());
 
 
-        Game game2 = gameRepository.findById("my-id").get();
+        Game game2 = repository.findById("my-id").get();
 
         // WebSocket 推播給前端資訊
         checkGetGameEvent();
-        Game game3 = gameRepository.findById("my-id").get();
+        Game game3 = repository.findById("my-id").get();
     }
 
     private void checkPlayerAGetCreateGameEvent() throws InterruptedException, JsonProcessingException {
@@ -344,7 +328,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andReturn();
 
         // Then 玩家A武將為劉備 ((主公general是 SHU001 is true)
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         assertEquals("SHU001", game.getPlayer("player-a").getGeneralCard().getGeneralId());
         // 牌堆不能有 SHU001
@@ -380,7 +364,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
     }
 
     private void shouldGetGeneralCardsByOthers() throws Exception {
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         List<Player> otherPlayers = game.getPlayers().stream().filter(player -> player.getRoleCard().getRole() != Role.MONARCH).collect(Collectors.toList());
         for (Player player : otherPlayers) {
@@ -423,7 +407,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andReturn();
 
         // Then 玩家B武將為馬超 ((玩家B general是 general1 is true)
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         assertEquals("SHU006", game.getPlayer("player-b").getGeneralCard().getGeneralId());
         // 牌堆不能有 general1
@@ -443,7 +427,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        game = gameRepository.findById("my-id")
+        game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         // Then 玩家C武將為諸葛亮 ((玩家C genera1是 general18 is true)
         assertEquals("SHU004", game.getPlayer("player-c").getGeneralCard().getGeneralId());
@@ -464,7 +448,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        game = gameRepository.findById("my-id")
+        game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
 
         // Then 玩家D武將為司馬懿 ((玩家D general是 general1 is true)
@@ -482,7 +466,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         List<Integer> hps = List.of(5, 4, 3, 3);
         List<String> generals = List.of("SHU001", "SHU006", "SHU004", "WEI002");
 
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         for (int i = 0; i < game.getPlayers().size(); i++) {
             Player currentPlayer = game.getPlayers().get(i);
@@ -677,7 +661,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
     }
 
     private void shouldDrawCardToPlayer(int expectHandSize) {
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         String playerId = game.getCurrentRoundPlayer().getId();
         assertEquals(RoundPhase.Action, game.getCurrentRoundPhase());
@@ -696,7 +680,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         Then
         A 玩家進入棄牌階段
         */
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         String currentPlayerId = game.getCurrentRoundPlayer().getId();
         this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
@@ -752,7 +736,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         Then
         B 玩家進入棄牌階段
         */
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         String currentPlayerId = game.getCurrentRoundPlayer().getId();
         this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
@@ -933,7 +917,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         Then
         C 玩家進入棄牌階段
         */
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         String currentPlayerId = game.getCurrentRoundPlayer().getId();
         this.mockMvc.perform(post("/api/games/my-id/player:finishAction")
@@ -1077,7 +1061,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         */
 
         // given
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為 c 不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
@@ -1123,7 +1107,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
            B Phase 是判斷階段
     */
         // given
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為這邊不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
@@ -1170,7 +1154,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
            C Phase 是判斷階段
     */
         // given
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為這邊不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
@@ -1215,7 +1199,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                D Phase 是判斷階段
             */
         // given
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為 c 不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
@@ -1263,7 +1247,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         */
 
         // given
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為 c 不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true
@@ -1309,7 +1293,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
            B Phase 是判斷階段
     */
         // given
-        Game game = gameRepository.findById("my-id")
+        Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         // when 因為這邊不重要直接隨便丟牌就好
 //        game.getPlayerDiscardCount(); //true

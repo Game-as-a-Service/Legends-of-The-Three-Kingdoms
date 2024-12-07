@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,22 +37,34 @@ public class Deck {
             cardDeck.add(new Kill(PlayCard.BS8008));
             cardDeck.add(new Peach(PlayCard.BH4030));
             cardDeck.add(new Dodge(PlayCard.BHK039));
+            cardDeck.add(new BorrowedSword(SCQ064));
             cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
             cardDeck.add(new ShadowHorse(PlayCard.ES5018));
             cardDeck.add(new QilinBowCard(PlayCard.EH5031));
-            cardDeck.add(new Duel(SSA001));
-            cardDeck.add(new Duel(SCA053));
-            cardDeck.add(new Duel(SDA079));
         });
         cardDeck.add(new BarbarianInvasion(SSK013));
         cardDeck.add(new BarbarianInvasion(SC7072));
         cardDeck.add(new BarbarianInvasion(SS7007));
-        cardDeck.add(new BorrowedSword(SCK065));
-        cardDeck.add(new BorrowedSword(SCQ064));
+
+
+        cardDeck.add(new Dismantle(SS3003));
+        cardDeck.add( new Dismantle(SS4004));
+        cardDeck.add( new Dismantle(SSQ012));
+        cardDeck.add( new Dismantle(SHQ051));
+        cardDeck.add( new Dismantle(SC3068));
+        cardDeck.add( new Dismantle(SC4069));
+
 
         IntStream.range(0, 4).forEach(i -> {
             cardDeck.add(new RepeatingCrossbowCard(ECA066));
             cardDeck.add(new EightDiagramTactic(ES2015));
+            cardDeck.add(new Duel(SCA053));
+            cardDeck.add(new Duel(SDA079));
+            cardDeck.add(new Duel(SSA001));
+            cardDeck.add(new BorrowedSword(SCK065));
+            cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
+            cardDeck.add(new ShadowHorse(PlayCard.ES5018));
+            cardDeck.add(new QilinBowCard(PlayCard.EH5031));
         });
         shuffle();
     }

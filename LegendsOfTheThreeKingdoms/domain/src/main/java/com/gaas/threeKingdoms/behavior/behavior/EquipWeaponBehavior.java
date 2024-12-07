@@ -34,8 +34,4 @@ public class EquipWeaponBehavior extends Behavior {
                 new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId));
     }
 
-    @Override
-    protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
-        return null;
-    }
 }

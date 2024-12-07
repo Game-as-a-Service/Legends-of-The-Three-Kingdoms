@@ -1,10 +1,6 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
-import com.gaas.threeKingdoms.e2e.MockMvcUtil;
-import com.gaas.threeKingdoms.e2e.WebsocketUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
@@ -17,22 +13,11 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTacti
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
-import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.Equipment;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,37 +31,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 public class QilinBowTest extends AbstractBaseIntegrationTest {
-
-    @Autowired
-    private GameRepository repository;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    private MockMvcUtil mockMvcUtil;
-
-    private JsonFileValidateHelper helper;
-
-    private WebsocketUtil websocketUtil;
-
-    @Value(value = "${local.server.port}")
-    private Integer port;
-    private final String gameId = "my-id";
-
-    @BeforeEach
-    public void setup() throws Exception {
-        mockMvcUtil = new MockMvcUtil(mockMvc);
-        websocketUtil = new WebsocketUtil(port, gameId);
-        helper = new JsonFileValidateHelper(websocketUtil);
-        Thread.sleep(1000);
-    }
-
-    @AfterEach
-    public void deleteMockGame() {
-        repository.deleteById(gameId);
-    }
 
     @Test
     public void testPlayerAPlayQilinBow() throws Exception {
@@ -131,7 +86,6 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
 
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, "active")
                 .andExpect(status().isOk()).andReturn();
-
 
 
     }
@@ -646,7 +600,7 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
                 Role.MINISTER,
                 new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
         );
-        Equipment equipmentB= new Equipment();
+        Equipment equipmentB = new Equipment();
         equipmentB.setMinusOne(new RedRabbitHorse(EH5044));
         equipmentB.setPlusOne(new ShadowHorse(ES5018));
         playerB.setEquipment(equipmentB);
@@ -711,7 +665,7 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
                 Role.MINISTER,
                 new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
         );
-        Equipment equipmentB= new Equipment();
+        Equipment equipmentB = new Equipment();
         equipmentB.setMinusOne(new RedRabbitHorse(EH5044));
         playerB.setEquipment(equipmentB);
         Player playerC = createPlayer(

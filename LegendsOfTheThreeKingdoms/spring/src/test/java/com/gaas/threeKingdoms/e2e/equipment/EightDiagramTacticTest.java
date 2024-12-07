@@ -1,9 +1,6 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
-import com.gaas.threeKingdoms.e2e.MockMvcUtil;
-import com.gaas.threeKingdoms.e2e.WebsocketUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
@@ -15,16 +12,10 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
-import com.gaas.threeKingdoms.outport.GameRepository;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,32 +29,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 public class EightDiagramTacticTest extends AbstractBaseIntegrationTest {
-
-    @Autowired
-    private GameRepository gameRepository;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    private MockMvcUtil mockMvcUtil;
-
-    private JsonFileValidateHelper helper;
-
-    private WebsocketUtil websocketUtil;
-
-    @Value(value = "${local.server.port}")
-    private Integer port;
-    private final String gameId = "my-id";
-
-    @BeforeEach
-    public void setup() throws Exception {
-        mockMvcUtil = new MockMvcUtil(mockMvc);
-        websocketUtil = new WebsocketUtil(port, gameId);
-        helper = new JsonFileValidateHelper(websocketUtil);
-        Thread.sleep(1000);
-    }
 
     @Test
     public void testPlayerAPlayEightDiagramTactic() throws Exception {
@@ -430,7 +396,7 @@ public class EightDiagramTacticTest extends AbstractBaseIntegrationTest {
                 )
         );
         game.setDeck(deck);
-        gameRepository.save(game);
+        repository.save(game);
     }
 
     private void givenPlayerAEquipedEightDiagramTacticAndWillfail() {
@@ -476,7 +442,7 @@ public class EightDiagramTacticTest extends AbstractBaseIntegrationTest {
                 )
         );
         game.setDeck(deck);
-        gameRepository.save(game);
+        repository.save(game);
     }
 
     private void givenPlayerAHasEightDiagramTactic() {
@@ -516,6 +482,6 @@ public class EightDiagramTacticTest extends AbstractBaseIntegrationTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
-        gameRepository.save(game);
+        repository.save(game);
     }
 }

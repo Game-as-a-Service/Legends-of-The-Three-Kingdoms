@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 
 import java.util.Arrays;
@@ -198,6 +199,13 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SSA001", new Duel(SSA001));
         CARD_FACTORY_MAP.put("SCA053", new Duel(SCA053));
         CARD_FACTORY_MAP.put("SDA079", new Duel(SDA079));
+        CARD_FACTORY_MAP.put("SS3003", new Dismantle(SS3003));
+        CARD_FACTORY_MAP.put("SS4004", new Dismantle(SS4004));
+        CARD_FACTORY_MAP.put("SSQ012", new Dismantle(SSQ012));
+        CARD_FACTORY_MAP.put("SHQ051", new Dismantle(SHQ051));
+        CARD_FACTORY_MAP.put("SC3068", new Dismantle(SC3068));
+        CARD_FACTORY_MAP.put("SC4069", new Dismantle(SC4069));
+
     }
 
     private final String cardId;
