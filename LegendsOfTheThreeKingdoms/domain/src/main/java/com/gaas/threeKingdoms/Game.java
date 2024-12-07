@@ -300,7 +300,7 @@ public class Game {
             topBehavior.pop();
         }
 
-        return Stream.of(qilingBowEvents, normalKillEvents, getGameStatusEventInList("選擇馬")).flatMap(Collection::stream).collect(Collectors.toList());
+        return Stream.of(qilingBowEvents, normalKillEvents).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     public void playerDeadSettlement() {

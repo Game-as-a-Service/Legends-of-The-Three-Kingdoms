@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.*;
 
+import static com.gaas.threeKingdoms.presenter.PlayCardPresenter.*;
+import static com.gaas.threeKingdoms.presenter.PlayCardPresenter.getGameOverViewModel;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquipmentPresenter<List<UseEquipmentEffectPresenter.GameViewModel>> {
@@ -26,13 +28,21 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
         AskChooseMountCardViewModel askChooseMountCardViewModel = getAskChooseMountCardEventViewModel(events);
         SkipEquipmentEffectViewModel skipEquipmentEffectViewModel = getSkipEquipmentEffectViewModel(events);
+        PlayCardPresenter.PlayerDyingViewModel playerDyingViewModel = getPlayerDyingEventViewModel(events);
+        PlayCardPresenter.AskPeachViewModel askPeachViewModel = getAskPeachViewModel(events);
+        PlayCardPresenter.SettlementViewModel settlementViewModel = getSettlementViewModel(events);
+        PlayCardPresenter.GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
 
         updateViewModels(
                 useEquipmentEffectViewModel,
                 useQilinBowCardEffectViewModel,
                 playerDamageEventViewModel,
                 askChooseMountCardViewModel,
-                skipEquipmentEffectViewModel
+                skipEquipmentEffectViewModel,
+                playerDyingViewModel,
+                askPeachViewModel,
+                settlementViewModel,
+                gameOverViewModel
         );
 
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
