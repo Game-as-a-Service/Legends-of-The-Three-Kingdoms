@@ -62,6 +62,9 @@ public class DuelTest extends AbstractBaseIntegrationTest {
             String expectedJson = Files.readString(path);
             assertEquals(expectedJson, testPlayerJson);
         }
+
+        mockMvcUtil.finishAction(gameId, "player-a")
+                .andExpect(status().is2xxSuccessful()).andReturn();
     }
 
     @Test

@@ -238,7 +238,7 @@ public class DismantleTest {
         //When
         List<DomainEvent> events =  game.playerPlayCard(playerA.getId(), SS4004.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         assertTrue(events.stream().anyMatch(event -> event instanceof PlayCardEvent));
-        assertTrue(events.stream().anyMatch(event -> event instanceof AskKillEvent));
+        assertFalse(events.stream().anyMatch(event -> event instanceof AskKillEvent));
         events =  game.useDismantleEffect(playerA.getId(), playerB.getId(), "", 0);
         assertTrue(events.stream().anyMatch(event -> event instanceof DismantleEvent));
         assertEquals(4, playerB.getHandSize());
@@ -387,7 +387,7 @@ public class DismantleTest {
         //When
         List<DomainEvent> events =  game.playerPlayCard(playerA.getId(), SS4004.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         assertTrue(events.stream().anyMatch(event -> event instanceof PlayCardEvent));
-        assertTrue(events.stream().anyMatch(event -> event instanceof AskKillEvent));
+        assertFalse(events.stream().anyMatch(event -> event instanceof AskKillEvent));
         events =  game.useDismantleEffect(playerA.getId(), playerB.getId(), EH5031.getCardId(), null);
         assertTrue(events.stream().anyMatch(event -> event instanceof DismantleEvent));
         assertEquals("player-a", game.getActivePlayer().getId());

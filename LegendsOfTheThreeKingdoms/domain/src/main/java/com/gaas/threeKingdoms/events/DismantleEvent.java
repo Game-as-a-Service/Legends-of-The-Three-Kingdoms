@@ -9,11 +9,12 @@ public class DismantleEvent extends DomainEvent {
     private String cardId;
 
 
-    public DismantleEvent(String playerId, String cardId, String targetPlayerId, String message) {
+    public DismantleEvent(String playerId, String targetPlayerId, String cardId, String message) {
         super("DismantleEvent", message);
         this.playerId = playerId;
-        this.cardId = cardId;
         this.targetPlayerId = targetPlayerId;
+        this.cardId = cardId;
+
     }
 
 }

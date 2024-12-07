@@ -50,6 +50,7 @@ public class DuelBehavior extends Behavior {
                     game.getCurrentRound(),
                     this);
             events.addAll(damagedEvents);
+            isOneRound = true;
         } else {
             events.add(new AskKillEvent(currentReactionPlayerId));
         }

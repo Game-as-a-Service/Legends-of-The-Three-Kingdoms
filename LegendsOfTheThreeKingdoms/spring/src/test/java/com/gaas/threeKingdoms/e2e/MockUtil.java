@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.e2e;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.gamephase.Normal;
@@ -34,6 +35,9 @@ public class MockUtil {
         Game game = new Game(gameId, players);
         game.setCurrentRound(new Round(currentRoundPlayer));
         game.enterPhase(new Normal(game));
+        Deck deck = new Deck();
+        deck.init();
+        game.setDeck(deck);
         return game;
     }
 }

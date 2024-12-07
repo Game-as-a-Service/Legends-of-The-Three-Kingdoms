@@ -19,6 +19,24 @@ public class MockMvcUtil {
         this.mockMvc = mockMvc;
     }
 
+    public ResultActions useDismantleEffect(String gameId, String currentPlayerId, String targetPlayerId, String cardId, Integer targetCardIndex) throws Exception {
+        String formattedCardId = cardId == null ? null : "\"" + cardId + "\"";
+
+        String content = String.format("""
+            {
+              "currentPlayerId": "%s",
+              "targetPlayerId": "%s",
+              "cardId": %s,
+              "targetCardIndex": %s
+            }
+            """, currentPlayerId, targetPlayerId, formattedCardId, targetCardIndex);
+
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useDismantleEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content));
+    }
+
+
     public ResultActions useBorrowedSwordEffect(String gameId, String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useBorrowedSwordEffect")
                 .contentType(MediaType.APPLICATION_JSON)

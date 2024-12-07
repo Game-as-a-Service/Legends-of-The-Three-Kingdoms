@@ -1,5 +1,7 @@
 package com.gaas.threeKingdoms;
 
+import com.gaas.threeKingdoms.behavior.behavior.BorrowedSwordBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.DuelBehavior;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
@@ -104,12 +106,14 @@ public class DuelTest {
         PlayerDamagedEvent playerDamagedEvent = getEvent(events, PlayerDamagedEvent.class).orElseThrow(RuntimeException::new);
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
+        assertFalse(game.getTopBehavior().stream().anyMatch(behavior -> behavior instanceof DuelBehavior));
         assertNotNull(duelEvent);
         assertNotNull(playerDamagedEvent);
         assertNotNull(gameStatusEvent);
         assertEquals("player-a", duelEvent.getDuelPlayerId());
         assertEquals("SSA001", duelEvent.getDuelCardId());
         assertEquals("player-b", duelEvent.getTargetPlayerId());
+        assertEquals("player-a", game.getActivePlayer().getId());
 
         assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
         assertEquals(4, game.getPlayer("player-a").getBloodCard().getHp());

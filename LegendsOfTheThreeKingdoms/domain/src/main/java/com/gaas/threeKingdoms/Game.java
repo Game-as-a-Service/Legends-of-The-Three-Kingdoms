@@ -263,7 +263,9 @@ public class Game {
         if (behavior.isTargetPlayerNeedToResponse()) {
             updateTopBehavior(behavior);
         }
-        return behavior.playerAction();
+        List<DomainEvent> events = behavior.playerAction();
+        removeCompletedBehaviors();
+        return events;
     }
 
     public void removeCompletedBehaviors() {
