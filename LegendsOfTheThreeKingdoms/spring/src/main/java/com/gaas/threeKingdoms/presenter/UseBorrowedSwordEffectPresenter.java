@@ -26,13 +26,13 @@ public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUs
     public void renderEvents(List<DomainEvent> events) {
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
         UseBorrowedSwordEffectPresenter.WeaponUsurpationViewModel weaponUsurpationViewModel = getWeaponUsurpationEventViewModel(events);
-        PlayCardPresenter.AskKillViewModel askKillViewModel = getAskKillViewModel(events);
+        UseBorrowedSwordEffectPresenter.BorrowedSwordViewModel borrowedSwordViewModel = getBorrowedSwordViewModel(events);
         PlayCardPresenter.PlayCardViewModel playCardViewModel = getPlayCardEventViewModel(events);
 
         updateViewModels(
                 playCardViewModel,
                 weaponUsurpationViewModel,
-                askKillViewModel
+                borrowedSwordViewModel
         );
 
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
@@ -64,6 +64,16 @@ public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUs
                 .forEach(effectViewModels::add);
     }
 
+
+
+    public static BorrowedSwordViewModel getBorrowedSwordViewModel(List<DomainEvent> events) {
+        return getEvent(events, BorrowedSwordEvent.class)
+                .map(event -> {
+                    BorrowedSwordDataViewModel borrowedSwordDataViewModel = new BorrowedSwordDataViewModel(event.getCardId(), event.getBorrowedPlayerId(), event.getAttackTargetPlayerId());
+                    return new BorrowedSwordViewModel(borrowedSwordDataViewModel, event.getMessage());
+                })
+                .orElse(null);
+    }
 
     @Data
     @AllArgsConstructor
@@ -106,6 +116,22 @@ public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUs
         private String givenWeaponPlayerId;
         private String takenWeaponPlayerId;
         private String weaponCardId;
+    }
+
+
+    public static class BorrowedSwordViewModel extends ViewModel<UseBorrowedSwordEffectPresenter.BorrowedSwordDataViewModel> {
+        public BorrowedSwordViewModel(UseBorrowedSwordEffectPresenter.BorrowedSwordDataViewModel data, String message) {
+            super("BorrowedSwordEvent", data, message);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class BorrowedSwordDataViewModel {
+        private String cardId;
+        private String borrowedPlayerId;
+        private String attackTargetPlayerId;
     }
 
     @Data

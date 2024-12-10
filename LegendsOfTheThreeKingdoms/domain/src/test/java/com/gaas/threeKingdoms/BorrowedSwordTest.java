@@ -105,7 +105,7 @@ public class BorrowedSwordTest {
         game.setCurrentRound(new Round(playerA));
 
         //When 先出借刀殺人卡牌
-        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.INACTIVE.getPlayType());
 
         PlayCardEvent playCardEvent = events.stream()
                 .filter(event -> event instanceof PlayCardEvent)
@@ -122,14 +122,16 @@ public class BorrowedSwordTest {
         //When 指定借刀殺人操作的玩家
         List<DomainEvent> secondEvents = game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
 
-        AskKillEvent askKillEvent = secondEvents.stream()
-                .filter(event -> event instanceof AskKillEvent)
-                .map(event -> (AskKillEvent) event)
+        BorrowedSwordEvent borrowedSwordEvent = secondEvents.stream()
+                .filter(event -> event instanceof BorrowedSwordEvent)
+                .map(event -> (BorrowedSwordEvent) event)
                 .findFirst()
                 .orElse(null);
 
-        assertTrue(secondEvents.stream().anyMatch(event -> event instanceof AskKillEvent));
-        assertEquals("player-b", askKillEvent.getPlayerId());
+        assertTrue(secondEvents.stream().anyMatch(event -> event instanceof BorrowedSwordEvent));
+        assertEquals("player-b", borrowedSwordEvent.getBorrowedPlayerId());
+        assertEquals("player-c", borrowedSwordEvent.getAttackTargetPlayerId());
+        assertEquals("SCK065", borrowedSwordEvent.getCardId());
 
     }
 

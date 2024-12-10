@@ -12,7 +12,6 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.repository.data.BehaviorData;
-import com.gaas.threeKingdoms.repository.data.PlayerData;
 import com.gaas.threeKingdoms.rolecard.Role;
 import org.junit.jupiter.api.Test;
 

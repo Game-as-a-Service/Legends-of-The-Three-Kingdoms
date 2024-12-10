@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
@@ -198,9 +199,10 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
     private void whenASkipEquipmentEffect() throws Exception {
         // When A 玩家發動效果 B有兩隻馬
         String currentPlayer = "player-a";
+        String targetPlayer = "player-b";
         String playedCardId = "EH5031";
 
-        mockMvcUtil.useEquipment(gameId, currentPlayer, playedCardId, EquipmentPlayType.SKIP)
+        mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayer, playedCardId, EquipmentPlayType.SKIP)
                 .andExpect(status().isOk()).andReturn();
 
         String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
@@ -264,6 +266,52 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
 
         // A玩家選擇一張馬，B玩家瀕死
         whenAChooseHorseAndBDie();
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_b_with_two_horse_player_a_remove_horse_b_die_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+            //testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+        String playerAPlayKillJsonForE = websocketUtil.getValue("player-e");
+        String playerAPlayKillJsonForF = websocketUtil.getValue("player-f");
+        String playerAPlayKillJsonForG = websocketUtil.getValue("player-g");
+    }
+
+    @Test
+    public void testPlayerAPlayQilinBowPlayerBWithOneHorseAndBDie() throws Exception {
+        //玩家 A 有麒麟弓 B 有裝備一隻馬，B只有 1 HP
+        givenPlayerAHaveQilinBowPlayerBHaveOneHorse(1);
+
+        // A 玩家出麒麟弓
+        playerAPlayQilinBowWhenBHaveTwoHorse();
+
+        // A 玩家出殺
+        // B 玩家skip
+        whenAKillAndBSkip();
+
+        // A發動效果 B有一隻馬
+        whenAUseEquipmentEffectAndBHaveOneHorse();
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_b_with_one_horse_player_a_remove_horse_b_die_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+            //testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+        String playerAPlayKillJsonForE = websocketUtil.getValue("player-e");
+        String playerAPlayKillJsonForF = websocketUtil.getValue("player-f");
+        String playerAPlayKillJsonForG = websocketUtil.getValue("player-g");
     }
 
     private void playerAUseEquipmentEffect() throws Exception {
@@ -344,13 +392,6 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         String cardId = "EH5044";
         mockMvcUtil.chooseHorse(gameId, currentPlayerId, cardId)
                 .andExpect(status().isOk()).andReturn();
-
-
-        //Then A 收到選擇馬的event  B玩家瀕死
-        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_receive_removehorse_b_die_event_for_player_a.json");
-        String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForA);
     }
 
     private void whenAChooseHorse() throws Exception {
@@ -397,6 +438,16 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         String playerAPlayQilinBowJsonForF = websocketUtil.getValue("player-f");
         String playerAPlayQilinBowJsonForG = websocketUtil.getValue("player-g");
 
+    }
+
+    private void whenAUseEquipmentEffectAndBHaveOneHorse() throws Exception {
+        // When A 玩家發動效果 B有兩隻馬
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-b";
+        String playedCardId = "EH5031";
+
+        mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
     }
 
     private void whenAUseEquipmentEffectAndBHaveTwoHorseNoCheck() throws Exception {
@@ -581,6 +632,70 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
                 )
         );
         game.setDeck(deck);
+        repository.save(game);
+    }
+
+    private void givenPlayerAHaveQilinBowPlayerBHaveOneHorse(int playerBHP) {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031), new RedRabbitHorse(EH5044)
+        );
+        Player playerB = createPlayer("player-b",
+                playerBHP,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+        );
+        Equipment equipmentB = new Equipment();
+        equipmentB.setMinusOne(new RedRabbitHorse(EH5044));
+        playerB.setEquipment(equipmentB);
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerE = createPlayer(
+                "player-e",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerF = createPlayer(
+                "player-f",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerG = createPlayer(
+                "player-g",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        Game game = initGame(gameId, players, playerA);
         repository.save(game);
     }
 

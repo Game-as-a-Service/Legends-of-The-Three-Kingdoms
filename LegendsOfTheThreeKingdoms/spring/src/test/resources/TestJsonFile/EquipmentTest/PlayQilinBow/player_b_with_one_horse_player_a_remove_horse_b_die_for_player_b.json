@@ -1,0 +1,121 @@
+{
+  "events" : [ {
+    "event" : "UseQilinBowCardEffectViewModel",
+    "data" : {
+      "mountCardId" : "EH5044"
+    },
+    "message" : "發動效果麒麟弓效果"
+  }, {
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "from" : 1,
+      "to" : 0
+    },
+    "message" : "扣血"
+  }, {
+    "event" : "PlayerDyingEvent",
+    "data" : {
+      "playerId" : "player-b"
+    },
+    "message" : "玩家已瀕臨死亡"
+  }, {
+    "event" : "AskPeachEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "dyingPlayerId" : "player-b"
+    },
+    "message" : "要求玩家出桃"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "EH5031", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 0,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH4030", "BH2028" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-e",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-f",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-g",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-b",
+      "dyingPlayer" : "player-b",
+      "showKill" : true
+    },
+    "gamePhase" : "GeneralDying"
+  },
+  "message" : "發動麒麟弓效果 移除 EH5044",
+  "gameId" : "my-id",
+  "playerId" : "player-b"
+}

@@ -1,10 +1,12 @@
 {
   "events" : [ {
-    "event" : "AskKillEvent",
+    "event" : "BorrowedSwordEvent",
     "data" : {
-      "playerId" : "player-b"
+      "cardId" : "SCK065",
+      "borrowedPlayerId" : "player-b",
+      "attackTargetPlayerId" : "player-c"
     },
-    "message" : "請問 player-b 要否要出殺"
+    "message" : "要求 player-b 對 player-c 出殺"
   } ],
   "data" : {
     "seats" : [ {

@@ -296,11 +296,8 @@ public class Game {
         List<DomainEvent> qilingBowEvents = waitingQilinBowResponsebehavior.responseToPlayerAction(playerId, nomralKillbehavior.getReactionPlayers().get(0), cardId, EquipmentPlayType.ACTIVE.getPlayType());
 
         List<DomainEvent> normalKillEvents = nomralKillbehavior.responseToPlayerAction(nomralKillbehavior.getReactionPlayers().get(0), waitingQilinBowResponsebehavior.getCurrentReactionPlayer().getId(), cardId, PlayType.QilinBow.getPlayType());
-        if (nomralKillbehavior.isOneRound()) { // 沒人死
-            topBehavior.pop();
-        }
-
-        return Stream.of(qilingBowEvents, normalKillEvents, getGameStatusEventInList("選擇馬")).flatMap(Collection::stream).collect(Collectors.toList());
+        removeCompletedBehaviors();
+        return Stream.of(qilingBowEvents, normalKillEvents).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     public void playerDeadSettlement() {
@@ -637,7 +634,7 @@ public class Game {
             }
 
             currentRound.setActivePlayer(borrowedPlayer);
-            return List.of(new AskKillEvent(borrowedPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
+            return List.of(new BorrowedSwordEvent(behavior.getCardId(), borrowedPlayerId,attackTargetPlayerId), getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
         }
         throw new IllegalStateException("UseBorrowedSwordEffect error.");
     }
