@@ -1355,4 +1355,143 @@ public class QilinBowTest {
         assertNull(game.getPlayer("player-d").getEquipment().getMinusOne());
     }
 
+
+    @DisplayName("""
+        Given
+        A 的回合
+        A 已裝備麒麟弓
+        A 有殺
+        D 玩家 HP 1
+        D 玩家距離 A 玩家3
+        D 玩家有赤兔馬與絕影
+        A 攻擊 D
+        A 玩家出閃
+        A 選擇發動麒麟弓效果
+        拆掉絕影
+        
+        When
+        D 玩家選擇不出桃
+        
+        Then
+        D 玩家 HP 0
+        詢問 E 玩家是否出桃
+    """)
+    @Test
+    public void testBShouldBeAskPlayPeach() {
+        Game game = new Game();
+        game.initDeck();
+        Equipment equipment = new Equipment();
+        equipment.setWeapon(new QilinBowCard(EH5031));
+
+        Equipment equipmentD = new Equipment();
+        equipmentD.setMinusOne(new RedRabbitHorse(EH5044));
+        equipmentD.setPlusOne(new ShadowHorse(ES5018));
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipment)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(equipmentD)
+                .build();
+
+        Player playerE = PlayerBuilder.construct()
+                .withId("player-e")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerF = PlayerBuilder.construct()
+                .withId("player-f")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerG = PlayerBuilder.construct()
+                .withId("player-g")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD, playerE, playerF, playerG);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerD.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
+        game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerD.getId(), EquipmentPlayType.ACTIVE);
+        game.playerChooseHorseForQilinBow(playerA.getId(), "ES5018");
+
+        //when
+        List<DomainEvent> events = game.playerPlayCard(playerD.getId(), "", playerD.getId(), "skip");
+
+        //Then
+        assertTrue(events.stream().anyMatch(event -> event instanceof AskPeachEvent));
+        assertFalse(events.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+        AskPeachEvent askPeachEvent = (AskPeachEvent) events.stream().filter(event -> event instanceof AskPeachEvent).findFirst().get();
+        assertEquals("player-e", askPeachEvent.getPlayerId());
+
+        //when
+        List<DomainEvent> eventsPlayerE = game.playerPlayCard(playerE.getId(), "", playerD.getId(), "skip");
+        assertTrue(eventsPlayerE.stream().anyMatch(event -> event instanceof AskPeachEvent));
+        assertFalse(eventsPlayerE.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+        askPeachEvent = (AskPeachEvent) eventsPlayerE.stream().filter(event -> event instanceof AskPeachEvent).findFirst().get();
+        assertEquals("player-f", askPeachEvent.getPlayerId());
+
+        game.playerPlayCard(playerF.getId(), "", playerD.getId(), "skip");
+        game.playerPlayCard(playerG.getId(), "", playerD.getId(), "skip");
+        game.playerPlayCard(playerA.getId(), "", playerD.getId(), "skip");
+        game.playerPlayCard(playerB.getId(), "", playerD.getId(), "skip");
+        List<DomainEvent> eventsEnd = game.playerPlayCard(playerC.getId(), "", playerD.getId(), "skip");
+        assertFalse(eventsEnd.stream().anyMatch(event -> event instanceof AskPeachEvent));
+        assertFalse(eventsEnd.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+    }
+
 }
