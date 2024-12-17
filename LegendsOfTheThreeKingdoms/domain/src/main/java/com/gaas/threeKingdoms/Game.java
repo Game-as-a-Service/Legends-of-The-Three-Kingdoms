@@ -15,6 +15,8 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
 import com.gaas.threeKingdoms.handcard.*;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
+import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -54,7 +56,7 @@ public class Game {
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -150,9 +152,19 @@ public class Game {
 
     private List<DomainEvent> playerTakeTurn(Player currentRoundPlayer) {
         DomainEvent roundStartEvent = new RoundStartEvent();
-        DomainEvent judgeEvent = judgePlayerShouldDelay();
-        DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer);
-        return List.of(roundStartEvent, judgeEvent, drawCardEvent);
+        List<DomainEvent> judgeEvents = judgePlayerShouldDelay();
+
+        boolean contentmentEventSuccess =  judgeEvents.stream()
+                .filter(event -> event instanceof ContentmentEvent)
+                .map(event -> (ContentmentEvent) event)
+                .anyMatch(ContentmentEvent::isSuccess);
+
+        DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentEventSuccess);
+
+        return Stream.concat(
+                Stream.of(roundStartEvent, drawCardEvent),
+                judgeEvents.stream()
+        ).collect(Collectors.toList());
     }
 
     private List<DomainEvent> getOtherCanChooseGeneralCards() {
@@ -187,11 +199,19 @@ public class Game {
     }
 
     public DomainEvent drawCardToPlayer(Player player) {
+        return drawCardToPlayer(player, true);
+    }
+
+    public DomainEvent drawCardToPlayer(Player player, boolean isChangeRoundPhase) {
         refreshDeckWhenCardsNumLessThen(2);
         int size = calculatePlayerCanDrawCardSize(player);
         List<HandCard> cards = deck.deal(size);
         player.getHand().addCardToHand(cards);
-        currentRound.setRoundPhase(RoundPhase.Action);
+
+        // 樂不思蜀不需要改變回合階段
+        if (isChangeRoundPhase) {
+            currentRound.setRoundPhase(RoundPhase.Action);
+        }
         List<String> cardIds = cards.stream().map(HandCard::getId).collect(Collectors.toList());
         String message = String.format("玩家 %s 抽了 %d 張牌", player.getId(), size);
 
@@ -383,12 +403,37 @@ public class Game {
         return currentRound.getCurrentRoundPlayer();
     }
 
-    private DomainEvent judgePlayerShouldDelay() {
+    private List<DomainEvent> judgePlayerShouldDelay() {
         Player player = currentRound.getCurrentRoundPlayer();
-        if (!player.hasAnyDelayScrollCard()) {
-            currentRound.setRoundPhase(RoundPhase.Drawing);
+        List<DomainEvent> judgementEvents = new ArrayList<>();
+        currentRound.setRoundPhase(RoundPhase.Drawing);
+        if (player.hasAnyDelayScrollCard()) {
+            List<ScrollCard> delayCards = new ArrayList<>(player.getDelayScrollCards()); // 避免 ConcurrentModificationException
+            for (ScrollCard card : delayCards) {
+                if (card instanceof Contentment) {
+                    DomainEvent contentmentEvent = handleContentmentJudgement(player, judgementEvents);
+                    judgementEvents.add(contentmentEvent);
+                    player.getDelayScrollCards().remove(card);
+                }
+            }
         }
-        return new JudgementEvent();
+        judgementEvents.add(new JudgementEvent());
+        return judgementEvents;
+    }
+    private ContentmentEvent handleContentmentJudgement(Player player, List<DomainEvent> events) {
+        // 抽一張卡判定
+        List<HandCard> cards = drawCardForCardEffect(1);
+        HandCard drawnCard = cards.get(0);
+        boolean contentmentSuccess = false;
+
+        // 判定牌的花色
+        if (Suit.HEART == drawnCard.getSuit()) {
+            events.addAll(finishAction(player.getId()));
+            contentmentSuccess = true;
+        }
+
+        // 回傳 Contentment 事件
+        return new ContentmentEvent(contentmentSuccess, drawnCard.getId(), player.getId());
     }
 
     public int getCurrentRoundPlayerDiscardCount() {
@@ -599,10 +644,11 @@ public class Game {
         return topBehavior.empty();
     }
 
-    public HandCard drawCardForEightDiagramTactic() {
-        refreshDeckWhenCardsNumLessThen(1);
-        List<HandCard> cards = deck.deal(1);
-        return cards.get(0);
+    public List<HandCard> drawCardForCardEffect(int needCount) {
+        refreshDeckWhenCardsNumLessThen(needCount);
+        List<HandCard> cards = deck.deal(needCount);
+        graveyard.add(cards);
+        return cards;
     }
 
     public GameStatusEvent getGameStatusEvent(String message) {
