@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
 public class Player {
     private Hand hand;
@@ -35,6 +34,29 @@ public class Player {
     private HealthStatus healthStatus;
     private Equipment equipment = new Equipment();
     private List<ScrollCard> delayScrollCards = new ArrayList<>();
+
+    public Player(Hand hand, String id, RoleCard roleCard, GeneralCard generalCard, BloodCard bloodCard, HealthStatus healthStatus,
+                  Equipment equipment) {
+        this.hand = hand;
+        this.id = id;
+        this.roleCard = roleCard;
+        this.generalCard = generalCard;
+        this.bloodCard = bloodCard;
+        this.healthStatus = healthStatus;
+        this.equipment = equipment;
+    }
+
+    public Player(Hand hand, String id, RoleCard roleCard, GeneralCard generalCard, BloodCard bloodCard, HealthStatus healthStatus,
+                  Equipment equipment, List<ScrollCard> delayScrollCards) {
+        this.hand = hand;
+        this.id = id;
+        this.roleCard = roleCard;
+        this.generalCard = generalCard;
+        this.bloodCard = bloodCard;
+        this.healthStatus = healthStatus;
+        this.equipment = equipment;
+        this.delayScrollCards = delayScrollCards;
+    }
 
     public void setHealthStatus(HealthStatus healthStatus) {
         this.healthStatus = healthStatus;
@@ -183,6 +205,12 @@ public class Player {
 
     public void addDelayScrollCard(ScrollCard card) {
         delayScrollCards.add(card);
+    }
+
+    public List<String> getDelayScrollCardIds() {
+        return delayScrollCards.stream()
+                .map(ScrollCard::getId)
+                .collect(Collectors.toList());
     }
 
     // 覆寫 equals 方法

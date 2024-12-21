@@ -8,7 +8,9 @@ import lombok.*;
 import com.gaas.threeKingdoms.usecase.FinishActionUseCase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 
 public class FinishActionPresenter implements FinishActionUseCase.FinishActionPresenter<List<FinishActionPresenter.GameViewModel>> {
@@ -26,10 +28,9 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
 
     private void updateFinishActionEventToViewModel(List<DomainEvent> events) {
         FinishActionEvent finishActionEvent = ViewModel.getEvent(events, FinishActionEvent.class).orElseThrow(RuntimeException::new);
-        FinishActionViewModel finishActionViewModel = new FinishActionViewModel();
+        FinishActionViewModel finishActionViewModel = new FinishActionViewModel(new FinishActionDataViewModel(finishActionEvent.getPlayerId()));
         NotifyDiscardEvent notifyDiscardEvent = ViewModel.getEvent(events, NotifyDiscardEvent.class).orElseThrow(RuntimeException::new);
         NotifyDiscardViewModel notifyDiscardViewModel = new NotifyDiscardViewModel(new NotifyDiscardDataViewModel(notifyDiscardEvent.getDiscardCount(), notifyDiscardEvent.getDiscardPlayerId()));
-
 
         if (playerNeedToDiscard(notifyDiscardEvent)) {
             // 取得 notifyDiscardEvent 中的玩家全部資訊
@@ -59,15 +60,37 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
             RoundEndEvent roundEndEvent = ViewModel.getEvent(events, RoundEndEvent.class).orElseThrow(RuntimeException::new);
             RoundEndViewModel roundEndViewModel = new RoundEndViewModel();
             RoundStartEvent roundStartEvent = ViewModel.getEvent(events, RoundStartEvent.class).orElseThrow(RuntimeException::new);
+
+
+            FinishActionViewModel finishActionNextPlayerViewModel = ViewModel.getEvent(events, FinishActionEvent.class, 1).map(event ->
+                new FinishActionViewModel(new FinishActionDataViewModel(event.getPlayerId()))
+            ).orElse(null);
+
+            NotifyDiscardViewModel notifyDiscardNextPlayerViewModel = ViewModel.getEvent(events, NotifyDiscardEvent.class, 1).map(event ->
+                new NotifyDiscardViewModel(new NotifyDiscardDataViewModel(event.getDiscardCount(), event.getDiscardPlayerId()))
+            ).orElse(null);
+
             JudgementEvent JudgementEvent = ViewModel.getEvent(events, JudgementEvent.class).orElseThrow(RuntimeException::new);
             DrawCardEvent drawCardEvent = ViewModel.getEvent(events, DrawCardEvent.class).orElseThrow(RuntimeException::new);
 
             RoundStartPresenter.RoundStartViewModel roundStartViewModel = new RoundStartPresenter.RoundStartViewModel();
+            ContentmentViewModel contentmentViewModel = getContentmentEventViewModel(events);
             RoundStartPresenter.JudgementViewModel judgementViewModel = new RoundStartPresenter.JudgementViewModel();
             RoundStartPresenter.DrawCardViewModel drawCardViewModel = new RoundStartPresenter.DrawCardViewModel();
             RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel = new RoundStartPresenter.DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds(), drawCardEvent.getDrawCardPlayerId());
             drawCardViewModel.setData(drawCardDataViewModel);
 
+            updateViewModels(
+                    finishActionViewModel,
+                    notifyDiscardViewModel,
+                    roundEndViewModel,
+                    roundStartViewModel,
+                    contentmentViewModel,
+                    judgementViewModel,
+                    drawCardViewModel,
+                    finishActionNextPlayerViewModel,
+                    notifyDiscardNextPlayerViewModel
+            );
 
             // 取得 drawCardEvent 中的玩家全部資訊
             List<PlayerDataViewModel> playerDataViewModels = drawCardEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
@@ -85,14 +108,21 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
 
                 // 非主公看不到此次 PlayerDrawCardEvent 的抽配 card ids
                 RoundStartPresenter.DrawCardViewModel drawCardViewModelInHidden = hiddenOtherPlayerCardIds(drawCardDataViewModel, viewModel, currentRoundPlayerId);
-                viewModels.add(new GameViewModel(List.of(finishActionViewModel, notifyDiscardViewModel, roundEndViewModel, roundStartViewModel, judgementViewModel, drawCardViewModelInHidden),
-                        gameDataViewModel,
-                        drawCardEvent.getMessage(),
-                        drawCardEvent.getGameId(),
-                        viewModel.getId())
+
+                viewModels.add(new GameViewModel(eventToViewModels,
+                                gameDataViewModel,
+                                drawCardEvent.getMessage(),
+                                drawCardEvent.getGameId(),
+                                viewModel.getId())
                 );
             }
         }
+    }
+
+    private void updateViewModels(ViewModel<?>... viewModels) {
+        Arrays.stream(viewModels)
+                .filter(Objects::nonNull)
+                .forEach(eventToViewModels::add);
     }
 
     private static GameDataViewModel createGameDataViewModel(PlayerDataViewModel viewModel, List<PlayerDataViewModel> playerDataViewModels, RoundDataViewModel roundDataViewModel, String gamePhase) {
@@ -102,13 +132,6 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
 
     private boolean playerNeedToDiscard(NotifyDiscardEvent notifyDiscardEvent) {
         return notifyDiscardEvent.getDiscardCount() > 0;
-    }
-
-
-    private void updateViewModels(PlayCardPresenter.PlayCardViewModel playCardViewModel, PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel) {
-        if (playCardViewModel == null) throw new RuntimeException();
-        eventToViewModels.add(playCardViewModel);
-        if (playerDamageEventViewModel != null) eventToViewModels.add(playerDamageEventViewModel);
     }
 
     public RoundStartPresenter.DrawCardViewModel hiddenOtherPlayerCardIds(RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel, String currentRoundPlayerId) {
@@ -129,6 +152,14 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
         return null;
     }
 
+    private FinishActionPresenter.ContentmentViewModel getContentmentEventViewModel(List<DomainEvent> events) {
+        ContentmentEvent contentmentEvent = ViewModel.getEvent(events, ContentmentEvent.class).orElse(null);
+        if (contentmentEvent != null) {
+            FinishActionPresenter.ContentmentDataViewModel contentmentDataViewModel = new FinishActionPresenter.ContentmentDataViewModel(contentmentEvent.getPlayerId(), contentmentEvent.getDrawCardId(), contentmentEvent.isSuccess());
+            return new FinishActionPresenter.ContentmentViewModel(contentmentDataViewModel);
+        }
+        return null;
+    }
 
     @Data
     @AllArgsConstructor
@@ -143,10 +174,17 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
 
     @Setter
     @Getter
-    public static class FinishActionViewModel extends ViewModel<Object> {
-        public FinishActionViewModel() {
-            super("FinishActionEvent", "", "結束出牌");
+    public static class FinishActionViewModel extends ViewModel<FinishActionDataViewModel> {
+        public FinishActionViewModel(FinishActionDataViewModel data) {
+            super("FinishActionEvent", data, "結束出牌");
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class FinishActionDataViewModel {
+        private String playerId;
     }
 
     @Data
@@ -163,6 +201,23 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
         private int discardCount;
         private String discardPlayerId;
     }
+
+    @Data
+    public static class ContentmentViewModel extends ViewModel<ContentmentDataViewModel> {
+        public ContentmentViewModel(ContentmentDataViewModel data) {
+            super("ContentmentEvent", data, "發動樂不思蜀效果");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ContentmentDataViewModel {
+        private String playerId;
+        private String drawCardId;
+        private boolean isSuccess;
+    }
+
 
     @Setter
     @Getter

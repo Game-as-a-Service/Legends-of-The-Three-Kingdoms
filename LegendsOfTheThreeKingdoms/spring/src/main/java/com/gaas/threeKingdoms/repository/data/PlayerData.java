@@ -1,6 +1,8 @@
 package com.gaas.threeKingdoms.repository.data;
 
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.PlayCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
@@ -8,6 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -22,6 +27,7 @@ public class PlayerData {
     private BloodCardData blood;
     private String healthStatus;
     private EquipmentData equipment;
+    private List<String> delayScrolls;
 
     public static PlayerData fromDomain(com.gaas.threeKingdoms.player.Player player) {
         if (player == null) {
@@ -37,6 +43,7 @@ public class PlayerData {
                 .blood(BloodCardData.fromDomain(player.getBloodCard()))
                 .healthStatus(healthStatus == null ? null : player.getHealthStatus().name())
                 .equipment(EquipmentData.fromDomain(player.getEquipment()))
+                .delayScrolls(player.getDelayScrollCardIds())
                 .build();
     }
 
@@ -49,6 +56,7 @@ public class PlayerData {
         player.setBloodCard(blood == null ? null : blood.toDomain());
         player.setHealthStatus(healthStatus == null ? null : HealthStatus.valueOf(this.healthStatus));
         player.setEquipment(this.equipment.toDomain());
+        player.setDelayScrollCards(this.delayScrolls == null ? null : this.delayScrolls.stream().map(id -> (ScrollCard) PlayCard.findById(id)).collect(Collectors.toList()));
         return player;
     }
 

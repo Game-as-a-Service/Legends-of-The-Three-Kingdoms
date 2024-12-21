@@ -277,5 +277,4 @@ public enum PlayCard {
     public static HandCard findById(String cardId) {
         return CARD_FACTORY_MAP.get(cardId);
     }
-
 }

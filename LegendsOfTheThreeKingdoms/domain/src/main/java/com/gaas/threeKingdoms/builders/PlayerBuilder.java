@@ -21,7 +21,9 @@ public class PlayerBuilder {
     private List<ScrollCard> delayScrollCards;
 
     public static PlayerBuilder construct() {
-        return new PlayerBuilder();
+        PlayerBuilder playerBuilder = new PlayerBuilder();
+        playerBuilder.delayScrollCards = new ArrayList<>();
+        return playerBuilder;
     }
 
     public PlayerBuilder withHand(Hand hand) {

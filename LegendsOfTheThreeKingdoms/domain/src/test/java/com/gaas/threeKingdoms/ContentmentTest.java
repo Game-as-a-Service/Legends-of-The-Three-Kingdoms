@@ -25,8 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.Utils.getEvent;
-import static com.gaas.threeKingdoms.handcard.PlayCard.BH8034;
-import static com.gaas.threeKingdoms.handcard.PlayCard.SH6045;
+import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ContentmentTest {
@@ -346,6 +345,98 @@ public class ContentmentTest {
         assertTrue(contentmentEvent.isSuccess()); // 樂不思蜀判定成功 (紅桃卡)
         assertEquals(RoundPhase.Discard, game.getCurrentRound().getRoundPhase()); // 進入棄牌階段
     }
+
+    @DisplayName("""
+                Given
+                玩家 A B C D
+                A的回合
+                A有樂不思蜀x 1
+                A 出樂不思蜀，指定 B
+
+                When
+                A 結束回合
+                B 的回合，系統進行樂不思蜀判定，抽出一張大老二
+
+                Then
+                B 正常出牌
+                NormalPhase
+            """)
+    @Test
+    public void givenPlayerABCD_PlayerATurn_PlayerAHasContentment_WhenPlayerAPlaysContentmentAndAssignsB_AndPlayerATurnEnds_SystemDrawsCardForBContentmentJudgment_ThenPlayerBProceedsToNormalPhase() {
+        // Given
+        Game game = new Game();
+
+        Deck deck = new Deck();
+        deck.add(Arrays.asList(new Peach(BH8034), new Peach(BH8034), new Peach(BH8034), new Peach(BH8034), new Contentment(ES2015)));
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .withDelayScrollCards(new ArrayList<>())
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Contentment(SH6045)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withDelayScrollCards(new ArrayList<>())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH8034), new Peach(BH8034), new Peach(BH8034), new Peach(BH8034)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withDelayScrollCards(new ArrayList<>())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withDelayScrollCards(new ArrayList<>())
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        // A 出 Contentment 指定 B
+        game.playerPlayCard(playerA.getId(), SH6045.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // When
+        List<DomainEvent> events = game.finishAction(playerA.getId());
+
+        // Then
+        JudgementEvent judgementEvent = getEvent(events, JudgementEvent.class).orElseThrow(RuntimeException::new);
+        ContentmentEvent contentmentEvent = getEvent(events, ContentmentEvent.class).orElseThrow(RuntimeException::new);
+        assertNotNull(judgementEvent);
+        assertTrue(!contentmentEvent.isSuccess()); // 樂不思蜀判定失敗 (大老二)
+        assertEquals(RoundPhase.Action, game.getCurrentRound().getRoundPhase()); // 進入棄牌階段
+    }
+
 
 
 }

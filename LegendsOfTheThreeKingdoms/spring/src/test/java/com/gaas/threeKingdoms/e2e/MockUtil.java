@@ -12,6 +12,7 @@ import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class MockUtil {
                 .withRoleCard(new RoleCard(role))
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
+                .withDelayScrollCards(new ArrayList<>())
                 .build();
 
         player.getHand().addCardToHand(Arrays.asList(cards));

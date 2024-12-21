@@ -4,7 +4,7 @@
     "data" : {
       "playerId" : "player-a",
       "targetPlayerId" : "player-b",
-      "cardId" : "SS3003",
+      "cardId" : "SC6071",
       "playType" : "active"
     },
     "message" : "出牌"
@@ -24,22 +24,22 @@
     }, {
       "id" : "player-b",
       "generalId" : "SHU001",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BH2028", "BH2028" ]
       },
       "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ ]
+      "delayScrolls" : [ "SC6071" ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU001",
-      "roleId" : "Rebel",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -66,5 +66,5 @@
   },
   "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-c"
+  "playerId" : "player-b"
 }

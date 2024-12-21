@@ -375,7 +375,7 @@ public class Game {
         currentRound.setRoundPhase(RoundPhase.Discard);
         RoundEvent roundEvent = new RoundEvent(currentRound);
 
-        FinishActionEvent finishActionEvent = new FinishActionEvent();
+        FinishActionEvent finishActionEvent = new FinishActionEvent(playerId);
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
         String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌", currentRoundPlayer.getId(), currentRoundPlayerDiscardCount);
         NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage, currentRoundPlayerDiscardCount, playerId, currentRoundPlayer.getId(), gameId, playerEvents, roundEvent, gamePhase.getPhaseName());

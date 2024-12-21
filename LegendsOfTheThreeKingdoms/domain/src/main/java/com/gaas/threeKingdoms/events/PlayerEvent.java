@@ -34,7 +34,7 @@ public class PlayerEvent extends DomainEvent {
         this.hp = player.getHP();
         this.hand = new HandEvent(player);
         this.equipments = player.getEquipment().getAllEquipmentCardIds();
-        this.delayScrolls = Collections.emptyList();
+        this.delayScrolls = player.getDelayScrollCardIds();
     }
 
     public String getId() {

@@ -57,6 +57,16 @@ public class WebsocketUtil {
         }
     }
 
+    public void popAllPlayerMessage() {
+        try {
+            for (String key : map.keySet()) {
+                map.get(key).poll(5, TimeUnit.SECONDS);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void setupClientSubscribe(String gameId, String playerId) throws Exception {
         final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
 
