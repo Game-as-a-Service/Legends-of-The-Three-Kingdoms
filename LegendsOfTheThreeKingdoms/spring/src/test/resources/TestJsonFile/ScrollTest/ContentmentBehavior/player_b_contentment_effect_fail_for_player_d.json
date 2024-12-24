@@ -21,6 +21,14 @@
     "data" : "",
     "message" : "回合已開始"
   }, {
+    "event" : "ContentmentEvent",
+    "data" : {
+      "playerId" : "SS7007",
+      "drawCardId" : "player-b",
+      "success" : false
+    },
+    "message" : "發動樂不思蜀效果"
+  }, {
     "event" : "JudgementEvent",
     "data" : "",
     "message" : "判定結束"
@@ -28,7 +36,7 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ "BC3055", "BC2054" ],
+      "cards" : [ ],
       "drawCardPlayerId" : "player-b"
     },
     "message" : "玩家摸牌"
@@ -38,29 +46,29 @@
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 5,
+      "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 3,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU006",
-      "roleId" : "Minister",
-      "hp" : 3,
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
       "hand" : {
-        "size" : 6,
-        "cardIds" : [ "BD7085", "BD6084", "BCJ076", "BC0075", "BC3055", "BC2054" ]
+        "size" : 7,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU004",
+      "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 3,
+      "hp" : 4,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
@@ -69,12 +77,12 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "WEI002",
-      "roleId" : "",
-      "hp" : 3,
+      "generalId" : "SHU001",
+      "roleId" : "Traitor",
+      "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -88,7 +96,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-b 抽了 2 張牌",
+  "message" : "結束回合",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-d"
 }

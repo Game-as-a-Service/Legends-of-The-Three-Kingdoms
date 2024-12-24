@@ -1,7 +1,9 @@
 {
   "events" : [ {
     "event" : "FinishActionEvent",
-    "data" : "",
+    "data" : {
+      "playerId" : "player-a"
+    },
     "message" : "結束出牌"
   }, {
     "event" : "NotifyDiscardEvent",
@@ -66,7 +68,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-a 需要棄 3 張牌",
+  "message" : "結束回合",
   "gameId" : "dyingTestGame",
   "playerId" : "player-a"
 }

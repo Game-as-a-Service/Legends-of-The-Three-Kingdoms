@@ -130,7 +130,7 @@ public class RoundStartPresenter implements OthersChoosePlayerGeneralUseCase.Rou
         private String gameId;
         private String playerId;
 
-        public PlayerTakeTurnViewModel(List<ViewModel> events, GameDataViewModel data, String message, String gameId, String playerId) {
+        public PlayerTakeTurnViewModel(List<ViewModel<?>> events, GameDataViewModel data, String message, String gameId, String playerId) {
             super(events, data, message);
             this.gameId = gameId;
             this.playerId = playerId;

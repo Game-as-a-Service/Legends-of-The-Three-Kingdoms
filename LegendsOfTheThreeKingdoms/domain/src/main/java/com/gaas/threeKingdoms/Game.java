@@ -385,9 +385,15 @@ public class Game {
         if (currentRoundPlayerDiscardCount == 0) {
             domainEvents.add(new RoundEndEvent());
             List<DomainEvent> nextRoundDomainEvents = goNextRound(currentRoundPlayer);
+            notifyMessage = nextRoundDomainEvents.stream()
+                    .filter(event -> event instanceof DrawCardEvent)
+                    .map(DomainEvent::getMessage)
+                    .findFirst()
+                    .orElse(null);
             domainEvents.addAll(nextRoundDomainEvents);
         }
 
+        domainEvents.add(getGameStatusEvent(notifyMessage));
         return domainEvents;
     }
 

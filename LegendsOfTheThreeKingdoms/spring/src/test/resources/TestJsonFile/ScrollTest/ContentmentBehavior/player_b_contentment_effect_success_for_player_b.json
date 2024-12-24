@@ -21,6 +21,19 @@
     "data" : "",
     "message" : "回合已開始"
   }, {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-b"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 1,
+      "discardPlayerId" : "player-b"
+    },
+    "message" : "通知棄牌"
+  }, {
     "event" : "ContentmentEvent",
     "data" : {
       "playerId" : "BH7033",
@@ -40,19 +53,6 @@
       "drawCardPlayerId" : "player-b"
     },
     "message" : "玩家摸牌"
-  }, {
-    "event" : "FinishActionEvent",
-    "data" : {
-      "playerId" : "player-b"
-    },
-    "message" : "結束出牌"
-  }, {
-    "event" : "NotifyDiscardEvent",
-    "data" : {
-      "discardCount" : 1,
-      "discardPlayerId" : "player-b"
-    },
-    "message" : "通知棄牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -72,11 +72,11 @@
       "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
-        "size" : 7,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BH2028", "BH2028", "BH7033", "BH7033" ]
+        "size" : 5,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BH2028", "BH2028" ]
       },
       "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ ]
+      "delayScrolls" : [ "SC6071" ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU001",
@@ -109,7 +109,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-b 抽了 2 張牌",
+  "message" : "玩家 player-b 需要棄 1 張牌",
   "gameId" : "my-id",
   "playerId" : "player-b"
 }

@@ -1,26 +1,22 @@
 {
   "events" : [ {
-    "event" : "FinishActionEvent",
+    "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a"
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "cardId" : "SS3003",
+      "playType" : "active"
     },
-    "message" : "結束出牌"
-  }, {
-    "event" : "NotifyDiscardEvent",
-    "data" : {
-      "discardCount" : 3,
-      "discardPlayerId" : "player-a"
-    },
-    "message" : "通知棄牌"
+    "message" : "出牌"
   } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 1,
+      "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 3,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -31,7 +27,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 5,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -60,7 +56,7 @@
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Discard",
+      "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
       "activePlayer" : "player-a",
       "dyingPlayer" : "",
@@ -68,7 +64,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "結束回合",
-  "gameId" : "dyingTestGame",
+  "message" : "出牌",
+  "gameId" : "my-id",
   "playerId" : "player-c"
 }

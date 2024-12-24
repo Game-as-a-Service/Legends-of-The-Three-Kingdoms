@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class GameProcessViewModel<T> {
-    protected List<ViewModel> events;
+    protected List<ViewModel<?>> events;
     protected T data;
     protected String message;
 

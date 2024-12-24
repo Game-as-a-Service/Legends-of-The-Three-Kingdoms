@@ -70,7 +70,7 @@ public class DiscardPresenter implements DiscardCardUseCase.DiscardPresenter<Lis
         private String gameId;
         private String playerId;
 
-        public GameViewModel(List<ViewModel> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
+        public GameViewModel(List<ViewModel<?>> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
             super(viewModels, data, message);
             this.gameId = gameId;
             this.playerId = playerId;

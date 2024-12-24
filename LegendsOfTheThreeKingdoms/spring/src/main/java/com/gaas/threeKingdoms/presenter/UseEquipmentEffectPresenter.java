@@ -18,7 +18,7 @@ import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquipmentPresenter<List<UseEquipmentEffectPresenter.GameViewModel>> {
 
     private List<GameViewModel> viewModels = new ArrayList<>();
-    private List<ViewModel> effectViewModels = new ArrayList<>();
+    private List<ViewModel<?>> effectViewModels = new ArrayList<>();
 
     @Override
     public void renderEvents(List<DomainEvent> events) {
@@ -190,7 +190,7 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         private String gameId;
         private String playerId;
 
-        public GameViewModel(List<ViewModel> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
+        public GameViewModel(List<ViewModel<?>> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
             super(viewModels, data, message);
             this.gameId = gameId;
             this.playerId = playerId;

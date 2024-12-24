@@ -78,8 +78,8 @@ public class FinishingTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/FinishingTest/PlayerAIsCurrentRoundPlayer/player_a_finish_for_%s.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            //testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);

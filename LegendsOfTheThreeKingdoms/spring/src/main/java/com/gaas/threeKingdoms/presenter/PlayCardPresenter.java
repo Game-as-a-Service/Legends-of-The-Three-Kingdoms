@@ -16,7 +16,7 @@ import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 
 public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List<PlayCardPresenter.GameViewModel>> {
-    List<ViewModel> eventToViewModels = new ArrayList<>();
+    List<ViewModel<?>> eventToViewModels = new ArrayList<>();
     private List<GameViewModel> viewModels;
 
     public void renderEvents(List<DomainEvent> events) {
@@ -351,7 +351,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String gameId;
         private String playerId;
 
-        public GameViewModel(List<ViewModel> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
+        public GameViewModel(List<ViewModel<?>> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
             super(viewModels, data, message);
             this.gameId = gameId;
             this.playerId = playerId;
