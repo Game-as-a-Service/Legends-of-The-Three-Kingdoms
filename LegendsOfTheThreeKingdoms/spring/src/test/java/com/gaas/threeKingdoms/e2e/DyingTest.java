@@ -37,8 +37,6 @@ public class DyingTest extends AbstractBaseIntegrationTest {
     public void testPlayerAIsEnterDyingStatus() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId)
-                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出桃
         String currentPlayer = "player-a";
@@ -68,15 +66,12 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndPlayerPeach/player_a_playpeach_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
-
     }
 
     @Test
     public void testPlayerAIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerAIsEnterDyingStatus();
         //Given A玩家瀕臨死亡
-        Game game = repository.findById(gameId)
-                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When A玩家出skip
         String currentPlayer = "player-a";
@@ -85,7 +80,6 @@ public class DyingTest extends AbstractBaseIntegrationTest {
 
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
-
         String playerASkipJsonForA = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_a_skip_for_player_a.json");
         String expectedJson = Files.readString(path);
@@ -105,10 +99,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_b_skip_for_player_a.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
-
+        websocketUtil.clearAllQueues();
 
         //When C玩家出skip
         currentPlayer = "player-c";
@@ -121,9 +112,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
+        websocketUtil.clearAllQueues();
 
         currentPlayer = "player-d";
         targetPlayerId = "player-a";
@@ -135,17 +124,13 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_d_skip_for_player_a.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
+        websocketUtil.clearAllQueues();
     }
 
     @Test
     public void testPlayerBIsEnterDyingStatusAndNoPlayPeach() throws Exception {
         givenPlayerBIsEnterDyingStatus();
         //Given B玩家瀕臨死亡
-        Game game = repository.findById(gameId)
-                .orElseThrow(() -> new NotFoundException("Game not found"));
 
         //When B玩家出skip
         String currentPlayer = "player-b";
@@ -155,10 +140,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
+        websocketUtil.clearAllQueues();
 
         //When C玩家出skip
         currentPlayer = "player-c";
@@ -167,11 +149,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
-
+        websocketUtil.clearAllQueues();
 
         //When D玩家出skip
         currentPlayer = "player-d";
@@ -180,10 +158,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
+        websocketUtil.clearAllQueues();
 
         currentPlayer = "player-a";
         targetPlayerId = "player-b";
@@ -192,10 +167,9 @@ public class DyingTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk()).andReturn();
 
         // Then B 玩家死亡，active player 是 C
-        List<Player> players = game.getPlayers();
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
         String filePathTemplate = "src/test/resources/TestJsonFile/DyingTest/PlayerBDyingAndSkipPeach/player_a_skip_for_%s.json";
-        for (Player player : players) {
-            String testPlayerId = player.getId();
+        for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
             //testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
             testPlayerJson = websocketUtil.getValue(testPlayerId);
@@ -211,50 +185,27 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         playedCardId = "ECA066";
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
-        String testPlayerJson = websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
         // Player C finishAction
         currentPlayer = "player-c";
         mockMvcUtil.finishAction(gameId, currentPlayer);
-        String testPlayerJson2 = websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
         // Player D finishAction
         currentPlayer = "player-d";
         mockMvcUtil.finishAction(gameId, currentPlayer);
-        String testPlayerJson3 = websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
         // Player A finishAction
         currentPlayer = "player-a";
         mockMvcUtil.finishAction(gameId, currentPlayer);
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
         // Player B finishAction
         currentPlayer = "player-b";
         mockMvcUtil.finishAction(gameId, currentPlayer);
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
         // Player C finishAction
         currentPlayer = "player-c";
         mockMvcUtil.finishAction(gameId, currentPlayer);
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
+        websocketUtil.clearAllQueues();
     }
 
     private void givenPlayerAIsEnterDyingStatus() {
@@ -298,18 +249,11 @@ public class DyingTest extends AbstractBaseIntegrationTest {
 
         // B對A出殺
         game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), "active");
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
         // A玩家出skip
         game.playerPlayCard(playerA.getId(), "", playerB.getId(), "skip");
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
+        websocketUtil.clearAllQueues();
         repository.save(game);
     }
 
@@ -354,18 +298,10 @@ public class DyingTest extends AbstractBaseIntegrationTest {
 
         // C對B出殺
         game.playerPlayCard(playerC.getId(), "BS8008", playerB.getId(), "active");
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
 
         // B玩家出skip
         game.playerPlayCard(playerB.getId(), "", playerC.getId(), "skip");
-        websocketUtil.getValue("player-a");
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
-
+        websocketUtil.clearAllQueues();
         repository.save(game);
     }
 

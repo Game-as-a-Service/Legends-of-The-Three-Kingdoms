@@ -214,8 +214,6 @@ public class GameTest extends AbstractBaseIntegrationTest {
         game.setDeck(new Deck(stack));
         repository.save(game);
 
-        Game game1 = repository.findById("my-id").get();
-
         assertEquals(Role.MONARCH, game.getPlayer("player-a").getRoleCard().getRole());
         assertEquals(Role.MINISTER, game.getPlayer("player-b").getRoleCard().getRole());
         assertEquals(Role.REBEL, game.getPlayer("player-c").getRoleCard().getRole());
@@ -246,12 +244,8 @@ public class GameTest extends AbstractBaseIntegrationTest {
         this.mockMvc.perform(get("/api/games/my-id?playerId=player-a")).andDo(print())
                 .andExpect(status().isOk());
 
-
-        Game game2 = repository.findById("my-id").get();
-
         // WebSocket 推播給前端資訊
         checkGetGameEvent();
-        Game game3 = repository.findById("my-id").get();
     }
 
     private void checkPlayerAGetCreateGameEvent() throws InterruptedException, JsonProcessingException {

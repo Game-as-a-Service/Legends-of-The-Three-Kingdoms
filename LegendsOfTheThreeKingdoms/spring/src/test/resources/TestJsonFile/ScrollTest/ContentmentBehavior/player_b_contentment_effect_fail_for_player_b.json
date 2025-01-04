@@ -96,7 +96,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "結束回合",
+  "message" : "玩家 player-b 抽了 2 張牌",
   "gameId" : "my-id",
   "playerId" : "player-b"
 }

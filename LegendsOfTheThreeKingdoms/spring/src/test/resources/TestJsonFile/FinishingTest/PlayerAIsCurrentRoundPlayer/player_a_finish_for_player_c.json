@@ -68,7 +68,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "結束回合",
+  "message" : "玩家 player-a 需要棄 3 張牌",
   "gameId" : "dyingTestGame",
   "playerId" : "player-c"
 }

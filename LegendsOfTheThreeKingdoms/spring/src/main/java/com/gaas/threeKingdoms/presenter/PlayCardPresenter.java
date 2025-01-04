@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
+import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
 import com.gaas.threeKingdoms.usecase.PlayCardUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,15 +19,16 @@ import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List<PlayCardPresenter.GameViewModel>> {
     List<ViewModel<?>> eventToViewModels = new ArrayList<>();
     private List<GameViewModel> viewModels;
+    private final DomainEventToViewModelMapper domainEventToViewModelMapper = new DomainEventToViewModelMapper();
 
     public void renderEvents(List<DomainEvent> events) {
         if (!events.isEmpty()) {
+            eventToViewModels = domainEventToViewModelMapper.mapEventsToViewModels(events);
             updatePlayCardEventToViewModel(events);
         } else {
             viewModels = Collections.emptyList();
         }
     }
-
 
     @Override
     public List<GameViewModel> present() {
@@ -35,39 +37,11 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
 
     private void updatePlayCardEventToViewModel(List<DomainEvent> events) {
         viewModels = new ArrayList<>();
-
         PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
         List<PlayerDataViewModel> playerDataViewModels = gameStatusEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
         RoundEvent roundEvent = gameStatusEvent.getRound();
-
-        PlayCardDataViewModel playCardDataViewModel = new PlayCardDataViewModel(playCardEvent.getPlayerId(), playCardEvent.getTargetPlayerId(), playCardEvent.getCardId(), playCardEvent.getPlayType());
-        PlayCardViewModel playCardViewModel = new PlayCardViewModel(playCardDataViewModel, playCardEvent.getMessage());
-        PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
-        PlayerDyingViewModel playerDyingViewModel = getPlayerDyingEventViewModel(events);
-        AskPeachViewModel askPeachViewModel = getAskPeachViewModel(events);
-        SettlementViewModel settlementViewModel = getSettlementViewModel(events);
-        GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
-        PeachViewModel peachViewModel = getPeachViewModel(events);
-        PlayEquipmentCardViewModel playCardEquipmentViewModel = getPlayEquipmentViewModel(events);
-        AskPlayEquipmentEffectViewModel askPlayEquipmentEffectViewModel = getAskPlayEquipmentEffectViewModel(playCardDataViewModel, events);
-        AskKillViewModel askKillViewModel = getAskKillViewModel(events);
-        UseBorrowedSwordEffectPresenter.WeaponUsurpationViewModel weaponUsurpationViewModel = UseBorrowedSwordEffectPresenter.getWeaponUsurpationEventViewModel(events);
-
-        updateViewModels(
-                playCardViewModel,
-                playerDamageEventViewModel,
-                playerDyingViewModel,
-                askPeachViewModel,
-                peachViewModel,
-                settlementViewModel,
-                gameOverViewModel,
-                playCardEquipmentViewModel,
-                askPlayEquipmentEffectViewModel,
-                askKillViewModel,
-                weaponUsurpationViewModel
-        );
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);

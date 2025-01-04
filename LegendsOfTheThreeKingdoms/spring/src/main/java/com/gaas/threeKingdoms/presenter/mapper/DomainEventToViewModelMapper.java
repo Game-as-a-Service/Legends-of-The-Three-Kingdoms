@@ -1,14 +1,13 @@
 package com.gaas.threeKingdoms.presenter.mapper;
 
 import com.gaas.threeKingdoms.events.*;
-import com.gaas.threeKingdoms.presenter.FinishActionPresenter;
-import com.gaas.threeKingdoms.presenter.PlayCardPresenter;
-import com.gaas.threeKingdoms.presenter.RoundStartPresenter;
-import com.gaas.threeKingdoms.presenter.ViewModel;
-import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
-import org.springframework.stereotype.Component;
+import com.gaas.threeKingdoms.presenter.*;
+import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -76,20 +75,155 @@ public class DomainEventToViewModelMapper {
         });
         eventToViewModelMappers.put(RoundEndEvent.class, event -> new FinishActionPresenter.RoundEndViewModel());
 
-//        eventToViewModelMappers.put(DrawCardEvent.class, event -> {
-//            DrawCardEvent drawCardEvent = (DrawCardEvent) event;
-//            RoundEvent roundEvent = drawCardEvent.getRound();
-//            RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
-//            RoundStartPresenter.DrawCardDataViewModel dataViewModel = new RoundStartPresenter.DrawCardDataViewModel(
-//                    drawCardEvent.getSize(),
-//                    drawCardEvent.getCardIds(),
-//                    drawCardEvent.getDrawCardPlayerId()
-//            );
-//            RoundStartPresenter.DrawCardViewModel drawCardViewModel = new RoundStartPresenter.DrawCardViewModel();
-//            drawCardViewModel.setData(dataViewModel);
-//            return drawCardViewModel;
-//        });
+        eventToViewModelMappers.put(RemoveHorseEvent.class, event -> {
+            RemoveHorseEvent removeHorseEvent = (RemoveHorseEvent) event;
+            return new ChooseHorsePresenter.RemoveHorseViewModel(
+                    new ChooseHorsePresenter.RemoveHorseDataViewModel(
+                            removeHorseEvent.getPlayerId(),
+                            removeHorseEvent.getMountCardId()
+                    )
+            );
+        });
 
+        eventToViewModelMappers.put(PlayerDyingEvent.class, event -> {
+            PlayerDyingEvent playerDyingEvent = (PlayerDyingEvent) event;
+            return new PlayCardPresenter.PlayerDyingViewModel(
+                    new PlayCardPresenter.PlayerDyingDataViewModel(
+                            playerDyingEvent.getPlayerId()
+                    )
+            );
+        });
+
+        eventToViewModelMappers.put(AskPeachEvent.class, event -> {
+            AskPeachEvent askPeachEvent = (AskPeachEvent) event;
+            return new PlayCardPresenter.AskPeachViewModel(
+                    new PlayCardPresenter.AskPeachDataViewModel(
+                            askPeachEvent.getPlayerId(), askPeachEvent.getDyingPlayerId()
+                    )
+            );
+        });
+
+        eventToViewModelMappers.put(SettlementEvent.class, event -> {
+            SettlementEvent settlementEvent = (SettlementEvent) event;
+            return new PlayCardPresenter.SettlementViewModel(
+                    new PlayCardPresenter.SettlementDataViewModel(
+                            settlementEvent.getPlayerId(), settlementEvent.getRole()
+                    )
+            );
+        });
+
+        eventToViewModelMappers.put(GameOverEvent.class, event -> {
+            GameOverEvent gameOverEvent = (GameOverEvent) event;
+            return new PlayCardPresenter.GameOverViewModel(
+                    new PlayCardPresenter.GameOverDataViewModel(
+                            gameOverEvent.getPlayers().stream()
+                                    .map(PlayerDataViewModel::new)
+                                    .toList(), gameOverEvent.getWinners())
+            );
+        });
+
+        eventToViewModelMappers.put(PeachEvent.class, event -> {
+            PeachEvent peachEvent = (PeachEvent) event;
+            PlayCardPresenter.PeachDataViewModel dataViewModel = new PlayCardPresenter.PeachDataViewModel(
+                    peachEvent.getPlayerId(),
+                    peachEvent.getFrom(),
+                    peachEvent.getTo()
+            );
+            return new PlayCardPresenter.PeachViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(BorrowedSwordEvent.class, event -> {
+            BorrowedSwordEvent borrowedSwordEvent = (BorrowedSwordEvent) event;
+            UseBorrowedSwordEffectPresenter.BorrowedSwordDataViewModel dataViewModel =
+                    new UseBorrowedSwordEffectPresenter.BorrowedSwordDataViewModel(
+                            borrowedSwordEvent.getCardId(),
+                            borrowedSwordEvent.getBorrowedPlayerId(),
+                            borrowedSwordEvent.getAttackTargetPlayerId()
+                    );
+            return new UseBorrowedSwordEffectPresenter.BorrowedSwordViewModel(dataViewModel, borrowedSwordEvent.getMessage());
+        });
+
+        eventToViewModelMappers.put(WeaponUsurpationEvent.class, event -> {
+            WeaponUsurpationEvent weaponUsurpationEvent = (WeaponUsurpationEvent) event;
+            UseBorrowedSwordEffectPresenter.WeaponUsurpationDataViewModel dataViewModel =
+                    new UseBorrowedSwordEffectPresenter.WeaponUsurpationDataViewModel(
+                            weaponUsurpationEvent.getGivenWeaponPlayerId(),
+                            weaponUsurpationEvent.getTakenWeaponPlayerId(),
+                            weaponUsurpationEvent.getWeaponCardId()
+                    );
+            return new UseBorrowedSwordEffectPresenter.WeaponUsurpationViewModel(dataViewModel, weaponUsurpationEvent.getMessage());
+        });
+
+        eventToViewModelMappers.put(DismantleEvent.class, event -> {
+            DismantleEvent dismantleEvent = (DismantleEvent) event;
+            UseDismantlePresenter.UseDismantleDataViewModel dataViewModel = new UseDismantlePresenter.UseDismantleDataViewModel(
+                    dismantleEvent.getPlayerId(),
+                    dismantleEvent.getTargetPlayerId(),
+                    dismantleEvent.getCardId()
+            );
+            return new UseDismantlePresenter.UseDismantleViewModel(dataViewModel, dismantleEvent.getMessage());
+        });
+
+        eventToViewModelMappers.put(EightDiagramTacticEffectEvent.class, event -> {
+            EightDiagramTacticEffectEvent tacticEffectEvent = (EightDiagramTacticEffectEvent) event;
+            UseEquipmentEffectPresenter.UseEquipmentEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.UseEquipmentEffectDataViewModel(
+                    tacticEffectEvent.getDrawCardId(), tacticEffectEvent.isSuccess()
+            );
+            return new UseEquipmentEffectPresenter.UseEquipmentEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(QilinBowCardEffectEvent.class, event -> {
+            QilinBowCardEffectEvent qilinBowEvent = (QilinBowCardEffectEvent) event;
+            UseEquipmentEffectPresenter.UseQilinBowCardEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.UseQilinBowCardEffectDataViewModel(
+                    qilinBowEvent.getMountCardId()
+            );
+            return new UseEquipmentEffectPresenter.UseQilinBowCardEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
+            AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
+            UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(
+                    askChooseMountEvent.getChooseMountCardPlayerId(),
+                    askChooseMountEvent.getTargetPlayerId(),
+                    askChooseMountEvent.getMountsCardIds()
+            );
+            return new UseEquipmentEffectPresenter.AskChooseMountCardViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(SkipEquipmentEffectEvent.class, event -> {
+            SkipEquipmentEffectEvent skipEquipmentEvent = (SkipEquipmentEffectEvent) event;
+            UseEquipmentEffectPresenter.SkipEquipmentEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.SkipEquipmentEffectDataViewModel(
+                    skipEquipmentEvent.getPlayerId(),
+                    skipEquipmentEvent.getCardId()
+            );
+            return new UseEquipmentEffectPresenter.SkipEquipmentEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(AskPlayEquipmentEffectEvent.class, event -> {
+            AskPlayEquipmentEffectEvent askPlayEquipmentEvent = (AskPlayEquipmentEffectEvent) event;
+            PlayCardPresenter.AskPlayEquipmentEffectDataViewModel dataViewModel = new PlayCardPresenter.AskPlayEquipmentEffectDataViewModel(
+                    askPlayEquipmentEvent.getPlayerId(),
+                    askPlayEquipmentEvent.getEquipmentCard().getId(),
+                    askPlayEquipmentEvent.getEquipmentCard().getName(),
+                    askPlayEquipmentEvent.getTargetPlayerIds()
+            );
+            return new PlayCardPresenter.AskPlayEquipmentEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(PlayEquipmentCardEvent.class, event -> {
+            PlayEquipmentCardEvent playEquipmentCardEvent = (PlayEquipmentCardEvent) event;
+            PlayCardPresenter.PlayEquipmentCardDataViewModel dataViewModel = new PlayCardPresenter.PlayEquipmentCardDataViewModel(
+                    playEquipmentCardEvent.getPlayerId(),
+                    playEquipmentCardEvent.getCardId(),
+                    playEquipmentCardEvent.getDeprecatedCardId()
+            );
+            return new PlayCardPresenter.PlayEquipmentCardViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(DiscardEvent.class, event -> {
+            DiscardEvent discardEvent = (DiscardEvent) event;
+            return new DiscardPresenter.DiscardViewModel(discardEvent);
+        });
 
     }
 

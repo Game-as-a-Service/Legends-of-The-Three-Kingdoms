@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static com.gaas.threeKingdoms.presenter.PlayCardPresenter.getAskKillViewModel;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUseCase.UseBorrowedSwordPresenter<List<UseBorrowedSwordEffectPresenter.GameViewModel>> {

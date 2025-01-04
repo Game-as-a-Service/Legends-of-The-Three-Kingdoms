@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
+import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
 import com.gaas.threeKingdoms.usecase.UseDismantleUseCase;
 import com.gaas.threeKingdoms.usecase.UseEquipmentUseCase;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import java.util.Objects;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseDismantlePresenter implements UseDismantleUseCase.UseDismantlePresenter<List<UseDismantlePresenter.GameViewModel>> {
-
+    private final DomainEventToViewModelMapper domainEventToViewModelMapper = new DomainEventToViewModelMapper();
     private List<UseDismantlePresenter.GameViewModel> viewModels = new ArrayList<>();
     private List<ViewModel<?>> effectViewModels = new ArrayList<>();
 

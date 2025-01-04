@@ -43,16 +43,18 @@ public class DyingAskPeachBehavior extends Behavior {
         if (isSkip(playType)) {
             List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             Round currentRound = game.getCurrentRound();
+            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
+            events.add(playCardEvent);
             if (isLastReactionPlayer(playerId)) {
                 isOneRound = true;
                 game.removeDyingPlayer(dyingPlayer);
                 if (isMonarchDied(dyingPlayer)) {
-                    PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole().getRoleName());
                     GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage(), getWinners(game.getPlayers()), playerEvents);
                     game.enterPhase(new GameOver(game));
+                    events.addAll(List.of(settlementEvent, gameOverEvent));
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    events.addAll(List.of(playCardEvent, settlementEvent, gameOverEvent, game.getGameStatusEvent("主公死亡")));
+                    events.add(game.getGameStatusEvent("主公死亡"));
                     return events;
                 }
                 game.enterPhase(new Normal(game));
@@ -61,8 +63,7 @@ public class DyingAskPeachBehavior extends Behavior {
                 events.add(createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer));
                 currentRound.setActivePlayer(game.getNextPlayer(currentPlayer));
             }
-            PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
-            events.addAll(List.of(playCardEvent, game.getGameStatusEvent("不出牌")));
+            events.add(game.getGameStatusEvent("不出牌"));
             return events;
         } else if (isPeachCard(cardId)) {
 
@@ -80,8 +81,9 @@ public class DyingAskPeachBehavior extends Behavior {
             // Create Domain Events
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
             PeachEvent peachEvent = new PeachEvent(targetPlayerId, originalHp, dyingPlayer.getHP());
+            events.addAll(List.of(playCardEvent, peachEvent));
             addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-            events.addAll(List.of(playCardEvent, peachEvent, game.getGameStatusEvent("出牌")));
+            events.add(game.getGameStatusEvent("出牌"));
             return events;
 
         } else {

@@ -1,5 +1,12 @@
 {
   "events" : [ {
+    "event" : "SkipEquipmentEffectViewModel",
+    "data" : {
+      "playerId" : "player-a",
+      "cardId" : "EH5031"
+    },
+    "message" : "跳過裝備效果"
+  }, {
     "event" : "PlayerDamagedEvent",
     "data" : {
       "playerId" : "player-b",
@@ -7,13 +14,6 @@
       "to" : 3
     },
     "message" : "扣血"
-  }, {
-    "event" : "SkipEquipmentEffectViewModel",
-    "data" : {
-      "playerId" : "player-a",
-      "cardId" : "EH5031"
-    },
-    "message" : "跳過裝備效果"
   } ],
   "data" : {
     "seats" : [ {
