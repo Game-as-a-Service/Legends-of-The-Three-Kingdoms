@@ -33,6 +33,14 @@
     "data" : "",
     "message" : "判定結束"
   }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ ],
+      "drawCardPlayerId" : "player-b"
+    },
+    "message" : "玩家摸牌"
+  }, {
     "event" : "FinishActionEvent",
     "data" : {
       "playerId" : "player-b"
@@ -45,14 +53,6 @@
       "discardPlayerId" : "player-b"
     },
     "message" : "通知棄牌"
-  }, {
-    "event" : "DrawCardEvent",
-    "data" : {
-      "size" : 2,
-      "cards" : [ ],
-      "drawCardPlayerId" : "player-b"
-    },
-    "message" : "玩家摸牌"
   } ],
   "data" : {
     "seats" : [ {

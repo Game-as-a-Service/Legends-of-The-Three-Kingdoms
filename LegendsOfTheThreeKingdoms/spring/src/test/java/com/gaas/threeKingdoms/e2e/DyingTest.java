@@ -99,7 +99,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_b_skip_for_player_a.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
-        websocketUtil.clearAllQueues();
+        websocketUtil.popAllPlayerMessage();
 
         //When C玩家出skip
         currentPlayer = "player-c";
@@ -112,7 +112,9 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
-        websocketUtil.clearAllQueues();
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
 
         currentPlayer = "player-d";
         targetPlayerId = "player-a";
@@ -140,16 +142,12 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        websocketUtil.clearAllQueues();
-
         //When C玩家出skip
         currentPlayer = "player-c";
         targetPlayerId = "player-b";
 
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
-
-        websocketUtil.clearAllQueues();
 
         //When D玩家出skip
         currentPlayer = "player-d";

@@ -4,10 +4,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.*;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -223,6 +220,14 @@ public class DomainEventToViewModelMapper {
         eventToViewModelMappers.put(DiscardEvent.class, event -> {
             DiscardEvent discardEvent = (DiscardEvent) event;
             return new DiscardPresenter.DiscardViewModel(discardEvent);
+        });
+
+        eventToViewModelMappers.put(DrawCardEvent.class, event -> {
+            DrawCardEvent drawCardEvent = (DrawCardEvent) event;
+            RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel = new RoundStartPresenter.DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds(), drawCardEvent.getDrawCardPlayerId());
+            RoundStartPresenter.DrawCardViewModel drawCardViewModel = new RoundStartPresenter.DrawCardViewModel();
+            drawCardViewModel.setData(drawCardDataViewModel);
+            return drawCardViewModel;
         });
 
     }

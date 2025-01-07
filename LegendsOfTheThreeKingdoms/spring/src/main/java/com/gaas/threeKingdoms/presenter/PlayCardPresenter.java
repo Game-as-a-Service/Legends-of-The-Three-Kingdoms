@@ -62,69 +62,6 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         }
     }
 
-    private void updateViewModels(ViewModel<?>... viewModels) {
-        Arrays.stream(viewModels)
-                .filter(Objects::nonNull)
-                .forEach(eventToViewModels::add);
-    }
-
-    public static AskKillViewModel getAskKillViewModel(List<DomainEvent> events) {
-        return getEvent(events, AskKillEvent.class)
-                .map(event -> {
-                    AskKillDataViewModel askKillDataViewModel = new AskKillDataViewModel(event.getPlayerId());
-                    return new AskKillViewModel(askKillDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    private AskPlayEquipmentEffectViewModel getAskPlayEquipmentEffectViewModel(PlayCardDataViewModel playCardDataViewModel, List<DomainEvent> events) {
-        return getEvent(events, AskPlayEquipmentEffectEvent.class)
-                .map(event -> {
-                    AskPlayEquipmentEffectDataViewModel askPlayEquipmentEffectDataViewModel = new AskPlayEquipmentEffectDataViewModel(event.getPlayerId(), event.getEquipmentCard().getId(), event.getEquipmentCard().getName(), event.getTargetPlayerIds());
-                    return new AskPlayEquipmentEffectViewModel(askPlayEquipmentEffectDataViewModel);
-                })
-                .orElse(null);
-    }
-
-
-    public static PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
-        return getEvent(events, PlayerDamagedEvent.class)
-                .map(event -> {
-                    PlayerDamagedDataViewModel playerDamagedDataViewModel = new PlayerDamagedDataViewModel(event.getPlayerId(), event.getFrom(), event.getTo());
-                    return new PlayerDamagedViewModel(playerDamagedDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    public static PlayerDyingViewModel getPlayerDyingEventViewModel(List<DomainEvent> events) {
-        return getEvent(events, PlayerDyingEvent.class)
-                .map(event -> {
-                    PlayerDyingDataViewModel playerDyingDataViewModel = new PlayerDyingDataViewModel(event.getPlayerId());
-                    return new PlayerDyingViewModel(playerDyingDataViewModel);
-                })
-                .orElse(null);
-    }
-
-
-    public static AskPeachViewModel getAskPeachViewModel(List<DomainEvent> events) {
-        return getEvent(events, AskPeachEvent.class)
-                .map(event -> {
-                    AskPeachDataViewModel askPeachDataViewModel = new AskPeachDataViewModel(event.getPlayerId(), event.getDyingPlayerId());
-                    return new AskPeachViewModel(askPeachDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    public static SettlementViewModel getSettlementViewModel(List<DomainEvent> events) {
-        return getEvent(events, SettlementEvent.class)
-                .map(event -> {
-                    SettlementDataViewModel settlementDataViewModel = new SettlementDataViewModel(event.getPlayerId(), event.getRole());
-                    return new SettlementViewModel(settlementDataViewModel);
-                })
-                .orElse(null);
-    }
-
-
     public static GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
         return getEvent(events, GameOverEvent.class)
                 .map(gameOverEvent -> {
@@ -132,24 +69,6 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                             .map(PlayerDataViewModel::new)
                             .toList(), gameOverEvent.getWinners());
                     return new GameOverViewModel(gameOverDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    private PeachViewModel getPeachViewModel(List<DomainEvent> events) {
-        return getEvent(events, PeachEvent.class)
-                .map(event -> {
-                    PeachDataViewModel peachDataViewModel = new PeachDataViewModel(event.getPlayerId(), event.getFrom(), event.getTo());
-                    return new PeachViewModel(peachDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    private PlayEquipmentCardViewModel getPlayEquipmentViewModel(List<DomainEvent> events) {
-        return getEvent(events, PlayEquipmentCardEvent.class)
-                .map(event -> {
-                    PlayEquipmentCardDataViewModel playEquipmentCardDataViewModel = new PlayEquipmentCardDataViewModel(event.getPlayerId(), event.getCardId(), event.getDeprecatedCardId());
-                    return new PlayEquipmentCardViewModel(playEquipmentCardDataViewModel);
                 })
                 .orElse(null);
     }

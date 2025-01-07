@@ -1,6 +1,9 @@
 package com.gaas.threeKingdoms.presenter;
 
-import com.gaas.threeKingdoms.events.*;
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.GameStatusEvent;
+import com.gaas.threeKingdoms.events.PlayerEvent;
+import com.gaas.threeKingdoms.events.RoundEvent;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
@@ -10,7 +13,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
@@ -34,47 +37,42 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
     private void updateFinishActionEventToViewModel(List<DomainEvent> events) {
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
 
-        Optional<RoundStartPresenter.DrawCardViewModel> drawCardViewModelTemplate = ViewModel.getEvent(events, DrawCardEvent.class)
-            .map(drawCardEvent -> {
-                    RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel = new RoundStartPresenter.DrawCardDataViewModel(drawCardEvent.getSize(), drawCardEvent.getCardIds(), drawCardEvent.getDrawCardPlayerId());
-                    RoundStartPresenter.DrawCardViewModel drawCardViewModel = new RoundStartPresenter.DrawCardViewModel();
-                    drawCardViewModel.setData(drawCardDataViewModel);
-                    return drawCardViewModel;
-                });
-
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
         RoundEvent roundEvent = gameStatusEvent.getRound();
         List<PlayerDataViewModel> playerDataViewModels = playerEvents.stream().map(PlayerDataViewModel::new).toList();
 
-            // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
-            RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
+        // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
+        RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
 
-            for (PlayerDataViewModel viewModel : playerDataViewModels) {
+        for (PlayerDataViewModel viewModel : playerDataViewModels) {
 
-                // 此 use case 的 data 物件
-                GameDataViewModel gameDataViewModel = new GameDataViewModel(
+            // 此 use case 的 data 物件
+            GameDataViewModel gameDataViewModel = new GameDataViewModel(
                         PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                                 playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
-                List<ViewModel<?>> personalEventToViewModels = new ArrayList<>(eventToViewModels);
+            List<ViewModel<?>> personalEventToViewModels = new ArrayList<>(eventToViewModels);
 
-                drawCardViewModelTemplate.ifPresent(drawCardViewModeltmpl -> {
-                    personalEventToViewModels.add(hiddenOtherPlayerCardIds(drawCardViewModeltmpl.getData(), viewModel, roundEvent.getCurrentRoundPlayer()));
-                });
+            personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
+                if (personalViewModel instanceof RoundStartPresenter.DrawCardViewModel drawCardViewModel) {
+                    personalViewModel = hiddenOtherPlayerCardIds(drawCardViewModel.getData(), viewModel, drawCardViewModel.getData().getDrawCardPlayerId());
+                }
+                return personalViewModel;
+            }).collect(Collectors.toList());
 
-                viewModels.add(new GameViewModel(personalEventToViewModels,
-                        gameDataViewModel,
-                        gameStatusEvent.getMessage(),
-                        gameStatusEvent.getGameId(),
-                        viewModel.getId()
-                ));
-            }
+            viewModels.add(new GameViewModel(personalEventToViewModels,
+                    gameDataViewModel,
+                    gameStatusEvent.getMessage(),
+                    gameStatusEvent.getGameId(),
+                    viewModel.getId()
+            ));
         }
+    }
 
     public RoundStartPresenter.DrawCardViewModel hiddenOtherPlayerCardIds(RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel, String currentRoundPlayerId) {
         List<String> cards = drawCardDataViewModel.getCards();
         List<String> hiddenCards = new ArrayList<>();
-        if (PlayerDataViewModel.isCurrentRoundPlayer(targetPlayerDataViewModel, currentRoundPlayerId)) {
+        if (PlayerDataViewModel.isCurrentRoundPlayer(targetPlayerDataViewModel, currentRoundPlayerId) && drawCardDataViewModel.getDrawCardPlayerId().equals(currentRoundPlayerId)) {
             hiddenCards.addAll(cards);
         }
         return new RoundStartPresenter.DrawCardViewModel(new RoundStartPresenter.DrawCardDataViewModel(drawCardDataViewModel.getSize(), hiddenCards, drawCardDataViewModel.getDrawCardPlayerId()));
