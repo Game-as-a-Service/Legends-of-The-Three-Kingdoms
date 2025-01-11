@@ -8,8 +8,6 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +66,7 @@ public class WebsocketUtil {
     public void popAllPlayerMessage() {
         try {
             for (String key : map.keySet()) {
-                map.get(key).poll(5, TimeUnit.SECONDS);
+                map.get(key).poll(50, TimeUnit. MILLISECONDS);
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
