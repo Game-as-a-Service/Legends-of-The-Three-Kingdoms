@@ -12,7 +12,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.gaas.threeKingdoms.presenter.FinishActionPresenter.hiddenOtherPlayerCardIds;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 
@@ -53,8 +55,17 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            List<ViewModel<?>> personalEventToViewModels = new ArrayList<>(eventToViewModels);
+
+            personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
+                if (personalViewModel instanceof RoundStartPresenter.DrawCardViewModel drawCardViewModel) {
+                    personalViewModel = hiddenOtherPlayerCardIds(drawCardViewModel.getData(), viewModel, drawCardViewModel.getData().getDrawCardPlayerId());
+                }
+                return personalViewModel;
+            }).collect(Collectors.toList());
+
             viewModels.add(new GameViewModel(
-                    eventToViewModels,
+                    personalEventToViewModels,
                     gameDataViewModel,
                     playCardEvent.getMessage(),
                     gameStatusEvent.getGameId(),
@@ -187,6 +198,21 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private int from;
         private int to;
     }
+
+    @Data
+    public static class SomethingForNothingViewModel extends ViewModel<SomethingForNothingDataViewModel> {
+        public SomethingForNothingViewModel(SomethingForNothingDataViewModel data) {
+            super("SomethingForNothingEvent", data, "玩家出無懈可擊");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SomethingForNothingDataViewModel {
+        private String playerId;
+    }
+
 
     @Data
     public static class PlayEquipmentCardViewModel extends ViewModel<PlayEquipmentCardDataViewModel> {

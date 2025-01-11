@@ -8,10 +8,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
-import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
-import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
-import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
-import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
+import com.gaas.threeKingdoms.handcard.scrollcard.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
@@ -37,10 +34,12 @@ public class Deck {
             cardDeck.add(new Kill(PlayCard.BS8008));
             cardDeck.add(new Peach(PlayCard.BH4030));
             cardDeck.add(new Dodge(PlayCard.BHK039));
-            cardDeck.add(new BorrowedSword(SCQ064));
-            cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
-            cardDeck.add(new ShadowHorse(PlayCard.ES5018));
-            cardDeck.add(new QilinBowCard(PlayCard.EH5031));
+            cardDeck.add(new SomethingForNothing(SH7046));
+
+//            cardDeck.add(new BorrowedSword(SCQ064));
+//            cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
+//            cardDeck.add(new ShadowHorse(PlayCard.ES5018));
+//            cardDeck.add(new QilinBowCard(PlayCard.EH5031));
         });
         cardDeck.add(new BarbarianInvasion(SSK013));
         cardDeck.add(new BarbarianInvasion(SC7072));
