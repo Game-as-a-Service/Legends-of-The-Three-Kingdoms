@@ -69,7 +69,7 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
         }
     }
 
-    public RoundStartPresenter.DrawCardViewModel hiddenOtherPlayerCardIds(RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel, String currentRoundPlayerId) {
+    static public RoundStartPresenter.DrawCardViewModel hiddenOtherPlayerCardIds(RoundStartPresenter.DrawCardDataViewModel drawCardDataViewModel, PlayerDataViewModel targetPlayerDataViewModel, String currentRoundPlayerId) {
         List<String> cards = drawCardDataViewModel.getCards();
         List<String> hiddenCards = new ArrayList<>();
         if (PlayerDataViewModel.isCurrentRoundPlayer(targetPlayerDataViewModel, currentRoundPlayerId) && drawCardDataViewModel.getDrawCardPlayerId().equals(currentRoundPlayerId)) {

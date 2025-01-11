@@ -230,6 +230,15 @@ public class DomainEventToViewModelMapper {
             return drawCardViewModel;
         });
 
+        eventToViewModelMappers.put(SomethingForNothingEvent.class, event -> {
+            SomethingForNothingEvent somethingForNothingEvent = (SomethingForNothingEvent) event;
+            return new PlayCardPresenter.SomethingForNothingViewModel(
+                    new PlayCardPresenter.SomethingForNothingDataViewModel(
+                            somethingForNothingEvent.getPlayerId()
+                    )
+            );
+        });
+
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {
