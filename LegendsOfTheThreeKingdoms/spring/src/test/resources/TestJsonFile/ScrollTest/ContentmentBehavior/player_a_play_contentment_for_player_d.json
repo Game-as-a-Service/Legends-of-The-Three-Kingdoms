@@ -1,0 +1,70 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "cardId" : "SC6071",
+      "playType" : "active"
+    },
+    "message" : "出牌"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 5,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ "SC6071" ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "Traitor",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : false
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-d"
+}

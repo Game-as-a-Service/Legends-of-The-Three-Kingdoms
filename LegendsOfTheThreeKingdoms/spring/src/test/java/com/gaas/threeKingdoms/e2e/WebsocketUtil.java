@@ -1,7 +1,5 @@
 package com.gaas.threeKingdoms.e2e;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -10,6 +8,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,6 +21,7 @@ public class WebsocketUtil {
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
     private final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
     private final Integer port;
+    private volatile boolean isClearing = false;
 
     public WebsocketUtil(Integer port, String gameId) throws Exception {
         this.port = port;
@@ -57,6 +57,22 @@ public class WebsocketUtil {
         }
     }
 
+    public void clearAllQueues() {
+        synchronized (map) {
+            map.values().forEach(Queue::clear); // 清空每個佇列
+        }
+    }
+
+    public void popAllPlayerMessage() {
+        try {
+            for (String key : map.keySet()) {
+                map.get(key).poll(50, TimeUnit. MILLISECONDS);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void setupClientSubscribe(String gameId, String playerId) throws Exception {
         final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
 
@@ -68,7 +84,7 @@ public class WebsocketUtil {
 
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", gameId, playerId), new StompFrameHandler() {  // 訂閱伺服器的 "/websocket/legendsOfTheThreeKingdoms/gameId/playerId" 路徑的訊息
+                StompSession.Subscription subscription = session.subscribe(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", gameId, playerId), new StompFrameHandler() {  // 訂閱伺服器的 "/websocket/legendsOfTheThreeKingdoms/gameId/playerId" 路徑的訊息
                     @Override
                     public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
                         return String.class;
@@ -76,6 +92,9 @@ public class WebsocketUtil {
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
+                        if (isClearing) {
+                            return; // 忽略資料處理
+                        }
                         try {
                             map.computeIfAbsent(playerId, k -> new LinkedBlockingQueue<>()).add((String) payload);
                         } catch (Exception e) {

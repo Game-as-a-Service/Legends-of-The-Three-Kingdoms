@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
+import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
 import com.gaas.threeKingdoms.usecase.ChooseHorseUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,28 +20,14 @@ import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePresenter<List<ChooseHorsePresenter.GameViewModel>>{
 
+    private final DomainEventToViewModelMapper domainEventToViewModelMapper = new DomainEventToViewModelMapper();
     private List<GameViewModel> viewModels = new ArrayList<>();
-    private List<ViewModel> effectViewModels = new ArrayList<>();
+    private List<ViewModel<?>> effectViewModels = new ArrayList<>();
 
     @Override
     public void renderEvents(List<DomainEvent> events) {
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
-        RemoveHorseEvent removeHorseEvent = getEvent(events, RemoveHorseEvent.class).orElseThrow();
-        RemoveHorseViewModel removeHorseViewModel = new RemoveHorseViewModel(new RemoveHorseDataViewModel(removeHorseEvent.getPlayerId(), removeHorseEvent.getMountCardId()));
-        PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
-        PlayCardPresenter.PlayerDyingViewModel playerDyingViewModel = getPlayerDyingEventViewModel(events);
-        PlayCardPresenter.AskPeachViewModel askPeachViewModel = getAskPeachViewModel(events);
-        PlayCardPresenter.SettlementViewModel settlementViewModel = getSettlementViewModel(events);
-        PlayCardPresenter.GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
-
-        updateViewModels(
-                removeHorseViewModel,
-                playerDamageEventViewModel,
-                playerDyingViewModel,
-                askPeachViewModel,
-                settlementViewModel,
-                gameOverViewModel
-        );
+        effectViewModels = domainEventToViewModelMapper.mapEventsToViewModels(events);
 
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
         RoundEvent roundEvent = gameStatusEvent.getRound();
@@ -99,7 +86,7 @@ public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePrese
         private String gameId;
         private String playerId;
 
-        public GameViewModel(List<ViewModel> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
+        public GameViewModel(List<ViewModel<?>> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
             super(viewModels, data, message);
             this.gameId = gameId;
             this.playerId = playerId;

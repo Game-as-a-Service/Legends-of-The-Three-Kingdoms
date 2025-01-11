@@ -205,25 +205,18 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayer, playedCardId, EquipmentPlayType.SKIP)
                 .andExpect(status().isOk()).andReturn();
 
-        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_skip_equipment_effect_for_player_a.json");
-        String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForA);
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_skip_equipment_effect_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
 
-        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_skip_equipment_effect_for_player_b.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForB);
-
-        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_skip_equipment_effect_for_player_c.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForC);
-
-        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_skip_equipment_effect_for_player_d.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
 

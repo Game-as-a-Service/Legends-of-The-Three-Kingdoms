@@ -1,0 +1,217 @@
+{
+  "events" : [ {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-a"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0,
+      "discardPlayerId" : "player-a"
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "ContentmentEvent",
+    "data" : {
+      "playerId" : "BH7033",
+      "drawCardId" : "player-b",
+      "success" : true
+    },
+    "message" : "發動樂不思蜀效果"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ "BH7033", "BH7033" ],
+      "drawCardPlayerId" : "player-b"
+    },
+    "message" : "玩家摸牌"
+  }, {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-b"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0,
+      "discardPlayerId" : "player-b"
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "ContentmentEvent",
+    "data" : {
+      "playerId" : "BH7033",
+      "drawCardId" : "player-c",
+      "success" : true
+    },
+    "message" : "發動樂不思蜀效果"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ ],
+      "drawCardPlayerId" : "player-c"
+    },
+    "message" : "玩家摸牌"
+  }, {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-c"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0,
+      "discardPlayerId" : "player-c"
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "ContentmentEvent",
+    "data" : {
+      "playerId" : "BH7033",
+      "drawCardId" : "player-d",
+      "success" : true
+    },
+    "message" : "發動樂不思蜀效果"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ ],
+      "drawCardPlayerId" : "player-d"
+    },
+    "message" : "玩家摸牌"
+  }, {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-d"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0,
+      "discardPlayerId" : "player-d"
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ ],
+      "drawCardPlayerId" : "player-a"
+    },
+    "message" : "玩家摸牌"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 5,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 3,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ "BS8008", "BH7033", "BH7033" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 3,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Action",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : false
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "玩家 player-a 抽了 2 張牌",
+  "gameId" : "my-id",
+  "playerId" : "player-b"
+}

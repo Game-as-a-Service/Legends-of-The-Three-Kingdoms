@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
+import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
 import com.gaas.threeKingdoms.usecase.UseEquipmentUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,37 +18,18 @@ import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquipmentPresenter<List<UseEquipmentEffectPresenter.GameViewModel>> {
 
+    private List<ViewModel<?>> eventToViewModels = new ArrayList<>();
     private List<GameViewModel> viewModels = new ArrayList<>();
-    private List<ViewModel> effectViewModels = new ArrayList<>();
+    private final DomainEventToViewModelMapper domainEventToViewModelMapper = new DomainEventToViewModelMapper();
 
     @Override
     public void renderEvents(List<DomainEvent> events) {
-        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
-        UseEquipmentEffectViewModel useEquipmentEffectViewModel = getEightDiagramTacticEffectEvent(events);
-        UseQilinBowCardEffectViewModel useQilinBowCardEffectViewModel = getQilinBowCardEffectEvent(events);
-        PlayCardPresenter.PlayerDamagedViewModel playerDamageEventViewModel = getPlayerDamageEventViewModel(events);
-        AskChooseMountCardViewModel askChooseMountCardViewModel = getAskChooseMountCardEventViewModel(events);
-        SkipEquipmentEffectViewModel skipEquipmentEffectViewModel = getSkipEquipmentEffectViewModel(events);
-        PlayCardPresenter.PlayerDyingViewModel playerDyingViewModel = getPlayerDyingEventViewModel(events);
-        PlayCardPresenter.AskPeachViewModel askPeachViewModel = getAskPeachViewModel(events);
-        PlayCardPresenter.SettlementViewModel settlementViewModel = getSettlementViewModel(events);
-        PlayCardPresenter.GameOverViewModel gameOverViewModel = getGameOverViewModel(events);
+        eventToViewModels = domainEventToViewModelMapper.mapEventsToViewModels(events);
 
-        updateViewModels(
-                useEquipmentEffectViewModel,
-                useQilinBowCardEffectViewModel,
-                playerDamageEventViewModel,
-                askChooseMountCardViewModel,
-                skipEquipmentEffectViewModel,
-                playerDyingViewModel,
-                askPeachViewModel,
-                settlementViewModel,
-                gameOverViewModel
-        );
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
 
-        List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
+        List<PlayerDataViewModel> playerDataViewModels = gameStatusEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
         RoundEvent roundEvent = gameStatusEvent.getRound();
-        List<PlayerDataViewModel> playerDataViewModels = playerEvents.stream().map(PlayerDataViewModel::new).toList();
 
         // 將回合資訊放入 RoundDataViewModel ，後續會放到 GameDataViewModel
         RoundDataViewModel roundDataViewModel = new RoundDataViewModel(roundEvent);
@@ -59,65 +41,13 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
-            viewModels.add(new UseEquipmentEffectPresenter.GameViewModel(
-                    effectViewModels,
+            viewModels.add(new GameViewModel(
+                    eventToViewModels,
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),
                     viewModel.getId()));
         }
-    }
-
-    private void updateViewModels(ViewModel<?>... viewModels) {
-        Arrays.stream(viewModels)
-                .filter(Objects::nonNull)
-                .forEach(effectViewModels::add);
-    }
-
-    private UseEquipmentEffectViewModel getEightDiagramTacticEffectEvent(List<DomainEvent> events) {
-        return getEvent(events, EightDiagramTacticEffectEvent.class)
-                .map(event -> {
-                    UseEquipmentEffectPresenter.UseEquipmentEffectDataViewModel useEquipmentEffectDataViewModel = new UseEquipmentEffectDataViewModel(event.getDrawCardId(), event.isSuccess());
-                    return new UseEquipmentEffectViewModel(useEquipmentEffectDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    private UseQilinBowCardEffectViewModel getQilinBowCardEffectEvent(List<DomainEvent> events) {
-        return getEvent(events, QilinBowCardEffectEvent.class)
-                .map(event -> {
-                    UseEquipmentEffectPresenter.UseQilinBowCardEffectDataViewModel useQilinBowCardEffectDataViewModel = new UseEquipmentEffectPresenter.UseQilinBowCardEffectDataViewModel(event.getMountCardId());
-                    return new UseEquipmentEffectPresenter.UseQilinBowCardEffectViewModel(useQilinBowCardEffectDataViewModel);
-                })
-                .orElse(null);
-    }
-
-
-    private PlayCardPresenter.PlayerDamagedViewModel getPlayerDamageEventViewModel(List<DomainEvent> events) {
-        return getEvent(events, PlayerDamagedEvent.class)
-                .map(event -> {
-                    PlayCardPresenter.PlayerDamagedDataViewModel playerDamagedDataViewModel = new PlayCardPresenter.PlayerDamagedDataViewModel(event.getPlayerId(), event.getFrom(), event.getTo());
-                    return new PlayCardPresenter.PlayerDamagedViewModel(playerDamagedDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    private UseEquipmentEffectPresenter.AskChooseMountCardViewModel getAskChooseMountCardEventViewModel(List<DomainEvent> events) {
-        return getEvent(events, AskChooseMountCardEvent.class)
-                .map(event -> {
-                    UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel askChooseMountCardDataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(event.getChooseMountCardPlayerId(), event.getTargetPlayerId(), event.getMountsCardIds());
-                    return new UseEquipmentEffectPresenter.AskChooseMountCardViewModel(askChooseMountCardDataViewModel);
-                })
-                .orElse(null);
-    }
-
-    private UseEquipmentEffectPresenter.SkipEquipmentEffectViewModel getSkipEquipmentEffectViewModel(List<DomainEvent> events) {
-        return getEvent(events, SkipEquipmentEffectEvent.class)
-                .map(event -> {
-                    UseEquipmentEffectPresenter.SkipEquipmentEffectDataViewModel skipEquipmentEffectDataViewModel = new UseEquipmentEffectPresenter.SkipEquipmentEffectDataViewModel(event.getPlayerId(), event.getCardId());
-                    return new UseEquipmentEffectPresenter.SkipEquipmentEffectViewModel(skipEquipmentEffectDataViewModel);
-                })
-                .orElse(null);
     }
 
     @Override
@@ -190,7 +120,7 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         private String gameId;
         private String playerId;
 
-        public GameViewModel(List<ViewModel> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
+        public GameViewModel(List<ViewModel<?>> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
             super(viewModels, data, message);
             this.gameId = gameId;
             this.playerId = playerId;

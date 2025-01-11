@@ -10,18 +10,20 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
+import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
 public class Player {
     private Hand hand;
@@ -31,6 +33,30 @@ public class Player {
     private BloodCard bloodCard;
     private HealthStatus healthStatus;
     private Equipment equipment = new Equipment();
+    private List<ScrollCard> delayScrollCards = new ArrayList<>();
+
+    public Player(Hand hand, String id, RoleCard roleCard, GeneralCard generalCard, BloodCard bloodCard, HealthStatus healthStatus,
+                  Equipment equipment) {
+        this.hand = hand;
+        this.id = id;
+        this.roleCard = roleCard;
+        this.generalCard = generalCard;
+        this.bloodCard = bloodCard;
+        this.healthStatus = healthStatus;
+        this.equipment = equipment;
+    }
+
+    public Player(Hand hand, String id, RoleCard roleCard, GeneralCard generalCard, BloodCard bloodCard, HealthStatus healthStatus,
+                  Equipment equipment, List<ScrollCard> delayScrollCards) {
+        this.hand = hand;
+        this.id = id;
+        this.roleCard = roleCard;
+        this.generalCard = generalCard;
+        this.bloodCard = bloodCard;
+        this.healthStatus = healthStatus;
+        this.equipment = equipment;
+        this.delayScrollCards = delayScrollCards;
+    }
 
     public void setHealthStatus(HealthStatus healthStatus) {
         this.healthStatus = healthStatus;
@@ -144,7 +170,11 @@ public class Player {
     }
 
     public boolean hasAnyDelayScrollCard() {
-        return false;
+        return !delayScrollCards.isEmpty();
+    }
+
+    public boolean hasAnyContentmentCard() {
+        return delayScrollCards.stream().anyMatch(card -> card instanceof Contentment);
     }
 
     public boolean isHandCardSizeBiggerThanHP() {
@@ -171,6 +201,16 @@ public class Player {
 
     public boolean isStillAlive() {
         return this.getHP() > 0;
+    }
+
+    public void addDelayScrollCard(ScrollCard card) {
+        delayScrollCards.add(card);
+    }
+
+    public List<String> getDelayScrollCardIds() {
+        return delayScrollCards.stream()
+                .map(ScrollCard::getId)
+                .collect(Collectors.toList());
     }
 
     // 覆寫 equals 方法

@@ -7,12 +7,12 @@ import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.DuelEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isKillCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
@@ -40,11 +40,11 @@ public class DuelBehavior extends Behavior {
         if (!currentReactionPlayer.getHand().hasTypeInHand(Kill.class)) {
             int originalHp = currentReactionPlayer.getHP();
             List<DomainEvent> damagedEvents = game.getDamagedEvent(
-                    behaviorPlayer.getId(),
                     currentReactionPlayerId,
-                    cardId,
+                    behaviorPlayer.getId(),
+                    "", // 代替 A 出 skip
                     card,
-                    playType,
+                    PlayType.SKIP.getPlayType(),  // 代替 A 出 skip
                     originalHp,
                     currentReactionPlayer,
                     game.getCurrentRound(),
@@ -62,31 +62,35 @@ public class DuelBehavior extends Behavior {
 
     @Override
     protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
+        // 當前操作的玩家 playerId 可能是 reactionPlayers index 0 => 第一個要出殺的人 或  reactionPlayers index 1 => 也等於 behaviorPlayer
+        String otherPlayerId = reactionPlayers.stream().filter(id -> !id.equals(playerId)).findFirst().get();
 
         if (isSkip(playType)) {
-            int originalHp = currentReactionPlayer.getHP();
-            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), this);
+            // 當前反應者出閃，那就是等於 reactionPlayers index (playerId) 受到傷害， reactionPlayers 另一個為攻擊者
+            Player damagePlayer = game.getPlayer(playerId);
+            int originalHp = damagePlayer.getHP();
+            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, otherPlayerId, cardId, card, playType, originalHp, damagePlayer, game.getCurrentRound(), this);
             damagedEvent.add(game.getGameStatusEvent("扣血"));
             return damagedEvent;
         } else if (isKillCard(cardId)) {
             List<DomainEvent> events = new ArrayList<>();
-            String behaviorPlayerId = behaviorPlayer.getId();
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
 
-            boolean currentReactionPlayerIsDuelPlayer = currentReactionPlayer.getId().equals(behaviorPlayerId);
-            currentReactionPlayer = currentReactionPlayerIsDuelPlayer ? game.getPlayer(reactionPlayers.get(0)) : behaviorPlayer;
+            // 當前反應者出完殺後，就需要換另外一個人出
+            currentReactionPlayer = game.getPlayer(otherPlayerId);
+
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
-            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
+            events.add(new PlayCardEvent("出牌", playerId, otherPlayerId, cardId, playType));
 
             String gameMessage = "";
             if (!currentReactionPlayer.getHand().hasTypeInHand(Kill.class)) {
                 int originalHp = currentReactionPlayer.getHP();
                 List<DomainEvent> damagedEvents = game.getDamagedEvent(
-                        behaviorPlayer.getId(),
-                        currentReactionPlayer.getId(),
-                        cardId,
+                        otherPlayerId,
+                        playerId,
+                        "",
                         card,
-                        playType,
+                        PlayType.SKIP.getPlayType(),
                         originalHp,
                         currentReactionPlayer,
                         game.getCurrentRound(),

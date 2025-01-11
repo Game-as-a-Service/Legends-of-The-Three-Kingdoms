@@ -27,6 +27,21 @@ public class ViewModel<T> {
                 .findFirst();
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends DomainEvent> Optional<T> getEvent(List<DomainEvent> events, Class<T> type, int index) {
+        List<T> filteredEvents = events.stream()
+                .filter(e -> type.isAssignableFrom(e.getClass()))
+                .map(e -> (T) e)
+                .toList();
+
+        if (index >= 0 && index < filteredEvents.size()) {
+            return Optional.of(filteredEvents.get(index));
+        }
+
+        return Optional.empty(); // 如果索引無效，返回空的 Optional
+    }
+
+
     protected static <T extends DomainEvent> List<T> getEvents(List<DomainEvent> events, Class<T> type) {
         return events.stream()
                 .filter(e -> type.isAssignableFrom(e.getClass()))

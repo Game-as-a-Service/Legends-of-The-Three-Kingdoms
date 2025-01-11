@@ -14,13 +14,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static com.gaas.threeKingdoms.presenter.PlayCardPresenter.getAskKillViewModel;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUseCase.UseBorrowedSwordPresenter<List<UseBorrowedSwordEffectPresenter.GameViewModel>> {
 
     private List<UseBorrowedSwordEffectPresenter.GameViewModel> viewModels = new ArrayList<>();
-    private List<ViewModel> effectViewModels = new ArrayList<>();
+    private List<ViewModel<?>> effectViewModels = new ArrayList<>();
 
     @Override
     public void renderEvents(List<DomainEvent> events) {
@@ -141,7 +140,7 @@ public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUs
         private String gameId;
         private String playerId;
 
-        public GameViewModel(List<ViewModel> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
+        public GameViewModel(List<ViewModel<?>> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
             super(viewModels, data, message);
             this.gameId = gameId;
             this.playerId = playerId;

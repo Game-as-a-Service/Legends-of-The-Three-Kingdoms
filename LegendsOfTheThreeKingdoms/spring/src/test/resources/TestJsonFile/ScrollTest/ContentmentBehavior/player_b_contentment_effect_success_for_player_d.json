@@ -1,0 +1,115 @@
+{
+  "events" : [ {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-a"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0,
+      "discardPlayerId" : "player-a"
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "ContentmentEvent",
+    "data" : {
+      "playerId" : "BH7033",
+      "drawCardId" : "player-b",
+      "success" : true
+    },
+    "message" : "發動樂不思蜀效果"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ ],
+      "drawCardPlayerId" : "player-b"
+    },
+    "message" : "玩家摸牌"
+  }, {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-b"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 3,
+      "discardPlayerId" : "player-b"
+    },
+    "message" : "通知棄牌"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 7,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "Traitor",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Discard",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-b",
+      "dyingPlayer" : "",
+      "showKill" : false
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "玩家 player-b 需要棄 3 張牌",
+  "gameId" : "my-id",
+  "playerId" : "player-d"
+}

@@ -2,9 +2,13 @@ package com.gaas.threeKingdoms.builders;
 
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerBuilder {
     private Hand hand;
@@ -14,9 +18,12 @@ public class PlayerBuilder {
     private BloodCard bloodCard;
     private HealthStatus healthStatus;
     private Equipment equipment;
+    private List<ScrollCard> delayScrollCards;
 
     public static PlayerBuilder construct() {
-        return new PlayerBuilder();
+        PlayerBuilder playerBuilder = new PlayerBuilder();
+        playerBuilder.delayScrollCards = new ArrayList<>();
+        return playerBuilder;
     }
 
     public PlayerBuilder withHand(Hand hand) {
@@ -54,16 +61,23 @@ public class PlayerBuilder {
         return this;
     }
 
+    public PlayerBuilder withDelayScrollCards(List<ScrollCard> delayScrollCards) {
+        this.delayScrollCards = delayScrollCards;
+        return this;
+    }
+
     public PlayerBuilder withDefault() {
         this.roleCard = new RoleCard(Role.MONARCH);
         this.generalCard = new GeneralCard(General.劉備);
         this.bloodCard = new BloodCard(4);
         this.hand = new Hand();
         this.healthStatus = HealthStatus.ALIVE;
+        this.equipment = new Equipment();
+        this.delayScrollCards = new ArrayList<>();
         return this;
     }
 
-    public Player build(){
-        return new Player(hand,id,roleCard,generalCard,bloodCard,healthStatus, equipment);
+    public Player build() {
+        return new Player(hand, id, roleCard, generalCard, bloodCard, healthStatus, equipment, delayScrollCards);
     }
 }

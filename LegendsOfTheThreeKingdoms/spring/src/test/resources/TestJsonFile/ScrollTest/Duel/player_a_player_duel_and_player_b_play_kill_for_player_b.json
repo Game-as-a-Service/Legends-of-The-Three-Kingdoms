@@ -9,6 +9,15 @@
     },
     "message" : "出牌"
   }, {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
     "event" : "PlayerDamagedEvent",
     "data" : {
       "playerId" : "player-a",

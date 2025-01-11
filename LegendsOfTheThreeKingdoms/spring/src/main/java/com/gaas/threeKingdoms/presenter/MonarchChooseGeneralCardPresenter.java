@@ -80,7 +80,7 @@ public class MonarchChooseGeneralCardPresenter implements MonarchChooseGeneralUs
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MonarchChooseGeneralDataViewModel {
-        String monarchGeneralCard;
+        private String monarchGeneralCard;
     }
 
 }

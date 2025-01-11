@@ -8,10 +8,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
-import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
-import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
-import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
-import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
+import com.gaas.threeKingdoms.handcard.scrollcard.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -205,7 +202,9 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SHQ051", new Dismantle(SHQ051));
         CARD_FACTORY_MAP.put("SC3068", new Dismantle(SC3068));
         CARD_FACTORY_MAP.put("SC4069", new Dismantle(SC4069));
-
+        CARD_FACTORY_MAP.put("SS6006", new Contentment(SS6006));
+        CARD_FACTORY_MAP.put("SH6045", new Contentment(SH6045));
+        CARD_FACTORY_MAP.put("SC6071", new Contentment(SC6071));
     }
 
     private final String cardId;
@@ -278,5 +277,4 @@ public enum PlayCard {
     public static HandCard findById(String cardId) {
         return CARD_FACTORY_MAP.get(cardId);
     }
-
 }

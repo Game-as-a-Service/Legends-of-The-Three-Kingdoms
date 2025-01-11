@@ -19,7 +19,8 @@ public class EightDiagramTactic extends ArmorCard {
 
     @Override
     public List<DomainEvent> equipmentEffect(Game game) {
-        HandCard card = game.drawCardForEightDiagramTactic();
+        List<HandCard> cards = game.drawCardForCardEffect(1);
+        HandCard card = cards.get(0);
         boolean isEffectSuccess = isEffectSuccess(card);
         List<DomainEvent> events = new ArrayList<>();
         Round currentRound = game.getCurrentRound();

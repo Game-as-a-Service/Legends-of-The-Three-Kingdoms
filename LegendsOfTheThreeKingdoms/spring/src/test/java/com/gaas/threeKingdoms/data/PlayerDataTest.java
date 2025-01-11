@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTacti
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.repository.data.*;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -14,6 +15,7 @@ import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static com.gaas.threeKingdoms.generalcard.General.曹操;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -44,6 +46,7 @@ public class PlayerDataTest {
                 .blood(bloodCardData)
                 .healthStatus("ALIVE")
                 .equipment(equipmentData)
+                .delayScrolls(List.of("SC6071"))
                 .build();
 
         // Act
@@ -60,6 +63,8 @@ public class PlayerDataTest {
         assertEquals(4, player.getBloodCard().getHp());
         assertEquals(HealthStatus.ALIVE, player.getHealthStatus());
         assertEquals("ES5018", player.getEquipment().getPlusOne().getId());
+        assertEquals(1, player.getDelayScrollCards().size());
+        assertEquals("SC6071", player.getDelayScrollCards().get(0).getId());
     }
 
     @Test
@@ -77,6 +82,8 @@ public class PlayerDataTest {
 
         Player player = new Player(hand, "player2", roleCard, generalCard, bloodCard, HealthStatus.DYING, equipment);
 
+        player.addDelayScrollCard(new Contentment(SC6071));
+
         // Act
         PlayerData playerData = PlayerData.fromDomain(player);
 
@@ -91,5 +98,8 @@ public class PlayerDataTest {
         assertEquals(3, playerData.getBlood().getHp());
         assertEquals("DYING", playerData.getHealthStatus());
         assertEquals("ES5018", playerData.getEquipment().getPlusOneCardId());
+        assertEquals(1, playerData.getDelayScrolls().size());
+        assertEquals("SC6071", playerData.getDelayScrolls().get(0));
+
     }
 }
