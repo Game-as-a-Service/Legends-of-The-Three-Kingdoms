@@ -35,6 +35,7 @@ public class Deck {
             cardDeck.add(new Peach(PlayCard.BH4030));
             cardDeck.add(new Dodge(PlayCard.BHK039));
             cardDeck.add(new SomethingForNothing(SH7046));
+            cardDeck.add(new Contentment(SS6006));
 
 //            cardDeck.add(new BorrowedSword(SCQ064));
 //            cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
