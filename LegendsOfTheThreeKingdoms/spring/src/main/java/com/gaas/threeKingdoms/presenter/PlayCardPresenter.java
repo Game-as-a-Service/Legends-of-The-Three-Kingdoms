@@ -202,7 +202,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     @Data
     public static class SomethingForNothingViewModel extends ViewModel<SomethingForNothingDataViewModel> {
         public SomethingForNothingViewModel(SomethingForNothingDataViewModel data) {
-            super("SomethingForNothingEvent", data, "玩家出無懈可擊");
+            super("SomethingForNothingEvent", data, "玩家出無中生有");
         }
     }
 

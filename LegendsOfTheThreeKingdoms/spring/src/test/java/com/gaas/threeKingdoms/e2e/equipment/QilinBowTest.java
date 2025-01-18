@@ -217,6 +217,8 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
             assertEquals(expectedJson, testPlayerJson);
         }
 
+        mockMvcUtil.finishAction(gameId, currentPlayer)
+                .andExpect(status().is2xxSuccessful()).andReturn();
     }
 
 

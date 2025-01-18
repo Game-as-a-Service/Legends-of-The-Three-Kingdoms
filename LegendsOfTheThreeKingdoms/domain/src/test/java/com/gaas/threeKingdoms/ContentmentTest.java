@@ -267,8 +267,9 @@ public class ContentmentTest {
                 B 的回合，系統進行樂不思蜀判定，抽出一張紅桃卡
 
                 Then
-                B 不能出牌，進入到棄牌階段
-                DiscardPhase
+                樂不思蜀失效
+                B 正常出牌
+                NormalPhase
             """)
     @Test
     public void givenPlayerABCD_PlayerAHasContentmentAndTargetsB_WhenBJudgesAndDrawsHeartCard_ThenBEnterDiscardPhase() {
@@ -342,8 +343,8 @@ public class ContentmentTest {
         JudgementEvent judgementEvent = getEvent(events, JudgementEvent.class).orElseThrow(RuntimeException::new);
         ContentmentEvent contentmentEvent = getEvent(events, ContentmentEvent.class).orElseThrow(RuntimeException::new);
         assertNotNull(judgementEvent);
-        assertTrue(contentmentEvent.isSuccess()); // 樂不思蜀判定成功 (紅桃卡)
-        assertEquals(RoundPhase.Discard, game.getCurrentRound().getRoundPhase()); // 進入棄牌階段
+        assertFalse(contentmentEvent.isSuccess()); // 樂不思蜀判定失效 (紅桃卡)
+        assertEquals(RoundPhase.Action, game.getCurrentRound().getRoundPhase());
     }
 
     @DisplayName("""
@@ -358,8 +359,9 @@ public class ContentmentTest {
                 B 的回合，系統進行樂不思蜀判定，抽出一張大老二
 
                 Then
-                B 正常出牌
-                NormalPhase
+                樂不思蜀成功
+                B 不能出牌
+                DiscardPhase
             """)
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasContentment_WhenPlayerAPlaysContentmentAndAssignsB_AndPlayerATurnEnds_SystemDrawsCardForBContentmentJudgment_ThenPlayerBProceedsToNormalPhase() {
@@ -433,8 +435,8 @@ public class ContentmentTest {
         JudgementEvent judgementEvent = getEvent(events, JudgementEvent.class).orElseThrow(RuntimeException::new);
         ContentmentEvent contentmentEvent = getEvent(events, ContentmentEvent.class).orElseThrow(RuntimeException::new);
         assertNotNull(judgementEvent);
-        assertTrue(!contentmentEvent.isSuccess()); // 樂不思蜀判定失敗 (大老二)
-        assertEquals(RoundPhase.Action, game.getCurrentRound().getRoundPhase()); // 進入棄牌階段
+        assertTrue(contentmentEvent.isSuccess()); // 樂不思蜀判定成功
+        assertEquals(RoundPhase.Discard, game.getCurrentRound().getRoundPhase());
     }
 
 

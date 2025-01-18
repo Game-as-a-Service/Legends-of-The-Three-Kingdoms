@@ -23,8 +23,8 @@
   }, {
     "event" : "ContentmentEvent",
     "data" : {
-      "playerId" : "SS7007",
-      "drawCardId" : "player-b",
+      "playerId" : "player-b",
+      "drawCardId" : "BH3029",
       "success" : false
     },
     "message" : "發動樂不思蜀效果"

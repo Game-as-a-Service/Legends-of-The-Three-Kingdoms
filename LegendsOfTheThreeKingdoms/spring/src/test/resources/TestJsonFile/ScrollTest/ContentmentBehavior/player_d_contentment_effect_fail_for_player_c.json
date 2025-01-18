@@ -23,8 +23,8 @@
   }, {
     "event" : "ContentmentEvent",
     "data" : {
-      "playerId" : "BH3029",
-      "drawCardId" : "player-b",
+      "playerId" : "player-b",
+      "drawCardId" : "SS7007",
       "success" : true
     },
     "message" : "發動樂不思蜀效果"
@@ -64,8 +64,8 @@
   }, {
     "event" : "ContentmentEvent",
     "data" : {
-      "playerId" : "BH3029",
-      "drawCardId" : "player-c",
+      "playerId" : "player-c",
+      "drawCardId" : "SS7007",
       "success" : true
     },
     "message" : "發動樂不思蜀效果"
@@ -77,7 +77,7 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ "BH3029", "BH3029" ],
+      "cards" : [ "SS7007", "SS7007" ],
       "drawCardPlayerId" : "player-c"
     },
     "message" : "玩家摸牌"
@@ -105,9 +105,9 @@
   }, {
     "event" : "ContentmentEvent",
     "data" : {
-      "playerId" : "SS7007",
-      "drawCardId" : "player-d",
-      "success" : false
+      "playerId" : "player-d",
+      "drawCardId" : "SS7007",
+      "success" : true
     },
     "message" : "發動樂不思蜀效果"
   }, {
@@ -122,6 +122,19 @@
       "drawCardPlayerId" : "player-d"
     },
     "message" : "玩家摸牌"
+  }, {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-d"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 4,
+      "discardPlayerId" : "player-d"
+    },
+    "message" : "通知棄牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -153,7 +166,7 @@
       "hp" : 4,
       "hand" : {
         "size" : 3,
-        "cardIds" : [ "BS8008", "BH3029", "BH3029" ]
+        "cardIds" : [ "BS8008", "SS7007", "SS7007" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -170,7 +183,7 @@
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Action",
+      "roundPhase" : "Discard",
       "currentRoundPlayer" : "player-d",
       "activePlayer" : "player-d",
       "dyingPlayer" : "",
@@ -178,7 +191,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-d 抽了 2 張牌",
+  "message" : "玩家 player-d 需要棄 4 張牌",
   "gameId" : "my-id",
   "playerId" : "player-c"
 }

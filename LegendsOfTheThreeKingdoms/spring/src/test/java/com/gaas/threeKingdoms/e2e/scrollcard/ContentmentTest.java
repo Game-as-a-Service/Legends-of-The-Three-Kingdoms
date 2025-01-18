@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.e2e.scrollcard;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
@@ -42,9 +43,10 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
 //
 //       When
 //       A 結束回合
-//       B 的回合，系統進行樂不思蜀 判定，抽出一張紅桃卡
+//       B 的回合，系統進行樂不思蜀 判定，抽出一張黑桃卡
 //
 //       Then
+//       樂不思蜀效果生效
 //       B 不能出牌，進入到棄牌階段
 //       DiscardPhase
 
@@ -91,13 +93,14 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
 //
 //      When
 //      A 結束回合
-//      B 的回合，系統進行樂不思蜀判定，抽出一張黑桃 7
+//      B 的回合，系統進行樂不思蜀判定，抽出一張紅桃
 //
 //      Then
+//      樂不思蜀效果失敗
 //      B 正常出牌
 //      NormalPhase
 
-        givenPlayerAHaveContentmentAndDeckIsSpadeSeven();
+        givenPlayerAHaveContentmentAndDeckIsHeart();
 
         mockMvcUtil.playCard(gameId, "player-a", "player-b", "SC6071", PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
@@ -134,13 +137,13 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
 //
 //       When
 //       A 結束回合
-//       B 的回合，系統進行樂不思蜀 判定，抽出一張紅桃卡
+//       B 的回合，系統進行樂不思蜀 判定，抽出一張黑桃卡
 //       B 不能出牌，進入到棄牌階段
 //       B 不用棄牌
-//       C 的回合，系統進行樂不思蜀 判定，抽出一張紅桃卡
+//       C 的回合，系統進行樂不思蜀 判定，抽出一張黑桃卡
 //       C 不能出牌，進入到棄牌階段
 //       C 不用棄牌
-//       D 的回合，系統進行樂不思蜀 判定，抽出一張紅桃卡
+//       D 的回合，系統進行樂不思蜀 判定，抽出一黑桃卡
 //       D 不能出牌，進入到棄牌階段
 //       D 不用棄牌
 //
@@ -148,7 +151,7 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
 //       A 的回合
 //       A 抽排
 
-        givenPlayerAHaveContentmentAndDeckIsPeachSeven();
+        givenPlayerAHaveContentmentAndDeckIsSpade();
 
         mockMvcUtil.playCard(gameId, "player-a", "player-b", "SC6071", PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
@@ -189,12 +192,12 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
         //       B的判定區有樂不思蜀x 1 ，血量為 4 手牌只有一張
         //       C的判定區有樂不思蜀x 1  ，血量為 4 手牌只有一張
         //       D的判定區有樂不思蜀x 1  ，血量為 1 手牌有三張
-        givenPlayerBCDHadContentmentAndDeckIsTwoHeartOneSpadeSeven();
+        givenPlayerBCDHadContentmentAndDeckIsThreeSpadeSeven();
         //       When
         //       A 結束回合
-        //       B 的回合，系統進行樂不思蜀 判定，抽出一張紅桃卡
-        //       C 的回合，系統進行樂不思蜀 判定，抽出一張紅桃卡
-        //       D 的回合，系統進行樂不思蜀 判定，抽出一張紅桃卡
+        //       B 的回合，系統進行樂不思蜀 判定，抽出一張黑桃卡
+        //       C 的回合，系統進行樂不思蜀 判定，抽出一張黑桃卡
+        //       D 的回合，系統進行樂不思蜀 判定，抽出一張黑桃卡
         mockMvcUtil.finishAction(gameId, "player-a");
 
         //       Then
@@ -213,7 +216,7 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
         }
     }
 
-    private void givenPlayerBCDHadContentmentAndDeckIsTwoHeartOneSpadeSeven() {
+    private void givenPlayerBCDHadContentmentAndDeckIsThreeSpadeSeven() {
         Player playerA = createPlayer(
                 "player-a",
                 4,
@@ -254,8 +257,8 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
         game.setCurrentRound(new Round(playerA));
         game.enterPhase(new Normal(game));
         Deck deck = new Deck();
-        deck.add(List.of(new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new Peach(BH3029), new Peach(BH3029),
-                new Peach(BH3029), new Peach(BH3029), new Peach(BH3029), new Peach(BH3029)));
+        deck.add(List.of(new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007),
+                new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007)));
         game.setDeck(deck);
 
         repository.save(game);
@@ -299,12 +302,12 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
         game.setCurrentRound(new Round(playerA));
         game.enterPhase(new Normal(game));
         Deck deck = new Deck();
-        deck.add(List.of(new Peach(BH7033), new Peach(BH7033), new Peach(BH7033), new Peach(BH7033), new Peach(BH7033), new Peach(BH7033)));
+        deck.add(List.of(new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007)));
         game.setDeck(deck);
         repository.save(game);
     }
 
-    private void givenPlayerAHaveContentmentAndDeckIsSpadeSeven() {
+    private void givenPlayerAHaveContentmentAndDeckIsHeart() {
         Player playerA = createPlayer(
                 "player-a",
                 4,
@@ -342,13 +345,13 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
         game.setCurrentRound(new Round(playerA));
         game.enterPhase(new Normal(game));
         Deck deck = new Deck();
-        deck.add(List.of(new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007), new BarbarianInvasion(SS7007)));
+        deck.add(List.of(new Peach(BH3029), new Peach(BH3029), new Peach(BH3029), new Peach(BH3029), new Peach(BH3029)));
         game.setDeck(deck);
 
         repository.save(game);
     }
 
-    private void givenPlayerAHaveContentmentAndDeckIsPeachSeven() {
+    private void givenPlayerAHaveContentmentAndDeckIsSpade() {
         Player playerA = createPlayer(
                 "player-a",
                 4,
@@ -388,7 +391,7 @@ public class ContentmentTest extends AbstractBaseIntegrationTest {
         Deck deck = new Deck();
         // 14 peach cards
         for (int i = 0; i < 14; i++) {
-            deck.add(List.of(new Peach(BH7033)));
+            deck.add(List.of(new BarbarianInvasion(SSK013)));
         }
         game.setDeck(deck);
         repository.save(game);
