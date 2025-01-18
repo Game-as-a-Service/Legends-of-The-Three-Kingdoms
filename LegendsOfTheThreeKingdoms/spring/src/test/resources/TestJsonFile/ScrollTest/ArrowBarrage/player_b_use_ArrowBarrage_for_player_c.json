@@ -4,7 +4,7 @@
     "data" : {
       "playerId" : "player-b",
       "targetPlayerId" : "",
-      "cardId" : "BHK040",
+      "cardId" : "SHK040",
       "playType" : "active"
     },
     "message" : "出牌"
