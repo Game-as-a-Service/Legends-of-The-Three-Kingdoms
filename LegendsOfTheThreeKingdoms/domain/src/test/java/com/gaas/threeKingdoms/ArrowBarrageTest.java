@@ -63,7 +63,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -92,7 +92,7 @@ public class ArrowBarrageTest {
         game.setCurrentRound(new Round(playerB));
 
         //When
-        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         AskDodgeEvent askDodgeEvent = events.stream()
                 .filter(event -> event instanceof AskDodgeEvent)
@@ -145,7 +145,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -173,7 +173,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         List<DomainEvent> events = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
@@ -233,7 +233,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -261,7 +261,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         List<DomainEvent> events = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
@@ -321,7 +321,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -351,7 +351,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
         game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         //When
@@ -413,7 +413,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -443,7 +443,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
         game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
 
         //When
@@ -504,7 +504,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -534,7 +534,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         List<DomainEvent> events = game.playerPlayCard(playerC.getId(), BDJ089.getCardId(), playerB.getId(), PlayType.INACTIVE.getPlayType());
@@ -591,7 +591,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -621,7 +621,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         List<DomainEvent> events = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
@@ -683,7 +683,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -713,7 +713,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> playerBEvent = game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         game.playerPlayCard(playerC.getId(), BDJ089.getCardId(), playerB.getId(), PlayType.INACTIVE.getPlayType());
@@ -769,7 +769,7 @@ public class ArrowBarrageTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
 
-        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -781,7 +781,7 @@ public class ArrowBarrageTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHK040)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -813,7 +813,7 @@ public class ArrowBarrageTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerB));
 
-        game.playerPlayCard(playerB.getId(), SHK040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
 
         //When
         game.playerPlayCard(playerC.getId(), BDJ089.getCardId(), playerB.getId(), PlayType.INACTIVE.getPlayType());
