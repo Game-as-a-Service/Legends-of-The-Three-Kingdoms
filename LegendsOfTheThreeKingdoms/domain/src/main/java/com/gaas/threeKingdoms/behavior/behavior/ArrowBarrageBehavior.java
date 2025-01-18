@@ -2,7 +2,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.events.AskKillEvent;
+import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
@@ -10,14 +10,12 @@ import com.gaas.threeKingdoms.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static com.gaas.threeKingdoms.handcard.PlayCard.isKillCard;
-import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
+import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
-public class BarbarianInvasionBehavior extends Behavior {
-    public BarbarianInvasionBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
+public class ArrowBarrageBehavior extends Behavior {
+    public ArrowBarrageBehavior(Game game, Player player, List<String> reactivePlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
+        super(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card, true, false);
     }
 
     @Override
@@ -32,8 +30,8 @@ public class BarbarianInvasionBehavior extends Behavior {
                 "",
                 cardId,
                 playType));
-        events.add(new AskKillEvent(currentReactionPlayerId));
-        events.add(game.getGameStatusEvent("發動南蠻入侵"));
+        events.add(new AskDodgeEvent(currentReactionPlayerId));
+        events.add(game.getGameStatusEvent("發動萬箭齊發"));
 
         return events;
     }
@@ -49,8 +47,8 @@ public class BarbarianInvasionBehavior extends Behavior {
 
             List<DomainEvent> events = new ArrayList<>(damagedEvent);
             if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) { // 如果受到傷害且沒死亡
-                AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
-                events.add(askKillEvent);
+                AskDodgeEvent askDodgeEvent = new AskDodgeEvent(currentReactionPlayer.getId());
+                events.add(askDodgeEvent);
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
                 events.add(game.getGameStatusEvent("扣血但還活著"));
                 isOneRound = false;
@@ -58,25 +56,25 @@ public class BarbarianInvasionBehavior extends Behavior {
                 // 最後一個人
                 if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                     isOneRound = true;
-                    events.remove(askKillEvent);
+                    events.remove(askDodgeEvent);
                 }
             } else {
                 events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
             }
 
             return events;
-        } else if (isKillCard(cardId)) {
+        } else if (isDodgeCard(cardId)) {
             List<DomainEvent> events = new ArrayList<>();
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
-            events.add(game.getGameStatusEvent(playerId + "出殺"));
-            AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
+            events.add(game.getGameStatusEvent(playerId + "出閃"));
+            AskDodgeEvent askDodgeEvent = new AskDodgeEvent(currentReactionPlayer.getId());
             events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
-            events.add(askKillEvent);
-            // 最後一個人，結束此behavior，askKillEvent不再出現
+            events.add(askDodgeEvent);
+            // 最後一個人，結束此behavior，askDodgeEvent不再出現
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isOneRound = true;
-                events.remove(askKillEvent);
+                events.remove(askDodgeEvent);
             }
             return events;
         } else {
@@ -84,5 +82,4 @@ public class BarbarianInvasionBehavior extends Behavior {
         }
         return null;
     }
-
 }

@@ -1,0 +1,91 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-c",
+      "targetPlayerId" : "player-b",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-c",
+      "from" : 1,
+      "to" : 0
+    },
+    "message" : "扣血"
+  }, {
+    "event" : "PlayerDyingEvent",
+    "data" : {
+      "playerId" : "player-c"
+    },
+    "message" : "玩家已瀕臨死亡"
+  }, {
+    "event" : "AskPeachEvent",
+    "data" : {
+      "playerId" : "player-c",
+      "dyingPlayerId" : "player-c"
+    },
+    "message" : "要求玩家出桃"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 5,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BDJ089", "BH3029", "BH4030", "BH2028" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 0,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-c",
+      "dyingPlayer" : "player-c",
+      "showKill" : false
+    },
+    "gamePhase" : "GeneralDying"
+  },
+  "message" : "不出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-b"
+}

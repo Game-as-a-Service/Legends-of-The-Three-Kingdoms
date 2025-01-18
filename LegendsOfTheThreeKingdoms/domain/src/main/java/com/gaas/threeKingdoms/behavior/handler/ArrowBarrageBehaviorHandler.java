@@ -1,0 +1,46 @@
+package com.gaas.threeKingdoms.behavior.handler;
+
+import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
+import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
+import com.gaas.threeKingdoms.player.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+public class ArrowBarrageBehaviorHandler extends PeachBehaviorHandler{
+    public ArrowBarrageBehaviorHandler(PlayCardBehaviorHandler next, Game game) {
+        super(next, game);
+    }
+
+    @Override
+    protected boolean match(String playerId, String cardId, List<String> targetPlayerId, String playType) {
+        Player player = getPlayer(playerId);
+        Optional<HandCard> card = getCard(cardId, player);
+        return card.filter(handCard -> handCard instanceof ArrowBarrage).isPresent();
+    }
+
+    @Override
+    protected Behavior doHandle(String playerId, String cardId, List<String> targetPlayerId, String playType) {
+        Player player = game.getPlayer(playerId);
+        Player currentReactionPlayer = game.getNextPlayer(player);
+        List<String> reactivePlayers = new ArrayList<>();
+
+        // 將所有玩家加入 reactivePlayers，除了當前玩家，且排序為當前玩家之後的玩家
+        Player tmpPlayer = currentReactionPlayer;
+        List<Player> players = game.getSeatingChart().getPlayers();
+        for (int i = 0; i < players.size() - 1; i++) {
+            reactivePlayers.add(tmpPlayer.getId());
+            tmpPlayer = game.getNextPlayer(tmpPlayer);
+        }
+
+        HandCard card = player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
+
+        return new ArrowBarrageBehavior(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card);
+    }
+}

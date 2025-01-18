@@ -47,6 +47,15 @@ public class DomainEventToViewModelMapper {
             );
         });
 
+        eventToViewModelMappers.put(AskDodgeEvent.class, event -> {
+            AskDodgeEvent askDodgeEvent = (AskDodgeEvent) event;
+            return new PlayCardPresenter.AskDodgeViewModel(
+                    new PlayCardPresenter.AskDodgeDataViewModel(
+                            askDodgeEvent.getPlayerId()
+                    )
+            );
+        });
+
         eventToViewModelMappers.put(FinishActionEvent.class, event -> {
             FinishActionEvent finishActionEvent = (FinishActionEvent) event;
             return new FinishActionPresenter.FinishActionViewModel(

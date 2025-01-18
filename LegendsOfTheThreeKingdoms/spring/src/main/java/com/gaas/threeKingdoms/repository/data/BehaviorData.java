@@ -41,6 +41,16 @@ public class BehaviorData {
                         playType,
                         PlayCard.findById(cardId)
                 );
+            case "ArrowBarrageBehavior" ->
+                    new ArrowBarrageBehavior(
+                            game,
+                            game.getPlayer(behaviorPlayerId),
+                            reactionPlayers,
+                            game.getPlayer(currentReactionPlayerId),
+                            cardId,
+                            playType,
+                            PlayCard.findById(cardId)
+                    );
             case "BorrowedSwordBehavior" -> new BorrowedSwordBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
