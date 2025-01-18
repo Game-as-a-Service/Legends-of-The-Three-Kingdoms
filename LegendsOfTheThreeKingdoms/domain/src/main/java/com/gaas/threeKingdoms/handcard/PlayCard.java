@@ -57,7 +57,7 @@ public enum PlayCard {
     BHQ038("BHQ038", "桃", Suit.HEART, Rank.Q),
     BHK039("BHK039", "閃", Suit.HEART, Rank.K),
 
-    SHK040("SHK040", "萬箭齊發", Suit.HEART, Rank.ACE),
+    SHA040("SHA040", "萬箭齊發", Suit.HEART, Rank.ACE),
     BH2041("BH2041", "閃", Suit.HEART, Rank.TWO),
     SH3042("SH3042", "五穀豐登", Suit.HEART, Rank.THREE),
     SH4043("SH4043", "五穀豐登", Suit.HEART, Rank.FOUR),
@@ -209,7 +209,7 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SH8047", new SomethingForNothing(SH8047));
         CARD_FACTORY_MAP.put("SH9048", new SomethingForNothing(SH9048));
         CARD_FACTORY_MAP.put("SHJ050", new SomethingForNothing(SHJ050));
-        CARD_FACTORY_MAP.put("SHK040", new ArrowBarrage(SHK040));
+        CARD_FACTORY_MAP.put("SHA040", new ArrowBarrage(SHA040));
     }
 
     private final String cardId;

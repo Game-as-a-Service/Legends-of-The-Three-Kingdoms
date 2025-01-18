@@ -274,7 +274,7 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
 
 
     private void playerPlayBPlayArrowBarrage() throws Exception {
-        mockMvcUtil.playCard(gameId, "player-b", "", "SHK040", PlayType.ACTIVE.getPlayType())
+        mockMvcUtil.playCard(gameId, "player-b", "", "SHA040", PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
     }
 
@@ -292,7 +292,7 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
-                new Dodge(BDJ089), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new ArrowBarrage(SHK040)
+                new Dodge(BDJ089), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new ArrowBarrage(SHA040)
         );
         Player playerC = createPlayer(
                 "player-c",
