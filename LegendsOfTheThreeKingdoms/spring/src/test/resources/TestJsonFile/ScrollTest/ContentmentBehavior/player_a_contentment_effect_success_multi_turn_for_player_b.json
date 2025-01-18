@@ -23,8 +23,8 @@
   }, {
     "event" : "ContentmentEvent",
     "data" : {
-      "playerId" : "BH7033",
-      "drawCardId" : "player-b",
+      "playerId" : "player-b",
+      "drawCardId" : "SSK013",
       "success" : true
     },
     "message" : "發動樂不思蜀效果"
@@ -36,7 +36,7 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ "BH7033", "BH7033" ],
+      "cards" : [ "SSK013", "SSK013" ],
       "drawCardPlayerId" : "player-b"
     },
     "message" : "玩家摸牌"
@@ -64,8 +64,8 @@
   }, {
     "event" : "ContentmentEvent",
     "data" : {
-      "playerId" : "BH7033",
-      "drawCardId" : "player-c",
+      "playerId" : "player-c",
+      "drawCardId" : "SSK013",
       "success" : true
     },
     "message" : "發動樂不思蜀效果"
@@ -105,8 +105,8 @@
   }, {
     "event" : "ContentmentEvent",
     "data" : {
-      "playerId" : "BH7033",
-      "drawCardId" : "player-d",
+      "playerId" : "player-d",
+      "drawCardId" : "SSK013",
       "success" : true
     },
     "message" : "發動樂不思蜀效果"
@@ -175,7 +175,7 @@
       "hp" : 3,
       "hand" : {
         "size" : 3,
-        "cardIds" : [ "BS8008", "BH7033", "BH7033" ]
+        "cardIds" : [ "BS8008", "SSK013", "SSK013" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]

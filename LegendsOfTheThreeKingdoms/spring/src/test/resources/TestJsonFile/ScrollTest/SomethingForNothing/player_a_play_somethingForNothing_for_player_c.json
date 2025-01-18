@@ -13,7 +13,7 @@
     "data" : {
       "playerId" : "player-a"
     },
-    "message" : "玩家出無懈可擊"
+    "message" : "玩家出無中生有"
   }, {
     "event" : "DrawCardEvent",
     "data" : {

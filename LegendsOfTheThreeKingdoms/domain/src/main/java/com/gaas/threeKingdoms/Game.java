@@ -310,7 +310,9 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseEquipment(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
-        return Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
+        List<DomainEvent> events = Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
+        removeCompletedBehaviors();
+        return events;
     }
 
     public List<DomainEvent> playerChooseHorseForQilinBow(String playerId, String cardId) {
@@ -434,15 +436,15 @@ public class Game {
         // 抽一張卡判定
         List<HandCard> cards = drawCardForCardEffect(1);
         HandCard drawnCard = cards.get(0);
-        boolean contentmentSuccess = false;
+        boolean contentmentSuccess = true;
 
         // 判定牌的花色
         if (Suit.HEART == drawnCard.getSuit()) {
-            contentmentSuccess = true;
+            contentmentSuccess = false;
         }
 
         // 回傳 Contentment 事件
-        return new ContentmentEvent(contentmentSuccess, drawnCard.getId(), player.getId());
+        return new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard.getId());
     }
 
     public int getCurrentRoundPlayerDiscardCount() {
