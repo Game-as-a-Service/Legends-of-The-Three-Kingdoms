@@ -262,6 +262,20 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String playerId;
     }
 
+    @Data
+    public static class AskDodgeViewModel extends ViewModel<AskDodgeDataViewModel> {
+        public AskDodgeViewModel(AskDodgeDataViewModel data) {
+            super("AskDodgeEvent", data, String.format("請問 %s 要否要出閃", data.getPlayerId()));
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskDodgeDataViewModel {
+        private String playerId;
+    }
+
 
     @Data
     @AllArgsConstructor

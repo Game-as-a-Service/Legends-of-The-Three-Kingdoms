@@ -54,6 +54,7 @@ public class DyingAskPeachBehavior extends Behavior {
                     game.enterPhase(new GameOver(game));
                     events.addAll(List.of(settlementEvent, gameOverEvent));
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     events.add(game.getGameStatusEvent("主公死亡"));
                     return events;
                 }
@@ -83,6 +84,7 @@ public class DyingAskPeachBehavior extends Behavior {
             PeachEvent peachEvent = new PeachEvent(targetPlayerId, originalHp, dyingPlayer.getHP());
             events.addAll(List.of(playCardEvent, peachEvent));
             addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
             events.add(game.getGameStatusEvent("出牌"));
             return events;
 
@@ -102,6 +104,15 @@ public class DyingAskPeachBehavior extends Behavior {
             Player barbarianInvasionCurrentReactionPlayer = secondBehavior.getCurrentReactionPlayer();
             events.add(new AskKillEvent(barbarianInvasionCurrentReactionPlayer.getId()));
             game.getCurrentRound().setActivePlayer(barbarianInvasionCurrentReactionPlayer);
+        }
+    }
+
+    private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events) {
+        Behavior secondBehavior = game.peekTopBehaviorSecondElement();
+        if (secondBehavior instanceof ArrowBarrageBehavior) {
+            Player arrowBarrageCurrentReactionPlayer = secondBehavior.getCurrentReactionPlayer();
+            events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
+            game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
         }
     }
 
