@@ -55,6 +55,7 @@ public class DismantleBehavior extends Behavior {
                 throw new IllegalArgumentException("Player doesn't have this equipment");
             } else {
                 targetPlayer.getEquipment().removeEquipment(cardId);
+                game.getGraveyard().add(card);
                 events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 的裝備 %s", playerId, targetPlayerId, cardId)));
                 events.add(game.getGameStatusEvent("過河拆橋效果"));
             }

@@ -155,8 +155,8 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
 
     @Data
     public static class SettlementViewModel extends ViewModel<SettlementDataViewModel> {
-        public SettlementViewModel(SettlementDataViewModel data) {
-            super("SettlementEvent", data, "結算");
+        public SettlementViewModel(SettlementDataViewModel data, String message) {
+            super("SettlementEvent", data, message);
         }
     }
 

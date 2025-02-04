@@ -4,7 +4,10 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.*;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -113,8 +116,8 @@ public class DomainEventToViewModelMapper {
             SettlementEvent settlementEvent = (SettlementEvent) event;
             return new PlayCardPresenter.SettlementViewModel(
                     new PlayCardPresenter.SettlementDataViewModel(
-                            settlementEvent.getPlayerId(), settlementEvent.getRole()
-                    )
+                            settlementEvent.getPlayerId(), settlementEvent.getRole().getRoleName()
+                    ), settlementEvent.getMessage()
             );
         });
 

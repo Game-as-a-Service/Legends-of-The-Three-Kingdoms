@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Data
 @Builder
@@ -96,15 +97,15 @@ public class Player {
         return (plusOne == null && minusOne != null) || (plusOne != null && minusOne == null);
     }
 
-    public String removeOneMount() {
+    public HandCard removeOneMount() {
         PlusMountsCard plusOne = equipment.getPlusOne();
         MinusMountsCard minusOne = equipment.getMinusOne();
         if (plusOne != null) {
             equipment.setPlusOne(null);
-            return plusOne.getId();
+            return plusOne;
         } else {
             equipment.setMinusOne(null);
-            return minusOne.getId();
+            return minusOne;
         }
     }
 
@@ -122,6 +123,28 @@ public class Player {
                 cardId);
     }
 
+    public HandCard getMountsCard(String cardId) {
+        EquipmentCard plusOne = equipment.getPlusOne();
+        EquipmentCard minusOne = equipment.getMinusOne();
+        if (plusOne.getId().equals(cardId)) {
+            return plusOne;
+        } else if (minusOne.getId().equals(cardId)) {
+            return minusOne;
+        }
+        return null;
+    }
+
+    public List<HandCard> discardAllCards() {
+        List<HandCard> discardCards = hand.getCards();
+        hand.setCards(new ArrayList<>());
+        return discardCards;
+    }
+
+    public List<EquipmentCard> discardAllEquipment() {
+        List<EquipmentCard> discardEquipmentCards = equipment.getAllEquipmentCards();
+        equipment.removeAllEquipment();
+        return discardEquipmentCards;
+    }
 
     public ArmorCard getEquipmentArmorCard() {
         return equipment.getArmor();

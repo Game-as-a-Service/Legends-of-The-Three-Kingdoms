@@ -35,24 +35,25 @@ public class QilinBowCard extends WeaponCard {
         String removeMountCardId = "";
 
         if (damagedPlayer.onlyHasOneMount()) {
+            // 移除NormalActiveKill
+//            game.removeTopBehavior();
             // 只有一馬時，直接移除此馬
-            removeMountCardId = damagedPlayer.removeOneMount();
+            HandCard removedMount = damagedPlayer.removeOneMount();
+            removeMountCardId = removedMount.getId();
+            game.getGraveyard().add(removedMount);
             message = String.format("發動麒麟弓效果 移除 %s", removeMountCardId);
             HandCard card = behavior.getCard(); // Kill
             int originalHp = damagedPlayer.getHP();
-            card.effect(damagedPlayer);
-            PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
+            List<DomainEvent> damageEvents = game.getDamagedEvent(behavior.getBehaviorPlayer().getId(), damagedPlayer.getId(), behavior.getCardId(), card, PlayType.QilinBow.getPlayType(), originalHp, damagedPlayer, currentRound, behavior);
             if (isPlayerStillAlive(damagedPlayer)) {
                 currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
                 behavior.setIsOneRound(true);
                 QilinBowCardEffectEvent qilinBowCardEffectEvent = new QilinBowCardEffectEvent(message, true, removeMountCardId);
                 GameStatusEvent gameStatusEvent = game.getGameStatusEvent(message);
                 events.add(qilinBowCardEffectEvent);
-                events.add(playerDamagedEvent);
+                events.addAll(damageEvents);
                 events.add(gameStatusEvent);
             } else {
-                PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
-                AskPeachEvent askPeachEvent = createAskPeachEvent(damagedPlayer, damagedPlayer);
                 game.enterPhase(new GeneralDying(game));
                 currentRound.setDyingPlayer(damagedPlayer);
                 currentRound.setActivePlayer(damagedPlayer);
@@ -60,13 +61,9 @@ public class QilinBowCard extends WeaponCard {
                 behavior.setIsOneRound(false);
                 GameStatusEvent gameStatusEvent = game.getGameStatusEvent(message);
                 events.add(qilinBowCardEffectEvent);
-                events.add(playerDamagedEvent);
-                events.add(playerDyingEvent);
-                events.add(askPeachEvent);
+                events.addAll(damageEvents);
                 events.add(gameStatusEvent);
             }
-            // 移除NormalActiveKill
-            game.removeTopBehavior();
             return events;
         }
 
@@ -87,19 +84,6 @@ public class QilinBowCard extends WeaponCard {
     private boolean isPlayerStillAlive(Player damagedPlayer) {
         return damagedPlayer.getHP() > 0;
     }
-
-    private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
-        return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
-    }
-
-    private PlayerDyingEvent createPlayerDyingEvent(Player player) {
-        return new PlayerDyingEvent(player.getId());
-    }
-
-    private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
-        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
-    }
-
 }
 
 

@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.player;
 
+import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard;
@@ -31,6 +32,12 @@ public class Equipment {
                 .collect(Collectors.toList());
     }
 
+    public List<EquipmentCard> getAllEquipmentCards() {
+        return Stream.of(weapon, armor, plusOne, minusOne)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
     public boolean hasSpecialEffect() {
         boolean plusOneHasSpecialEffect = plusOne != null && plusOne.isHasSpecialEffect();
         boolean minusOneHasSpecialEffect = minusOne != null && minusOne.isHasSpecialEffect();
@@ -57,6 +64,13 @@ public class Equipment {
         if (weapon != null && weapon.getId().equals(equipmentId)) {
             weapon = null;
         }
+    }
+
+    public void removeAllEquipment() {
+        plusOne = null;
+        minusOne = null;
+        armor = null;
+        weapon = null;
     }
 
 }
