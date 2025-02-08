@@ -9,12 +9,15 @@ import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -27,6 +30,7 @@ import java.util.List;
 
 import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -299,11 +303,11 @@ public class PlayerDeathTest {
 
         // A 發動麒麟弓效果，移除 B 的赤兔馬
         List<DomainEvent> playerUseEquipmentEvents = game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
-        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
-        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
-        game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
-        game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
-        game.finishAction(playerA.getId());
+        List<DomainEvent> playerUseEquipmentEvents1 = game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> playerUseEquipmentEvents2 = game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> playerUseEquipmentEvents3 = game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> playerUseEquipmentEvents4 = game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> playerUseEquipmentEvents5 = game.finishAction(playerA.getId());
 
         //Then
         assertTrue(game.getSeatingChart().getPlayers().stream().noneMatch(player -> player.getId().equals("player-b")));
@@ -877,11 +881,11 @@ public class PlayerDeathTest {
             F 為忠臣，G 為內奸
             A hp = 1
             ABCEF 手牌沒有閃
-            D 手牌有四張殺
+            D 手牌有五張殺
             ABCDEFG 都沒有桃
             
             When
-            D 出牌 殺 B -> 殺 C -> 殺 F -> 殺 E -> 殺 F
+            D 出牌 殺 B -> 殺 C -> 殺 F -> 殺 E -> 殺 A
             每輪都是 ABCDEFG skip 
             
             Then
@@ -936,7 +940,7 @@ public class PlayerDeathTest {
                 .withHand(new Hand())
                 .build();
         playerD.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
         ));
         Equipment playerDEquipment = new Equipment();
         playerDEquipment.setMinusOne(new RedRabbitHorse(EH5044));
@@ -1041,4 +1045,234 @@ public class PlayerDeathTest {
         assertEquals(2, gameOverEvent.getWinners().size());
     }
 
+
+    @DisplayName("""
+        Given
+        玩家A B C D
+        A 為主公 B 為反賊 C 為忠臣 D 為內奸
+        B hp = 1 C hp = 1 D hp = 1
+        A 手牌有一張借刀殺人
+        B 有裝備武器，有一張殺，B攻擊範圍內有 C 可以殺
+        B D 手牌沒有閃
+        A B C D 都沒有桃
+        
+        When
+        A 出借刀殺人，指定 B 殺 C
+        
+        C skip 瀕臨死亡
+        C D A B 被詢問要不要出桃 skip
+        
+        Then
+        C 死亡，A 裝備、手牌數量都還在
+        active player 仍然是 A 
+        檯面上遊戲玩家為 ABD
+    """)
+    @Test
+    public void givenPlayerABCD_PlayerAPlaysBorrowedSword_WhenNoOneCanDodge_ThenBAndDDieAndACWin() {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+        playerA.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Dodge(BH2028), new Dodge(BH2028), new Dodge(BH2028), new BorrowedSword(SCK065)));
+        playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
+        playerA.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        playerA.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        playerA.getEquipment().setArmor(new EightDiagramTactic(EC2067));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard(General.孫權))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        Equipment equipmentB = new Equipment();
+        equipmentB.setWeapon(new RepeatingCrossbowCard(ECA066));
+        playerB.setEquipment(equipmentB);
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        // When
+        game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
+
+        //When B 出殺
+        game.playerPlayCard(playerB.getId(), BS8008.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType());
+        //When C 出skip
+        game.playerPlayCard(playerC.getId(), "", playerC.getId(), PlayType.SKIP.getPlayType());
+
+
+        game.playerPlayCard(playerC.getId(), "", playerC.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerC.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerA.getId(), "", playerC.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerC.getId(), PlayType.SKIP.getPlayType());
+
+        // Then
+        SettlementEvent settlementEvent = getEvent(events, SettlementEvent.class).orElseThrow(RuntimeException::new);
+        assertFalse(getEvent(events, DiscardEvent.class).isPresent());
+        assertFalse(getEvent(events, DiscardEquipmentEvent.class).isPresent());
+
+        // Validate B's death
+        assertEquals("player-c", settlementEvent.getPlayerId());
+        assertEquals("Minister", settlementEvent.getRole().getRoleName());
+        assertTrue(game.getSeatingChart().getPlayers().stream().noneMatch(player -> player.getId().equals("player-c")));
+
+        // Validate A have all equipment
+        Equipment playerAEquipment = playerA.getEquipment();
+        assertNotNull(playerAEquipment.getArmor());
+        assertNotNull(playerAEquipment.getWeapon());
+        assertNotNull(playerAEquipment.getMinusOne());
+        assertNotNull(playerAEquipment.getPlusOne());
+        assertEquals(4, playerAEquipment.getAllEquipmentCards().size());
+
+
+        // Validate A's hand is not empty
+        Hand playerAHand = playerA.getHand();
+        assertFalse(playerAHand.getCards().isEmpty());
+
+        // Validate active player is still A
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+
+        // Validate only A, C, and D remain in the game
+        assertEquals(3, game.getSeatingChart().getPlayers().size());
+        assertTrue(game.getSeatingChart().getPlayers().stream().map(Player::getId).toList()
+                .containsAll(Arrays.asList("player-a", "player-b", "player-d")));
+
+        game.finishAction(playerA.getId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A 主公 B 反賊 C 忠臣 D 內奸
+            A的回合
+            A有決鬥 x 1,殺 x 1, A 4hp
+            
+            B 殺 x 2，B 1hp
+            
+            When
+            A 出決鬥，指定 B
+            B 出殺
+            A 出殺
+            B 不出殺
+            A 沒扣血, A 4hp
+            B 扣血, B 0hp
+            B C D A 被詢問要不要出桃 skip
+            
+            Then
+            反賊 A 獲勝 
+                    """)
+    @Test
+    public void givenPlayerABCD_PlayerATurn_PlayerAHasDuelAndKillWith1HP_BPlayerHasTwoKillsAnd1HP_WhenPlayerAPlaysDuelAndAssignsB_AndPlayersAlternateKillsUntilBDoesNotPlayKill_ThenPlayerADoesNotLoseHPAndRemainsAt4HPWhilePlayerBLoses1HPAndDead() {
+        Game game = new Game();
+        game.initDeck();
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Peach(BH3029), new Kill(BS8008), new Dodge(BH2028), new Dodge(BHK039), new Duel(SSA001)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8008), new Dodge(BHK039), new Duel(SSA001)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        //When
+        // A plays Duel and assigns B
+        game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "BS8008", playerA.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), "BS8008", playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+        // B C D A are asked if they want to play Peach
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+        //Then
+        DrawCardEvent drawCardEvent = getEvent(events, DrawCardEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-a", drawCardEvent.getDrawCardPlayerId());
+        assertEquals(3, game.getSeatingChart().getPlayers().size());
+
+        SettlementEvent settlementEvent = getEvent(events, SettlementEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-b", settlementEvent.getPlayerId());
+
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(0, game.getPlayer("player-b").getBloodCard().getHp());
+
+    }
 }

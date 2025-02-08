@@ -368,8 +368,9 @@ public class Game {
         }
 
         if (!topBehavior.isEmpty()) {
-            topBehavior.clear();
-//            throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
+//            topBehavior.clear();
+            topBehavior.forEach(behavior -> System.out.println("current topBehavior: " + behavior.getClass().getName()));
+            throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
         }
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->

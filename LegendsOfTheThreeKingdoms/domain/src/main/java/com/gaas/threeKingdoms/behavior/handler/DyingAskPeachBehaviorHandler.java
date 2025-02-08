@@ -1,16 +1,13 @@
 package com.gaas.threeKingdoms.behavior.handler;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
+import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.gamephase.GeneralDying;
-import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 // 07/13 暫時不用這個 handle 而改在 NormalActiveKill 直接 new 出來避免因為 game 的 updateBehavior 影響南蠻入侵

@@ -1,21 +1,22 @@
 package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
-import com.gaas.threeKingdoms.player.Equipment;
-import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GameOver;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import com.gaas.threeKingdoms.round.Round;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 
@@ -109,6 +110,9 @@ public class DyingAskPeachBehavior extends Behavior {
                     events.add(settlementEvent);
                 }
 
+                //  需要移除的 Behavior，isOneRound 要設為 true
+                JudgementIfRemoveBehavior();
+
                 game.enterPhase(new Normal(game));
                 // 如果 events 包含 askKillEvent 與 askDodgeEvent，則不需要再設定 activePlayer
                 if (events.stream().noneMatch(e -> e instanceof AskKillEvent) && events.stream().noneMatch(e -> e instanceof AskDodgeEvent)) {
@@ -146,6 +150,18 @@ public class DyingAskPeachBehavior extends Behavior {
             //TODO:怕有其他效果或殺的其他case
             return null;
         }
+    }
+
+    //TODO
+    private void JudgementIfRemoveBehavior() {
+        Stack<Behavior> topBehavior = game.getTopBehavior();
+        IntStream.range(0, topBehavior.size())
+                .mapToObj(i -> topBehavior.get(topBehavior.size() - 1 - i))
+                .filter(behavior -> behavior instanceof NormalActiveKillBehavior
+                        || behavior instanceof DuelBehavior
+                        || behavior instanceof BorrowedSwordBehavior)
+                .findFirst()
+                .ifPresent(behavior -> behavior.setIsOneRound(true));
     }
 
     private boolean isLastReactionPlayer(String playerId) {

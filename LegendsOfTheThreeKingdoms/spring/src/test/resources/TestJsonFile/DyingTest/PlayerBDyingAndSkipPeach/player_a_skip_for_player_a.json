@@ -8,6 +8,13 @@
       "playType" : "skip"
     },
     "message" : "不出牌"
+  }, {
+    "event" : "SettlementEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "role" : "Minister"
+    },
+    "message" : "player-b 死亡，身分是 Minister"
   } ],
   "data" : {
     "seats" : [ {

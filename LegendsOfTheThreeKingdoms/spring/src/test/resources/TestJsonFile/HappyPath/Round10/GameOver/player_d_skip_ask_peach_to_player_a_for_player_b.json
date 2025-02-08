@@ -14,7 +14,7 @@
       "playerId" : "player-a",
       "role" : "Monarch"
     },
-    "message" : "結算"
+    "message" : "player-a 死亡，身分是 Monarch"
   }, {
     "event" : "GameOverEvent",
     "data" : {
