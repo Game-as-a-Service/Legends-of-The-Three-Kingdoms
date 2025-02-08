@@ -2,9 +2,7 @@ package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.behavior.BorrowedSwordBehavior;
-import com.gaas.threeKingdoms.behavior.behavior.DismantleBehavior;
-import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.*;
 import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
 import com.gaas.threeKingdoms.effect.EquipmentEffectHandler;
@@ -205,10 +203,10 @@ public class Game {
         return drawCardToPlayer(player, true);
     }
 
-    public DomainEvent drawCardToPlayer(Player player, boolean isChangeRoundPhase) {
-        refreshDeckWhenCardsNumLessThen(2);
-        int size = calculatePlayerCanDrawCardSize(player);
-        List<HandCard> cards = deck.deal(size);
+    public DomainEvent drawCardToPlayer(Player player, boolean isChangeRoundPhase, int requiredCardNumber) {
+        refreshDeckWhenCardsNumLessThen(requiredCardNumber);
+//        int size = calculatePlayerCanDrawCardSize(player);
+        List<HandCard> cards = deck.deal(requiredCardNumber);
         player.getHand().addCardToHand(cards);
 
         // 樂不思蜀不需要改變回合階段
@@ -216,7 +214,7 @@ public class Game {
             currentRound.setRoundPhase(RoundPhase.Action);
         }
         List<String> cardIds = cards.stream().map(HandCard::getId).collect(Collectors.toList());
-        String message = String.format("玩家 %s 抽了 %d 張牌", player.getId(), size);
+        String message = String.format("玩家 %s 抽了 %d 張牌", player.getId(), requiredCardNumber);
 
         List<PlayerEvent> playerEvents = players.stream().map(p ->
                 new PlayerEvent(p.getId(),
@@ -236,7 +234,7 @@ public class Game {
         );
 
         return new DrawCardEvent(
-                size,
+                requiredCardNumber,
                 cardIds,
                 message,
                 gameId,
@@ -245,6 +243,10 @@ public class Game {
                 gamePhase.getPhaseName(),
                 player.getId()
         );
+    }
+
+    public DomainEvent drawCardToPlayer(Player player, boolean isChangeRoundPhase) {
+        return drawCardToPlayer(player, isChangeRoundPhase, 2);
     }
 
     private int calculatePlayerCanDrawCardSize(Player player) {
@@ -366,6 +368,8 @@ public class Game {
         }
 
         if (!topBehavior.isEmpty()) {
+//            topBehavior.clear();
+            topBehavior.forEach(behavior -> System.out.println("current topBehavior: " + behavior.getClass().getName()));
             throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
         }
 
@@ -725,5 +729,27 @@ public class Game {
     private boolean isPlayerHasWeapon(String playerId) {
         return getPlayer(playerId).getEquipmentWeaponCard() != null;
     }
+
+    public Player getLastAttacker() {
+        // 找出造成傷害者前 萬箭、殺、南蠻入侵、決鬥、借刀殺人、閃電 => 找出最近造成傷害的 behavior 的 player
+        // 取得最後一個造成傷害的玩家，從 topBehavior 中找到最後一個造成傷害的玩家
+        for (int i = topBehavior.size() - 1; i >= 0; i--) {
+            Behavior behavior = topBehavior.get(i);
+            if (behavior instanceof NormalActiveKillBehavior ||
+                behavior instanceof ArrowBarrageBehavior ||
+                behavior instanceof BarbarianInvasionBehavior) {
+                return behavior.getBehaviorPlayer();
+            } else if (behavior instanceof DuelBehavior) {
+                String duelBehaviorCurrentReactionPlayerId  = behavior.getCurrentReactionPlayer().getId();
+                String killedPlayerId = behavior.getReactionPlayers().stream().filter(id -> !id.equals(duelBehaviorCurrentReactionPlayerId)).findFirst().get();
+                return getPlayer(killedPlayerId);
+            } else if (behavior instanceof BorrowedSwordBehavior) {
+                return getPlayer(behavior.getReactionPlayers().get(0));
+            }
+        }
+        throw new IllegalStateException("getLastAttacker error attacker not found.");
+    }
+
+
 }
 

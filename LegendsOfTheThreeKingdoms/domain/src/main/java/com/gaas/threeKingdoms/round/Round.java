@@ -27,7 +27,7 @@ public class Round {
     }
     public boolean isPlayedValidCard(String cardId) {
         Optional<HandCard> handCardOptional = currentRoundPlayer.getHand().getCard(cardId);
-        if (handCardOptional.isEmpty()) return false;
+        if (handCardOptional.isEmpty()) throw new IllegalStateException("Player " + currentRoundPlayer.getId() + " have no this card: " + cardId);
 
         HandCard handCard = handCardOptional.get();
         if (handCard instanceof Kill && currentRoundPlayer.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard) {

@@ -262,7 +262,7 @@ public class FinishActionTest {
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withRoleCard(new RoleCard(Role.REBEL))
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withEquipment(new Equipment())
                 .withHealthStatus(HealthStatus.ALIVE)

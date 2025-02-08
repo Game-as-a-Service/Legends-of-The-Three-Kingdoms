@@ -23,7 +23,11 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
     @Override
     protected boolean match(String playerId, String cardId, List<String> reactionPlayers, String playType) {
         Optional<HandCard> cardOpt = getCard(cardId, getPlayer(playerId));
-        return cardOpt.filter(handCard -> handCard instanceof Kill && isPlayedValidCard(cardId) && isDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0)))).isPresent();
+        cardOpt.orElseThrow(() -> new IllegalStateException("Player " + playerId + " have no this card: " + cardId));
+        return cardOpt.filter(handCard -> handCard instanceof Kill &&
+                        isPlayedValidCard(cardId) &&
+                        isDistanceTooLong(game.getPlayer(playerId), game.getPlayer(reactionPlayers.get(0))))
+                        .isPresent();
     }
 
 

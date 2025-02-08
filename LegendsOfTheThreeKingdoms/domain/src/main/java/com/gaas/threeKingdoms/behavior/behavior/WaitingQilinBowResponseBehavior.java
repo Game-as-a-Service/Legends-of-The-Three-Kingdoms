@@ -38,8 +38,9 @@ public class WaitingQilinBowResponseBehavior extends Behavior {
         if (!this.getBehaviorPlayer().getId().equals(playerId)) {
             throw new IllegalStateException("player is not QilinBowBehavior player");
         }
-
+        HandCard mountsCard = damagedPlayer.getMountsCard(cardId);
         DomainEvent removeHorseEvent = damagedPlayer.removeMountsCard(playerId, cardId);
+        game.getGraveyard().add(mountsCard);
         game.getCurrentRound().setStage(Stage.Normal);
         isOneRound = true;
         return Collections.singletonList(removeHorseEvent);
