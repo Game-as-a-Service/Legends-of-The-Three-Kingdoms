@@ -56,8 +56,6 @@ public class DyingAskPeachBehavior extends Behavior {
                     GameOverEvent gameOverEvent = new GameOverEvent("內奸獲勝", getWinners(game.getPlayers(), List.of(Role.TRAITOR)), playerEvents);
                     game.enterPhase(new GameOver(game));
                     events.addAll(List.of(settlementEvent, gameOverEvent));
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     events.add(game.getGameStatusEvent(String.format("%s 死亡", dyingPlayer.getId())));
                     return events;
                 } else if (isMonarch(dyingPlayer)) {
@@ -65,8 +63,6 @@ public class DyingAskPeachBehavior extends Behavior {
                     GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage(), getWinners(game.getPlayers(), List.of(Role.REBEL)), playerEvents);
                     game.enterPhase(new GameOver(game));
                     events.addAll(List.of(settlementEvent, gameOverEvent));
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     events.add(game.getGameStatusEvent("主公死亡"));
                     return events;
                 } else if (haveNoOtherRebelAndTraitor()) {
@@ -74,8 +70,6 @@ public class DyingAskPeachBehavior extends Behavior {
                     GameOverEvent gameOverEvent = new GameOverEvent("主公與忠臣獲勝", getWinners(game.getPlayers(), List.of(Role.MINISTER, Role.MONARCH)), playerEvents);
                     game.enterPhase(new GameOver(game));
                     events.addAll(List.of(settlementEvent, gameOverEvent));
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     events.add(game.getGameStatusEvent("反賊死亡"));
                     return events;
                 } else if (isREBEL(dyingPlayer)) {

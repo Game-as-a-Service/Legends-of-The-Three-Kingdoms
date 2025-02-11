@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.e2e.scrollcard;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayType;
@@ -12,6 +13,7 @@ import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -294,6 +296,85 @@ public class BarbarianInvasionTest extends AbstractBaseIntegrationTest {
     }
 
 
+    @Test
+    public void givenPlayerABCD_PlayerAPlaysBarbarianInvasion_WhenNoOneCanDodge_ThenBAndDDieAndACWin() throws Exception {
+        //        Given
+        //        玩家A B C D
+        //        A 為主公 B 為反賊 C 為忠臣 D 為內奸
+        //        B hp = 1 C hp = 3 D hp = 1
+        //        A 手牌有一張南蠻入侵
+        //        B D 手牌沒有閃
+        //        A B C D 都沒有桃
+        givenPlayerAHaveBarbarianInvasion();
+
+        //        When
+        //        A 出 南蠻入侵
+        mockMvcUtil.playCard(gameId, "player-a", "", "SS7007", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        //        B skip 南蠻入侵
+        //        B C D A 被詢問要不要出桃 skip
+        //        B 死亡 A 抽三張卡到手牌
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-b", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-c", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-d", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_dead_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+        //        C skip 南蠻入侵
+        mockMvcUtil.playCard(gameId, "player-c", "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        //        D skip 南蠻入侵
+        mockMvcUtil.playCard(gameId, "player-d", "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        //        D A C 被詢問要不要出桃 skip
+        mockMvcUtil.playCard(gameId, "player-d", "player-d", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-a", "player-d", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-c", "player-d", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        //        Then
+        //        D 死亡
+        //        A C 獲勝 (主公與忠臣獲勝)
+        filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_d_dead_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+
     private void popAllPlayerMessage() {
         websocketUtil.getValue("player-a");
         websocketUtil.getValue("player-b");
@@ -344,5 +425,42 @@ public class BarbarianInvasionTest extends AbstractBaseIntegrationTest {
         repository.save(game);
     }
 
+
+    private void givenPlayerAHaveBarbarianInvasion() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new BarbarianInvasion(SS7007)
+        );
+        Player playerB = createPlayer("player-b",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                3,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
+    }
 
 }

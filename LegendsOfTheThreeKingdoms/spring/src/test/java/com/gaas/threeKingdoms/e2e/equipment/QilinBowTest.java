@@ -14,6 +14,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTacti
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import com.gaas.threeKingdoms.player.Equipment;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
@@ -194,6 +195,115 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         // A不發動效果
         whenASkipEquipmentEffect();
 
+    }
+
+    @Test
+    public void givenPlayerABCD_PlayerBHasRedRabbit_AHasKillCardAndQilinBow_WhenAPlaysKillAndActivatesQilinBow_ThenBDeadAndCRoundStarts() throws Exception {
+        //            Given
+        //            玩家ABCD
+        //            A 為主公 B 為反賊 C 為忠臣 D 為內奸
+        //            B hp = 1
+        //            A 手牌有一張殺 A 裝備麒麟弓
+        //            B 手牌沒有閃 B 有赤兔馬
+        //            ABCD 都沒有桃
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008)
+        );
+        playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
+        Player playerB = createPlayer("player-b",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+        );
+        playerB.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        Player playerC = createPlayer(
+                "player-c",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+        );
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
+        //            When
+        //            A 出牌 殺 B
+        //            B skip
+        //            A 發動麒麟弓效果
+        String currentPlayer = "player-a";
+        String targetPlayerId = "player-b";
+        String playedCardId = "BS8008";
+        mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, targetPlayerId, currentPlayer, "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        currentPlayer = "player-a";
+        targetPlayerId = "player-b";
+        playedCardId = "EH5031";
+
+        mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        //            B 被詢問要不要出桃 skip
+        //            C 被詢問要不要出桃 skip
+        //            D 被詢問要不要出桃 skip
+        //            A 被詢問要不要出桃 skip
+        mockMvcUtil.playCard(gameId, "player-b", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-c", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-d", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.finishAction(gameId, currentPlayer)
+                .andExpect(status().is2xxSuccessful()).andReturn();
+        //            B 死亡，A 抽三張卡到手牌
+        //            A 結束回合
+        //            Then
+        //            C 的回合
+        //            active player 為 C
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_b_dead_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    private void popAllPlayerMessage() {
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
     }
 
     private void whenASkipEquipmentEffect() throws Exception {

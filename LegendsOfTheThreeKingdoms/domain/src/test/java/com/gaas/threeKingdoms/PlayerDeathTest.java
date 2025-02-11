@@ -16,6 +16,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.*;
@@ -580,7 +581,7 @@ public class PlayerDeathTest {
         A C 獲勝 (主公與忠臣獲勝)
     """)
     @Test
-    public void givenPlayerABCD_PlayerAPlaysBarbarianInvasion_WhenNoOneCanDodge_ThenBAndDDieAndACWin() {
+    public void givenPlayerABCD_PlayerAPlaysArrowBarrage_WhenNoOneCanDodge_ThenBAndDDieAndACWin() {
         // Given
         Game game = new Game();
         game.initDeck();
@@ -654,6 +655,115 @@ public class PlayerDeathTest {
         GameOverEvent gameOverEvent = getEvent(events, GameOverEvent.class).orElseThrow(RuntimeException::new);
         SettlementEvent settlementEvent = getEvent(events, SettlementEvent.class).orElseThrow(RuntimeException::new);
 
+        assertEquals("player-d", settlementEvent.getPlayerId());
+        assertEquals("Traitor", settlementEvent.getRole().getRoleName());
+
+        assertTrue(game.getSeatingChart().getPlayers().stream().noneMatch(player -> player.getId().equals("player-d")));
+        assertEquals(2, game.getSeatingChart().getPlayers().size()); // Only A, C remain
+        assertTrue(gameOverEvent.getWinners().containsAll(Arrays.asList("player-a", "player-c")));
+    }
+
+    @DisplayName("""
+        Given
+        玩家A B C D
+        A 為主公 B 為反賊 C 為忠臣 D 為內奸
+        B hp = 1 C hp = 3 D hp = 1
+        A 手牌有一張南蠻入侵
+        B D 手牌沒有閃
+        A B C D 都沒有桃
+        
+        When
+        A 出 南蠻入侵
+        
+        B skip 南蠻入侵
+        B C D A 被詢問要不要出桃 skip
+        B 死亡 A 抽三張卡到手牌
+        
+        C skip 南蠻入侵
+        
+        D skip 南蠻入侵
+        D A C 被詢問要不要出桃 skip
+        
+        Then
+        D 死亡
+        A C 獲勝 (主公與忠臣獲勝)
+    """)
+    @Test
+    public void givenPlayerABCD_PlayerAPlaysBarbarianInvasion_WhenNoOneCanDodge_ThenBAndDDieAndACWin() {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+        playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard(General.孫權))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        // When
+        game.playerPlayCard(playerA.getId(), "SS7007", null, PlayType.ACTIVE.getPlayType()); // A 出 萬箭齊發
+
+        // B 跳過南蠻入侵
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> domainEvents1 = game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+        game.playerPlayCard(playerC.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        game.playerPlayCard(playerD.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        game.playerPlayCard(playerD.getId(), "", playerD.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerA.getId(), "", playerD.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerC.getId(), "", playerD.getId(), PlayType.SKIP.getPlayType());
+
+        // Then
+        GameOverEvent gameOverEvent = getEvent(events, GameOverEvent.class).orElseThrow(RuntimeException::new);
+        SettlementEvent settlementEvent = getEvent(events, SettlementEvent.class).orElseThrow(RuntimeException::new);
+
+        assertTrue(getEvent(events, AskKillEvent.class).isEmpty());
         assertEquals("player-d", settlementEvent.getPlayerId());
         assertEquals("Traitor", settlementEvent.getRole().getRoleName());
 
@@ -1195,7 +1305,7 @@ public class PlayerDeathTest {
             B C D A 被詢問要不要出桃 skip
             
             Then
-            反賊 A 獲勝 
+            A 抽三張牌 
                     """)
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasDuelAndKillWith1HP_BPlayerHasTwoKillsAnd1HP_WhenPlayerAPlaysDuelAndAssignsB_AndPlayersAlternateKillsUntilBDoesNotPlayKill_ThenPlayerADoesNotLoseHPAndRemainsAt4HPWhilePlayerBLoses1HPAndDead() {
