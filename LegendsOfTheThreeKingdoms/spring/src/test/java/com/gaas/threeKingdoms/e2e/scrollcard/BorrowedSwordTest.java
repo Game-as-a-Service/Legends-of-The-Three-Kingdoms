@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.e2e.scrollcard;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayType;
@@ -290,6 +291,99 @@ public class BorrowedSwordTest extends AbstractBaseIntegrationTest {
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBPlayKillJsonForD);
     }
+
+
+    @Test
+    public void givenPlayerABCD_PlayerAPlaysBorrowedSword_WhenNoOneCanDodge_ThenBAndDDieAndACWin() throws Exception {
+        //        Given
+        //        玩家A B C D
+        //        A 為主公 B 為反賊 C 為忠臣 D 為內奸
+        //        B hp = 1 C hp = 1 D hp = 1
+        //        A 手牌有一張借刀殺人
+        //        B 有裝備武器，有一張殺，B攻擊範圍內有 C 可以殺
+        //        B D 手牌沒有閃
+        //        A B C D 都沒有桃
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Kill(BS8008), new Dodge(BH2028), new Dodge(BHK039), new BorrowedSword(SCK065)
+        );
+        Player playerB = createPlayer("player-b",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+        );
+        Equipment equipmentB = new Equipment();
+        equipmentB.setWeapon(new RepeatingCrossbowCard(ECA066));
+        playerB.setEquipment(equipmentB);
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        repository.save(game);
+
+        //        When
+        //        A 出借刀殺人，指定 B 殺 C
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", borrowedSwordCardId, PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.useBorrowedSwordEffect(gameId, "player-a", "player-b", "player-c").andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-b", "player-c", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-c", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        //        C skip 瀕臨死亡
+        //        C D A B 被詢問要不要出桃 skip
+        mockMvcUtil.playCard(gameId, "player-c", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-d", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-a", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playCard(gameId, "player-b", "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        //        Then
+        //        C 死亡，A 裝備、手牌數量都還在
+        //        active player 仍然是 A
+        //        檯面上遊戲玩家為 ABD
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_c_dead_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
 
     private void givenPlayerAHaveBorrowedSwordAndPlayerBEquipedQilinBowButNoKill(int playerCHp) {
         Player playerA = createPlayer(

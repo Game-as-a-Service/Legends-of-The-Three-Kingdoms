@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.e2e.scrollcard;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayType;
@@ -258,12 +259,21 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
 
         mockMvcUtil.playCard(gameId, "player-b", "player-c", "", PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
-        popAllPlayerMessage();
         // Then
         // 不會報錯
-        // C玩家死亡
+        // C玩家死亡，B抽三張牌，D要求出🍑
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_b_use_ArrowBarrage_and_player_c_dead_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
     }
-
 
     private void popAllPlayerMessage() {
         websocketUtil.getValue("player-a");
