@@ -19,7 +19,7 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 3,
-      "cards" : [ "BS8008", "SH7046", "BH4030" ],
+      "cards" : [ "BH2028", "BH3029", "BDJ089" ],
       "drawCardPlayerId" : "player-b"
     },
     "message" : "玩家摸牌"
@@ -49,7 +49,7 @@
       "hp" : 4,
       "hand" : {
         "size" : 7,
-        "cardIds" : [ "BDJ089", "BH3029", "BH4030", "BH2028", "BS8008", "SH7046", "BH4030" ]
+        "cardIds" : [ "BDJ089", "BH3029", "BH4030", "BH2028", "BH2028", "BH3029", "BDJ089" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
