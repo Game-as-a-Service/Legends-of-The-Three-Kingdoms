@@ -109,13 +109,17 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        playerASkipJsonForA = websocketUtil.getValue("player-a");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_player_a.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerASkipJsonForA);
-        websocketUtil.getValue("player-b");
-        websocketUtil.getValue("player-c");
-        websocketUtil.getValue("player-d");
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_c_skip_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
 
         currentPlayer = "player-d";
         targetPlayerId = "player-a";
@@ -123,10 +127,17 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        playerASkipJsonForA = websocketUtil.getValue("player-a");
-        path = Paths.get("src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_d_skip_for_player_a.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerASkipJsonForA);
+        playerIds = List.of("player-a");
+        filePathTemplate = "src/test/resources/TestJsonFile/DyingTest/PlayerADyingAndSkipPeach/player_d_skip_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
         websocketUtil.getValue("player-b");
         websocketUtil.getValue("player-c");
         websocketUtil.getValue("player-d");
@@ -176,7 +187,7 @@ public class DyingTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/DyingTest/PlayerBDyingAndSkipPeach/player_a_skip_for_%s.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            //testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
             testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));

@@ -440,15 +440,12 @@ public class Game {
         // 抽一張卡判定
         List<HandCard> cards = drawCardForCardEffect(1);
         HandCard drawnCard = cards.get(0);
-        boolean contentmentSuccess = true;
 
         // 判定牌的花色
-        if (Suit.HEART == drawnCard.getSuit()) {
-            contentmentSuccess = false;
-        }
+        boolean contentmentSuccess = Suit.HEART != drawnCard.getSuit();
 
         // 回傳 Contentment 事件
-        return new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard.getId());
+        return new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard.getId(), drawnCard.getSuit());
     }
 
     public int getCurrentRoundPlayerDiscardCount() {

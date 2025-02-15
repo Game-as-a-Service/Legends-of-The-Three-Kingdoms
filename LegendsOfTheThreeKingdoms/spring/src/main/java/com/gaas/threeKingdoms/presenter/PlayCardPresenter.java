@@ -76,9 +76,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     public static GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
         return getEvent(events, GameOverEvent.class)
                 .map(gameOverEvent -> {
-                    GameOverDataViewModel gameOverDataViewModel = new GameOverDataViewModel(gameOverEvent.getPlayers().stream()
-                            .map(PlayerDataViewModel::new)
-                            .toList(), gameOverEvent.getWinners());
+                    GameOverDataViewModel gameOverDataViewModel = new GameOverDataViewModel(gameOverEvent.getWinners());
                     return new GameOverViewModel(gameOverDataViewModel);
                 })
                 .orElse(null);
@@ -179,7 +177,6 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     @AllArgsConstructor
     @NoArgsConstructor
     public static class GameOverDataViewModel {
-        private List<PlayerDataViewModel> players;
         private List<String> winners;
     }
 

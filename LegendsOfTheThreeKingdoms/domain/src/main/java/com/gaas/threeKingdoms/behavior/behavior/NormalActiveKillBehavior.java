@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
@@ -41,6 +42,8 @@ public class NormalActiveKillBehavior extends Behavior {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
             events.add(askPlayEquipmentEffectEvent);
+        } else {
+            events.add(new AskDodgeEvent(targetPlayerId));
         }
         events.add(game.getGameStatusEvent("出牌"));
         return events;

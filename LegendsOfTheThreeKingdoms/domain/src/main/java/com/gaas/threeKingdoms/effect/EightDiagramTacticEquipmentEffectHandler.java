@@ -2,10 +2,7 @@ package com.gaas.threeKingdoms.effect;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.events.EffectEvent;
-import com.gaas.threeKingdoms.events.GameStatusEvent;
-import com.gaas.threeKingdoms.events.SkipEquipmentEffectEvent;
+import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
@@ -44,7 +41,7 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
             game.peekTopBehavior().setIsOneRound(false);
             GameStatusEvent gameStatusEvent = game.getGameStatusEvent("跳過八卦陣效果");
             SkipEquipmentEffectEvent skipEquipmentEffectEvent = new SkipEquipmentEffectEvent(playerId, cardId);
-            return new ArrayList<>(List.of(gameStatusEvent, skipEquipmentEffectEvent));
+            return new ArrayList<>(List.of(gameStatusEvent, skipEquipmentEffectEvent, new AskDodgeEvent(targetPlayerId)));
         }
         Player player = getPlayer(playerId);
         ArmorCard armorCard = player.getEquipment().getArmor();

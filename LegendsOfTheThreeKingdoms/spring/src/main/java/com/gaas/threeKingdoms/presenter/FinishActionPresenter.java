@@ -120,8 +120,8 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
 
     @Data
     public static class ContentmentViewModel extends ViewModel<ContentmentDataViewModel> {
-        public ContentmentViewModel(ContentmentDataViewModel data) {
-            super("ContentmentEvent", data, "發動樂不思蜀效果");
+        public ContentmentViewModel(ContentmentDataViewModel data, String message) {
+            super("ContentmentEvent", data, message);
         }
     }
 

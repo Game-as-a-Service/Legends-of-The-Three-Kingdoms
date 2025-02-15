@@ -1,6 +1,9 @@
 package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
+import com.gaas.threeKingdoms.events.AskDodgeEvent;
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.GameStatusEvent;
 import com.gaas.threeKingdoms.exception.DistanceErrorException;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
@@ -19,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -421,5 +425,81 @@ public class PlayKillCardTest {
         assertThrows(IllegalStateException.class,
                 () -> game.playerPlayCard(playerB.getId(), BS8008.getCardId(), playerA.getId(), "active"));
 
+    }
+
+    @DisplayName("""
+            Given
+            A 玩家對 B 玩家已出過殺
+            A 玩家手牌有殺x1, 閃x2, 桃x2
+            B 玩家 4 滴血
+                    
+            When
+            A 玩家對 B 玩家出殺
+                    
+            Then
+            B 收到要求出閃的 Event
+            """)
+    @Test
+    public void givenPlayerAKilledPlayerB_AndPlayerBHasAskDodgeEvent() {
+        //Given
+        Game game = new Game();
+        game.initDeck();
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+        //playerA 對 playerB打殺
+        //When
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active");
+
+
+        //Then
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-b", askDodgeEvent.getPlayerId());
     }
 }

@@ -242,7 +242,7 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
         Deck deck = new Deck();
-        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Kill(BS8008), new Kill(BS8008)));
         game.setDeck(deck);
         repository.save(game);
         //            When
@@ -642,25 +642,17 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk()).andReturn();
 
         //Then A 不會收到要不要發動裝備卡的event
-        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_playqilinbow_player_b_withoutHorse_for_player_a.json");
-        String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForA);
-
-        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_playqilinbow_player_b_withoutHorse_for_player_b.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForB);
-
-        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_playqilinbow_player_b_withoutHorse_for_player_c.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForC);
-
-        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_playqilinbow_player_b_withoutHorse_for_player_d.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForD);
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/player_a_playqilinbow_player_b_withoutHorse_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
     }
 
     private void playerAPlayQilinBow() throws Exception {

@@ -38,7 +38,7 @@ public class BarbarianInvasionTest {
             B玩家出南蠻入侵
                             
             Then
-            ABCD 玩家收到南蒙入侵的 event
+            ABCD 玩家收到南蠻入侵的 event
             C 玩家收到要求出殺的 event
             """)
     @Test

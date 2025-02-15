@@ -512,7 +512,7 @@ public class PlayerDyingTest {
         assertNotNull(gameOverEvent);
 
         assertEquals("player-a", settlementEvent.getPlayerId());
-        assertEquals("player-a 死亡，身分是 Monarch", settlementEvent.getMessage());
+        assertEquals("劉備 死亡，身分是 主公", settlementEvent.getMessage());
 
         String gameOverMessage =
                 """

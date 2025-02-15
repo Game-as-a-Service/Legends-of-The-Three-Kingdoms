@@ -41,7 +41,7 @@
       "hp" : 4,
       "hand" : {
         "size" : 3,
-        "cardIds" : [ "BH2028", "BH3029", "BDJ089" ]
+        "cardIds" : [ "BS8008", "BS8008", "BH2028" ]
       },
       "equipments" : [ "EH5031", "", "", "" ],
       "delayScrolls" : [ ]

@@ -27,7 +27,7 @@
       "drawCardId" : "SSK013",
       "success" : true
     },
-    "message" : "發動樂不思蜀效果"
+    "message" : "樂不思蜀效果判定！抽出卡牌SSK013，花色是黑桃，效果成功"
   }, {
     "event" : "JudgementEvent",
     "data" : "",
@@ -68,7 +68,7 @@
       "drawCardId" : "SSK013",
       "success" : true
     },
-    "message" : "發動樂不思蜀效果"
+    "message" : "樂不思蜀效果判定！抽出卡牌SSK013，花色是黑桃，效果成功"
   }, {
     "event" : "JudgementEvent",
     "data" : "",
@@ -109,7 +109,7 @@
       "drawCardId" : "SSK013",
       "success" : true
     },
-    "message" : "發動樂不思蜀效果"
+    "message" : "樂不思蜀效果判定！抽出卡牌SSK013，花色是黑桃，效果成功"
   }, {
     "event" : "JudgementEvent",
     "data" : "",

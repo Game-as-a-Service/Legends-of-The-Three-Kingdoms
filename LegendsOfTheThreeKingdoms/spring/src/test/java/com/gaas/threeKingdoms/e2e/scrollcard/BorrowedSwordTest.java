@@ -185,25 +185,17 @@ public class BorrowedSwordTest extends AbstractBaseIntegrationTest {
 
         // Then
         // ABCD玩家收到B玩家出殺的event
-        String playerBPlayKillJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_b_playKill_for_player_a.json");
-        String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerBPlayKillJsonForA);
-
-        String playerBPlayKillJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_b_playKill_for_player_b.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerBPlayKillJsonForB);
-
-        String playerBPlayKillJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_b_playKill_for_player_c.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerBPlayKillJsonForC);
-
-        String playerBPlayKillJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_b_playKill_for_player_d.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerBPlayKillJsonForD);
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/BorrowedSword/player_b_playKill_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
     }
 
     @Test
