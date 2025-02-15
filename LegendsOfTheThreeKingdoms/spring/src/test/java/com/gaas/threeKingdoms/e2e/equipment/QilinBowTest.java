@@ -241,6 +241,9 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         );
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
         Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
         repository.save(game);
         //            When
         //            A 出牌 殺 B
