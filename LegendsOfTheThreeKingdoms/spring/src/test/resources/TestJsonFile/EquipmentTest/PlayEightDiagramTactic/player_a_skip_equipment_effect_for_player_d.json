@@ -6,6 +6,12 @@
       "cardId" : "ES2015"
     },
     "message" : "跳過裝備效果"
+  }, {
+    "event" : "AskDodgeEvent",
+    "data" : {
+      "playerId" : "player-a"
+    },
+    "message" : "請問 player-a 要否要出閃"
   } ],
   "data" : {
     "seats" : [ {

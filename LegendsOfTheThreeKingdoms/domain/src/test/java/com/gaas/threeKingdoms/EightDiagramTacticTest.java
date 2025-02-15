@@ -1,10 +1,7 @@
 package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
-import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
-import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.events.EffectEvent;
-import com.gaas.threeKingdoms.events.PlayerDamagedEvent;
+import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -27,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -527,7 +525,10 @@ public class EightDiagramTacticTest {
         game.playerPlayCard(playerB.getId(), BD6084.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
         //When
-        game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+        List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-a", askDodgeEvent.getPlayerId());
 
         assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
 
@@ -536,6 +537,7 @@ public class EightDiagramTacticTest {
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
         assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());
+
     }
 
     @DisplayName("""

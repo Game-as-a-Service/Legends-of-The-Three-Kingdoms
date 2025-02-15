@@ -14,7 +14,7 @@
       "playerId" : "player-b",
       "role" : "Rebel"
     },
-    "message" : "player-b 死亡，身分是 Rebel"
+    "message" : "劉備 死亡，身分是 反賊"
   }, {
     "event" : "DrawCardEvent",
     "data" : {

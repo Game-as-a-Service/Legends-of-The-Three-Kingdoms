@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
@@ -160,26 +161,17 @@ public class EightDiagramTacticTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk()).andReturn();
 
         //Then A不發動八卦陣的效果
-        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_a.json");
-        String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForA);
-
-        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_b.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForB);
-
-        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_c.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForC);
-
-        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_player_d.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForD);
-
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_skip_equipment_effect_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
     }
 
     private void whenPlayerBPlayRepeatingCrossbow() throws Exception {

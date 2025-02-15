@@ -52,35 +52,35 @@ public class DyingAskPeachBehavior extends Behavior {
                 game.removeDyingPlayer(dyingPlayer);
 
                 if (onlyTraitorsRemain()) {
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole());
-                    GameOverEvent gameOverEvent = new GameOverEvent("內奸獲勝", getWinners(game.getPlayers(), List.of(Role.TRAITOR)), playerEvents);
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
+                    GameOverEvent gameOverEvent = new GameOverEvent("內奸獲勝", getWinners(game.getPlayers(), List.of(Role.TRAITOR)));
                     game.enterPhase(new GameOver(game));
                     events.addAll(List.of(settlementEvent, gameOverEvent));
                     events.add(game.getGameStatusEvent(String.format("%s 死亡", dyingPlayer.getId())));
                     return events;
                 } else if (isMonarch(dyingPlayer)) {
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole());
-                    GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage(), getWinners(game.getPlayers(), List.of(Role.REBEL)), playerEvents);
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
+                    GameOverEvent gameOverEvent = new GameOverEvent(game.createGameOverMessage(), getWinners(game.getPlayers(), List.of(Role.REBEL)));
                     game.enterPhase(new GameOver(game));
                     events.addAll(List.of(settlementEvent, gameOverEvent));
                     events.add(game.getGameStatusEvent("主公死亡"));
                     return events;
                 } else if (haveNoOtherRebelAndTraitor()) {
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole());
-                    GameOverEvent gameOverEvent = new GameOverEvent("主公與忠臣獲勝", getWinners(game.getPlayers(), List.of(Role.MINISTER, Role.MONARCH)), playerEvents);
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
+                    GameOverEvent gameOverEvent = new GameOverEvent("主公與忠臣獲勝", getWinners(game.getPlayers(), List.of(Role.MINISTER, Role.MONARCH)));
                     game.enterPhase(new GameOver(game));
                     events.addAll(List.of(settlementEvent, gameOverEvent));
                     events.add(game.getGameStatusEvent("反賊死亡"));
                     return events;
                 } else if (isREBEL(dyingPlayer)) {
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole());
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     Player lastDamagedPlayer = game.getLastAttacker();
                     DomainEvent drawCardEvent = game.drawCardToPlayer(lastDamagedPlayer, false,3);
                     events.addAll(List.of(settlementEvent, drawCardEvent));
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                 } else if (isMINISTER(dyingPlayer)) {
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole());
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     // 如果殺忠臣的玩家是主公，則主公棄掉所有的牌
                     if (isMonarch(game.getLastAttacker())) {
                         List<HandCard> discardCards = game.getLastAttacker().discardAllCards();
@@ -100,7 +100,7 @@ public class DyingAskPeachBehavior extends Behavior {
                     }
                     events.add(settlementEvent);
                 } else {
-                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer.getId(), dyingPlayer.getRoleCard().getRole());
+                    SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     events.add(settlementEvent);
                 }
 

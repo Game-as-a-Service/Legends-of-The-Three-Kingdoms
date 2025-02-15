@@ -28,7 +28,7 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ "BS8008", "EH5044" ],
+      "cards" : [ "BH3029", "BDJ089" ],
       "drawCardPlayerId" : "player-c"
     },
     "message" : "玩家摸牌"
@@ -63,7 +63,7 @@
       "hp" : 1,
       "hand" : {
         "size" : 6,
-        "cardIds" : [ "BS8008", "BS8008", "BS8008", "BS8008", "BS8008", "EH5044" ]
+        "cardIds" : [ "BS8008", "BS8008", "BS8008", "BS8008", "BH3029", "BDJ089" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]

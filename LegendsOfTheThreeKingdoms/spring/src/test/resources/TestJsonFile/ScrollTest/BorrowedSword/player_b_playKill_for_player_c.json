@@ -8,6 +8,12 @@
       "playType" : "active"
     },
     "message" : "出牌"
+  }, {
+    "event" : "AskDodgeEvent",
+    "data" : {
+      "playerId" : "player-c"
+    },
+    "message" : "請問 player-c 要否要出閃"
   } ],
   "data" : {
     "seats" : [ {

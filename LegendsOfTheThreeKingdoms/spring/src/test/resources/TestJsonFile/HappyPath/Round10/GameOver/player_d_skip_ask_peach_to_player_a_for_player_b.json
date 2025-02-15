@@ -14,55 +14,10 @@
       "playerId" : "player-a",
       "role" : "Monarch"
     },
-    "message" : "player-a 死亡，身分是 Monarch"
+    "message" : "劉備 死亡，身分是 主公"
   }, {
     "event" : "GameOverEvent",
     "data" : {
-      "players" : [ {
-        "id" : "player-a",
-        "generalId" : "SHU001",
-        "roleId" : "Monarch",
-        "hp" : 0,
-        "hand" : {
-          "size" : 1,
-          "cardIds" : [ "BD8099" ]
-        },
-        "equipments" : [ "", "", "", "" ],
-        "delayScrolls" : [ ]
-      }, {
-        "id" : "player-b",
-        "generalId" : "SHU006",
-        "roleId" : "Minister",
-        "hp" : 3,
-        "hand" : {
-          "size" : 4,
-          "cardIds" : [ "BC2054", "BS7020", "BD7098", "BD6097" ]
-        },
-        "equipments" : [ "", "", "", "" ],
-        "delayScrolls" : [ ]
-      }, {
-        "id" : "player-c",
-        "generalId" : "SHU004",
-        "roleId" : "Rebel",
-        "hp" : 3,
-        "hand" : {
-          "size" : 3,
-          "cardIds" : [ "BC8073", "BC0062", "BHJ037" ]
-        },
-        "equipments" : [ "", "", "", "" ],
-        "delayScrolls" : [ ]
-      }, {
-        "id" : "player-d",
-        "generalId" : "WEI002",
-        "roleId" : "Traitor",
-        "hp" : 3,
-        "hand" : {
-          "size" : 3,
-          "cardIds" : [ "BC7059", "BC6058", "BDJ102" ]
-        },
-        "equipments" : [ "", "", "", "" ],
-        "delayScrolls" : [ ]
-      } ],
       "winners" : [ "player-c" ]
     },
     "message" : "遊戲結束"

@@ -80,7 +80,7 @@ public class DomainEventToViewModelMapper {
             ContentmentEvent contentmentEvent = (ContentmentEvent) event;
             FinishActionPresenter.ContentmentDataViewModel dataViewModel = new FinishActionPresenter.ContentmentDataViewModel(
                     contentmentEvent.getPlayerId(), contentmentEvent.getDrawCardId(), contentmentEvent.isSuccess());
-            return new FinishActionPresenter.ContentmentViewModel(dataViewModel);
+            return new FinishActionPresenter.ContentmentViewModel(dataViewModel, contentmentEvent.getMessage());
         });
         eventToViewModelMappers.put(RoundEndEvent.class, event -> new FinishActionPresenter.RoundEndViewModel());
 
@@ -124,10 +124,7 @@ public class DomainEventToViewModelMapper {
         eventToViewModelMappers.put(GameOverEvent.class, event -> {
             GameOverEvent gameOverEvent = (GameOverEvent) event;
             return new PlayCardPresenter.GameOverViewModel(
-                    new PlayCardPresenter.GameOverDataViewModel(
-                            gameOverEvent.getPlayers().stream()
-                                    .map(PlayerDataViewModel::new)
-                                    .toList(), gameOverEvent.getWinners())
+                    new PlayCardPresenter.GameOverDataViewModel(gameOverEvent.getWinners())
             );
         });
 
