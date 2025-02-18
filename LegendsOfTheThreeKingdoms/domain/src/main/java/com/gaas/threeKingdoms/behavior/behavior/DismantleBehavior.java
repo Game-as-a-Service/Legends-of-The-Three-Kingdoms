@@ -51,12 +51,19 @@ public class DismantleBehavior extends Behavior {
             events.add(new DismantleEvent(playerId, targetPlayerId, handCard.getId(), String.format("%s 拆掉了 %s 的手牌 %s", playerId, targetPlayerId, handCard.getId())));
             events.add(game.getGameStatusEvent("過河拆橋效果"));
         } else {
-            if (!targetPlayer.getEquipment().hasThisEquipment(cardId)) {
-                throw new IllegalArgumentException("Player doesn't have this equipment");
-            } else {
+            if (!targetPlayer.getEquipment().hasThisEquipment(cardId) && !targetPlayer.hasThisDelayScrollCard(cardId)) {
+                throw new IllegalArgumentException("Player doesn't have this cardId in equipment or delayScrollCard");
+            }
+
+            if (targetPlayer.getEquipment().hasThisEquipment(cardId)) {
                 targetPlayer.getEquipment().removeEquipment(cardId);
                 game.getGraveyard().add(card);
                 events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 的裝備 %s", playerId, targetPlayerId, cardId)));
+                events.add(game.getGameStatusEvent("過河拆橋效果"));
+            } else {
+                targetPlayer.removeDelayScrollCard(cardId);
+                game.getGraveyard().add(card);
+                events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 判定區的 %s", playerId, targetPlayerId, cardId)));
                 events.add(game.getGameStatusEvent("過河拆橋效果"));
             }
         }

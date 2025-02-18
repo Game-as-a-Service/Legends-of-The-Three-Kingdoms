@@ -12,6 +12,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.*;
@@ -395,6 +396,80 @@ public class DismantleTest {
         assertEquals("EH5044", playerB.getEquipmentMinusOneMountsCard().getId());
         assertEquals("player-a", game.getActivePlayer().getId());
         assertFalse(game.getTopBehavior().stream().anyMatch(behavior -> behavior instanceof DismantleBehavior));
+    }
+
+    @DisplayName("""
+        Given
+        玩家 A B C D
+        A 的回合
+        A 有樂不思蜀 x 1
+        A 出樂不思蜀，指定 C
+        A 結束回合
+    
+        When
+        B 的回合，出過河拆橋，指定 C
+    
+        Then
+        C 判定區沒有過河拆橋
+    """)
+    @Test
+    public void givenPlayerABCD_PlayerAHasContentmentAndPlaysItOnC_WhenPlayerBPlaysDismantleOnC_ThenCJudgmentAreaHasNoDismantle() throws Exception {
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+        playerA.getHand().addCardToHand(Arrays.asList(new Contentment(SS6006), new Dodge(BH2028), new Dodge(BHK039), new Duel(SSA001)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withEquipment(new Equipment())
+                .build();
+        playerB.getHand().addCardToHand(Arrays.asList(new Dismantle(SS4004)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // A 出樂不思蜀，指定 C
+        game.playerPlayCard(playerA.getId(), SS6006.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType());
+        game.finishAction(playerA.getId());
+
+        // B 出過河拆橋，指定 C
+        game.playerPlayCard(playerB.getId(), SS4004.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType());
+        game.useDismantleEffect(playerB.getId(), playerC.getId(), SS6006.getCardId(), null);
+
+        // Assert that C has no dismantle in the judgment area
+        assertFalse(playerC.hasAnyContentmentCard());
     }
 
 }

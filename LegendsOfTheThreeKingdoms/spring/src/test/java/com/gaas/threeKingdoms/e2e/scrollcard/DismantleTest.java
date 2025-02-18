@@ -5,13 +5,16 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
+import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -106,6 +109,91 @@ public class DismantleTest extends AbstractBaseIntegrationTest {
 
         mockMvcUtil.finishAction(gameId, "player-a")
                 .andExpect(status().is2xxSuccessful()).andReturn();
+    }
+
+    @Test
+    public void givenPlayerABCD_PlayerAHasContentmentAndPlaysItOnC_WhenPlayerBPlaysDismantleOnC_ThenCJudgmentAreaHasNoDismantle() throws Exception {
+//        Given
+//        玩家 A B C D
+//        A 的回合
+//        A 有樂不思蜀 x 1
+//        A 出樂不思蜀，指定 C
+//        A 結束回合
+//
+//        When
+//        B 的回合，出過河拆橋，指定 C
+//
+//        Then
+//        C 判定區沒有過河拆橋
+        givenPlayerAHaveContentmentPlayerBHaveDismantle();
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-c", "SS6006", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        mockMvcUtil.finishAction(gameId, "player-a");
+        popAllPlayerMessage();
+
+        mockMvcUtil.playCard(gameId, "player-b", "player-c", "SS4004", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        mockMvcUtil.useDismantleEffect(gameId, "player-b", "player-c", "SS6006", null);
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/DismantleBehavior/player_a_use_dismantle_effect_choose_contentment_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+    }
+
+    private void givenPlayerAHaveContentmentPlayerBHaveDismantle() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Contentment(SS6006), new Dodge(BH2028), new Dodge(BHK039), new Duel(SSA001)
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH2028), new Peach(BH2028), new Peach(BH2028)
+        );
+        playerB.getHand().addCardToHand(Arrays.asList(new Dismantle(SS4004)));
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Kill(BS8008), new Kill(BS8008)));
+        game.setDeck(deck);
+        repository.save(game);
     }
 
     private void givenPlayerAHaveDismantlePlayerBHaveQilinBowAndRedRabbitHorse() {
