@@ -324,25 +324,19 @@ public class EightDiagramTacticTest extends AbstractBaseIntegrationTest {
         //Event 內是效果失敗, A 要出閃
         //A玩家HP=4
         //Active Player-a
-        String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_Failed_for_player_a.json");
-        String expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForA);
 
-        String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_Failed_for_player_b.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForB);
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_Failed_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
 
-        String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_Failed_for_player_c.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForC);
-
-        String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayEightDiagramTactic/player_a_use_EightDiagramTactic_Event_Failed_for_player_d.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
 
     private void givenPlayerAEquipedEightDiagramTacticAndWillSuccess() {

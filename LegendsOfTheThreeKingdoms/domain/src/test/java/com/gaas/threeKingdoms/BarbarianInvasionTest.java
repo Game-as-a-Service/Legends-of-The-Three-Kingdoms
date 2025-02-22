@@ -8,9 +8,11 @@ import com.gaas.threeKingdoms.events.PlayerDyingEvent;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -761,6 +763,12 @@ public class BarbarianInvasionTest {
     public void givenPlayerABCD_WhenPlayerBPlayBarbarianInvasionAndPlayerCUseKillAndPlayerDUseKillAndPlayerAUseKill_ThenPlayerAHP4AndPlayerBActivePlayer() {
         Game game = new Game();
         game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029)
+                )
+        );
+        game.setDeck(deck);
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -833,5 +841,13 @@ public class BarbarianInvasionTest {
         assertEquals("player-b", game.getCurrentRoundPlayer().getId());
         assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
 
+
+        //When
+        game.finishAction("player-b");
+
+        //Then
+        assertTrue(playerC.getHand().getCards().stream().noneMatch(card -> card.getId().equals("BS8008")));
     }
+
+
 }

@@ -66,6 +66,7 @@ public class BarbarianInvasionBehavior extends Behavior {
 
             return events;
         } else if (isKillCard(cardId)) {
+            playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
             List<DomainEvent> events = new ArrayList<>();
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);

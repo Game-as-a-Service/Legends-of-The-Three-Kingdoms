@@ -6,6 +6,12 @@
       "success" : false
     },
     "message" : "發動效果 失敗"
+  }, {
+    "event" : "AskDodgeEvent",
+    "data" : {
+      "playerId" : "player-a"
+    },
+    "message" : "請問 player-a 要否要出閃"
   } ],
   "data" : {
     "seats" : [ {

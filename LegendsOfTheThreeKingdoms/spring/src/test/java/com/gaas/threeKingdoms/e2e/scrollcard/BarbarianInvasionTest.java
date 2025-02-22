@@ -85,26 +85,18 @@ public class BarbarianInvasionTest extends AbstractBaseIntegrationTest {
         //A玩家出殺
         mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
-        actualJsonForA = websocketUtil.getValue("player-a");
-        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_use_barbarian_and_player_c_play_kill_for_player_a.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, actualJsonForA);
 
-        actualJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_use_barbarian_and_player_c_play_kill_for_player_b.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, actualJsonForB);
-
-        actualJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_use_barbarian_and_player_c_play_kill_for_player_c.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, actualJsonForC);
-
-        actualJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_use_barbarian_and_player_c_play_kill_for_player_d.json");
-        expectedJson = Files.readString(path);
-        assertEquals(expectedJson, actualJsonForD);
-
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_use_barbarian_and_player_c_play_kill_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
     }
 
     @Test
@@ -335,8 +327,8 @@ public class BarbarianInvasionTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Barbarianinvasion/player_b_dead_for_%s.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);

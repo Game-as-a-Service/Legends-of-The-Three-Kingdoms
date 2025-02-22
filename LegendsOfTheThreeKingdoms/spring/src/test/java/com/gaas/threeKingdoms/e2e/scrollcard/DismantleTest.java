@@ -99,7 +99,7 @@ public class DismantleTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/DismantleBehavior/player_a_use_dismantle_effect_choose_card_for_%s.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            //testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
             testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));

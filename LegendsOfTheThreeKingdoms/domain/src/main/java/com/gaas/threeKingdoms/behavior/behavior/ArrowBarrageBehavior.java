@@ -64,6 +64,7 @@ public class ArrowBarrageBehavior extends Behavior {
 
             return events;
         } else if (isDodgeCard(cardId)) {
+            playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
             List<DomainEvent> events = new ArrayList<>();
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);

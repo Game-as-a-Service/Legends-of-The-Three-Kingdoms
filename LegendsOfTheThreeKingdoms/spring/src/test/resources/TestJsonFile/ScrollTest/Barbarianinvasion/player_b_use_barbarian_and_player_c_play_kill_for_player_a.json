@@ -16,8 +16,8 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039", "EH5031" ]
+        "size" : 4,
+        "cardIds" : [ "BH3029", "BH2028", "BHK039", "EH5031" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -38,7 +38,7 @@
       "roleId" : "",
       "hp" : 3,
       "hand" : {
-        "size" : 4,
+        "size" : 3,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -49,7 +49,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 3,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
