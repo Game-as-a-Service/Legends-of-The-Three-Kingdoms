@@ -1494,4 +1494,457 @@ public class QilinBowTest {
         assertFalse(eventsEnd.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
     }
 
+    @DisplayName("""
+        Given
+        A的回合
+        A有麒麟弓
+        B Hp = 3
+        B 有八卦陣
+        B 沒有閃
+        B 沒有馬
+        
+        When
+        A攻擊B
+        B發動八卦陣效果失敗
+        B Skip 出閃
+        
+        Then
+        有 player damage event
+        B hp = 2
+        Active player 為 A
+    """)
+    @Test
+    public void givenTurnA_AHasQilinBow_BHasEightDiagramTacticAndNoDodge_WhenAAttacksB_BFailsEightDiagramEffectAndSkipsDodge_ThenAReceivesQilinBowTriggerEvent() {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Kill(BC2054)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(3))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerB.getEquipment().setArmor(new EightDiagramTactic(EC2067));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.趙雲))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // When
+        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerUseEquipment(playerB.getId(), EC2067.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        // then
+        assertFalse(events.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+        PlayerDamagedEvent playerDamagedEvent = (PlayerDamagedEvent) events.stream().filter(event -> event instanceof PlayerDamagedEvent).findFirst().get();
+        assertEquals("player-b", playerDamagedEvent.getPlayerId());
+        assertEquals(2 , game.getPlayer("player-b").getBloodCard().getHp());
+        assertEquals("player-a", game.getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A有麒麟弓
+        B Hp = 3
+        B 有八卦陣
+        B 沒有閃
+        B 沒有馬
+        
+        When
+        A攻擊B
+        B 不發動八卦陣效果
+        B Skip 出閃
+        
+        Then
+        有 player damage event
+        B hp = 2
+        Active player 為 A
+    """)
+    @Test
+    public void givenTurnA_AHasQilinBow_BHasEightDiagramTacticAndNoDodge_WhenAAttacksB_BDoesNotActivateEightDiagramAndSkipsDodge_ThenAReceivesQilinBowTriggerEvent() {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(3))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerB.getEquipment().setArmor(new EightDiagramTactic(EC2067));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.趙雲))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // When
+        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerUseEquipment(playerB.getId(), EC2067.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        // Then
+        PlayerDamagedEvent playerDamagedEvent = (PlayerDamagedEvent) events.stream().filter(event -> event instanceof PlayerDamagedEvent).findFirst().get();
+        assertEquals("player-b", playerDamagedEvent.getPlayerId());
+        assertEquals(2 , game.getPlayer("player-b").getBloodCard().getHp());
+        assertEquals("player-a", game.getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A有麒麟弓
+        B Hp = 3
+        B 有八卦陣
+        B 有赤兔馬與絕影馬
+        
+        When
+        A攻擊B
+        A發動麒麟弓
+        
+        Then
+        噴出 Exception
+    """)
+    @Test
+    public void givenTurnA_AHasQilinBow_BHasEightDiagramTactic_WhenAAttacksBAndActivatesQilinBow_ThenThrowException() {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(BH3029)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(3))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerB.getEquipment().setArmor(new EightDiagramTactic(EC2067));
+        playerB.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        playerB.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.趙雲))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // When then
+        assertThrows(IllegalStateException.class, () -> game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerD.getId(), EquipmentPlayType.ACTIVE));
+    }
+
+    @DisplayName("""
+    Given
+    A的回合
+    A有麒麟弓
+    B Hp = 3
+    B 有八卦陣
+    B 沒有閃
+    B 有 +1馬
+    When
+    A攻擊B
+    B發動八卦陣效果失敗
+    B Skip 出閃
+    A 收到是否要發動麒麟弓的事件
+    A 發動麒麟弓效果
+    Then
+    B 沒有馬
+    B HP = 2
+""")
+    @Test
+    public void givenPlayerAHasQilinBow_PlayerBHasEightDiagramAndPlusOneHorse_WhenPlayerAAttacksBAndBTriggersEightDiagramFailsAndAUsesQilinBow_ThenBHasNoHorseAndHpIs2() throws Exception {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Kill(BC2054)
+                )
+        );
+        game.setDeck(deck);
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(3))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        playerB.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.趙雲))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withEquipment(new Equipment())
+                .withHand(new Hand())
+                .build();
+
+        game.setPlayers(Arrays.asList(playerA, playerB, playerC, playerD));
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        // When
+        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events1 = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
+
+        // B 發動八卦陣效果失敗
+        assertFalse(events1.stream()
+                .filter(event -> event instanceof EffectEvent)
+                .map(EffectEvent.class::cast)
+                .findFirst().get().isSuccess());
+
+        List<DomainEvent> events2 = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        // A 收到是否要發動麒麟弓的事件，並選擇發動麒麟弓
+        assertTrue(events2.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+
+
+        // A 發動麒麟弓效果
+        List<DomainEvent> events3 = game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        // Then
+        assertTrue(events3.stream().anyMatch(event -> event instanceof QilinBowCardEffectEvent));
+        assertEquals(2, playerB.getBloodCard().getHp()); // B 受到傷害 Hp = 2
+        assertNull(playerB.getEquipment().getPlusOne()); // B 沒有馬
+    }
+
+    @DisplayName("""
+        Given
+        A的回合
+        A有麒麟弓
+        B Hp = 3
+        B 有八卦陣
+        B 沒有閃
+        B 有 + 1 與 -1 馬
+    
+        When
+        A攻擊B
+        B發動八卦陣效果失敗
+        B Skip 出閃
+        A 收到是否要發動麒麟弓的事件
+        A 發動麒麟弓效果
+        A 選擇 -1馬移除
+    
+        Then
+        B HP = 2
+        B 有 + 1 馬
+    """)
+    @Test
+    public void givenPlayerATurn_PlayerAHasQilinBow_PlayerBHpIs3_PlayerBHasEightDiagramTacticNoDodge_PlayerBHasMounts_WhenPlayerAAttacksPlayerB_PlayerBActivatesEightDiagramFails_PlayerBSkipsDodge_PlayerAActivatesQilinBowEffectAndChoosesMinusOneHorse_ThenPlayerBHp2AndStillHasPlusOneHorse() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Kill(BC2054)
+                )
+        );
+        game.setDeck(deck);
+        // 設定 A 擁有麒麟弓
+        Equipment equipmentA = new Equipment();
+        equipmentA.setWeapon(new QilinBowCard(EH5031));
+
+        // 設定 B 擁有八卦陣與 +1、-1 馬
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        equipmentB.setMinusOne(new RedRabbitHorse(EH5044));
+        equipmentB.setPlusOne(new ShadowHorse(ES5018));
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(equipmentA)
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        List<Player> players = asList(playerA, playerB);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // When
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> eightDiagramEvents = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        // 八卦陣效果失敗，B 選擇 Skip 出閃
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        // A 啟動麒麟弓效果並選擇 -1 馬移除
+        List<DomainEvent> qilinBowEvents = game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+        List<DomainEvent> chooseHorseEvents = game.playerChooseHorseForQilinBow(playerA.getId(), EH5044.getCardId());
+
+        // Then
+        assertEquals(2, game.getPlayer("player-b").getBloodCard().getHp()); // B 血量變為 2
+        assertNull(game.getPlayer("player-b").getEquipment().getMinusOne()); // B 沒有 -1 馬
+        assertNotNull(game.getPlayer("player-b").getEquipment().getPlusOne()); // B 仍然有 +1 馬
+    }
+
 }

@@ -311,7 +311,16 @@ public class Game {
         }
     }
 
+    private void checkIsPlayerHasThisEquipment(String playerId, String cardId) {
+        Player player = getPlayer(playerId);
+        if (!player.hasThisEquipment(cardId)) {
+            throw new IllegalStateException(player.getId() + " has no this equipment " + cardId);
+        }
+    }
+
     public List<DomainEvent> playerUseEquipment(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
+        checkIsCurrentRoundValid(playerId);
+        checkIsPlayerHasThisEquipment(playerId, cardId);
         List<DomainEvent> events = Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
         removeCompletedBehaviors();
         return events;

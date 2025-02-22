@@ -13,7 +13,6 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,6 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Data
 @Builder
@@ -85,6 +83,10 @@ public class Player {
 
     public MinusMountsCard getEquipmentMinusOneMountsCard() {
         return equipment.getMinusOne();
+    }
+
+    public boolean hasThisEquipment(String equipmentId) {
+       return equipment.hasThisEquipment(equipmentId);
     }
 
     public boolean hasMountsCard() {
@@ -199,6 +201,21 @@ public class Player {
     public boolean hasAnyContentmentCard() {
         return delayScrollCards.stream().anyMatch(card -> card instanceof Contentment);
     }
+
+    public boolean hasThisDelayScrollCard(String cardId) {
+        return delayScrollCards.stream().anyMatch(card -> card.getId().equals(cardId));
+    }
+
+    public void removeDelayScrollCard(String cardId) {
+        delayScrollCards.stream()
+                .filter(scrollCard -> scrollCard.getId().equals(cardId))
+                .findFirst()
+                .ifPresentOrElse(delayScrollCards::remove,
+                        () -> {
+                            throw new RuntimeException("Card with ID " + cardId + " not found");
+                        });
+    }
+
 
     public boolean isHandCardSizeBiggerThanHP() {
         return getHandSize() > getHP();

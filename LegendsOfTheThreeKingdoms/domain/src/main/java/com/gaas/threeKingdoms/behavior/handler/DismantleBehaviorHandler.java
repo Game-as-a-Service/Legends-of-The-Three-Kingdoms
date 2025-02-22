@@ -32,8 +32,11 @@ public class DismantleBehaviorHandler extends PlayCardBehaviorHandler {
 
         HandCard card = player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
 
-        String errorMessage = "對象沒手牌和裝備";
-        if (currentReactionPlayer.getHandSize() == 0 && !currentReactionPlayer.getEquipment().hasAnyEquipment()) {
+        String errorMessage = "對象沒手牌、裝備或者判定區的牌";
+        if (currentReactionPlayer.getHandSize() == 0 &&
+            !currentReactionPlayer.getEquipment().hasAnyEquipment() &&
+            !currentReactionPlayer.hasAnyDelayScrollCard()
+        ) {
             throw new IllegalArgumentException(errorMessage);
         }
 
