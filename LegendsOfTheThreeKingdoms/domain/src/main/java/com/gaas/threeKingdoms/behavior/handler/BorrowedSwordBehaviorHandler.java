@@ -5,7 +5,6 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.behavior.BorrowedSwordBehavior;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import com.gaas.threeKingdoms.player.Player;
 

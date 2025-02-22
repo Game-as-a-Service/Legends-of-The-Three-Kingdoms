@@ -26,7 +26,6 @@ public class HelloWorldController {
     public GameResponse sayHello() throws Exception {
         Game game = new Game();
         game.initDeck();
-        game.initDeck();
         game.setGameId("Hello World From Backend");
 
         game.setPlayers(List.of(

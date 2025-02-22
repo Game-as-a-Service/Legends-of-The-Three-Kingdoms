@@ -137,8 +137,8 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Duel/player_a_player_duel_and_player_b_skip_for_%s.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);
@@ -202,8 +202,8 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Duel/player_a_player_duel_and_player_a_win_for_%s.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);

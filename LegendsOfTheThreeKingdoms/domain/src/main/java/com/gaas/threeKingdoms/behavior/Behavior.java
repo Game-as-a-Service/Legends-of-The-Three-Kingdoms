@@ -63,20 +63,17 @@ public class Behavior {
 
     protected void playerPlayCard(Player player, Player targetPlayer, String cardId) {
         HandCard handCard = player.playCard(cardId);
-        card = handCard;
         game.updateRoundInformation(targetPlayer, handCard);
         game.getGraveyard().add(handCard);
     }
 
     protected void playerPlayEquipmentCard(Player player, Player targetPlayer, String cardId) {
         HandCard handCard = player.playCard(cardId);
-        card = handCard;
         game.updateRoundInformation(targetPlayer, handCard);
     }
 
     protected void playerPlayCardNotUpdateActivePlayer(Player player, String cardId) {
         HandCard handCard = player.playCard(cardId);
-        card = handCard;
         game.getCurrentRound().setCurrentPlayCard(card);
         game.getGraveyard().add(handCard);
     }

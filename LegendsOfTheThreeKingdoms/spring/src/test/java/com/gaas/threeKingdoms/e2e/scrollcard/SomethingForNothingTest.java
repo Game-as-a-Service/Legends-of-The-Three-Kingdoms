@@ -56,8 +56,8 @@ public class SomethingForNothingTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/SomethingForNothing/player_a_play_somethingForNothing_for_%s.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);

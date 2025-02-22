@@ -5,9 +5,11 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -759,6 +761,13 @@ public class ArrowBarrageTest {
     public void givenPlayerABCD_WhenPlayerBPlayArrowBarrageAndPlayerCUseDodgeAndPlayerDUseDodgeAndPlayerAUseDodge_ThenPlayerAHP4AndPlayerBActivePlayer() {
         Game game = new Game();
         game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029)
+                )
+        );
+        game.setDeck(deck);
+
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -831,5 +840,10 @@ public class ArrowBarrageTest {
         assertEquals("player-b", game.getCurrentRoundPlayer().getId());
         assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
 
+        //When
+        game.finishAction("player-b");
+
+        //Then
+        assertTrue(playerC.getHand().getCards().stream().noneMatch(card -> card.getId().equals("BDJ089")));
     }
 }
