@@ -85,6 +85,10 @@ public class Player {
         return equipment.getMinusOne();
     }
 
+    public boolean hasThisEquipment(String equipmentId) {
+       return equipment.hasThisEquipment(equipmentId);
+    }
+
     public boolean hasMountsCard() {
         return equipment.getMinusOne() != null || equipment.getPlusOne() != null;
     }
