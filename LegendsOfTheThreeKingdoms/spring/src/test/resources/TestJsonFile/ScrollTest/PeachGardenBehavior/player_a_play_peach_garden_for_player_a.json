@@ -1,0 +1,93 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "",
+      "cardId" : "SHA027",
+      "playType" : "active"
+    },
+    "message" : "出牌"
+  }, {
+    "event" : "PeachGardenEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "peachEvents" : [ {
+        "playerId" : "player-a",
+        "from" : 1,
+        "to" : 1
+      }, {
+        "playerId" : "player-b",
+        "from" : 2,
+        "to" : 2
+      }, {
+        "playerId" : "player-c",
+        "from" : 1,
+        "to" : 2
+      }, {
+        "playerId" : "player-d",
+        "from" : 0,
+        "to" : 0
+      } ]
+    },
+    "message" : "劉備 已使用桃園結義"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 1,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ "BH3029", "BH2028" ]
+      },
+      "equipments" : [ "", "", "", "EH5044" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 2,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 2,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 0,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : true
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-a"
+}

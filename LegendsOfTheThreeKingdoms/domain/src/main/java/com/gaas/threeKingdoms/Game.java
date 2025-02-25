@@ -54,7 +54,7 @@ public class Game {
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(new PeachGardenBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -523,7 +523,7 @@ public class Game {
         card.effect(damagedPlayer);
         PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
         List<DomainEvent> events = new ArrayList<>();
-        if (damagedPlayer.isStillAlive()) {
+        if (damagedPlayer.isHPGreaterThanZero()) {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             // 判斷要不要產 PlayCardEvent，如果是 playType 是 "qilinBow" 就不產
             if (!PlayType.QilinBow.getPlayType().equals(playType)) {
@@ -622,6 +622,7 @@ public class Game {
 
     public void removeDyingPlayer(Player player) {
         seatingChart.getPlayers().remove(player);
+        player.setHealthStatus(HealthStatus.DEATH);
     }
 
     public void setDeck(Deck deck) {

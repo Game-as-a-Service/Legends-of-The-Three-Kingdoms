@@ -2,7 +2,6 @@ package com.gaas.threeKingdoms.presenter.mapper;
 
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.*;
-import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -246,6 +245,15 @@ public class DomainEventToViewModelMapper {
                             somethingForNothingEvent.getPlayerId()
                     )
             );
+        });
+
+        eventToViewModelMappers.put(PeachGardenEvent.class, event -> {
+            PeachGardenEvent peachGardenEvent = (PeachGardenEvent) event;
+            return new PlayCardPresenter.PeachGardenViewModel(
+                    new PlayCardPresenter.PeachGardenDataViewModel(peachGardenEvent.getPlayerId(),
+                            peachGardenEvent.getPeachEvents().stream()
+                                    .map(peachEvent -> new PlayCardPresenter.PeachDataViewModel(peachEvent.getPlayerId(), peachEvent.getFrom(), peachEvent.getTo())).collect(Collectors.toList())),
+                    peachGardenEvent.getMessage());
         });
 
     }
