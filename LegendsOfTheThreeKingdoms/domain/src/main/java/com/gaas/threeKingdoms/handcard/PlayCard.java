@@ -210,6 +210,7 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SH9048", new SomethingForNothing(SH9048));
         CARD_FACTORY_MAP.put("SHJ050", new SomethingForNothing(SHJ050));
         CARD_FACTORY_MAP.put("SHA040", new ArrowBarrage(SHA040));
+        CARD_FACTORY_MAP.put("SHA027", new PeachGarden(SHA027));
     }
 
     private final String cardId;

@@ -273,6 +273,20 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         private String playerId;
     }
 
+    @Data
+    public static class PeachGardenViewModel extends ViewModel<PeachGardenDataViewModel> {
+        public PeachGardenViewModel(PeachGardenDataViewModel data, String message) {
+            super("PeachGardenEvent", data, message);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PeachGardenDataViewModel {
+        private String playerId;
+        private List<PeachDataViewModel> peachEvents;
+    }
 
     @Data
     @AllArgsConstructor

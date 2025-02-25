@@ -158,10 +158,16 @@ public class Player {
 
     public void damage(int i) {
         bloodCard.setHp(getHP() - i);
+        if (bloodCard.getHp() <= 0) {
+            setHealthStatus(HealthStatus.DYING);
+        }
     }
 
     public void heal(int value) {
         bloodCard.setHp(Math.min(getHP() + value, bloodCard.getMaxHp()));
+        if (HealthStatus.DYING.equals(healthStatus) && isHPGreaterThanZero()) {
+            setHealthStatus(HealthStatus.ALIVE);
+        }
     }
 
     public int judgeEscapeDistance() {
@@ -240,6 +246,14 @@ public class Player {
     }
 
     public boolean isStillAlive() {
+        return HealthStatus.ALIVE.equals(healthStatus);
+    }
+
+    public boolean isAlreadyDeath() {
+        return HealthStatus.DEATH.equals(healthStatus);
+    }
+
+    public boolean isHPGreaterThanZero() {
         return this.getHP() > 0;
     }
 
