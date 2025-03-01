@@ -43,7 +43,7 @@ public enum PlayCard {
     ESQ025("ESQ025", "丈八蛇矛", Suit.SPADE, Rank.Q),
     ESK026("ESK026", "黃爪飛電", Suit.SPADE, Rank.K),
 
-    SHA027("SHA027", "桃源結義", Suit.HEART, Rank.ACE),
+    SHA027("SHA027", "桃園結義", Suit.HEART, Rank.ACE),
     BH2028("BH2028", "閃", Suit.HEART, Rank.TWO),
     BH3029("BH3029", "桃", Suit.HEART, Rank.THREE),
     BH4030("BH4030", "桃", Suit.HEART, Rank.FOUR),

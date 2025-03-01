@@ -6,7 +6,7 @@
       "targetPlayerId" : "player-b",
       "cardId" : "BS8008"
     },
-    "message" : "player-a 拆掉了 player-b 的手牌 BS8008"
+    "message" : "劉備 拆掉了 劉備 的手牌 殺"
   } ],
   "data" : {
     "seats" : [ {

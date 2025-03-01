@@ -267,6 +267,11 @@ public class Player {
                 .collect(Collectors.toList());
     }
 
+    public String getGeneralName() {
+        return generalCard.getGeneralName();
+    }
+
+
     // 覆寫 equals 方法
     @Override
     public boolean equals(Object obj) {

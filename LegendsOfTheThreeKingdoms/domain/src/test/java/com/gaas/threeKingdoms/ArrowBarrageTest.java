@@ -286,7 +286,7 @@ public class ArrowBarrageTest {
 
     @DisplayName("""
                 Given
-                玩家ABCD
+                玩家 A B C D
                 B的回合
                 C 玩家沒有閃，有桃
                 C 玩家 hp = 1
@@ -846,4 +846,108 @@ public class ArrowBarrageTest {
         //Then
         assertTrue(playerC.getHand().getCards().stream().noneMatch(card -> card.getId().equals("BDJ089")));
     }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 1
+            
+            When
+            
+            A玩家出萬箭齊發
+            B C D A玩家出skip
+            
+            Then
+            B玩家 hp = 0
+            C玩家收到要求出閃的event
+            """)
+    @Test
+    public void givenPlayerABC_WhenPlayerAPlayArrowBarrageAndPlayerBNoDodgeAndNoPeach_ThenPlayerBDeathAndPlayerCReceiveDodgeEvent() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+
+        //Then
+        Optional<AskDodgeEvent> askDodgeEvent = events.stream()
+                .filter(event -> event instanceof AskDodgeEvent)
+                .map(event -> (AskDodgeEvent) event)
+                .findFirst();
+        assertTrue(askDodgeEvent.isPresent());
+        assertEquals("player-c", askDodgeEvent.get().getPlayerId());
+
+        assertEquals(0, playerB.getHP());
+        assertEquals("player-a", game.getCurrentRoundPlayer().getId());
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId());
+
+    }
+
+
 }

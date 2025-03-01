@@ -43,7 +43,6 @@ public class DyingAskPeachBehavior extends Behavior {
         int originalHp = dyingPlayer.getHP();
         List<DomainEvent> events = new ArrayList<>();
         if (isSkip(playType)) {
-            List<PlayerEvent> playerEvents = game.getPlayers().stream().map(PlayerEvent::new).toList();
             Round currentRound = game.getCurrentRound();
             PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType);
             events.add(playCardEvent);
@@ -98,9 +97,13 @@ public class DyingAskPeachBehavior extends Behavior {
 
                         events.addAll(List.of(discardCardEvent, discardEquipmentEvent));
                     }
+                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     events.add(settlementEvent);
                 } else {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
+                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     events.add(settlementEvent);
                 }
 
