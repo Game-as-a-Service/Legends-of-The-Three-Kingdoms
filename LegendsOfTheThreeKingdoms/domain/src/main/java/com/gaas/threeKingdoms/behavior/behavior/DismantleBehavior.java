@@ -3,12 +3,12 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.DismantleEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.handcard.PlayCard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,28 +42,32 @@ public class DismantleBehavior extends Behavior {
 
         reactionPlayers.remove(0);
 
+        String playerGeneralName = game.getPlayer(playerId).getGeneralName();
+        String targetPlayerGeneralName = game.getPlayer(playerId).getGeneralName();
+
         if (handCardIndex != null) {
             List<HandCard> cards = targetPlayer.getHand().getCards();
             if (handCardIndex >= cards.size()) {
                 throw new IllegalArgumentException("Hand card index over size");
             }
             HandCard handCard = cards.remove(handCardIndex.intValue());
-            events.add(new DismantleEvent(playerId, targetPlayerId, handCard.getId(), String.format("%s 拆掉了 %s 的手牌 %s", playerId, targetPlayerId, handCard.getId())));
+            events.add(new DismantleEvent(playerId, targetPlayerId, handCard.getId(), String.format("%s 拆掉了 %s 的手牌 %s", playerGeneralName, targetPlayerGeneralName, handCard.getName())));
             events.add(game.getGameStatusEvent("過河拆橋效果"));
         } else {
             if (!targetPlayer.getEquipment().hasThisEquipment(cardId) && !targetPlayer.hasThisDelayScrollCard(cardId)) {
                 throw new IllegalArgumentException("Player doesn't have this cardId in equipment or delayScrollCard");
             }
 
+
             if (targetPlayer.getEquipment().hasThisEquipment(cardId)) {
                 targetPlayer.getEquipment().removeEquipment(cardId);
                 game.getGraveyard().add(card);
-                events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 的裝備 %s", playerId, targetPlayerId, card.getName())));
+                events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 的裝備 %s", playerGeneralName, targetPlayerGeneralName, PlayCard.getCardName(cardId))));
                 events.add(game.getGameStatusEvent("過河拆橋效果"));
             } else {
                 targetPlayer.removeDelayScrollCard(cardId);
                 game.getGraveyard().add(card);
-                events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 判定區的 %s", playerId, targetPlayerId, card.getName())));
+                events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 判定區的 %s", playerGeneralName, targetPlayerGeneralName, PlayCard.getCardName(cardId))));
                 events.add(game.getGameStatusEvent("過河拆橋效果"));
             }
         }

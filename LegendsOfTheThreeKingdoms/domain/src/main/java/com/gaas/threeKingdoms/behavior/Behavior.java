@@ -1,16 +1,14 @@
 package com.gaas.threeKingdoms.behavior;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
-import com.gaas.threeKingdoms.events.DomainEvent;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Getter
 public class Behavior {
