@@ -657,11 +657,8 @@ public class Game {
         return topBehavior.peek();
     }
 
-    public Behavior peekTopBehaviorSecondElement() {
-        if (topBehavior.size() < 2) {
-            return null;
-        }
-        return topBehavior.get(topBehavior.size() - 2);
+    public Optional<Behavior> peekTopBehaviorSecondElement() {
+        return Optional.ofNullable(topBehavior.get(topBehavior.size() - 2));
     }
 
     public void removeTopBehavior() {

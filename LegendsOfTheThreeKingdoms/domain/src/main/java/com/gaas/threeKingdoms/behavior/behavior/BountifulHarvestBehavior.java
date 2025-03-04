@@ -11,10 +11,11 @@ import com.gaas.threeKingdoms.player.Player;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gaas.threeKingdoms.handcard.PlayCard.*;
+import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
+import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
-public class ArrowBarrageBehavior extends Behavior {
-    public ArrowBarrageBehavior(Game game, Player player, List<String> reactivePlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
+public class BountifulHarvestBehavior extends Behavior {
+    public BountifulHarvestBehavior(Game game, Player player, List<String> reactivePlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card, true, false);
     }
 
@@ -89,7 +90,7 @@ public class ArrowBarrageBehavior extends Behavior {
         return null;
     }
 
-    public boolean isInReactionPlayers(String playerId) {
-        return reactionPlayers.contains(playerId);
+    public boolean isLastReactionPlayers(String playerId) {
+        return reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
     }
 }
