@@ -97,14 +97,14 @@ public class DyingAskPeachBehavior extends Behavior {
 
                         events.addAll(List.of(discardCardEvent, discardEquipmentEvent));
                     }
+                    events.add(settlementEvent);
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
-                    events.add(settlementEvent);
                 } else {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
+                    events.add(settlementEvent);
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
-                    events.add(settlementEvent);
                 }
 
                 //  需要移除的 Behavior，isOneRound 要設為 true
@@ -166,21 +166,27 @@ public class DyingAskPeachBehavior extends Behavior {
     }
 
     private void addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(List<DomainEvent> events) {
-        Behavior secondBehavior = game.peekTopBehaviorSecondElement();
-        if (secondBehavior instanceof BarbarianInvasionBehavior) {
-            Player barbarianInvasionCurrentReactionPlayer = secondBehavior.getCurrentReactionPlayer();
-            events.add(new AskKillEvent(barbarianInvasionCurrentReactionPlayer.getId()));
-            game.getCurrentRound().setActivePlayer(barbarianInvasionCurrentReactionPlayer);
-        }
+        game.peekTopBehaviorSecondElement().ifPresent(secondBehavior -> {
+            if (secondBehavior instanceof BarbarianInvasionBehavior barbarianInvasionBehavior) {
+                Player behaviorCurrentReactionPlayer = barbarianInvasionBehavior.getCurrentReactionPlayer();
+                if (barbarianInvasionBehavior.isInReactionPlayers(behaviorCurrentReactionPlayer.getId())) {
+                    events.add(new AskKillEvent(behaviorCurrentReactionPlayer.getId()));
+                }
+                game.getCurrentRound().setActivePlayer(behaviorCurrentReactionPlayer);
+            }
+        });
     }
 
     private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events) {
-        Behavior secondBehavior = game.peekTopBehaviorSecondElement();
-        if (secondBehavior instanceof ArrowBarrageBehavior) {
-            Player arrowBarrageCurrentReactionPlayer = secondBehavior.getCurrentReactionPlayer();
-            events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
-            game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
-        }
+        game.peekTopBehaviorSecondElement().ifPresent(secondBehavior -> {
+            if (secondBehavior instanceof ArrowBarrageBehavior arrowBarrageBehavior) {
+                Player arrowBarrageCurrentReactionPlayer = arrowBarrageBehavior.getCurrentReactionPlayer();
+                if (arrowBarrageBehavior.isInReactionPlayers(arrowBarrageCurrentReactionPlayer.getId())) {
+                    events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
+                }
+                game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
+            }
+        });
     }
 
     private static boolean isMonarch(Player dyingPlayer) {

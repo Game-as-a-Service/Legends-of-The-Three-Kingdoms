@@ -6,5 +6,4 @@ public enum UserCommand {
     CHOOSE_HAND_CARD_INDEX,
     CHOOSE_EQUIPMENT_CARD_ID
 
-
 }

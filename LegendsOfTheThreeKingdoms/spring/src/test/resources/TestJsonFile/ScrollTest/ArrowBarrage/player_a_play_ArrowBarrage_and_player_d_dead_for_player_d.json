@@ -1,0 +1,77 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-c",
+      "targetPlayerId" : "player-d",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "SettlementEvent",
+    "data" : {
+      "playerId" : "player-d",
+      "role" : "Minister"
+    },
+    "message" : "劉備 死亡，身分是 忠臣"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 0,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 2,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 0,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "player-d",
+      "showKill" : false
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "不出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-d"
+}

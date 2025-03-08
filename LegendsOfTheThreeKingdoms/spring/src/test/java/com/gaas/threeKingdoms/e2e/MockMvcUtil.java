@@ -105,4 +105,15 @@ public class MockMvcUtil {
                           "cardId": "%s"
                         }""", currentPlayerId, cardId)));
     }
+
+    public ResultActions chooseCardFromBountifulHarvest(String gameId, String currentPlayerId, String cardId) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:chooseCardFromBountifulHarvest")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "cardId": "%s"
+                        }""", currentPlayerId, cardId)));
+    }
+
+
 }

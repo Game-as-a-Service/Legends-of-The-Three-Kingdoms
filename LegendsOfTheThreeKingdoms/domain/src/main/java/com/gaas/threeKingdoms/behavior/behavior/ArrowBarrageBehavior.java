@@ -60,6 +60,11 @@ public class ArrowBarrageBehavior extends Behavior {
                 }
             } else {
                 events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
+
+                // 最後一個人
+                if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+                    isOneRound = true;
+                }
             }
 
             return events;
@@ -82,5 +87,9 @@ public class ArrowBarrageBehavior extends Behavior {
             //TODO:怕有其他效果或殺的其他case
         }
         return null;
+    }
+
+    public boolean isInReactionPlayers(String playerId) {
+        return reactionPlayers.contains(playerId);
     }
 }

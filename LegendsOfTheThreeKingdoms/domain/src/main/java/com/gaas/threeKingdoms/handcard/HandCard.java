@@ -1,7 +1,6 @@
 package com.gaas.threeKingdoms.handcard;
 
 
-import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,8 +19,6 @@ public abstract class HandCard {
         this.suit = playCard.getSuit();
         this.rank = playCard.getRank();
     }
-
-
 
     public abstract void effect(Player player);
 

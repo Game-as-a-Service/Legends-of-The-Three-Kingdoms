@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.controller.dto.UseEquipmentRequest;
 import com.gaas.threeKingdoms.presenter.*;
+import com.gaas.threeKingdoms.usecase.ChooseCardFromBountifulHarvestUseCase;
 import com.gaas.threeKingdoms.usecase.StartGameUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -187,6 +188,19 @@ public class WebSocketBroadCast {
             }
         } catch (Exception e) {
             System.err.println("****************** pushUseDismantleEffectEvent ");
+            e.printStackTrace();
+        }
+    }
+
+    public void pushChooseCardFromBountifulHarvest(ChooseCardFromBountifulHarvestPresenter presenter) {
+        List<ChooseCardFromBountifulHarvestPresenter.GameViewModel> chooseCardFromBountifulHarvestViewModels = presenter.present();
+        try {
+            for (ChooseCardFromBountifulHarvestPresenter.GameViewModel chooseCardFromBountifulHarvestViewModel : chooseCardFromBountifulHarvestViewModels) {
+                String chooseCardFromBountifulHarvestJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(chooseCardFromBountifulHarvestViewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", chooseCardFromBountifulHarvestViewModel.getGameId(), chooseCardFromBountifulHarvestViewModel.getPlayerId()), chooseCardFromBountifulHarvestJson);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushEquipmentEffectEvent ");
             e.printStackTrace();
         }
     }

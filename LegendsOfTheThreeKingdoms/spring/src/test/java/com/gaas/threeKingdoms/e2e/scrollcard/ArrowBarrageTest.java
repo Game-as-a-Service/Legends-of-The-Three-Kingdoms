@@ -44,7 +44,7 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
 
         //When
         //B玩家出萬箭齊發
-        playerPlayBPlayArrowBarrage();
+        playerPlayArrowBarrage("player-b", "SHA040");
 
         // C玩家收到要求出閃的event
         List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
@@ -101,7 +101,7 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         givenPlayerBHaveArrowBarrage(3);
 
         // B 出萬箭齊發
-        playerPlayBPlayArrowBarrage();
+        playerPlayArrowBarrage("player-b", "SHA040");
         popAllPlayerMessage();
 
         // C 玩家出skip
@@ -137,7 +137,6 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         popAllPlayerMessage();
     }
 
-
     @Test
     public void testPlayerBPlayArrowBarrageAndPlayerCDying() throws Exception {
         // Given A玩家有萬箭齊發
@@ -153,7 +152,7 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         givenPlayerBHaveArrowBarrage(1);
 
         // B 出萬箭齊發
-        playerPlayBPlayArrowBarrage();
+        playerPlayArrowBarrage("player-b", "SHA040");
         popAllPlayerMessage();
 
         // C 玩家出skip
@@ -232,7 +231,7 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         givenPlayerBHaveArrowBarrage(1);
 
         // B 出萬箭齊發
-        playerPlayBPlayArrowBarrage();
+        playerPlayArrowBarrage("player-b", "SHA040");
         popAllPlayerMessage();
 
         // C 玩家出skip
@@ -276,6 +275,57 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         }
     }
 
+    @Test
+    public void testPlayerAPlayArrowBarrageAndPlayerDIsDyingButPlayerAIsNotAskDodge() throws Exception {
+        //Given
+        //玩家Ａ內奸ＢＣＤ ，Ｂ反賊已死亡，C主公剩三滴血，Ｄ忠臣剩一滴血
+        //A出萬箭齊發，C不出閃扣血，D不出閃扣血瀕死沒人救，此時會觸發要求A出閃
+        //期望: A自己出萬箭齊發，不應被要求出閃
+        givenPlayerAPlayArrowBarrageWhenPlayerBIsDeadAndPlayerCAndPlayerDNoDodge();
+
+        // When
+        //A 出萬箭齊發
+        playerPlayArrowBarrage("player-a", "SHA040");
+        popAllPlayerMessage();
+
+        // C 出skip
+        mockMvcUtil.playCard(gameId, "player-c", "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // D 出skip
+        mockMvcUtil.playCard(gameId, "player-d", "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // D dying
+        mockMvcUtil.playCard(gameId, "player-d", "player-d", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-d", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        mockMvcUtil.playCard(gameId, "player-c", "player-d", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // Then
+        // 玩家A沒有收到要求出閃的 event
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_a_play_ArrowBarrage_and_player_d_dead_for_%s.json";
+
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
     private void popAllPlayerMessage() {
         websocketUtil.getValue("player-a");
         websocketUtil.getValue("player-b");
@@ -283,9 +333,8 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         websocketUtil.getValue("player-d");
     }
 
-
-    private void playerPlayBPlayArrowBarrage() throws Exception {
-        mockMvcUtil.playCard(gameId, "player-b", "", "SHA040", PlayType.ACTIVE.getPlayType())
+    private void playerPlayArrowBarrage(String playerId, String cardId) throws Exception {
+        mockMvcUtil.playCard(gameId, playerId, "", cardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
     }
 
@@ -326,6 +375,45 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         Deck deck = new Deck();
         deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
         game.setDeck(deck);
+        repository.save(game);
+    }
+
+    private void givenPlayerAPlayArrowBarrageWhenPlayerBIsDeadAndPlayerCAndPlayerDNoDodge() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)
+        );
+        Player playerB = createPlayer("player-b",
+                0,
+                General.劉備,
+                HealthStatus.DEATH,
+                Role.REBEL,
+                new Dodge(BDJ089), new Peach(BH3029)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                3,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                1,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER
+        );
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        game.removeDyingPlayer(playerB);
         repository.save(game);
     }
 }

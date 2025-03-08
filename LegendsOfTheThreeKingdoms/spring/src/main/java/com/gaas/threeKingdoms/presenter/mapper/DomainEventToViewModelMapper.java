@@ -256,6 +256,27 @@ public class DomainEventToViewModelMapper {
                     peachGardenEvent.getMessage());
         });
 
+        eventToViewModelMappers.put(BountifulHarvestEvent.class, event -> {
+            BountifulHarvestEvent bountifulHarvestEvent = (BountifulHarvestEvent) event;
+            return new ChooseCardFromBountifulHarvestPresenter.BountifulHarvestViewModel(
+                    new ChooseCardFromBountifulHarvestPresenter.BountifulHarvestDataViewModel(
+                            bountifulHarvestEvent.getNextChoosingPlayerId(),
+                            bountifulHarvestEvent.getAssignmentCardIds()
+                    ),
+                    bountifulHarvestEvent.getMessage()
+            );
+        });
+
+        eventToViewModelMappers.put(BountifulHarvestChooseCardEvent.class, event -> {
+            BountifulHarvestChooseCardEvent bountifulHarvestChooseCardEvent = (BountifulHarvestChooseCardEvent) event;
+            return new ChooseCardFromBountifulHarvestPresenter.BountifulHarvestChooseCardViewModel(
+                    new ChooseCardFromBountifulHarvestPresenter.BountifulHarvestChooseCardDataViewModel(
+                            bountifulHarvestChooseCardEvent.getPlayerId(),
+                            bountifulHarvestChooseCardEvent.getCardId()
+                    ),
+                    bountifulHarvestChooseCardEvent.getMessage()
+            );
+        });
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {

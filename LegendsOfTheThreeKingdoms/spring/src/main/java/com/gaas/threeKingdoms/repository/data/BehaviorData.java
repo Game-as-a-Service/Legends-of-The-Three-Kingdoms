@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -24,6 +25,7 @@ public class BehaviorData {
     private String playType;
     private boolean isTargetPlayerNeedToResponse;
     private boolean isOneRound;
+    private Map<String, Object> params;
 
     public Behavior toDomain(Game game) {
         return createBehavior(game, behaviorName);
@@ -159,6 +161,22 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "BountifulHarvestBehavior" -> {
+                BountifulHarvestBehavior bountifulHarvestBehavior = new BountifulHarvestBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId)
+                );
+                bountifulHarvestBehavior.putParam(
+                        BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS,
+                        params.get(BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS)
+                );
+                yield bountifulHarvestBehavior;
+            }
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);
@@ -177,6 +195,7 @@ public class BehaviorData {
                 .playType(behavior.getPlayType())
                 .isTargetPlayerNeedToResponse(behavior.isTargetPlayerNeedToResponse())
                 .isOneRound(behavior.isOneRound())
+                .params(behavior.getParams())
                 .build();
     }
 }
