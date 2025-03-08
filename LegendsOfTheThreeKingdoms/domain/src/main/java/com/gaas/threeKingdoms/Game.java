@@ -30,6 +30,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.gaas.threeKingdoms.behavior.behavior.BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS;
+
 @AllArgsConstructor
 public class Game {
 
@@ -54,7 +56,7 @@ public class Game {
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(new PeachGardenBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(new PeachGardenBehaviorHandler(new BountifulHarvestHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -727,7 +729,23 @@ public class Game {
             return acceptedEvent;
         }
         throw new IllegalStateException("UseDismantleEffect error.");
+    }
 
+    public List<DomainEvent> playerChooseCardFromBountifulHarvest(String currentPlayerId, String cardId) {
+        Behavior behavior = topBehavior.peek();
+        if (behavior instanceof BountifulHarvestBehavior) {
+            Optional.ofNullable(behavior.getParam(BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS))
+                    .filter(List.class::isInstance)
+                    .map(List.class::cast)
+                    .filter(cardIds -> cardIds.get(0) instanceof String)
+                    .map(list -> (List<String>) list)
+                    .filter(stringCardIds -> stringCardIds.contains(cardId))
+                    .orElseThrow(() -> new IllegalStateException("CardId is not in BOUNTIFUL_HARVEST_CARDS"));
+            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(currentPlayerId, "", cardId, PlayType.ACTIVE.getPlayType());
+            removeCompletedBehaviors();
+            return acceptedEvent;
+        }
+        throw new IllegalStateException("playerChooseCardFromBountifulHarvest error.");
     }
 
     private boolean isPlayerHasWeapon(String playerId) {

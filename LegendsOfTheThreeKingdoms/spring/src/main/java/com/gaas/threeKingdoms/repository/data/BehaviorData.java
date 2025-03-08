@@ -161,7 +161,22 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
-
+            case "BountifulHarvestBehavior" -> {
+                BountifulHarvestBehavior bountifulHarvestBehavior = new BountifulHarvestBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId)
+                );
+                bountifulHarvestBehavior.putParam(
+                        BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS,
+                        params.get(BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS)
+                );
+                yield bountifulHarvestBehavior;
+            }
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);
@@ -180,6 +195,7 @@ public class BehaviorData {
                 .playType(behavior.getPlayType())
                 .isTargetPlayerNeedToResponse(behavior.isTargetPlayerNeedToResponse())
                 .isOneRound(behavior.isOneRound())
+                .params(behavior.getParams())
                 .build();
     }
 }

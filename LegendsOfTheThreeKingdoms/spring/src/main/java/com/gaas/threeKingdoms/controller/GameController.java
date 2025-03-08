@@ -30,6 +30,7 @@ public class GameController {
     private final ChooseHorseUseCase chooseHorseUseCase;
     private final UseBorrowedSwordEffectUseCase useBorrowedSwordEffectUseCase;
     private final UseDismantleUseCase useDismantleUseCase;
+    private final ChooseCardFromBountifulHarvestUseCase chooseCardFromBountifulHarvestUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -129,4 +130,13 @@ public class GameController {
         webSocketBroadCast.pushUseDismantleEvent(useDismantlePresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
+
+    @PostMapping("/api/games/{gameId}/player:chooseCardFromBountifulHarvest")
+    public ResponseEntity<?> playerChooseCardFromBountifulHarvest(@PathVariable String gameId, @RequestBody ChooseCardFromBountifulHarvestRequest chooseCardFromBountifulHarvestRequest) {
+        ChooseCardFromBountifulHarvestPresenter chooseCardFromBountifulHarvestPresenter = new ChooseCardFromBountifulHarvestPresenter();
+        chooseCardFromBountifulHarvestUseCase.execute(gameId, chooseCardFromBountifulHarvestRequest.toChooseCardFromBountifulHarvestRequest(), chooseCardFromBountifulHarvestPresenter);
+        webSocketBroadCast.pushChooseCardFromBountifulHarvest(chooseCardFromBountifulHarvestPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
 }

@@ -1,17 +1,17 @@
 package com.gaas.threeKingdoms.behavior.handler;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
 import com.gaas.threeKingdoms.behavior.behavior.BountifulHarvestBehavior;
-import com.gaas.threeKingdoms.behavior.behavior.ContentmentBehavior;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.BountifulHarvest;
-import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.player.Player;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.gaas.threeKingdoms.behavior.behavior.BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS;
 
 public class BountifulHarvestHandler extends PlayCardBehaviorHandler {
     public BountifulHarvestHandler(PlayCardBehaviorHandler next, Game game) {
@@ -39,9 +39,9 @@ public class BountifulHarvestHandler extends PlayCardBehaviorHandler {
             tmpPlayer = game.getNextPlayer(tmpPlayer);
         }
         List<HandCard> cards = game.drawCardForCardEffect(reactivePlayers.size());
+        List<String> cardIds = cards.stream().map(HandCard::getId).collect(Collectors.toList());
         BountifulHarvestBehavior bountifulHarvestBehavior = new BountifulHarvestBehavior(game, player, reactivePlayers, player, cardId, playType, card);
-        bountifulHarvestBehavior.putParam(UserCommand.BOUNTIFUL_HARVEST_CARDS.name(), cards);
-        return new ContentmentBehavior(game, player, reactivePlayers, player, cardId, playType, card);
-
+        bountifulHarvestBehavior.putParam(BOUNTIFUL_HARVEST_CARDS, cardIds);
+        return bountifulHarvestBehavior;
     }
 }

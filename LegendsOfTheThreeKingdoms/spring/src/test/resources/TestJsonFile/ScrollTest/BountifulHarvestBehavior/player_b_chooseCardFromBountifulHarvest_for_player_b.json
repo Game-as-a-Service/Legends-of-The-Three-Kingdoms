@@ -1,0 +1,75 @@
+{
+  "events" : [ {
+    "event" : "BountifulHarvestChooseCardEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "cardId" : "SS7007"
+    },
+    "message" : "劉備 選擇了 南蠻入侵"
+  }, {
+    "event" : "BountifulHarvestEvent",
+    "data" : {
+      "nextChoosingPlayerId" : "player-c",
+      "assignmentCardIds" : [ "BHK039", "BH2028", "BH3029" ]
+    },
+    "message" : "輪到 呂布 選牌"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 5,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BH2028", "SS7007" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "QUN002",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-c",
+      "dyingPlayer" : "",
+      "showKill" : false
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "五穀豐登選牌",
+  "gameId" : "my-id",
+  "playerId" : "player-b"
+}

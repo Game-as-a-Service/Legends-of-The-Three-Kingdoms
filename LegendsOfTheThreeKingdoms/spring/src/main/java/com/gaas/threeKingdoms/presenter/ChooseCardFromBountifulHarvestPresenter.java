@@ -8,22 +8,20 @@ import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
 import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
-import com.gaas.threeKingdoms.usecase.ChooseHorseUseCase;
+import com.gaas.threeKingdoms.usecase.ChooseCardFromBountifulHarvestUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
-public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePresenter<List<ChooseHorsePresenter.GameViewModel>>{
+public class ChooseCardFromBountifulHarvestPresenter implements ChooseCardFromBountifulHarvestUseCase.ChooseCardFromBountifulHarvestPresenter<List<ChooseCardFromBountifulHarvestPresenter.GameViewModel>> {
 
     private final DomainEventToViewModelMapper domainEventToViewModelMapper = new DomainEventToViewModelMapper();
-    private List<GameViewModel> viewModels = new ArrayList<>();
+    private List<ChooseCardFromBountifulHarvestPresenter.GameViewModel> viewModels = new ArrayList<>();
     private List<ViewModel<?>> effectViewModels = new ArrayList<>();
 
     @Override
@@ -45,7 +43,7 @@ public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePrese
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
-            viewModels.add(new ChooseHorsePresenter.GameViewModel(
+            viewModels.add(new ChooseCardFromBountifulHarvestPresenter.GameViewModel(
                     effectViewModels,
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
@@ -55,30 +53,37 @@ public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePrese
 
     }
 
-
     @Override
-    public List<ChooseHorsePresenter.GameViewModel> present() {
+    public List<ChooseCardFromBountifulHarvestPresenter.GameViewModel> present() {
         return viewModels;
     }
 
-    private void updateViewModels(ViewModel<?>... viewModels) {
-        Arrays.stream(viewModels)
-                .filter(Objects::nonNull)
-                .forEach(effectViewModels::add);
-    }
-
-    public static class RemoveHorseViewModel extends ViewModel<RemoveHorseDataViewModel> {
-        public RemoveHorseViewModel(RemoveHorseDataViewModel data) {
-            super("RemoveHorseViewModel", data, "移除馬匹");
+    public static class BountifulHarvestViewModel extends ViewModel<ChooseCardFromBountifulHarvestPresenter.BountifulHarvestDataViewModel> {
+        public BountifulHarvestViewModel(ChooseCardFromBountifulHarvestPresenter.BountifulHarvestDataViewModel data, String message) {
+            super("BountifulHarvestEvent", data, message);
         }
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class RemoveHorseDataViewModel {
+    public static class BountifulHarvestDataViewModel {
+        private String nextChoosingPlayerId;
+        private List<String> assignmentCardIds;
+    }
+
+    public static class BountifulHarvestChooseCardViewModel extends ViewModel<ChooseCardFromBountifulHarvestPresenter.BountifulHarvestChooseCardDataViewModel> {
+        public BountifulHarvestChooseCardViewModel(ChooseCardFromBountifulHarvestPresenter.BountifulHarvestChooseCardDataViewModel data, String message) {
+            super("BountifulHarvestChooseCardEvent", data, message);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class BountifulHarvestChooseCardDataViewModel {
         private String playerId;
-        private String mountCardId;
+        private String cardId;
     }
 
     @Data

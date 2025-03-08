@@ -21,7 +21,7 @@ public class Behavior {
     protected HandCard card;
     protected boolean isTargetPlayerNeedToResponse = true; // 別人要不要反應
     protected boolean isOneRound = true; // 是不是一回合就結束
-    private Map<String, Object> params;
+    protected final Map<String, Object> params;
 
     public Behavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer,
                     String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse,
@@ -36,21 +36,6 @@ public class Behavior {
         this.isTargetPlayerNeedToResponse = isTargetPlayerNeedToResponse;
         this.isOneRound = isOneRound;
         this.params = new HashMap<>();
-    }
-
-    public Behavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer,
-                    String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse,
-                    boolean isOneRound, Map<String, Object> params) {
-        this.game = game;
-        this.behaviorPlayer = behaviorPlayer;
-        this.reactionPlayers = reactionPlayers;
-        this.currentReactionPlayer = currentReactionPlayer;
-        this.cardId = cardId;
-        this.playType = playType;
-        this.card = card;
-        this.isTargetPlayerNeedToResponse = isTargetPlayerNeedToResponse;
-        this.isOneRound = isOneRound;
-        this.params = params;
     }
 
     // hook
