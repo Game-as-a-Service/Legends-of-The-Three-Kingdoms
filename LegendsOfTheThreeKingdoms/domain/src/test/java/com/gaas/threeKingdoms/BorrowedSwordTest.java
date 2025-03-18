@@ -17,6 +17,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -703,7 +704,7 @@ public class BorrowedSwordTest {
             B 玩家出殺
             
             When
-            C發動八卦陣裝備卡抽到大老二，效果失敗
+            C發動八卦陣裝備卡抽到梅花三，效果失敗
             C 出 skip
                         
             Then
@@ -718,7 +719,7 @@ public class BorrowedSwordTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(ES2002)
+                        new Dismantle(SS3003)
                 )
         );
         game.setDeck(deck);

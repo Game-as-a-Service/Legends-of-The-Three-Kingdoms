@@ -48,7 +48,7 @@ public class BountifulHarvestTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(ES2002), new Kill(BC2054), new Peach(BH3029)
+                        new RedRabbitHorse(BH3029), new Kill(BC2054), new Peach(BH3029)
                 )
         );
         game.setDeck(deck);
@@ -105,7 +105,7 @@ public class BountifulHarvestTest {
 
         assertEquals(3, bountifulHarvestEvent.getAssignmentCardIds().size());
         List<String> cardIds = bountifulHarvestEvent.getAssignmentCardIds();
-        assertTrue(cardIds.containsAll(List.of("ES2002", "BC2054", "BH3029")));
+        assertTrue(cardIds.containsAll(List.of("BH3029", "BC2054", "BH3029")));
 
     }
 
@@ -203,7 +203,7 @@ public class BountifulHarvestTest {
         B玩家出五穀豐登，抽出 (ES2002、BC2054、BH3029、BH0036)
         
         When
-        B 選擇 ES2002 赤兔馬
+        B 選擇 BH3029 赤兔馬
         C 選擇 BC2054
         D 選擇 BH3029
         A 選擇 BH0036
@@ -219,7 +219,7 @@ public class BountifulHarvestTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(ES2002), new Kill(BC2054), new Peach(BH3029), new Kill(BH0036)
+                        new RedRabbitHorse(BH3029), new Kill(BC2054), new Peach(BH3029), new Kill(BH0036)
                 )
         );
         game.setDeck(deck);
@@ -270,7 +270,7 @@ public class BountifulHarvestTest {
         List<DomainEvent> harvestEvents = game.playerPlayCard(playerB.getId(), SH3042.getCardId(), null, PlayType.ACTIVE.getPlayType());
 
         // B 玩家選擇 ES2002 赤兔馬
-        List<DomainEvent> selectionEventOfPlayerB = game.playerChooseCardFromBountifulHarvest(playerB.getId(), ES2002.getCardId());
+        List<DomainEvent> selectionEventOfPlayerB = game.playerChooseCardFromBountifulHarvest(playerB.getId(), BH3029.getCardId());
 
         // C 玩家選擇 BC2054 赤兔馬
         List<DomainEvent> selectionEventOfPlayerC = game.playerChooseCardFromBountifulHarvest(playerC.getId(), BC2054.getCardId());

@@ -3,7 +3,6 @@ package com.gaas.threeKingdoms.usecase;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.exception.NotFoundException;
-import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.outport.GameRepository;
 import jakarta.inject.Named;
 import lombok.AllArgsConstructor;

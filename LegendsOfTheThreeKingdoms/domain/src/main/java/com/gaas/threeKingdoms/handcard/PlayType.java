@@ -1,8 +1,5 @@
 package com.gaas.threeKingdoms.handcard;
 
-import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
-
-import javax.print.DocFlavor;
 import java.util.Arrays;
 
 public enum PlayType {
@@ -10,7 +7,8 @@ public enum PlayType {
     SKIP("skip"),
     ACTIVE("active"),
     INACTIVE("inactive"),
-    QilinBow("qilinBow");
+    //    QilinBow("qilinBow");
+    SYSTEM_INTERNAL("systemInternal");
 
     private final String playType;
 

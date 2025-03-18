@@ -213,6 +213,7 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SHA027", new PeachGarden(SHA027));
         CARD_FACTORY_MAP.put("SH3042", new BountifulHarvest(SH3042));
         CARD_FACTORY_MAP.put("SH4043", new BountifulHarvest(SH4043));
+        CARD_FACTORY_MAP.put("SSA014", new Lightning(SSA014));
     }
 
     private final String cardId;

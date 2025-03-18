@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -280,18 +281,18 @@ public class EightDiagramTacticTest {
             A發動裝備卡效果
                     
             When
-            八卦陣效果抽到大老二
+            八卦陣效果抽到梅花三
                     
             Then
             八卦陣效果event isSuccess = false
                 """)
     @Test
-    public void givenPlayerAUesEightDiagramTactic_WhenGetBig2_ThenPlayerABeenAskIfWantToDodge() {
+    public void givenPlayerAUesEightDiagramTactic_WhenGet3_ThenPlayerABeenAskIfWantToDodge() {
         Game game = new Game();
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(ES2002)
+                        new Dismantle(SS3003)
                 )
         );
         game.setDeck(deck);
@@ -547,7 +548,7 @@ public class EightDiagramTacticTest {
             B有四張殺
             A玩家HP=4
             B玩家攻擊A玩家
-            A發動裝備卡抽到大老二，效果失敗
+            A發動裝備卡抽到梅花三，效果失敗
             
             When
             A再次發動裝備卡八卦陣
@@ -561,7 +562,7 @@ public class EightDiagramTacticTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
-                        new RedRabbitHorse(ES2002)
+                        new Dismantle(SS3003)
                 )
         );
         game.setDeck(deck);

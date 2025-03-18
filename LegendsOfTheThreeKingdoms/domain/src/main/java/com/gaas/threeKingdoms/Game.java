@@ -14,6 +14,7 @@ import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
 import com.gaas.threeKingdoms.handcard.*;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
+import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
@@ -29,8 +30,6 @@ import lombok.AllArgsConstructor;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.gaas.threeKingdoms.behavior.behavior.BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS;
 
 @AllArgsConstructor
 public class Game {
@@ -56,7 +55,7 @@ public class Game {
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(new PeachGardenBehaviorHandler(new BountifulHarvestHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(new PeachGardenBehaviorHandler(new BountifulHarvestHandler(new LightningBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -333,7 +332,7 @@ public class Game {
         Behavior nomralKillbehavior = topBehavior.peek(); //  NormalKill
         List<DomainEvent> qilingBowEvents = waitingQilinBowResponsebehavior.responseToPlayerAction(playerId, nomralKillbehavior.getReactionPlayers().get(0), cardId, EquipmentPlayType.ACTIVE.getPlayType());
 
-        List<DomainEvent> normalKillEvents = nomralKillbehavior.responseToPlayerAction(nomralKillbehavior.getReactionPlayers().get(0), waitingQilinBowResponsebehavior.getCurrentReactionPlayer().getId(), cardId, PlayType.QilinBow.getPlayType());
+        List<DomainEvent> normalKillEvents = nomralKillbehavior.responseToPlayerAction(nomralKillbehavior.getReactionPlayers().get(0), waitingQilinBowResponsebehavior.getCurrentReactionPlayer().getId(), cardId, PlayType.SYSTEM_INTERNAL.getPlayType());
 
         removeCompletedBehaviors();
         return Stream.of(qilingBowEvents, normalKillEvents).flatMap(Collection::stream).collect(Collectors.toList());
@@ -441,12 +440,59 @@ public class Game {
                     DomainEvent contentmentEvent = handleContentmentJudgement(player);
                     judgementEvents.add(contentmentEvent);
                     player.getDelayScrollCards().remove(card);
+                } else if (card instanceof Lightning) {
+                    List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
+                    judgementEvents.addAll(lightningEvents);
                 }
             }
         }
         judgementEvents.add(new JudgementEvent());
         return judgementEvents;
     }
+
+    private List<DomainEvent> handleLightningJudgement(ScrollCard card, Player player) {
+        // 抽一張卡判定
+        List<HandCard> cards = drawCardForCardEffect(1);
+        HandCard drawnCard = cards.get(0);
+
+        // 判定牌是否為黑桃2~9
+        boolean isLightningSuccess = Suit.SPADE == drawnCard.getSuit() &&
+                drawnCard.getRank().getValue() >= Rank.TWO.getValue() &&
+                drawnCard.getRank().getValue() <= Rank.NINE.getValue();
+
+        List<DomainEvent> domainEvents = new ArrayList<>();
+        domainEvents.add(new LightningEvent(isLightningSuccess, player.getId(), drawnCard.getId()));
+
+        if (isLightningSuccess) {
+            List<DomainEvent> damageEvents = getDamagedEvent(
+                    player.getId(),
+                    player.getId(),
+                    card.getId(),
+                    card,
+                    PlayType.SYSTEM_INTERNAL.getPlayType(),
+                    player.getHP(),
+                    player,
+                    currentRound,
+                    Optional.empty()
+            );
+            domainEvents.addAll(damageEvents);
+        } else {
+            Player nextPlayer = seatingChart.getNextPlayer(player);
+            domainEvents.add(new LightningTransferredEvent(
+                    player.getId(),
+                    nextPlayer.getId(),
+                    card.getId(),
+                    String.format("閃電從 %s 轉移至 %s", player.getGeneralName(), nextPlayer.getGeneralName())
+            ));
+            domainEvents.add(getGameStatusEvent("閃電發動失敗"));
+            // 轉移閃電到下一位
+            player.removeDelayScrollCard(card.getId());
+            nextPlayer.addDelayScrollCard(card);
+        }
+
+        return domainEvents;
+    }
+
     private ContentmentEvent handleContentmentJudgement(Player player) {
         // 抽一張卡判定
         List<HandCard> cards = drawCardForCardEffect(1);
@@ -521,18 +567,18 @@ public class Game {
                                              int originalHp,
                                              Player damagedPlayer,
                                              Round currentRound,
-                                             Behavior behavior) {
+                                             Optional<Behavior> behavior) {
         card.effect(damagedPlayer);
         PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
         List<DomainEvent> events = new ArrayList<>();
         if (damagedPlayer.isHPGreaterThanZero()) {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             // 判斷要不要產 PlayCardEvent，如果是 playType 是 "qilinBow" 就不產
-            if (!PlayType.QilinBow.getPlayType().equals(playType)) {
+            if (!PlayType.SYSTEM_INTERNAL.getPlayType().equals(playType)) {
                 PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", damagedPlayerId, attackerPlayerId, cardId, playType);
                 events.add(playCardEvent);
             }
-            behavior.setIsOneRound(true);
+            behavior.ifPresent(b -> b.setIsOneRound(true));
             events.add(playerDamagedEvent);
             return events;
         } else {
@@ -542,11 +588,11 @@ public class Game {
             currentRound.setDyingPlayer(damagedPlayer);
             currentRound.setActivePlayer(damagedPlayer);
             // 判斷要不要產 PlayCardEvent，如果是 playType 是 "qilinBow" 就不產
-            if (!PlayType.QilinBow.getPlayType().equals(playType)) {
+            if (!PlayType.SYSTEM_INTERNAL.getPlayType().equals(playType)) {
                 PlayCardEvent playCardEvent = new PlayCardEvent("不出牌", damagedPlayerId, attackerPlayerId, cardId, playType);
                 events.add(playCardEvent);
             }
-            behavior.setIsOneRound(false);
+            behavior.ifPresent(b -> b.setIsOneRound(false));
 
             if (getGamePhase() instanceof GeneralDying) {
                 updateTopBehavior(new DyingAskPeachBehavior(this, damagedPlayer, getPlayers().stream().map(Player::getId).toList(),
@@ -660,7 +706,7 @@ public class Game {
     }
 
     public Optional<Behavior> peekTopBehaviorSecondElement() {
-        return Optional.ofNullable(topBehavior.get(topBehavior.size() - 2));
+        return topBehavior.size() > 2 ? Optional.ofNullable(topBehavior.get(topBehavior.size() - 2)) : Optional.empty();
     }
 
     public void removeTopBehavior() {

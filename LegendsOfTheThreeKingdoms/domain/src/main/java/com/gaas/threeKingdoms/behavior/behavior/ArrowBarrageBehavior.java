@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
@@ -41,7 +42,7 @@ public class ArrowBarrageBehavior extends Behavior {
 
         if (isSkip(playType)) {
             int originalHp = currentReactionPlayer.getHP();
-            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), this);
+            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), Optional.of(this));
             // Remove the current player to next player
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
 
