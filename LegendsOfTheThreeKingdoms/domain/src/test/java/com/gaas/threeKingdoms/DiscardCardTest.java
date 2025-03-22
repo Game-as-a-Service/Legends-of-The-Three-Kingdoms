@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Stack;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
@@ -54,7 +55,7 @@ public class DiscardCardTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerB = PlayerBuilder
@@ -66,7 +67,7 @@ public class DiscardCardTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerC = PlayerBuilder
@@ -78,7 +79,7 @@ public class DiscardCardTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerD = PlayerBuilder
@@ -90,7 +91,7 @@ public class DiscardCardTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         List<Player> players = asList(

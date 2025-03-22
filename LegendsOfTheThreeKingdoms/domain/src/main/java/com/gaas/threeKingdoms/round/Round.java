@@ -15,7 +15,7 @@ public class Round {
     private Player currentRoundPlayer;
     private Player activePlayer;
     private Player dyingPlayer;
-    private HandCard currentPlayCard;
+    private HandCard currentCard;
     private boolean isShowKill;
     private Stage stage;
 

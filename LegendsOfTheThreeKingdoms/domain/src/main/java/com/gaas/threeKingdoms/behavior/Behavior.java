@@ -72,7 +72,7 @@ public class Behavior {
 
     protected void playerPlayCardNotUpdateActivePlayer(Player player, String cardId) {
         HandCard handCard = player.playCard(cardId);
-        game.getCurrentRound().setCurrentPlayCard(card);
+        game.getCurrentRound().setCurrentCard(card);
         game.getGraveyard().add(handCard);
     }
 

@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 @Data
@@ -32,7 +33,7 @@ public class Player {
     private BloodCard bloodCard;
     private HealthStatus healthStatus;
     private Equipment equipment = new Equipment();
-    private List<ScrollCard> delayScrollCards = new ArrayList<>();
+    private Stack<ScrollCard> delayScrollCards = new Stack<>();
 
     public Player(Hand hand, String id, RoleCard roleCard, GeneralCard generalCard, BloodCard bloodCard, HealthStatus healthStatus,
                   Equipment equipment) {
@@ -46,7 +47,7 @@ public class Player {
     }
 
     public Player(Hand hand, String id, RoleCard roleCard, GeneralCard generalCard, BloodCard bloodCard, HealthStatus healthStatus,
-                  Equipment equipment, List<ScrollCard> delayScrollCards) {
+                  Equipment equipment, Stack<ScrollCard> delayScrollCards) {
         this.hand = hand;
         this.id = id;
         this.roleCard = roleCard;

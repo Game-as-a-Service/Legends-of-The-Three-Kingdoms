@@ -6,28 +6,25 @@ import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.Deck;
-import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
+import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 import static com.gaas.threeKingdoms.Utils.getEvent;
-import static com.gaas.threeKingdoms.handcard.PlayCard.BH3029;
-import static com.gaas.threeKingdoms.handcard.PlayCard.SSA014;
-import static com.gaas.threeKingdoms.handcard.PlayCard.SS3003;
+import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,7 +57,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014)));
 
@@ -130,7 +127,8 @@ public class LightningTest {
         // Given
         Game game = new Game();
         game.initDeck();
-
+        Stack<ScrollCard> delayScrollCards = new Stack<>();
+        delayScrollCards.addAll(List.of(new Lightning(SSA014)));
         // 玩家 A 設定
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
@@ -140,7 +138,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>(List.of(new Lightning(SSA014))))
+                .withDelayScrollCards(delayScrollCards)
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014)));
 
@@ -214,6 +212,8 @@ public class LightningTest {
         // Given
         Game game = new Game();
         game.initDeck();
+        Stack<ScrollCard> delayScrollCards = new Stack<>();
+        delayScrollCards.add(new Lightning(SSA014));
 
         // 玩家 A 設定
         Player playerA = PlayerBuilder.construct()
@@ -224,7 +224,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>(List.of(new Lightning(SSA014))))
+                .withDelayScrollCards(delayScrollCards)
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014)));
 
@@ -236,7 +236,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 沒有判定牌
+                .withDelayScrollCards(new Stack<>()) // 沒有判定牌
                 .build();
 
         // 玩家 C 設定
@@ -319,7 +319,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014)));
 
@@ -331,7 +331,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
 
         // 玩家 C 設定
@@ -431,7 +431,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014)));
 
@@ -443,7 +443,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
 
         // 玩家 C 設定
@@ -537,7 +537,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014)));
 
@@ -549,7 +549,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
 
         // 玩家 C 設定
@@ -642,7 +642,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014), new Peach(BH3029))); // A 有一個桃
 
@@ -654,7 +654,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
 
         // 玩家 C 設定
@@ -705,7 +705,7 @@ public class LightningTest {
         // 確認 A HP 回復至 1
         assertEquals(1, playerA.getBloodCard().getHp());
 
-        // 確認 ABCD 收到判定結束事件
+        // 確認 A B C D 收到判定結束事件
         assertTrue(peachEvents.stream().anyMatch(event -> event instanceof JudgementEvent));
 
         // A 收到抽牌事件
@@ -743,6 +743,7 @@ public class LightningTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
                         new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003)
                 )
         );
@@ -757,7 +758,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014), new Peach(BH3029), new Peach(BH3029))); // A 有兩個桃
 
@@ -769,7 +770,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
         playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH3029))); // B 有一個桃
 
@@ -857,6 +858,7 @@ public class LightningTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
                         new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003)
                 )
         );
@@ -871,7 +873,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014), new Peach(BH3029), new Peach(BH3029))); // A 有兩個桃
 
@@ -883,7 +885,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
         playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH3029))); // B 有一個桃
 
@@ -985,6 +987,8 @@ public class LightningTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
                         new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003)
                 )
         );
@@ -999,7 +1003,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014), new Peach(BH3029), new Peach(BH3029))); // A 有兩個桃
 
@@ -1011,7 +1015,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
         playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH3029))); // B 有一個桃
 
@@ -1109,7 +1113,7 @@ public class LightningTest {
     
         Then
         結算 A ，A 死亡
-        ABCD 收到判定結束的 event
+        ABCD 收到結算的 event
         B 的回合
     """)
     @Test
@@ -1119,6 +1123,8 @@ public class LightningTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
                         new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003)
                 )
         );
@@ -1133,7 +1139,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014))); // A 出閃電
 
@@ -1145,7 +1151,7 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
 
         // 玩家 C 設定 (沒有桃)
@@ -1212,14 +1218,14 @@ public class LightningTest {
 
         // Then:
         // 確認 A 死亡
-        assertEquals(0, playerA.getBloodCard().getHp());
+        assertEquals(-1, playerA.getBloodCard().getHp());
         assertTrue(dSkipEvents.stream().anyMatch(event -> event instanceof SettlementEvent));
         assertEquals(3, game.getSeatingChart().getPlayers().size());
         assertTrue(game.getSeatingChart().getPlayers().stream().map(Player::getId).toList()
                 .containsAll(Arrays.asList("player-b", "player-c", "player-d")));
 
-        // 確認 ABCD 收到判定結束事件
-        assertTrue(dSkipEvents.stream().anyMatch(event -> event instanceof JudgementEvent));
+        // 確認 ABCD 收到結算事件
+        assertTrue(dSkipEvents.stream().anyMatch(event -> event instanceof SettlementEvent));
 
         // 確認 B 進入回合
         assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
@@ -1258,6 +1264,8 @@ public class LightningTest {
         game.initDeck();
         Deck deck = new Deck(
                 List.of(
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
+                        new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003),
                         new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003)
                 )
         );
@@ -1272,19 +1280,19 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有閃電
+                .withDelayScrollCards(new Stack<>()) // 尚未有閃電
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014))); // A 出閃電
 
         // 玩家 B 設定 (有三個桃)
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
-                .withBloodCard(new BloodCard(4))
+                .withBloodCard(new BloodCard(7))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.MINISTER))
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>()) // 尚未有判定牌
+                .withDelayScrollCards(new Stack<>()) // 尚未有判定牌
                 .build();
         playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH3029), new Peach(BH3029), new Peach(BH3029))); // B 有三個桃
 

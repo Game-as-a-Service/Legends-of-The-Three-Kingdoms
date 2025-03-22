@@ -9,6 +9,7 @@ import com.gaas.threeKingdoms.rolecard.RoleCard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class PlayerBuilder {
     private Hand hand;
@@ -18,11 +19,11 @@ public class PlayerBuilder {
     private BloodCard bloodCard;
     private HealthStatus healthStatus;
     private Equipment equipment;
-    private List<ScrollCard> delayScrollCards;
+    private Stack<ScrollCard> delayScrollCards;
 
     public static PlayerBuilder construct() {
         PlayerBuilder playerBuilder = new PlayerBuilder();
-        playerBuilder.delayScrollCards = new ArrayList<>();
+        playerBuilder.delayScrollCards = new Stack<>();
         return playerBuilder;
     }
 
@@ -61,7 +62,7 @@ public class PlayerBuilder {
         return this;
     }
 
-    public PlayerBuilder withDelayScrollCards(List<ScrollCard> delayScrollCards) {
+    public PlayerBuilder withDelayScrollCards(Stack<ScrollCard> delayScrollCards) {
         this.delayScrollCards = delayScrollCards;
         return this;
     }
@@ -73,7 +74,7 @@ public class PlayerBuilder {
         this.hand = new Hand();
         this.healthStatus = HealthStatus.ALIVE;
         this.equipment = new Equipment();
-        this.delayScrollCards = new ArrayList<>();
+        this.delayScrollCards = new Stack<>();
         return this;
     }
 

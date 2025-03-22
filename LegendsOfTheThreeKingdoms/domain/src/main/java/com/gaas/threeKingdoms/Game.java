@@ -149,23 +149,33 @@ public class Game {
         return combineEvents;
     }
 
-    private List<DomainEvent> playerTakeTurn(Player currentRoundPlayer) {
+    public List<DomainEvent> playerTakeTurn(Player currentRoundPlayer) {
         List<DomainEvent> events = new ArrayList<>();
         DomainEvent roundStartEvent = new RoundStartEvent();
         events.add(roundStartEvent);
-        List<DomainEvent> judgeEvents = judgePlayerShouldDelay();
-        events.addAll(judgeEvents);
-        boolean contentmentEventSuccess =  judgeEvents.stream()
-                .filter(event -> event instanceof ContentmentEvent)
-                .map(event -> (ContentmentEvent) event)
-                .anyMatch(ContentmentEvent::isSuccess);
+        currentRound.setRoundPhase(RoundPhase.Judgement);
+        events.addAll(playerTakeTurnStartInJudgement(currentRoundPlayer));
+        return events;
+    }
 
-        DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentEventSuccess);
-        events.add(drawCardEvent);
-        if (contentmentEventSuccess) {
-            events.addAll(finishAction(currentRoundPlayer.getId()));
+    public List<DomainEvent> playerTakeTurnStartInJudgement(Player currentRoundPlayer) {
+        List<DomainEvent> events = new ArrayList<>();
+        if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
+            List<DomainEvent> judgeEvents = judgePlayerShouldDelay();
+            events.addAll(judgeEvents);
+            boolean contentmentEventSuccess = judgeEvents.stream()
+                    .filter(event -> event instanceof ContentmentEvent)
+                    .map(event -> (ContentmentEvent) event)
+                    .anyMatch(ContentmentEvent::isSuccess);
+
+            if (RoundPhase.Drawing.equals(currentRound.getRoundPhase())) {
+                DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentEventSuccess);
+                events.add(drawCardEvent);
+                if (contentmentEventSuccess) {
+                    events.addAll(finishAction(currentRoundPlayer.getId()));
+                }
+            }
         }
-
         return events;
     }
 
@@ -432,21 +442,38 @@ public class Game {
     private List<DomainEvent> judgePlayerShouldDelay() {
         Player player = currentRound.getCurrentRoundPlayer();
         List<DomainEvent> judgementEvents = new ArrayList<>();
-        currentRound.setRoundPhase(RoundPhase.Drawing);
         if (player.hasAnyDelayScrollCard()) {
-            List<ScrollCard> delayCards = new ArrayList<>(player.getDelayScrollCards()); // 避免 ConcurrentModificationException
-            for (ScrollCard card : delayCards) {
+            Stack<ScrollCard> delayCards = player.getDelayScrollCards();
+            while (!delayCards.isEmpty()) {
+                ScrollCard card = delayCards.pop();
+                currentRound.setCurrentCard(card);
                 if (card instanceof Contentment) {
                     DomainEvent contentmentEvent = handleContentmentJudgement(player);
                     judgementEvents.add(contentmentEvent);
-                    player.getDelayScrollCards().remove(card);
                 } else if (card instanceof Lightning) {
                     List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
                     judgementEvents.addAll(lightningEvents);
                 }
+
+                if (!topBehavior.isEmpty()) { // something happened
+                    return judgementEvents;
+                }
             }
         }
+
+//            for (ScrollCard card : delayCards) {
+//                if (card instanceof Contentment) {
+//                    DomainEvent contentmentEvent = handleContentmentJudgement(player);
+//                    judgementEvents.add(contentmentEvent);
+//                    player.getDelayScrollCards().remove(card);
+//                } else if (card instanceof Lightning) {
+//                    List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
+//                    judgementEvents.addAll(lightningEvents);
+//                }
+//            }
+//        }
         judgementEvents.add(new JudgementEvent());
+        currentRound.setRoundPhase(RoundPhase.Drawing);
         return judgementEvents;
     }
 
@@ -486,7 +513,6 @@ public class Game {
             ));
             domainEvents.add(getGameStatusEvent("閃電發動失敗"));
             // 轉移閃電到下一位
-            player.removeDelayScrollCard(card.getId());
             nextPlayer.addDelayScrollCard(card);
         }
 
@@ -531,7 +557,7 @@ public class Game {
         return nextRoundEvent;
     }
 
-    private List<DomainEvent> goNextRound(Player player) {
+    public List<DomainEvent> goNextRound(Player player) {
         Player nextPlayer = seatingChart.getNextPlayer(player);
         currentRound = new Round(nextPlayer);
         return playerTakeTurn(nextPlayer);
@@ -543,7 +569,7 @@ public class Game {
 
     public void updateRoundInformation(Player targetPlayer, HandCard card) {
         currentRound.setActivePlayer(targetPlayer);
-        currentRound.setCurrentPlayCard(card);
+        currentRound.setCurrentCard(card);
     }
 
     public String createGameOverMessage() {
@@ -706,7 +732,7 @@ public class Game {
     }
 
     public Optional<Behavior> peekTopBehaviorSecondElement() {
-        return topBehavior.size() > 2 ? Optional.ofNullable(topBehavior.get(topBehavior.size() - 2)) : Optional.empty();
+        return topBehavior.size() >= 2 ? Optional.ofNullable(topBehavior.get(topBehavior.size() - 2)) : Optional.empty();
     }
 
     public void removeTopBehavior() {
@@ -799,7 +825,7 @@ public class Game {
     }
 
     public Player getLastAttacker() {
-        // 找出造成傷害者前 萬箭、殺、南蠻入侵、決鬥、借刀殺人、閃電 => 找出最近造成傷害的 behavior 的 player
+        // 找出造成傷害者前 萬箭、殺、南蠻入侵、決鬥、借刀殺人 => 找出最近造成傷害的 behavior 的 player
         // 取得最後一個造成傷害的玩家，從 topBehavior 中找到最後一個造成傷害的玩家
         for (int i = topBehavior.size() - 1; i >= 0; i--) {
             Behavior behavior = topBehavior.get(i);
@@ -815,7 +841,7 @@ public class Game {
                 return getPlayer(behavior.getReactionPlayers().get(0));
             }
         }
-        throw new IllegalStateException("getLastAttacker error attacker not found.");
+        return null;
     }
 
 

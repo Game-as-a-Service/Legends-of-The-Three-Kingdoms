@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Stack;
 
 import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -60,7 +61,7 @@ public class FinishActionTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -74,7 +75,7 @@ public class FinishActionTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withEquipment(new Equipment())
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(
@@ -88,7 +89,7 @@ public class FinishActionTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withEquipment(new Equipment())
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -99,7 +100,7 @@ public class FinishActionTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withEquipment(new Equipment())
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
 
@@ -230,7 +231,7 @@ public class FinishActionTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
@@ -244,7 +245,7 @@ public class FinishActionTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withEquipment(new Equipment())
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerC = PlayerBuilder.construct()
@@ -255,7 +256,7 @@ public class FinishActionTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withEquipment(new Equipment())
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -266,7 +267,7 @@ public class FinishActionTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withEquipment(new Equipment())
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(Collections.emptyList())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         game.setPlayers(asList(playerA, playerB, playerC, playerD));

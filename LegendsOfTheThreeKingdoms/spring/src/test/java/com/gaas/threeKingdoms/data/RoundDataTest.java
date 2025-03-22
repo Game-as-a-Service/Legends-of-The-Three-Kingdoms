@@ -72,7 +72,7 @@ public class RoundDataTest {
         round.setRoundPhase(RoundPhase.Judgement);
         round.setActivePlayer(playerB);
         round.setDyingPlayer(playerC);
-        round.setCurrentPlayCard(currentPlayCard);
+        round.setCurrentCard(currentPlayCard);
         round.setShowKill(true);
         round.setStage(Stage.Normal);
 
@@ -150,7 +150,7 @@ public class RoundDataTest {
         assertEquals("player-a", round.getCurrentRoundPlayer().getId());
         assertEquals("player-b", round.getActivePlayer().getId());
         assertEquals("player-c", round.getDyingPlayer().getId());
-        assertEquals("BS8008", round.getCurrentPlayCard().getId());
+        assertEquals("BS8008", round.getCurrentCard().getId());
         assertTrue(round.isShowKill());
         assertEquals(Stage.Normal, round.getStage());
     }
