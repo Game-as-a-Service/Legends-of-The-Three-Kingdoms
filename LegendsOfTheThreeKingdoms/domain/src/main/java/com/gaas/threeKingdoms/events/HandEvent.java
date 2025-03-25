@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,13 +20,10 @@ public class HandEvent {
         this.cardIds = cardIds;
     }
 
-    public HandEvent(Player palyer) {
-        this.size = palyer.getHandSize();
-        this.cardIds = palyer.getHand().getCards().stream().map(handCard -> handCard.getId()).collect(Collectors.toList());
+    public HandEvent(Player player) {
+        this.size = player.getHandSize();
+        this.cardIds = player.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList());
     }
-
-
-
 
     public static HandEvent deepCopy(HandEvent h) {
         return new HandEvent(h.getSize(), new ArrayList<>(h.getCardIds()));

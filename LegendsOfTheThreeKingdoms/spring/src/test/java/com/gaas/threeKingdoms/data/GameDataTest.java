@@ -47,6 +47,7 @@ public class GameDataTest {
                 .blood(bloodCardData1)
                 .healthStatus("ALIVE")
                 .equipment(equipmentData1)
+                .delayScrolls(new ArrayList<>())
                 .build();
 
         HandData handData2 = new HandData(Arrays.asList("BS8009", "BH4031")); // Kill and Peach for player2
@@ -68,6 +69,7 @@ public class GameDataTest {
                 .blood(bloodCardData2)
                 .healthStatus("DYING")
                 .equipment(equipmentData2)
+                .delayScrolls(new ArrayList<>())
                 .build();
 
         // Add the players to a list
@@ -100,7 +102,7 @@ public class GameDataTest {
                 .currentRoundPlayer("player1")
                 .activePlayer("player2")
                 .dyingPlayer("player1")
-                .currentPlayCard("BS8008")
+                .currentCard("BS8008")
                 .isShowKill(true)
                 .stage("Normal")
                 .build();

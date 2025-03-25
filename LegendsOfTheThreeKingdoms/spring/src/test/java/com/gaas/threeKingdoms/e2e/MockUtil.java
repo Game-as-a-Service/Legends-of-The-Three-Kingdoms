@@ -15,6 +15,7 @@ import com.gaas.threeKingdoms.rolecard.RoleCard;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 public class MockUtil {
      public static Player createPlayer(String id, int hp, General general, HealthStatus healthStatus, Role role, HandCard... cards) {
@@ -26,7 +27,7 @@ public class MockUtil {
                 .withRoleCard(new RoleCard(role))
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         player.getHand().addCardToHand(Arrays.asList(cards));

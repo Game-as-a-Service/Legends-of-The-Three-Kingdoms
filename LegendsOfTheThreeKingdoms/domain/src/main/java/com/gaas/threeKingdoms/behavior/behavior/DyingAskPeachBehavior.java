@@ -8,12 +8,16 @@ import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
+import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.round.Round;
+import com.gaas.threeKingdoms.round.RoundPhase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -109,11 +113,15 @@ public class DyingAskPeachBehavior extends Behavior {
 
                 //  需要移除的 Behavior，isOneRound 要設為 true
                 JudgementIfRemoveBehavior();
-
                 game.enterPhase(new Normal(game));
                 // 如果 events 包含 askKillEvent 與 askDodgeEvent，則不需要再設定 activePlayer
                 if (events.stream().noneMatch(e -> e instanceof AskKillEvent) && events.stream().noneMatch(e -> e instanceof AskDodgeEvent)) {
-                    currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+                    if (currentRound.getCurrentRoundPlayer().equals(dyingPlayer)) {
+                        List<DomainEvent> newRoundEvent = game.goNextRound(dyingPlayer);
+                        events.addAll(newRoundEvent);
+                    } else {
+                        currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+                    }
                 }
             } else {
                 events.add(createAskPeachEvent(game.getNextPlayer(currentPlayer), dyingPlayer));
@@ -126,23 +134,34 @@ public class DyingAskPeachBehavior extends Behavior {
             // Player use peach card
             HandCard card = currentPlayer.playCard(cardId);
             card.effect(dyingPlayer);
+            game.getGraveyard().add(card);
             Round currentRound = game.getCurrentRound();
-
-            // Dying player is healed
-            currentRound.setDyingPlayer(null);
-            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
-            game.enterPhase(new Normal(game));
-            isOneRound = true;
+            boolean dyingPlayerIsAlive = dyingPlayer.getHealthStatus().equals(HealthStatus.ALIVE);
 
             // Create Domain Events
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
             PeachEvent peachEvent = new PeachEvent(targetPlayerId, originalHp, dyingPlayer.getHP());
             events.addAll(List.of(playCardEvent, peachEvent));
-            addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+
+            if (dyingPlayerIsAlive) {
+                // Dying player is healed
+                currentRound.setDyingPlayer(null);
+                currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+                game.enterPhase(new Normal(game));
+                isOneRound = true;
+
+                if (currentRound.getCurrentCard() instanceof Lightning && currentRound.getRoundPhase().equals(RoundPhase.Judgement)) {
+                    // 如果閃電讓玩家死亡，而且玩家被桃救活，需要回到判該玩家的判定階段
+                    events.addAll(game.playerTakeTurnStartInJudgement(currentRound.getCurrentRoundPlayer()));
+                } else {
+                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+                }
+            } else {
+                events.add(createAskPeachEvent(currentPlayer, dyingPlayer));
+            }
             events.add(game.getGameStatusEvent("出牌"));
             return events;
-
         } else {
             //TODO:怕有其他效果或殺的其他case
             return null;
@@ -189,16 +208,16 @@ public class DyingAskPeachBehavior extends Behavior {
         });
     }
 
-    private static boolean isMonarch(Player dyingPlayer) {
-        return dyingPlayer.getRoleCard().getRole().equals(Role.MONARCH);
+    private static boolean isMonarch(Player player) {
+        return player != null && player.getRoleCard().getRole() == Role.MONARCH;
     }
 
     private static boolean isREBEL(Player dyingPlayer) {
-        return dyingPlayer.getRoleCard().getRole().equals(Role.REBEL);
+        return dyingPlayer != null && dyingPlayer.getRoleCard().getRole().equals(Role.REBEL);
     }
 
     private static boolean isMINISTER(Player dyingPlayer) {
-        return dyingPlayer.getRoleCard().getRole().equals(Role.MINISTER);
+        return dyingPlayer != null && dyingPlayer.getRoleCard().getRole().equals(Role.MINISTER);
     }
 
     private boolean haveNoOtherRebelAndTraitor() {

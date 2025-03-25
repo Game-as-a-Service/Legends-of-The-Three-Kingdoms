@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isKillCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
@@ -50,7 +51,7 @@ public class DuelBehavior extends Behavior {
                     originalHp,
                     currentReactionPlayer,
                     game.getCurrentRound(),
-                    this);
+                    Optional.of(this));
             events.addAll(damagedEvents);
             isOneRound = true;
         } else {
@@ -71,7 +72,7 @@ public class DuelBehavior extends Behavior {
             // 當前反應者出閃，那就是等於 reactionPlayers index (playerId) 受到傷害， reactionPlayers 另一個為攻擊者
             Player damagePlayer = game.getPlayer(playerId);
             int originalHp = damagePlayer.getHP();
-            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, otherPlayerId, cardId, card, playType, originalHp, damagePlayer, game.getCurrentRound(), this);
+            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, otherPlayerId, cardId, card, playType, originalHp, damagePlayer, game.getCurrentRound(), Optional.of(this));
             damagedEvent.add(game.getGameStatusEvent("扣血"));
             return damagedEvent;
         } else if (isKillCard(cardId)) {
@@ -96,7 +97,7 @@ public class DuelBehavior extends Behavior {
                         originalHp,
                         currentReactionPlayer,
                         game.getCurrentRound(),
-                        this);
+                        Optional.of(this));
                 events.addAll(damagedEvents);
                 gameMessage = "扣血";
             } else {

@@ -1,0 +1,111 @@
+{
+  "events" : [ {
+    "event" : "FinishActionEvent",
+    "data" : {
+      "playerId" : "player-d"
+    },
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0,
+      "discardPlayerId" : "player-d"
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "LightningEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "drawCardId" : "SS3003",
+      "success" : true
+    },
+    "message" : "閃電效果判定！抽出卡牌SS3003，是黑桃3，效果成功"
+  }, {
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "from" : 3,
+      "to" : 0
+    },
+    "message" : "扣血"
+  }, {
+    "event" : "PlayerDyingEvent",
+    "data" : {
+      "playerId" : "player-a"
+    },
+    "message" : "玩家已瀕臨死亡"
+  }, {
+    "event" : "AskPeachEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "dyingPlayerId" : "player-a"
+    },
+    "message" : "要求玩家出桃"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 0,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU002",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ "SS3003", "SS3003" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU003",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU005",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "player-a",
+      "showKill" : false
+    },
+    "gamePhase" : "GeneralDying"
+  },
+  "message" : null,
+  "gameId" : "my-id",
+  "playerId" : "player-b"
+}

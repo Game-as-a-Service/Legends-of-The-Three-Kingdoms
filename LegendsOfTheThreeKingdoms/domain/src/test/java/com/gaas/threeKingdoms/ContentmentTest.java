@@ -11,6 +11,8 @@ import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
+import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
+import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -23,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -118,6 +121,8 @@ public class ContentmentTest {
         Game game = new Game();
         game.initDeck();
 
+
+
         // 玩家A
         Player playerA = PlayerBuilder
                 .construct()
@@ -131,6 +136,9 @@ public class ContentmentTest {
 
         playerA.getHand().addCardToHand(Arrays.asList(new Contentment(SH6045)));
 
+        Stack<ScrollCard> delayScrollCards = new Stack<>();
+        delayScrollCards.add(new Contentment(SH6045));
+        
         // 玩家B
         Player playerB = PlayerBuilder
                 .construct()
@@ -140,7 +148,7 @@ public class ContentmentTest {
                 .withBloodCard(new BloodCard(4))
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.REBEL))
-                .withDelayScrollCards(List.of(new Contentment(SH6045)))
+                .withDelayScrollCards(delayScrollCards)
                 .withHealthStatus(HealthStatus.ALIVE)
                 .build();
 
@@ -202,7 +210,7 @@ public class ContentmentTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(new Contentment(SH6045)));
@@ -217,7 +225,7 @@ public class ContentmentTest {
                 .withGeneralCard(new GeneralCard(General.關羽))
                 .withRoleCard(new RoleCard(Role.REBEL))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         // 玩家C
@@ -288,7 +296,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(new Contentment(SH6045)));
@@ -301,7 +309,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH8034), new Peach(BH8034), new Peach(BH8034), new Peach(BH8034)));
@@ -314,7 +322,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -325,7 +333,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
@@ -380,7 +388,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .withHand(new Hand())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(new Contentment(SH6045)));
@@ -393,7 +401,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH8034), new Peach(BH8034), new Peach(BH8034), new Peach(BH8034)));
@@ -406,7 +414,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         Player playerD = PlayerBuilder.construct()
@@ -417,7 +425,7 @@ public class ContentmentTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withHand(new Hand())
                 .withEquipment(new Equipment())
-                .withDelayScrollCards(new ArrayList<>())
+                .withDelayScrollCards(new Stack<>())
                 .build();
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);

@@ -277,6 +277,30 @@ public class DomainEventToViewModelMapper {
                     bountifulHarvestChooseCardEvent.getMessage()
             );
         });
+
+        eventToViewModelMappers.put(LightningTransferredEvent.class, event -> {
+            LightningTransferredEvent lightningTransferredEvent = (LightningTransferredEvent) event;
+            return new PlayCardPresenter.LightningTransferredViewModel(
+                    new PlayCardPresenter.LightningTransferredDataViewModel(
+                            lightningTransferredEvent.getSourcePlayerId(),
+                            lightningTransferredEvent.getTargetPlayerId(),
+                            lightningTransferredEvent.getCardId()
+                    ),
+                    lightningTransferredEvent.getMessage()
+            );
+        });
+
+        eventToViewModelMappers.put(LightningEvent.class, event -> {
+            LightningEvent lightningEvent = (LightningEvent) event;
+            return new FinishActionPresenter.LightningViewModel(
+                    new FinishActionPresenter.LightningDataViewModel(
+                            lightningEvent.getPlayerId(),
+                            lightningEvent.getDrawCardId(),
+                            lightningEvent.isSuccess()
+                    ),
+                    lightningEvent.getMessage()
+            );
+        });
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {

@@ -15,6 +15,7 @@ import com.gaas.threeKingdoms.round.Stage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 麒麟弓
@@ -44,7 +45,7 @@ public class QilinBowCard extends WeaponCard {
             message = String.format("發動麒麟弓效果 移除 %s", removeMountCardId);
             HandCard card = behavior.getCard(); // Kill
             int originalHp = damagedPlayer.getHP();
-            List<DomainEvent> damageEvents = game.getDamagedEvent(behavior.getBehaviorPlayer().getId(), damagedPlayer.getId(), behavior.getCardId(), card, PlayType.QilinBow.getPlayType(), originalHp, damagedPlayer, currentRound, behavior);
+            List<DomainEvent> damageEvents = game.getDamagedEvent(behavior.getBehaviorPlayer().getId(), damagedPlayer.getId(), behavior.getCardId(), card, PlayType.SYSTEM_INTERNAL.getPlayType(), originalHp, damagedPlayer, currentRound, Optional.of(behavior));
             if (isPlayerStillAlive(damagedPlayer)) {
                 currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
                 behavior.setIsOneRound(true);

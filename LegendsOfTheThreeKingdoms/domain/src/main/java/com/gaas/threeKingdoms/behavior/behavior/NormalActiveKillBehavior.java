@@ -16,6 +16,7 @@ import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
@@ -67,7 +68,7 @@ public class NormalActiveKillBehavior extends Behavior {
                 return List.of(playCardEvent, askPlayEquipmentEffectEvent, game.getGameStatusEvent("出牌"));
             }
 
-            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, Optional.of(this));
             String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
             events.add(game.getGameStatusEvent(message));
             isOneRound = true;
@@ -81,7 +82,7 @@ public class NormalActiveKillBehavior extends Behavior {
             return List.of(playCardEvent, game.getGameStatusEvent("出牌"));
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();
-            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, this);
+            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, Optional.of(this));
             //playerDyingEvent
             String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
             events.add(game.getGameStatusEvent(message));
@@ -94,7 +95,7 @@ public class NormalActiveKillBehavior extends Behavior {
     }
 
     private boolean isQilinBowSuccess(String playType) {
-        return  PlayType.QilinBow.getPlayType().equals(playType);
+        return  PlayType.SYSTEM_INTERNAL.getPlayType().equals(playType);
     }
 
     private boolean isAskPlayerUseQilinBow(Player attackPlayer, Player damagedPlayer) {
