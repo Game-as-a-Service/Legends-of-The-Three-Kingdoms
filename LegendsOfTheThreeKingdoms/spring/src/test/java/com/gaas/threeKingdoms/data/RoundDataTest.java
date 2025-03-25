@@ -84,7 +84,7 @@ public class RoundDataTest {
         assertEquals("player-a", roundData.getCurrentRoundPlayer());
         assertEquals("player-b", roundData.getActivePlayer());
         assertEquals("player-c", roundData.getDyingPlayer());
-        assertEquals("BS8008", roundData.getCurrentPlayCard());
+        assertEquals("BS8008", roundData.getCurrentCard());
         assertTrue(roundData.isShowKill());
         assertEquals("Normal", roundData.getStage());
     }
@@ -137,7 +137,7 @@ public class RoundDataTest {
                 .currentRoundPlayer("player-a")
                 .activePlayer("player-b")
                 .dyingPlayer("player-c")
-                .currentPlayCard("BS8008")
+                .currentCard("BS8008")
                 .isShowKill(true)
                 .stage("Normal")
                 .build();

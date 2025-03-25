@@ -289,6 +289,22 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
     @Data
+    public static class LightningTransferredViewModel extends ViewModel<LightningTransferredDataViewModel> {
+        public LightningTransferredViewModel(LightningTransferredDataViewModel data, String message) {
+            super("LightningTransferredEvent", data, message);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class LightningTransferredDataViewModel {
+        private String sourcePlayerId;
+        private String targetPlayerId;
+        private String cardId;
+    }
+
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class GameViewModel extends GameProcessViewModel<GameDataViewModel> {

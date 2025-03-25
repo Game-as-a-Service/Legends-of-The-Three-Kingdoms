@@ -26,6 +26,10 @@ public class LightningBehaviorHandler extends PlayCardBehaviorHandler {
     protected Behavior doHandle(String playerId, String cardId, List<String> targetPlayerIdList, String playType) {
         Player player = game.getPlayer(playerId);
         HandCard card = player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
+        // 如果原本 delayScrollCards 已經有閃電，不可以再出閃電
+        if (player.getDelayScrollCards().stream().anyMatch(delayScrollCard -> delayScrollCard instanceof Lightning)) {
+            throw new IllegalArgumentException("玩家身上已經有另一張閃電");
+        }
         targetPlayerIdList = Collections.singletonList(playerId);
         return new LightningBehavior(game, player, targetPlayerIdList, player, cardId, playType, card);
     }

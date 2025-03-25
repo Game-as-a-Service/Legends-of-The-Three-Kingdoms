@@ -15,10 +15,10 @@ import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
@@ -120,7 +120,9 @@ public class LightningTest {
         A 出閃電
     
         Then
-        A 的判定牌裡有兩張閃電
+                A 的判定牌裡有一張閃電
+                因為不可以出第二張閃電
+                拋出例外錯誤
     """)
     @Test
     public void givenPlayerABCD_PlayerATurn_PlayerAHasOneLightningInJudgmentArea_WhenPlayerAPlaysLightning_ThenPlayerAHasTwoLightningsInJudgmentArea() {
@@ -179,17 +181,14 @@ public class LightningTest {
         game.setCurrentRound(new Round(playerA));
 
         // When
-        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), SSA014.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                game.playerPlayCard(playerA.getId(), SSA014.getCardId(), "", PlayType.ACTIVE.getPlayType())
+        );
 
         // Then
-        assertEquals(2, playerA.getDelayScrollCards().stream()
+        assertEquals(1, playerA.getDelayScrollCards().stream()
                 .filter(card -> card instanceof Lightning)
                 .count());
-
-        LightningTransferredEvent lightningTransferredEvent = getEvent(events, LightningTransferredEvent.class).orElseThrow(RuntimeException::new);
-        assertEquals("player-a", lightningTransferredEvent.getSourcePlayerId());
-        assertEquals("player-a", lightningTransferredEvent.getTargetPlayerId());
-        assertEquals("SSA014", lightningTransferredEvent.getCardId());
     }
 
     @DisplayName("""
@@ -212,8 +211,6 @@ public class LightningTest {
         // Given
         Game game = new Game();
         game.initDeck();
-        Stack<ScrollCard> delayScrollCards = new Stack<>();
-        delayScrollCards.add(new Lightning(SSA014));
 
         // 玩家 A 設定
         Player playerA = PlayerBuilder.construct()
@@ -224,7 +221,6 @@ public class LightningTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withDelayScrollCards(delayScrollCards)
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(new Lightning(SSA014)));
 
@@ -273,7 +269,7 @@ public class LightningTest {
 
         // Then: 確認 B 的回合開始，A 仍然有閃電，B 沒有判定牌
         assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
-        assertEquals(2, playerA.getDelayScrollCards().stream()
+        assertEquals(1, playerA.getDelayScrollCards().stream()
                 .filter(card -> card instanceof Lightning)
                 .count());
         assertTrue(playerB.getDelayScrollCards().isEmpty());

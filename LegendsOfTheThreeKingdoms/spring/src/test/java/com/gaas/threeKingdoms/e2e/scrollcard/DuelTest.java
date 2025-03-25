@@ -1,7 +1,6 @@
 package com.gaas.threeKingdoms.e2e.scrollcard;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;

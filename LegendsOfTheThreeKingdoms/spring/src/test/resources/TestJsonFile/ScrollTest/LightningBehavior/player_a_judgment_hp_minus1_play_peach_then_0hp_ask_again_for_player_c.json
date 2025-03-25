@@ -1,0 +1,85 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-a",
+      "cardId" : "BH3029",
+      "playType" : "active"
+    },
+    "message" : "出牌"
+  }, {
+    "event" : "PeachEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "from" : -1,
+      "to" : 0
+    },
+    "message" : "玩家出桃"
+  }, {
+    "event" : "AskPeachEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "dyingPlayerId" : "player-a"
+    },
+    "message" : "要求玩家出桃"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 0,
+      "hand" : {
+        "size" : 1,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU002",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 3,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU003",
+      "roleId" : "Rebel",
+      "hp" : 4,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ "SS3003", "SS3003" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU005",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "player-a",
+      "showKill" : false
+    },
+    "gamePhase" : "GeneralDying"
+  },
+  "message" : "出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-c"
+}

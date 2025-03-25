@@ -134,6 +134,22 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
         private boolean isSuccess;
     }
 
+    @Data
+    public static class LightningViewModel extends ViewModel<LightningDataViewModel> {
+        public LightningViewModel(LightningDataViewModel data, String message) {
+            super("LightningEvent", data, message);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class LightningDataViewModel {
+        private String playerId;
+        private String drawCardId;
+        private boolean success;
+    }
+
 
     @Setter
     @Getter

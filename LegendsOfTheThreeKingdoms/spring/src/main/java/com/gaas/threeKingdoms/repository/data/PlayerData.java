@@ -11,7 +11,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 @Data
@@ -56,7 +58,11 @@ public class PlayerData {
         player.setBloodCard(blood == null ? null : blood.toDomain());
         player.setHealthStatus(healthStatus == null ? null : HealthStatus.valueOf(this.healthStatus));
         player.setEquipment(this.equipment.toDomain());
-        player.setDelayScrollCards(this.delayScrolls == null ? null : this.delayScrolls.stream().map(id -> (ScrollCard) PlayCard.findById(id)).collect(Collectors.toList()));
+        Stack<ScrollCard> delayScrolls = new Stack<>();
+        for (String delayScroll : this.delayScrolls) {
+            delayScrolls.push((ScrollCard) PlayCard.findById(delayScroll));
+        }
+        player.setDelayScrollCards(delayScrolls);
         return player;
     }
 

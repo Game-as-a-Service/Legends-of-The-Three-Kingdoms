@@ -383,7 +383,7 @@ public class Game {
         List<DomainEvent> domainEvents = new ArrayList<>();
         Player currentRoundPlayer = currentRound.getCurrentRoundPlayer();
 
-        if (currentRoundPlayer == null || !playerId.equals(currentRoundPlayer.getId())) {
+        if (currentRoundPlayer == null || !playerId.equals(currentRoundPlayer.getId()) || !playerId.equals(currentRound.getActivePlayer().getId())) {
             throw new IllegalStateException(String.format("currentRound is null or current player not %s", playerId));
         }
 
@@ -393,22 +393,22 @@ public class Game {
             throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
         }
 
-        List<PlayerEvent> playerEvents = players.stream().map(p ->
-                new PlayerEvent(p.getId(),
-                        p.getGeneralCard().getGeneralId(),
-                        p.getRoleCard().getRole().getRoleName(),
-                        p.getHP(),
-                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
-                        p.getEquipment().getAllEquipmentCardIds(),
-                        Collections.emptyList())).toList();
+//        List<PlayerEvent> playerEvents = players.stream().map(p ->
+//                new PlayerEvent(p.getId(),
+//                        p.getGeneralCard().getGeneralId(),
+//                        p.getRoleCard().getRole().getRoleName(),
+//                        p.getHP(),
+//                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
+//                        p.getEquipment().getAllEquipmentCardIds(),
+//                        p.getDelayScrollCardIds())).collect(Collectors.toList());
 
         currentRound.setRoundPhase(RoundPhase.Discard);
-        RoundEvent roundEvent = new RoundEvent(currentRound);
+//        RoundEvent roundEvent = new RoundEvent(currentRound);
 
         FinishActionEvent finishActionEvent = new FinishActionEvent(playerId);
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
         String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌", currentRoundPlayer.getId(), currentRoundPlayerDiscardCount);
-        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage, currentRoundPlayerDiscardCount, playerId, currentRoundPlayer.getId(), gameId, playerEvents, roundEvent, gamePhase.getPhaseName());
+        NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage, currentRoundPlayerDiscardCount, playerId);
         domainEvents.add(finishActionEvent);
         domainEvents.add(notifyDiscardEvent);
 
@@ -511,9 +511,9 @@ public class Game {
                     card.getId(),
                     String.format("閃電從 %s 轉移至 %s", player.getGeneralName(), nextPlayer.getGeneralName())
             ));
-            domainEvents.add(getGameStatusEvent("閃電發動失敗"));
             // 轉移閃電到下一位
             nextPlayer.addDelayScrollCard(card);
+            domainEvents.add(getGameStatusEvent("閃電發動失敗"));
         }
 
         return domainEvents;

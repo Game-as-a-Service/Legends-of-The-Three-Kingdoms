@@ -19,7 +19,7 @@ public class RoundData {
     private String currentRoundPlayer;
     private String activePlayer;
     private String dyingPlayer;
-    private String currentPlayCard;
+    private String currentCard;
     private boolean isShowKill;
     private String stage;
 
@@ -33,7 +33,7 @@ public class RoundData {
                 .currentRoundPlayer(round.getCurrentRoundPlayer().getId())
                 .activePlayer(round.getActivePlayer().getId())
                 .dyingPlayer(round.getDyingPlayer() != null ? round.getDyingPlayer().getId() : null)
-                .currentPlayCard(round.getCurrentPlayCard() != null ? round.getCurrentPlayCard().getId() : null)
+                .currentCard(round.getCurrentCard() != null ? round.getCurrentCard().getId() : null)
                 .isShowKill(round.isShowKill())
                 .stage(round.getStage().name())
                 .build();
@@ -44,7 +44,7 @@ public class RoundData {
         round.setRoundPhase(RoundPhase.valueOf(this.roundPhase));
         round.setActivePlayer(game.getPlayer(activePlayer));
         round.setDyingPlayer(dyingPlayer == null ? null : game.getPlayer(dyingPlayer));
-        round.setCurrentPlayCard(PlayCard.findById(currentPlayCard));
+        round.setCurrentCard(PlayCard.findById(currentCard));
         round.setShowKill(isShowKill);
         round.setStage(Stage.valueOf(this.stage));
         return round;
