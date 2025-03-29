@@ -56,8 +56,8 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 0,
-        "cardIds" : [ ]
+        "size" : 2,
+        "cardIds" : [ "BH3029", "BH3029" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -96,7 +96,7 @@
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Judgement",
+      "roundPhase" : "Action",
       "currentRoundPlayer" : "player-a",
       "activePlayer" : "player-a",
       "dyingPlayer" : "",
@@ -104,7 +104,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "閃電發動失敗",
+  "message" : "玩家 player-a 抽了 2 張牌",
   "gameId" : "my-id",
   "playerId" : "player-a"
 }

@@ -492,7 +492,6 @@ public class Game {
             ));
             // 轉移閃電到下一位
             nextPlayer.addDelayScrollCard(card);
-            domainEvents.add(getGameStatusEvent("閃電發動失敗"));
         }
 
         return domainEvents;
