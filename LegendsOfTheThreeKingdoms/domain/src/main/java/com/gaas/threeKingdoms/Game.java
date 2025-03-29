@@ -173,6 +173,8 @@ public class Game {
                 events.add(drawCardEvent);
                 if (contentmentEventSuccess) {
                     events.addAll(finishAction(currentRoundPlayer.getId()));
+                } else {
+                    events.add(getGameStatusEvent(drawCardEvent.getMessage()));
                 }
             }
         }
@@ -216,7 +218,6 @@ public class Game {
 
     public DomainEvent drawCardToPlayer(Player player, boolean isChangeRoundPhase, int requiredCardNumber) {
         refreshDeckWhenCardsNumLessThen(requiredCardNumber);
-//        int size = calculatePlayerCanDrawCardSize(player);
         List<HandCard> cards = deck.deal(requiredCardNumber);
         player.getHand().addCardToHand(cards);
 
@@ -388,22 +389,11 @@ public class Game {
         }
 
         if (!topBehavior.isEmpty()) {
-//            topBehavior.clear();
             topBehavior.forEach(behavior -> System.out.println("current topBehavior: " + behavior.getClass().getName()));
             throw new IllegalStateException(String.format("current topBehavior is not null size[%s]", topBehavior.size()));
         }
 
-//        List<PlayerEvent> playerEvents = players.stream().map(p ->
-//                new PlayerEvent(p.getId(),
-//                        p.getGeneralCard().getGeneralId(),
-//                        p.getRoleCard().getRole().getRoleName(),
-//                        p.getHP(),
-//                        new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
-//                        p.getEquipment().getAllEquipmentCardIds(),
-//                        p.getDelayScrollCardIds())).collect(Collectors.toList());
-
         currentRound.setRoundPhase(RoundPhase.Discard);
-//        RoundEvent roundEvent = new RoundEvent(currentRound);
 
         FinishActionEvent finishActionEvent = new FinishActionEvent(playerId);
         int currentRoundPlayerDiscardCount = getCurrentRoundPlayerDiscardCount();
@@ -461,17 +451,6 @@ public class Game {
             }
         }
 
-//            for (ScrollCard card : delayCards) {
-//                if (card instanceof Contentment) {
-//                    DomainEvent contentmentEvent = handleContentmentJudgement(player);
-//                    judgementEvents.add(contentmentEvent);
-//                    player.getDelayScrollCards().remove(card);
-//                } else if (card instanceof Lightning) {
-//                    List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
-//                    judgementEvents.addAll(lightningEvents);
-//                }
-//            }
-//        }
         judgementEvents.add(new JudgementEvent());
         currentRound.setRoundPhase(RoundPhase.Drawing);
         return judgementEvents;
