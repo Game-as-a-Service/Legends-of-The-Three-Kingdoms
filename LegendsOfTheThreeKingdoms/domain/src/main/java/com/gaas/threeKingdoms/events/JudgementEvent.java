@@ -1,6 +1,5 @@
 package com.gaas.threeKingdoms.events;
 
-import lombok.*;
 
 
 public class JudgementEvent extends DomainEvent {
