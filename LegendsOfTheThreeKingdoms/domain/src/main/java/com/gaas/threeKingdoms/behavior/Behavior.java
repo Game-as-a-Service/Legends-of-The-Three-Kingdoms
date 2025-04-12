@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.behavior;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
@@ -99,4 +100,9 @@ public class Behavior {
     public void setIsTargetPlayerNeedToResponse(boolean isTargetPlayerNeedToResponse) {
         this.isTargetPlayerNeedToResponse = isTargetPlayerNeedToResponse;
     }
+
+    public boolean judgeWhetherRemoveTopBehavior() {
+        return this instanceof NormalActiveKillBehavior;
+    }
+
 }
