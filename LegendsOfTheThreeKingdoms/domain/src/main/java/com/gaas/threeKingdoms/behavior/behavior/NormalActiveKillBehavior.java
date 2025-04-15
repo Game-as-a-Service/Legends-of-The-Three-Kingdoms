@@ -102,7 +102,7 @@ public class NormalActiveKillBehavior extends Behavior {
         return attackPlayer.getEquipmentWeaponCard() instanceof QilinBowCard && damagedPlayer.hasMountsCard();
     }
 
-    private boolean isEquipmentHasSpecialEffect(Player targetPlayer) {
+    static public boolean isEquipmentHasSpecialEffect(Player targetPlayer) {
         return targetPlayer.getEquipment().hasSpecialEffect();
     }
 

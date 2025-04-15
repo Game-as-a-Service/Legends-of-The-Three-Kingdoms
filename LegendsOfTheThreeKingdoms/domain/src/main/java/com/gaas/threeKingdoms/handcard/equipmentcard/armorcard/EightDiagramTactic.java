@@ -27,9 +27,7 @@ public class EightDiagramTactic extends ArmorCard {
         if (isEffectSuccess) {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
         }
-        GameStatusEvent gameStatusEvent = game.getGameStatusEvent("發動八卦陣效果");
         events.add(new EightDiagramTacticEffectEvent("發動八卦陣效果", isEffectSuccess, card.getId()));
-        events.add(gameStatusEvent);
         return events;
     }
 

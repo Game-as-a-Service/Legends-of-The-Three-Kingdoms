@@ -6,15 +6,19 @@ import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.Deck;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -947,6 +952,685 @@ public class ArrowBarrageTest {
         assertEquals("player-a", game.getCurrentRoundPlayer().getId());
         assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId());
 
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 1
+            
+            When
+            
+            A玩家出萬箭齊發
+            
+            Then
+            B 收到要不要發動裝備卡的 Event
+            """)
+    @Test
+    public void givenPlayerABC_WhenPlayerAPlayArrowBarrageAndPlayerBNoDodgeAndNoPeachHaveEightDiagramTactic_ThenPlayerBReceiveAskPlayEquipmentEffectEvent() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+
+        //When
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //Then
+        assertTrue(events.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent));
+        assertFalse(events.stream().anyMatch(event -> event instanceof AskDodgeEvent));
+        AskPlayEquipmentEffectEvent askPlayEquipmentEffectEvent = getEvent(events, AskPlayEquipmentEffectEvent.class).orElseThrow(RuntimeException::new);
+
+        assertEquals("player-b", askPlayEquipmentEffectEvent.getPlayerId());
+        assertEquals(List.of("player-b"), askPlayEquipmentEffectEvent.getTargetPlayerIds());
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 1
+            A玩家出萬箭齊發
+            B收到要不要發動裝備卡的event
+            
+            When
+            B 發動裝備卡
+            
+            Then
+            全部人收到 八卦陣效果抽到赤兔馬 (♥3) 的 Event
+            Event 內是效果成功， B 不用出閃
+            B玩家 hp = 1
+            C玩家收到要求出閃的event
+            """)
+    @Test
+    public void givenPlayerABC_WhenBUseEquipment_ThenEffectEventIsSuccess() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // player-a 出萬箭齊發
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        // player-b 發動裝備效果
+        List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
+
+        //Then
+        assertTrue(events.stream()
+                .filter(event -> event instanceof EffectEvent)
+                .map(EffectEvent.class::cast)
+                .allMatch(EffectEvent::isSuccess));
+
+        assertTrue(events.stream().anyMatch(event -> event instanceof AskDodgeEvent));
+        assertEquals(1, playerB.getHP());
+
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-c", askDodgeEvent.getPlayerId());
+        assertEquals("player-c", game.getActivePlayer().getId());
+        assertEquals("player-c", gameStatusEvent.getRound().getActivePlayer());
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 1
+            A玩家出萬箭齊發
+            B收到要不要發動裝備卡的event
+            
+            When
+            B 發動裝備卡
+            
+            Then
+            八卦陣效果抽到梅花三
+            八卦陣效果event isSuccess = false
+            B 收到要求出閃的 event
+            """)
+    @Test
+    public void givenPlayerABC_WhenBUseEquipment_ThenEffectEventIsFailure() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Dismantle(SS3003)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // player-a 出萬箭齊發
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        // player-b 發動裝備效果
+        List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
+
+        //Then
+        assertFalse(events.stream()
+                .filter(event -> event instanceof EffectEvent)
+                .map(EffectEvent.class::cast)
+                .allMatch(EffectEvent::isSuccess));
+
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-b", askDodgeEvent.getPlayerId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 2
+            A玩家出萬箭齊發
+            B收到要不要發動裝備卡的event
+            B 發動裝備卡
+            八卦陣效果抽到梅花三
+            八卦陣效果event isSuccess = false
+            B 收到要求出閃的 event
+            
+            When
+            B 出閃
+            
+            Then
+            B hp = 2
+            C 收到要求出閃的 event
+            """)
+    @Test
+    public void givenPlayerABC_WhenBUseEquipmentAndBPlayDodge_ThenCReceiveDodgeEvent() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Dismantle(SS3003)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(2))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // player-a 出萬箭齊發
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        // player-b 發動裝備效果
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
+
+        //When
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), BDJ089.getCardId(), playerA.getId(), PlayType.INACTIVE.getPlayType());
+
+        //Then
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-c", askDodgeEvent.getPlayerId());
+        assertEquals(2, game.getPlayer("player-b").getHP());
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 2
+            A玩家出萬箭齊發
+            B收到要不要發動裝備卡的event
+            B 發動裝備卡
+            八卦陣效果抽到梅花三
+            八卦陣效果event isSuccess = false
+            B 收到要求出閃的 event
+            
+            When
+            B 不出閃
+            
+            Then
+            B hp = 1
+            C 收到要求出閃的 event
+            """)
+    @Test
+    public void givenPlayerABC_WhenBUseEquipmentAndBPlaySkip_ThenCReceiveDodgeEvent() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Dismantle(SS3003)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(2))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // player-a 出萬箭齊發
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        // player-b 發動裝備效果
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
+
+        //When
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        //Then
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-c", askDodgeEvent.getPlayerId());
+        assertEquals(1, game.getPlayer("player-b").getHP());
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 1
+            A玩家出萬箭齊發
+            B收到要不要發動裝備卡的event
+            
+            When
+            B 不發動裝備卡
+            B 出閃
+            
+            Then
+            C 收到要求出閃的event
+            """)
+    @Test
+    public void givenPlayerABC_WhenBSkipUseEquipmentAndBPlayDodge_ThenCReceiveDodgeEvent() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Dismantle(SS3003)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // player-a 出萬箭齊發
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        // player-b 不發動裝備效果
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), BDJ089.getCardId(), playerA.getId(), PlayType.INACTIVE.getPlayType());
+
+        //Then
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-c", askDodgeEvent.getPlayerId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABC
+            A的回合
+            B玩家沒有閃
+            B玩家 hp = 2
+            A玩家出萬箭齊發
+            B收到要不要發動裝備卡的event
+            
+            When
+            B 不發動裝備卡
+            B 不出閃
+            
+            Then
+            B玩家 hp = 1
+            C 收到要求出閃的event
+            """)
+    @Test
+    public void givenPlayerABC_WhenBSkipUseEquipmentAndBSkipPlayDodge_ThenCReceiveDodgeEvent() {
+        Game game = new Game();
+        game.initDeck();
+        Deck deck = new Deck(
+                List.of(
+                        new Dismantle(SS3003)
+                )
+        );
+        game.setDeck(deck);
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new ArrowBarrage(SHA040)));
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(2))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(equipmentB)
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(3))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BDJ089)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // player-a 出萬箭齊發
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        //When
+        // player-b 不發動裝備效果
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        //Then
+        AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-c", askDodgeEvent.getPlayerId());
+        assertEquals(1, game.getPlayer("player-b").getHP());
     }
 
 

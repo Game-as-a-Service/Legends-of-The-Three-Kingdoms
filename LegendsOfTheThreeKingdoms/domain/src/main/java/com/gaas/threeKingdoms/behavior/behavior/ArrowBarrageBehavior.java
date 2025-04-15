@@ -3,15 +3,19 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
+import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.round.Round;
+import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior.isEquipmentHasSpecialEffect;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 public class ArrowBarrageBehavior extends Behavior {
@@ -23,7 +27,11 @@ public class ArrowBarrageBehavior extends Behavior {
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentReactionPlayerId = currentReactionPlayer.getId();
+        Player targetPlayer = game.getPlayer(currentReactionPlayerId);
+
         playerPlayCard(behaviorPlayer, currentReactionPlayer, cardId);
+
+        Round currentRound = game.getCurrentRound();
 
         events.add(new PlayCardEvent(
                 "出牌",
@@ -31,7 +39,13 @@ public class ArrowBarrageBehavior extends Behavior {
                 "",
                 cardId,
                 playType));
-        events.add(new AskDodgeEvent(currentReactionPlayerId));
+        if (isEquipmentHasSpecialEffect(targetPlayer)) {
+            currentRound.setStage(Stage.Wait_Equipment_Effect);
+            DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
+            events.add(askPlayEquipmentEffectEvent);
+        } else {
+            events.add(new AskDodgeEvent(currentReactionPlayerId));
+        }
         events.add(game.getGameStatusEvent("發動萬箭齊發"));
 
         return events;

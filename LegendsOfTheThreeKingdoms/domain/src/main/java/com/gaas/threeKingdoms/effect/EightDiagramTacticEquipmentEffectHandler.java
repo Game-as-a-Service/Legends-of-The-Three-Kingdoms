@@ -1,6 +1,8 @@
 package com.gaas.threeKingdoms.effect;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
@@ -51,18 +53,37 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
                 .map(EffectEvent.class::cast)
                 .allMatch(EffectEvent::isSuccess);
 
-        game.peekTopBehavior().setIsOneRound(isEightDiagramTacticEffectSuccess);
+        Behavior topBehavior = game.peekTopBehavior();
+        boolean isOneRoundBehavior = topBehavior.judgeWhetherRemoveTopBehavior();
+        topBehavior.setIsOneRound(isOneRoundBehavior && isEightDiagramTacticEffectSuccess);
         if (isEightDiagramTacticEffectSuccess) {
-            game.removeCompletedBehaviors();
+            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents);
         } else {
             domainEvents.add(new AskDodgeEvent(playerId));
         }
-
+        GameStatusEvent gameStatusEvent = game.getGameStatusEvent("發動八卦陣效果");
+        domainEvents.add(gameStatusEvent);
         return domainEvents;
     }
 
     private boolean skipEquipmentEffect(EquipmentPlayType equipmentPlayType) {
         return equipmentPlayType.equals(EquipmentPlayType.SKIP);
     }
+
+    private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events) {
+        Behavior topBehavior = game.peekTopBehavior();
+        if (topBehavior instanceof ArrowBarrageBehavior arrowBarrageBehavior) {
+            Player currentReactionPlayer = arrowBarrageBehavior.getCurrentReactionPlayer();
+            currentReactionPlayer =  game.getNextPlayer(currentReactionPlayer);
+            Player arrowBarrageCurrentReactionPlayer = currentReactionPlayer;
+            if (arrowBarrageBehavior.isInReactionPlayers(arrowBarrageCurrentReactionPlayer.getId())) {
+                events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
+            }
+            game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
+        }
+    }
+
+
+
 
 }
