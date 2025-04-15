@@ -55,14 +55,14 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
 
         Behavior topBehavior = game.peekTopBehavior();
         boolean isOneRoundBehavior = topBehavior.judgeWhetherRemoveTopBehavior();
-        topBehavior.setIsOneRound(isOneRoundBehavior);
+        topBehavior.setIsOneRound(isOneRoundBehavior && isEightDiagramTacticEffectSuccess);
         if (isEightDiagramTacticEffectSuccess) {
-            game.removeCompletedBehaviors();
             addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents);
         } else {
             domainEvents.add(new AskDodgeEvent(playerId));
         }
-
+        GameStatusEvent gameStatusEvent = game.getGameStatusEvent("發動八卦陣效果");
+        domainEvents.add(gameStatusEvent);
         return domainEvents;
     }
 

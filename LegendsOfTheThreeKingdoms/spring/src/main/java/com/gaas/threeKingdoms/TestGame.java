@@ -1,33 +1,20 @@
 package com.gaas.threeKingdoms;
 
-import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.handler.*;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
-import com.gaas.threeKingdoms.effect.EightDiagramTacticEquipmentEffectHandler;
-import com.gaas.threeKingdoms.effect.EquipmentEffectHandler;
-import com.gaas.threeKingdoms.effect.QilinBowEquipmentEffectHandler;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
-import com.gaas.threeKingdoms.handcard.basiccard.Kill;
-import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 
-import static com.gaas.threeKingdoms.handcard.PlayCard.*;
-import static com.gaas.threeKingdoms.handcard.PlayCard.BH3029;
+import static com.gaas.threeKingdoms.handcard.PlayCard.SS7007;
 
 //@Document
 public class TestGame {

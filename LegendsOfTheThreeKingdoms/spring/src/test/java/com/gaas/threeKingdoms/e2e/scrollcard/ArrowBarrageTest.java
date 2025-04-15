@@ -5,11 +5,15 @@ import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -326,6 +330,147 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         }
     }
 
+    @Test
+    public void testPlayerBPlayArrowBarrageAndPlayerCSkipEquipment() throws Exception {
+//        Given A玩家有萬箭齊發
+//        玩家ABCD
+//        B的回合
+//        C 玩家有八卦陣
+
+        givenPlayerBHaveArrowBarrageAndPlayerCHaveEquipment();
+
+        // When
+        // C 玩家使用萬箭齊發
+        playerPlayArrowBarrage("player-b", "SHA040");
+
+        // C 玩家詢問要不要出發動裝備效果
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_b_use_ArrowBarrage_and_player_c_play_equipment_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+        // When C 不發動裝備卡
+        mockMvcUtil.useEquipment(gameId, "player-c", "player-b", "ES2015", EquipmentPlayType.SKIP)
+                .andExpect(status().isOk()).andReturn();
+
+        // C玩家收到要求出閃的event
+        filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_skip_play_equipment_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+        // When C 出閃
+        mockMvcUtil.playCard(gameId, "player-c", "player-a", "BDJ089", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // 要求 D 玩家出閃
+        filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_c_play_dodge_after_skip_play_equipment_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    @Test
+    public void testPlayerBPlayArrowBarrageAndPlayerCUseEquipmentAndFailure() throws Exception {
+//        Given A玩家有萬箭齊發
+//        玩家ABCD
+//        B的回合
+//        C 玩家有八卦陣
+
+        givenPlayerBHaveArrowBarrageAndPlayerCHaveEquipment();
+
+        // When
+        // C 玩家使用萬箭齊發
+        playerPlayArrowBarrage("player-b", "SHA040");
+        // C 玩家詢問要不要出發動裝備效果
+        popAllPlayerMessage();
+
+        // When C 發動裝備卡
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        mockMvcUtil.useEquipment(gameId, "player-c", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+
+        // 發動失敗，要求 c 玩家出閃
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_use_play_equipment_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+        // When C 出閃
+        mockMvcUtil.playCard(gameId, "player-c", "player-b", "BDJ089", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // 要求 D 玩家出閃
+        filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_c_play_dodge_after_use_play_equipment_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    @Test
+    public void testPlayerBPlayArrowBarrageAndPlayerCUseEquipmentAndSuccess() throws Exception {
+//        Given A玩家有萬箭齊發
+//        玩家ABCD
+//        B的回合
+//        C 玩家有八卦陣
+
+        givenPlayerBHaveArrowBarrageAndPlayerCHaveEquipmentV2();
+
+        // When
+        // C 玩家使用萬箭齊發
+        playerPlayArrowBarrage("player-b", "SHA040");
+        // C 玩家詢問要不要出發動裝備效果
+        popAllPlayerMessage();
+
+        // When C 發動裝備卡
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        mockMvcUtil.useEquipment(gameId, "player-c", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+
+        // 發動成功，要求 d 玩家出閃
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/ArrowBarrage/player_use_play_equipment_and_success_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
     private void popAllPlayerMessage() {
         websocketUtil.getValue("player-a");
         websocketUtil.getValue("player-b");
@@ -414,6 +559,88 @@ public class ArrowBarrageTest extends AbstractBaseIntegrationTest {
         deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
         game.setDeck(deck);
         game.removeDyingPlayer(playerB);
+        repository.save(game);
+    }
+
+    private void givenPlayerBHaveArrowBarrageAndPlayerCHaveEquipment() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Dodge(BDJ089), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new ArrowBarrage(SHA040)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                3,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        playerC.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerB);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dismantle(SS3003), new Dismantle(SS3003), new Dismantle(SS3003)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
+    private void givenPlayerBHaveArrowBarrageAndPlayerCHaveEquipmentV2() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new QilinBowCard(EH5031)
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Dodge(BDJ089), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new ArrowBarrage(SHA040)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                3,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        playerC.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerB);
+        Deck deck = new Deck();
+        deck.add(List.of(new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029), new RedRabbitHorse(BH3029)));
+        game.setDeck(deck);
         repository.save(game);
     }
 }

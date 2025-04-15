@@ -1144,7 +1144,10 @@ public class ArrowBarrageTest {
         assertEquals(1, playerB.getHP());
 
         AskDodgeEvent askDodgeEvent = getEvent(events, AskDodgeEvent.class).orElseThrow(RuntimeException::new);
+        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow(RuntimeException::new);
         assertEquals("player-c", askDodgeEvent.getPlayerId());
+        assertEquals("player-c", game.getActivePlayer().getId());
+        assertEquals("player-c", gameStatusEvent.getRound().getActivePlayer());
     }
 
     @DisplayName("""
