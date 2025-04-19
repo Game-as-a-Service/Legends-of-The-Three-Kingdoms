@@ -43,7 +43,7 @@ public class DismantleBehavior extends Behavior {
         reactionPlayers.remove(0);
 
         String playerGeneralName = game.getPlayer(playerId).getGeneralName();
-        String targetPlayerGeneralName = game.getPlayer(playerId).getGeneralName();
+        String targetPlayerGeneralName = game.getPlayer(targetPlayerId).getGeneralName();
 
         if (handCardIndex != null) {
             List<HandCard> cards = targetPlayer.getHand().getCards();
