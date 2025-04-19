@@ -1,12 +1,27 @@
 {
   "events" : [ {
-    "event" : "UseDismantleEvent",
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "SettlementEvent",
     "data" : {
       "playerId" : "player-b",
-      "targetPlayerId" : "player-c",
-      "cardId" : "SS6006"
+      "role" : "Minister"
     },
-    "message" : "劉備 拆掉了 呂布 判定區的 樂不思蜀"
+    "message" : "呂布 死亡，身分是 忠臣"
+  }, {
+    "event" : "DiscardEvent",
+    "data" : {
+      "cardIds" : [ "BH3029", "BH2028", "BHK039" ],
+      "discardPlayerId" : "player-a"
+    },
+    "message" : "主公 劉備 殺死忠臣 呂布，棄所有的牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -15,25 +30,25 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU001",
+      "generalId" : "QUN002",
       "roleId" : "",
-      "hp" : 4,
+      "hp" : 0,
       "hand" : {
-        "size" : 7,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "QUN002",
+      "generalId" : "SHU001",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -55,15 +70,15 @@
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Action",
-      "currentRoundPlayer" : "player-b",
-      "activePlayer" : "player-b",
-      "dyingPlayer" : "",
-      "showKill" : false
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "player-b",
+      "showKill" : true
     },
     "gamePhase" : "Normal"
   },
-  "message" : "過河拆橋效果",
-  "gameId" : "my-id",
+  "message" : "不出牌",
+  "gameId" : "dyingTestGame",
   "playerId" : "player-d"
 }

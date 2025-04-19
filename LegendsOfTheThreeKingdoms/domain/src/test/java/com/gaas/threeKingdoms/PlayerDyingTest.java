@@ -326,10 +326,10 @@ public class PlayerDyingTest {
             A 玩家已瀕臨死亡且狀態是 Dying
             B 玩家被詢問要不要出桃救A
             B 玩家不出桃救A
-                        
+           
             When
             C 玩家不出桃救A
-               
+            
             Then
             D 玩家被詢問要不要出桃救A
             系統向所有玩家發出 player-b PlayCardEvent

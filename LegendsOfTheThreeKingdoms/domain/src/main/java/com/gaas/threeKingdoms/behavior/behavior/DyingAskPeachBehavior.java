@@ -83,10 +83,12 @@ public class DyingAskPeachBehavior extends Behavior {
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                 } else if (isMINISTER(dyingPlayer)) {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
+                    events.add(settlementEvent);
                     // 如果殺忠臣的玩家是主公，則主公棄掉所有的牌
                     if (isMonarch(game.getLastAttacker())) {
                         List<HandCard> discardCards = game.getLastAttacker().discardAllCards();
-                        String message = String.format("玩家 %s 棄牌", game.getLastAttacker().getId());
+
+                        String message = String.format("主公 %s 殺死忠臣 %s，棄所有的牌", game.getLastAttacker().getGeneralName(), dyingPlayer.getGeneralName());
                         DomainEvent discardCardEvent = new DiscardEvent(discardCards, message, game.getLastAttacker().getId());
                         game.getGraveyard().add(discardCards);
 
@@ -100,7 +102,6 @@ public class DyingAskPeachBehavior extends Behavior {
 
                         events.addAll(List.of(discardCardEvent, discardEquipmentEvent));
                     }
-                    events.add(settlementEvent);
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                 } else {
