@@ -16,6 +16,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -822,6 +823,16 @@ public class Game {
         return null;
     }
 
+    public boolean doesAnyPlayerHaveWard() {
+        return players.stream()
+                .anyMatch(player -> player.getHand().getCards().stream().noneMatch(card -> card instanceof Ward));
+    }
+
+    public List<Player> whichPlayersHaveWard() {
+        return players.stream()
+                .filter(player -> player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward))
+                .toList();
+    }
 
 }
 
