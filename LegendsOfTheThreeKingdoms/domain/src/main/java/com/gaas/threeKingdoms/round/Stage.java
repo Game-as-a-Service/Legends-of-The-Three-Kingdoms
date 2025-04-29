@@ -5,4 +5,5 @@ public enum Stage {
     Wait_Equipment_Effect,
     Wait_Accept_Equipment_Effect,
     Wait_Accept_Ward_Effect,
+    Wait_Resolve_Ward_Stack
 }

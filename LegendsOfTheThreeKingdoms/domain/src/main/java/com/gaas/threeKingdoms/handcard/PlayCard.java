@@ -266,6 +266,12 @@ public enum PlayCard {
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
 
+    public static boolean isWardCard(String cardId) {
+        return Arrays.stream(PlayCard.values())
+                .filter(c->c.getCardName().equals("無懈可擊"))
+                .anyMatch(c->c.getCardId().equals(cardId));
+    }
+
     public static boolean isEightDiagramTacticCard(String cardId){
         return Arrays.stream(PlayCard.values())
                 .filter(c->c.getCardName().equals("八卦陣"))
@@ -276,6 +282,10 @@ public enum PlayCard {
 
     public static boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
+    }
+
+    public static boolean isActive(String playType) {
+        return PlayType.ACTIVE.getPlayType().equals(playType);
     }
 
     public static String getCardName(String cardId) {

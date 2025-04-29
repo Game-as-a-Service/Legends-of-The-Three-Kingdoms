@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.*;
 
-import static com.gaas.threeKingdoms.presenter.PlayCardPresenter.*;
-import static com.gaas.threeKingdoms.presenter.PlayCardPresenter.getGameOverViewModel;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquipmentPresenter<List<UseEquipmentEffectPresenter.GameViewModel>> {

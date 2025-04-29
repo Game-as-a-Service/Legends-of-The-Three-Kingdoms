@@ -49,6 +49,11 @@ public class Behavior {
         return null;
     }
 
+    // hook
+    public List<DomainEvent> doBehaviorAction () {
+        return null;
+    }
+
     public List<DomainEvent> responseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         throwExceptionWhenPlayerIsNotInReactionPlayers(playerId);
         return doResponseToPlayerAction(playerId, targetPlayerId, cardId, playType);

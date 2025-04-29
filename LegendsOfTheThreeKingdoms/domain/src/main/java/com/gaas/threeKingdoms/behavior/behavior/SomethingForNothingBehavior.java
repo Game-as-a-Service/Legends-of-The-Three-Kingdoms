@@ -17,7 +17,7 @@ import java.util.List;
 public class SomethingForNothingBehavior extends Behavior {
 
     public SomethingForNothingBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
     }
 
     @Override
@@ -40,23 +40,29 @@ public class SomethingForNothingBehavior extends Behavior {
 
             Behavior wardBehavior = new WardBehavior(
                     game,
-                    behaviorPlayer,
+                    null,
                     game.whichPlayersHaveWard().stream().map(Player::getId).toList(),
                     null,
                     cardId,
                     PlayType.INACTIVE.getPlayType(),
                     card,
-                    true,
-                    false
+                    true
             );
 
             game.updateTopBehavior(wardBehavior);
             domainEvents.addAll(wardBehavior.playerAction());
         } else {
-            domainEvents.add(new SomethingForNothingEvent(behaviorPlayer.getId()));
-            domainEvents.add(game.drawCardToPlayer(behaviorPlayer, false));
+            domainEvents.addAll(doBehaviorAction());
         }
         domainEvents.add(game.getGameStatusEvent(""));
+        return domainEvents;
+    }
+
+    @Override
+    public List<DomainEvent> doBehaviorAction() {
+        List<DomainEvent> domainEvents = new ArrayList<>();
+        domainEvents.add(new SomethingForNothingEvent(behaviorPlayer.getId()));
+        domainEvents.add(game.drawCardToPlayer(behaviorPlayer, false));
         return domainEvents;
     }
 
