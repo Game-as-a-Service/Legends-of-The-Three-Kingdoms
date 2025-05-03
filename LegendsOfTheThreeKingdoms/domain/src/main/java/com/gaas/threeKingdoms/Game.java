@@ -790,7 +790,7 @@ public class Game {
             throw new IllegalStateException(String.format("CurrentRound stage not Wait_Accept_Ward_Effect but [%s]", currentRound.getStage()));
         }
         Player player = getPlayer(playerId);
-        if (!player.hasCardOfTypeWithIdInHand(cardId, Ward.class)) {
+        if (PlayType.ACTIVE.getPlayType().equals(playType) && !player.hasCardOfTypeWithIdInHand(cardId, Ward.class)) {
             throw new IllegalArgumentException(String.format("Current player play card[%s] is not Ward", cardId));
         }
 
@@ -798,40 +798,14 @@ public class Game {
         List<DomainEvent> domainEvents = new ArrayList<>();
         if (behavior instanceof WardBehavior
                 && behavior.getReactionPlayers().contains(playerId)
-                && isWardCard(cardId)
+                && (isWardCard(cardId) || PlayType.SKIP.getPlayType().equals(playType))
         ) {
             domainEvents.addAll(behavior.responseToPlayerAction(playerId, "", cardId, playType));
-            domainEvents.addAll(checkIfInvokePreviousBehavior());
         }
 
         domainEvents.add(getGameStatusEvent("出無懈可擊"));
         return domainEvents;
 
-    }
-
-    // 根據 stack 中 WardBehavior 的數量：
-    // 奇數：清掉所有的 WardBehavior ，並且不發動任何 behavior 效果。
-    // 偶數：清掉所有的 WardBehavior ，發動 stack 中除了 WardBehavior 外第一個遇到的 behavior 效果，發動這個效果可以另外開一隻 doBehaviorAction 的 api。
-    private List<DomainEvent> checkIfInvokePreviousBehavior() {
-        List<DomainEvent> domainEvents = new ArrayList<>();
-        if (currentRound.getStage().equals(Stage.Wait_Resolve_Ward_Stack)) {
-            Stack<Behavior> behaviors = getTopBehavior();
-            int wardBehaviorSize = 0;
-            while (behaviors.peek() instanceof WardBehavior) {
-                wardBehaviorSize++;
-                behaviors.pop();
-            }
-
-            if (wardBehaviorSize % 2 == 0) {
-                Behavior firstNotWardBehavior = behaviors.pop();
-                domainEvents = firstNotWardBehavior.doBehaviorAction();
-            } else {
-                // 清掉所有的 WardBehavior 後，把第一個不是 WardBehavior 的 behavior pop 出來。
-                behaviors.pop();
-            }
-            currentRound.setStage(Stage.Normal);
-        }
-        return domainEvents;
     }
 
     public List<DomainEvent> playerChooseCardFromBountifulHarvest(String currentPlayerId, String cardId) {

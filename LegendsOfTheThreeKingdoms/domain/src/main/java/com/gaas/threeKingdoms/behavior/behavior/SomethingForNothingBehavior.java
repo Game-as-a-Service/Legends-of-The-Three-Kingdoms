@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.round.Stage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SomethingForNothingBehavior extends Behavior {
 
@@ -41,7 +42,7 @@ public class SomethingForNothingBehavior extends Behavior {
             Behavior wardBehavior = new WardBehavior(
                     game,
                     null,
-                    game.whichPlayersHaveWard().stream().map(Player::getId).toList(),
+                    game.whichPlayersHaveWard().stream().map(Player::getId).collect(Collectors.toList()),
                     null,
                     cardId,
                     PlayType.INACTIVE.getPlayType(),

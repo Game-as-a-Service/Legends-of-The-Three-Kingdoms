@@ -1,7 +1,10 @@
 package com.gaas.threeKingdoms;
 
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
-import com.gaas.threeKingdoms.events.*;
+import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.SomethingForNothingEvent;
+import com.gaas.threeKingdoms.events.WaitForWardEvent;
+import com.gaas.threeKingdoms.events.WardEvent;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -555,6 +558,186 @@ public class WardTest {
         assertEquals("SSJ011", wardEvent.getCardId());
         assertEquals("SSJ011", wardEvent.getWardCardId());
         assertFalse(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
+    }
+
+    @DisplayName("""
+               Given
+               有 玩家 ABCD
+               A 有無中生有
+               A 有無懈可擊
+               B 有無懈可擊
+               C 有無懈可擊
+                
+               A 出無中生有
+               B 出 skip 無懈可擊
+               A 出 skip 無懈可擊
+               
+               When
+               C 出 skip 無懈可擊
+
+               Then
+               A B C D 不會收到無中生有發動 的 event
+            """)
+    @Test
+    public void givenPlayerAHasSomethingForNothingAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerAAndCSkipPlaysWard_ThenABCDReceive() {
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new Deck(List.of(new BarbarianInvasion(SSK013), new Dismantle(SS3003))));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new SomethingForNothing(SH7046), new Ward(SSJ011)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // A 出無中生有
+        List<DomainEvent> event1 = game.playerPlayCard(playerA.getId(), SH7046.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        // B 出無懈可擊
+        List<DomainEvent> event2 = game.playWardCard(playerB.getId(), SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        // A skip 無懈可擊
+        List<DomainEvent> event3 = game.playWardCard(playerA.getId(), "", PlayType.SKIP.getPlayType());
+
+        //When
+        // C skip 無懈可擊
+        List<DomainEvent> events = game.playWardCard(playerC.getId(), "", PlayType.SKIP.getPlayType());
+
+        // Then
+        assertFalse(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
+    }
+
+    @DisplayName("""
+               Given
+               有 玩家 ABCD
+               A 有無中生有
+               A 有無懈可擊
+               B 有無懈可擊
+               C 有無懈可擊
+                
+               A 出 無中生有
+               B 出 無懈可擊
+               A 出 無懈可擊
+               
+               When
+               C 出 skip 無懈可擊
+
+               Then
+               A B C D 收到無中生有發動 的 event
+            """)
+    @Test
+    public void givenPlayerAHasSomethingForNothingAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerAAndBAndCSkipPlaysWard_ThenABCDReceive() {
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new Deck(List.of(new BarbarianInvasion(SSK013), new Dismantle(SS3003))));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new SomethingForNothing(SH7046), new Ward(SSJ011)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // A 出無中生有
+        List<DomainEvent> event1 = game.playerPlayCard(playerA.getId(), SH7046.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        // B 出無懈可擊
+        List<DomainEvent> event2 = game.playWardCard(playerB.getId(), SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        // A 出無懈可擊
+        List<DomainEvent> event3 = game.playWardCard(playerA.getId(), SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        //When
+        // C skip 無懈可擊
+        List<DomainEvent> events = game.playWardCard(playerC.getId(), "", PlayType.SKIP.getPlayType());
+
+        // Then
+        assertTrue(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
     }
 
 }

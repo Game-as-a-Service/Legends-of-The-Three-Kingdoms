@@ -10,7 +10,11 @@ import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Stack;
+import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isActive;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
@@ -60,23 +64,27 @@ public class WardBehavior extends Behavior {
             domainEvents.add(playCardEvent);
             domainEvents.add(wardEvent);
 
+            currentRound.setStage(Stage.Wait_Accept_Ward_Effect);
+            setIsOneRound(false);
+
+
+            Behavior wardBehavior = new WardBehavior(
+                    game,
+                    player,
+                    game.whichPlayersHaveWard().stream().map(Player::getId).collect(Collectors.toList()),
+                    null,
+                    cardId,
+                    PlayType.INACTIVE.getPlayType(),
+                    card,
+                    true
+            );
+            game.updateTopBehavior(wardBehavior);
+
             if (game.doesAnyPlayerHaveWard()) {
-                currentRound.setStage(Stage.Wait_Accept_Ward_Effect);
-                setIsOneRound(false);
-                Behavior wardBehavior = new WardBehavior(
-                        game,
-                        null,
-                        game.whichPlayersHaveWard().stream().map(Player::getId).toList(),
-                        null,
-                        cardId,
-                        PlayType.INACTIVE.getPlayType(),
-                        card,
-                        true
-                );
-                game.updateTopBehavior(wardBehavior);
                 domainEvents.addAll(wardBehavior.playerAction());
             } else {
-                currentRound.setStage(Stage.Wait_Resolve_Ward_Stack);
+                wardBehavior.setIsTargetPlayerNeedToResponse(false);
+                domainEvents.addAll(doBehaviorAction());
             }
             return domainEvents;
         }
@@ -92,13 +100,36 @@ public class WardBehavior extends Behavior {
         //      奇數：清掉所有的 WardBehavior ，並且不發動任何 behavior 效果。
         //      偶數：清掉所有的 WardBehavior ，發動 stack 中除了 WardBehavior 外第一個遇到的 behavior 效果，發動這個效果可以另外開一隻 doBehaviorAction 的 api。
         if (reactionPlayers.isEmpty()) {
-            currentRound.setStage(Stage.Wait_Resolve_Ward_Stack);
+            domainEvents.addAll(doBehaviorAction());
         } else {
-            currentRound.setStage(Stage.Wait_Accept_Ward_Effect);
             domainEvents.add(new SkipWardEvent(playerId, cardId));
         }
 
         return domainEvents;
     }
 
+
+    @Override
+    public List<DomainEvent> doBehaviorAction() {
+        List<DomainEvent> domainEvents = new ArrayList<>();
+        Stack<Behavior> topBehaviors = game.getTopBehavior();
+        int wardBehaviorSize = 0;
+        for (int i = topBehaviors.size() - 1; i >= 0; i--) {
+            Behavior behavior = topBehaviors.get(i);
+            if (!(behavior instanceof WardBehavior)) {
+                break;
+            }
+            behavior.setIsOneRound(true);
+            if (behavior.getBehaviorPlayer() != null) {
+                wardBehaviorSize++;
+            }
+        }
+        game.removeCompletedBehaviors();
+        Behavior firstNotWardBehavior = topBehaviors.pop();
+        if (wardBehaviorSize % 2 == 0) {
+            domainEvents.addAll(firstNotWardBehavior.doBehaviorAction());
+        }
+        game.getCurrentRound().setStage(Stage.Normal);
+        return domainEvents;
+    }
 }
