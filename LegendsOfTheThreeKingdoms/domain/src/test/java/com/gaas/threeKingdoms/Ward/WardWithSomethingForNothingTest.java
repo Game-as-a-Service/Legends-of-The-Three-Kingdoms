@@ -1,5 +1,6 @@
-package com.gaas.threeKingdoms;
+package com.gaas.threeKingdoms.Ward;
 
+import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.SomethingForNothingEvent;
@@ -31,7 +32,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class WardTest {
+public class WardWithSomethingForNothingTest {
 
     @DisplayName("""
             Given

@@ -305,6 +305,21 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
     @Data
+    public static class WaitForWardViewModel extends ViewModel<WaitForWardDataViewModel> {
+        public WaitForWardViewModel(WaitForWardDataViewModel data, String message) {
+            super("WaitForWardEvent", data, message);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class WaitForWardDataViewModel {
+        private String wardTriggerPlayerId;
+        private String wardTriggerCardId;
+    }
+
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class GameViewModel extends GameProcessViewModel<GameDataViewModel> {

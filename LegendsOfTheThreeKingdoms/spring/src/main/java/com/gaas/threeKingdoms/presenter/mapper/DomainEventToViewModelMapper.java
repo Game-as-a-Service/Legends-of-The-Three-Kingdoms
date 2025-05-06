@@ -301,6 +301,17 @@ public class DomainEventToViewModelMapper {
                     lightningEvent.getMessage()
             );
         });
+
+        eventToViewModelMappers.put(WaitForWardEvent.class, event -> {
+            WaitForWardEvent waitForWardEvent = (WaitForWardEvent) event;
+            return new PlayCardPresenter.WaitForWardViewModel(
+                    new PlayCardPresenter.WaitForWardDataViewModel(
+                            waitForWardEvent.getWardTriggerPlayerId(),
+                            waitForWardEvent.getWardTriggerCardId()
+                    ),
+                    waitForWardEvent.getMessage()
+            );
+        });
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {

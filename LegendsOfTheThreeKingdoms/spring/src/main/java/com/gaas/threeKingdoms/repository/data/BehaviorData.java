@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.*;
 import com.gaas.threeKingdoms.handcard.PlayCard;
+import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -177,6 +179,25 @@ public class BehaviorData {
                 );
                 yield bountifulHarvestBehavior;
             }
+            case "WardBehavior" -> new WardBehavior(
+                    game,
+                    behaviorPlayerId != null ? game.getPlayer(behaviorPlayerId) : null,
+                    reactionPlayers,
+                    currentReactionPlayerId != null ? game.getPlayer(currentReactionPlayerId) : null,
+                    cardId,
+                    playType,
+                    PlayCard.findById(cardId),
+                    isTargetPlayerNeedToResponse
+            );
+            case "SomethingForNothingBehavior" -> new SomethingForNothingBehavior(
+                    game,
+                    game.getPlayer(behaviorPlayerId),
+                    reactionPlayers,
+                    game.getPlayer(currentReactionPlayerId),
+                    cardId,
+                    playType,
+                    PlayCard.findById(cardId)
+            );
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);
@@ -188,9 +209,15 @@ public class BehaviorData {
     public static BehaviorData fromDomain(Behavior behavior) {
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())
-                .behaviorPlayerId(behavior.getBehaviorPlayer().getId())
+                .behaviorPlayerId(
+                        Optional.ofNullable(behavior.getBehaviorPlayer())
+                                .map(Player::getId)
+                                .orElse(null))
                 .reactionPlayers(behavior.getReactionPlayers())
-                .currentReactionPlayerId(behavior.getCurrentReactionPlayer().getId())
+                .currentReactionPlayerId(
+                        Optional.ofNullable(behavior.getCurrentReactionPlayer())
+                                .map(Player::getId)
+                                .orElse(null))
                 .cardId(behavior.getCardId())
                 .playType(behavior.getPlayType())
                 .isTargetPlayerNeedToResponse(behavior.isTargetPlayerNeedToResponse())

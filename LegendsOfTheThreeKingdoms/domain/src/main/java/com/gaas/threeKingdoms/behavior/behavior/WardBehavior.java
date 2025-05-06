@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.HandCard;
@@ -20,6 +21,9 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isActive;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
 public class WardBehavior extends Behavior {
+
+    public static final String WARD_TRIGGER_PLAYER_ID = "WARD_TRIGGER_PLAYER_ID";
+
     public WardBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, isTargetPlayerNeedToResponse, false);
     }
@@ -34,7 +38,8 @@ public class WardBehavior extends Behavior {
                     }
                 }
         );
-        events.add(new WaitForWardEvent(new HashSet<>(playerIds)));
+        String wardTriggerPlayerId = (String) getParam(WARD_TRIGGER_PLAYER_ID);
+        events.add(new WaitForWardEvent(new HashSet<>(playerIds), wardTriggerPlayerId, cardId));
         return events;
     }
 

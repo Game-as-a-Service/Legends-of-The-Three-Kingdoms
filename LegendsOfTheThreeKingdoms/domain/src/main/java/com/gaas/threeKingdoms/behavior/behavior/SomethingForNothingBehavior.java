@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER_PLAYER_ID;
+
 public class SomethingForNothingBehavior extends Behavior {
 
     public SomethingForNothingBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
@@ -49,6 +51,7 @@ public class SomethingForNothingBehavior extends Behavior {
                     card,
                     true
             );
+            wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
 
             game.updateTopBehavior(wardBehavior);
             domainEvents.addAll(wardBehavior.playerAction());
