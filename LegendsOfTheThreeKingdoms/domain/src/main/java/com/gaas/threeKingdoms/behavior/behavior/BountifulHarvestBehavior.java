@@ -61,4 +61,6 @@ public class BountifulHarvestBehavior extends Behavior {
     public boolean isLastReactionPlayers(String playerId) {
         return reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
     }
+
+    
 }
