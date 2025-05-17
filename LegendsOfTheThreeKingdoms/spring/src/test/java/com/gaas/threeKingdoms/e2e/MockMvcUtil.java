@@ -87,16 +87,6 @@ public class MockMvcUtil {
                         }""", currentPlayerId, targetPlayerId, cardId, playType.getPlayType())));
     }
 
-    public ResultActions useEquipment(String gameId, String currentPlayerId, String cardId, EquipmentPlayType playType) throws Exception {
-        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useEquipmentEffect")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(String.format("""
-                        { "playerId": "%s",
-                          "cardId": "%s",
-                          "playType": "%s"
-                        }""", currentPlayerId, cardId, playType.getPlayType())));
-    }
-
     public ResultActions chooseHorse(String gameId, String currentPlayerId, String cardId) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:chooseHorseCard")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -115,5 +105,13 @@ public class MockMvcUtil {
                         }""", currentPlayerId, cardId)));
     }
 
-
+    public ResultActions playWardCard(String gameId, String currentPlayerId, String cardId, String playType) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playWardCard")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "cardId": "%s",
+                          "playType": "%s"
+                        }""", currentPlayerId, cardId, playType)));
+    }
 }

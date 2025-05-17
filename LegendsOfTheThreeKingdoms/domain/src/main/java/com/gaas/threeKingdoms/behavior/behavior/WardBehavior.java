@@ -1,8 +1,8 @@
 package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.behavior.wardinfo.WardInfo;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
@@ -10,6 +10,10 @@ import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.utils.MutablePair;
+import com.gaas.threeKingdoms.utils.MutableTriple;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,10 +68,10 @@ public class WardBehavior extends Behavior {
                     cardId,
                     playType);
 
-            WardEvent wardEvent = new WardEvent(playerId, this.cardId, cardId);
+//            WardEvent wardEvent = new WardEvent(playerId, this.cardId, cardId, "");
 
             domainEvents.add(playCardEvent);
-            domainEvents.add(wardEvent);
+//            domainEvents.add(wardEvent);
 
             currentRound.setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
@@ -119,16 +123,37 @@ public class WardBehavior extends Behavior {
         List<DomainEvent> domainEvents = new ArrayList<>();
         Stack<Behavior> topBehaviors = game.getTopBehavior();
         int wardBehaviorSize = 0;
+        MutableTriple<String, String /*wardPlayerId*/, String> message = null;
+        WardInfo info = new WardInfo();
+
+
+        WardEvent wardEvent = null;
         for (int i = topBehaviors.size() - 1; i >= 0; i--) {
             Behavior behavior = topBehaviors.get(i);
             if (!(behavior instanceof WardBehavior)) {
+                domainEvents.add(new WardEvent(wardEvent.getPlayerId(), behavior.getCardId(), wardEvent.getWardCardId(), wardEvent.getMessage()
+                        + String.format("%s 的 %s", behavior.getBehaviorPlayer().getGeneralName(), behavior.getCard().getName())));
                 break;
             }
             behavior.setIsOneRound(true);
-            if (behavior.getBehaviorPlayer() != null) {
+            if (behavior.getBehaviorPlayer() != null) { // 反之是系統的 behavior，不是真的有人出牌
                 wardBehaviorSize++;
+                // B 對 D 出了 XXXX
+                // D 對 B 出了無懈可擊 (latest)
+                // Ｄ的無懈可擊抵銷了B的無懈可擊
+               if (wardEvent == null) {
+                   Player wardPlayer = behavior.getBehaviorPlayer();
+                   String unDoneMessage = String.format("%s 的無懈可擊抵銷了 ", wardPlayer.getGeneralName());
+                   wardEvent = new WardEvent(wardPlayer.getId(), null, behavior.getCardId(), unDoneMessage);
+               } else if (StringUtils.isBlank(wardEvent.getCardId())) {
+                   domainEvents.add(new WardEvent(wardEvent.getPlayerId(), behavior.getCardId(), wardEvent.getWardCardId(), wardEvent.getMessage()
+                           + String.format("%s 的 %s", behavior.getBehaviorPlayer().getGeneralName(), behavior.getCard().getName())));
+                   wardEvent = null;
+               }
+
             }
         }
+
         game.removeCompletedBehaviors();
         Behavior firstNotWardBehavior = topBehaviors.pop();
         if (wardBehaviorSize % 2 == 0) {

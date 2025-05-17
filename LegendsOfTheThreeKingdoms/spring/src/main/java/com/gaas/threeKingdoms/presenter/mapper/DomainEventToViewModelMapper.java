@@ -312,6 +312,18 @@ public class DomainEventToViewModelMapper {
                     waitForWardEvent.getMessage()
             );
         });
+
+        eventToViewModelMappers.put(WardEvent.class, event -> {
+            WardEvent wardEvent = (WardEvent) event;
+            return new PlayWardCardPresenter.PlayWardCardViewModel(
+                    new PlayWardCardPresenter.PlayWardCardDataViewModel(
+                            wardEvent.getPlayerId(),
+                            wardEvent.getCardId(),
+                            wardEvent.getWardCardId()
+                    ),
+                    wardEvent.getMessage()
+            );
+        });
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {

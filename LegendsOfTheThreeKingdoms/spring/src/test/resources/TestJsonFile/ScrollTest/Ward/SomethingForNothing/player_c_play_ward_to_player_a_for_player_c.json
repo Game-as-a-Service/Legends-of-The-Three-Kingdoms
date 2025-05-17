@@ -2,17 +2,17 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "player-a",
-      "cardId" : "SH7046",
+      "playerId" : "player-c",
+      "targetPlayerId" : "",
+      "cardId" : "SSJ011",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
     "event" : "WaitForWardEvent",
     "data" : {
-      "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SH7046"
+      "wardTriggerPlayerId" : null,
+      "wardTriggerCardId" : "SSJ011"
     },
     "message" : "等待玩家發動無懈可擊"
   } ],
@@ -24,7 +24,7 @@
       "hp" : 4,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003", "SSJ011" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -42,11 +42,11 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ ]
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -71,7 +71,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出牌",
+  "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-a"
+  "playerId" : "player-c"
 }

@@ -30,7 +30,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU001",
+      "generalId" : "SHU003",
       "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
@@ -41,7 +41,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU001",
+      "generalId" : "SHU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -52,7 +52,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "SHU001",
+      "generalId" : "QUN002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {

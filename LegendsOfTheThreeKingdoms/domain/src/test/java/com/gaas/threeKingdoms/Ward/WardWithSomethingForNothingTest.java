@@ -2,10 +2,7 @@ package com.gaas.threeKingdoms.Ward;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
-import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.events.SomethingForNothingEvent;
-import com.gaas.threeKingdoms.events.WaitForWardEvent;
-import com.gaas.threeKingdoms.events.WardEvent;
+import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -26,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -297,7 +295,7 @@ public class WardWithSomethingForNothingTest {
                B 出無懈可擊
 
                Then
-               A B C D 收到 event 無懈可擊 抵銷了 無中生有
+               A B C D 收到 PlayCard Event  
                C 收到是否要發動無懈可擊的 event
             """)
     @Test
@@ -364,10 +362,11 @@ public class WardWithSomethingForNothingTest {
         List<DomainEvent> events = game.playWardCard(playerB.getId(), SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
 
         // Then
-        WardEvent wardEvent = getEvent(events, WardEvent.class).orElseThrow(RuntimeException::new);
-        assertEquals("player-b", wardEvent.getPlayerId());
-        assertEquals("SH7046", wardEvent.getCardId());
-        assertEquals("SSJ011", wardEvent.getWardCardId());
+        assertFalse(events.stream().anyMatch(event -> event instanceof WardEvent));
+
+        PlayCardEvent playCardEvent = getEvent(events, PlayCardEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-b", playCardEvent.getPlayerId());
+        assertEquals("SSJ011", playCardEvent.getCardId());
         WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-c"));
         assertEquals(1, waitForWardEvent.getPlayerIds().size());
@@ -388,8 +387,8 @@ public class WardWithSomethingForNothingTest {
                C 出無懈可擊
 
                Then
-               A B C D 收到 event 無懈可擊 抵銷了 無懈可擊
-               A B C D 收到無中生有發動 的 event
+               A B C D 收到 event >> C 的無懈可擊抵銷了 B 的無懈可擊
+               A B C D 收到 A 無中生有發動 的 event
             """)
     @Test
     public void givenPlayerAHasSomethingForNothingAndPlayerBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerBAndCPlaysWard_ThenABCDReceive() {
@@ -482,7 +481,8 @@ public class WardWithSomethingForNothingTest {
                C 出無懈可擊
 
                Then
-               A B C D 收到 event 無懈可擊 抵銷了 無懈可擊
+               A B C D 收到 event >> C 的無懈可擊抵銷了 A  的無懈可擊
+               A B C D 收到 event >> B 的無懈可擊抵銷了 A  的無中生有
                A B C D 不會收到無中生有發動 的 event
             """)
     @Test
@@ -554,10 +554,25 @@ public class WardWithSomethingForNothingTest {
         List<DomainEvent> events = game.playWardCard(playerC.getId(), SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
 
         // Then
-        WardEvent wardEvent = getEvent(events, WardEvent.class).orElseThrow(RuntimeException::new);
-        assertEquals("player-c", wardEvent.getPlayerId());
-        assertEquals("SSJ011", wardEvent.getCardId());
-        assertEquals("SSJ011", wardEvent.getWardCardId());
+        List<WardEvent> wardEvents = events.stream()
+                .filter(e -> e instanceof WardEvent)
+                .map(e -> (WardEvent) e)
+                .toList();
+
+        assertEquals(2, wardEvents.size(), "應該有兩個 WardEvent");
+
+        WardEvent wardEventC = wardEvents.stream()
+                .filter(e -> e.getPlayerId().equals("player-c"))
+                .findFirst().orElseThrow(() -> new AssertionError("找不到 player-c 的 WardEvent"));
+        assertEquals("SSJ011", wardEventC.getCardId());
+        assertEquals("SSJ011", wardEventC.getWardCardId());
+
+        WardEvent wardEventA = wardEvents.stream()
+                .filter(e -> e.getPlayerId().equals("player-a"))
+                .findFirst().orElseThrow(() -> new AssertionError("找不到 player-a 的 WardEvent"));
+        assertEquals("SH7046", wardEventA.getCardId());
+        assertEquals("SSJ011", wardEventA.getWardCardId());
+
         assertFalse(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
     }
 
@@ -648,6 +663,7 @@ public class WardWithSomethingForNothingTest {
         List<DomainEvent> events = game.playWardCard(playerC.getId(), "", PlayType.SKIP.getPlayType());
 
         // Then
+        assertFalse(events.stream().anyMatch(event -> event instanceof WardEvent));
         assertFalse(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
     }
 
@@ -667,7 +683,8 @@ public class WardWithSomethingForNothingTest {
                C 出 skip 無懈可擊
 
                Then
-               A B C D 收到無中生有發動 的 event
+               A B C D 收到 event >> A 的無懈可擊 抵銷了 B 的無懈可擊 
+               A B C D 收到 event >> A 無中生有發動 的 event
             """)
     @Test
     public void givenPlayerAHasSomethingForNothingAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerAAndBAndCSkipPlaysWard_ThenABCDReceive() {
@@ -739,6 +756,11 @@ public class WardWithSomethingForNothingTest {
 
         // Then
         assertTrue(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
+        assertTrue(events.stream().anyMatch(event -> event instanceof WardEvent));
+        WardEvent wardEvent = getEvent(events, WardEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-a", wardEvent.getPlayerId());
+        assertEquals("SSJ011", wardEvent.getCardId());
+        assertEquals("SSJ011", wardEvent.getWardCardId());
     }
 
 }

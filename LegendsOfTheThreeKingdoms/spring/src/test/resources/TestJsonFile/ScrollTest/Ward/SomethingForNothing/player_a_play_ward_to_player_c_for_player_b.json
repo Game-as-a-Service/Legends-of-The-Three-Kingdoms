@@ -3,16 +3,16 @@
     "event" : "PlayCardEvent",
     "data" : {
       "playerId" : "player-a",
-      "targetPlayerId" : "player-a",
-      "cardId" : "SH7046",
+      "targetPlayerId" : "",
+      "cardId" : "SSJ011",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
     "event" : "WaitForWardEvent",
     "data" : {
-      "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SH7046"
+      "wardTriggerPlayerId" : null,
+      "wardTriggerCardId" : "SSJ011"
     },
     "message" : "等待玩家發動無懈可擊"
   } ],
@@ -23,19 +23,19 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003", "SSJ011" ]
+        "size" : 4,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "SHU003",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BH2028", "SSJ011" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -45,7 +45,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -71,7 +71,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出牌",
+  "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-a"
+  "playerId" : "player-b"
 }
