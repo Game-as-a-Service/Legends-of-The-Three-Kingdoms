@@ -2,7 +2,6 @@ package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.behavior.behavior.wardinfo.WardInfo;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
