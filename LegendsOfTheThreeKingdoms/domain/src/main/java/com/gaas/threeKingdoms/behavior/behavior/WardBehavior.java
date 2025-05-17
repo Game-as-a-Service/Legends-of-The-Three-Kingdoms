@@ -10,10 +10,8 @@ import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
-import com.gaas.threeKingdoms.utils.MutablePair;
 import com.gaas.threeKingdoms.utils.MutableTriple;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -68,14 +66,10 @@ public class WardBehavior extends Behavior {
                     cardId,
                     playType);
 
-//            WardEvent wardEvent = new WardEvent(playerId, this.cardId, cardId, "");
-
             domainEvents.add(playCardEvent);
-//            domainEvents.add(wardEvent);
 
             currentRound.setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
-
 
             Behavior wardBehavior = new WardBehavior(
                     game,
@@ -124,15 +118,15 @@ public class WardBehavior extends Behavior {
         Stack<Behavior> topBehaviors = game.getTopBehavior();
         int wardBehaviorSize = 0;
         MutableTriple<String, String /*wardPlayerId*/, String> message = null;
-        WardInfo info = new WardInfo();
-
 
         WardEvent wardEvent = null;
         for (int i = topBehaviors.size() - 1; i >= 0; i--) {
             Behavior behavior = topBehaviors.get(i);
             if (!(behavior instanceof WardBehavior)) {
-                domainEvents.add(new WardEvent(wardEvent.getPlayerId(), behavior.getCardId(), wardEvent.getWardCardId(), wardEvent.getMessage()
-                        + String.format("%s 的 %s", behavior.getBehaviorPlayer().getGeneralName(), behavior.getCard().getName())));
+                if (wardEvent != null) {
+                    domainEvents.add(new WardEvent(wardEvent.getPlayerId(), behavior.getCardId(), wardEvent.getWardCardId(), wardEvent.getMessage()
+                            + String.format("%s 的 %s", behavior.getBehaviorPlayer().getGeneralName(), behavior.getCard().getName())));
+                }
                 break;
             }
             behavior.setIsOneRound(true);

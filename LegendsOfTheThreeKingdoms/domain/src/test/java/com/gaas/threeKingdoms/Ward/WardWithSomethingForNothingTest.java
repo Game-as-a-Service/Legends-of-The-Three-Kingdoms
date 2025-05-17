@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.Utils.getEvent;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -568,7 +567,7 @@ public class WardWithSomethingForNothingTest {
         assertEquals("SSJ011", wardEventC.getWardCardId());
 
         WardEvent wardEventA = wardEvents.stream()
-                .filter(e -> e.getPlayerId().equals("player-a"))
+                .filter(e -> e.getPlayerId().equals("player-b"))
                 .findFirst().orElseThrow(() -> new AssertionError("找不到 player-a 的 WardEvent"));
         assertEquals("SH7046", wardEventA.getCardId());
         assertEquals("SSJ011", wardEventA.getWardCardId());
@@ -592,7 +591,7 @@ public class WardWithSomethingForNothingTest {
                C 出 skip 無懈可擊
 
                Then
-               A B C D 不會收到無中生有發動 的 event
+               A B C D 收到無中生有發動 的 event
             """)
     @Test
     public void givenPlayerAHasSomethingForNothingAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerAAndCSkipPlaysWard_ThenABCDReceive() {
@@ -653,8 +652,8 @@ public class WardWithSomethingForNothingTest {
 
         // A 出無中生有
         List<DomainEvent> event1 = game.playerPlayCard(playerA.getId(), SH7046.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
-        // B 出無懈可擊
-        List<DomainEvent> event2 = game.playWardCard(playerB.getId(), SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        // B skip 出無懈可擊
+        List<DomainEvent> event2 = game.playWardCard(playerB.getId(), "", PlayType.SKIP.getPlayType());
         // A skip 無懈可擊
         List<DomainEvent> event3 = game.playWardCard(playerA.getId(), "", PlayType.SKIP.getPlayType());
 
@@ -664,7 +663,7 @@ public class WardWithSomethingForNothingTest {
 
         // Then
         assertFalse(events.stream().anyMatch(event -> event instanceof WardEvent));
-        assertFalse(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
+        assertTrue(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
     }
 
     @DisplayName("""

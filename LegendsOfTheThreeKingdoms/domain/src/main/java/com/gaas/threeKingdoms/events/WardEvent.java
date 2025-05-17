@@ -1,7 +1,6 @@
 package com.gaas.threeKingdoms.events;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class WardEvent extends DomainEvent {
