@@ -2,7 +2,7 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-a",
+      "playerId" : "player-b",
       "targetPlayerId" : "",
       "cardId" : "SSJ011",
       "playType" : "active"
@@ -11,7 +11,7 @@
   }, {
     "event" : "WaitForWardEvent",
     "data" : {
-      "wardTriggerPlayerId" : "player-a",
+      "wardTriggerPlayerId" : "player-b",
       "wardTriggerCardId" : "SSJ011"
     },
     "message" : "等待玩家發動無懈可擊"
@@ -34,7 +34,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -45,7 +45,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 5,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],

@@ -324,6 +324,17 @@ public class DomainEventToViewModelMapper {
                     wardEvent.getMessage()
             );
         });
+
+        eventToViewModelMappers.put(SkipWardEvent.class, event -> {
+            SkipWardEvent skipWardEvent = (SkipWardEvent) event;
+            return new PlayWardCardPresenter.SkipWardCardViewModel(
+                    new PlayWardCardPresenter.SkipWardCardDataViewModel(
+                            skipWardEvent.getPlayerId(),
+                            skipWardEvent.getSkipWardCardId()
+                    ),
+                    skipWardEvent.getMessage()
+            );
+        });
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {

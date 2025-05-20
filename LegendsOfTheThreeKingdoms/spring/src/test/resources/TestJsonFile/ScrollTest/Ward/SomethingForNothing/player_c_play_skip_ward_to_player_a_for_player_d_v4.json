@@ -1,20 +1,18 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
+    "event" : "SomethingForNothingEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
-      "playType" : "active"
+      "playerId" : "player-a"
     },
-    "message" : "出牌"
+    "message" : "玩家出無中生有"
   }, {
-    "event" : "WaitForWardEvent",
+    "event" : "DrawCardEvent",
     "data" : {
-      "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SSJ011"
+      "size" : 2,
+      "cards" : [ "BH2028", "BH3029" ],
+      "drawCardPlayerId" : "player-a"
     },
-    "message" : "等待玩家發動無懈可擊"
+    "message" : "玩家摸牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -23,7 +21,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 7,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -45,7 +43,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 5,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],

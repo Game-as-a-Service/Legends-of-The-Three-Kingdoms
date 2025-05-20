@@ -2,20 +2,19 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-c",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-a",
+      "cardId" : "SH7046",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
-    "event" : "WardEvent",
+    "event" : "WaitForWardEvent",
     "data" : {
-      "playerId" : "player-c",
-      "cardId" : "SSJ011",
-      "wardCardId" : "SSJ011"
+      "wardTriggerPlayerId" : "player-a",
+      "wardTriggerCardId" : "SH7046"
     },
-    "message" : "發動無懈可擊"
+    "message" : "等待玩家發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
@@ -25,24 +24,24 @@
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU001",
-      "roleId" : "Minister",
+      "generalId" : "SHU003",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 5,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BH2028", "SS4004" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU001",
+      "generalId" : "SHU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -53,11 +52,11 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "SHU001",
+      "generalId" : "QUN002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -72,7 +71,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "發動無懈可擊",
+  "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-a"
 }

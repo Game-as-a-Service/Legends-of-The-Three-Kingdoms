@@ -1,20 +1,11 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
+    "event" : "SkipWardEvent",
     "data" : {
       "playerId" : "player-a",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
-      "playType" : "active"
+      "wardCardId" : "SH7046"
     },
-    "message" : "出牌"
-  }, {
-    "event" : "WaitForWardEvent",
-    "data" : {
-      "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SSJ011"
-    },
-    "message" : "等待玩家發動無懈可擊"
+    "message" : "不發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
@@ -23,7 +14,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 5,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -45,7 +36,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 5,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],

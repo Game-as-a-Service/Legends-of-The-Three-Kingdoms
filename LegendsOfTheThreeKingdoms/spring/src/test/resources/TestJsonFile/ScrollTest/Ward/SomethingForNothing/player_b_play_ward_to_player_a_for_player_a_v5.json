@@ -2,34 +2,19 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-c",
+      "playerId" : "player-b",
       "targetPlayerId" : "",
       "cardId" : "SSJ011",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
-    "event" : "WardEvent",
+    "event" : "WaitForWardEvent",
     "data" : {
-      "playerId" : "player-c",
-      "cardId" : "SSJ011",
-      "wardCardId" : "SSJ011"
+      "wardTriggerPlayerId" : "player-b",
+      "wardTriggerCardId" : "SSJ011"
     },
-    "message" : "發動無懈可擊"
-  }, {
-    "event" : "SomethingForNothingEvent",
-    "data" : {
-      "playerId" : "player-a"
-    },
-    "message" : "玩家出無中生有"
-  }, {
-    "event" : "DrawCardEvent",
-    "data" : {
-      "size" : 2,
-      "cards" : [ "SHA027", "SS3003" ],
-      "drawCardPlayerId" : "player-a"
-    },
-    "message" : "玩家摸牌"
+    "message" : "等待玩家發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
@@ -38,25 +23,25 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 6,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003", "SHA027", "SS3003" ]
+        "size" : 5,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003", "SSJ011" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU001",
+      "generalId" : "SHU003",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU001",
+      "generalId" : "SHU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -67,11 +52,11 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "SHU001",
+      "generalId" : "QUN002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -86,7 +71,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "發動無懈可擊",
+  "message" : "出無懈可擊",
   "gameId" : "my-id",
   "playerId" : "player-a"
 }

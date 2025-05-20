@@ -1,20 +1,18 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
+    "event" : "SomethingForNothingEvent",
     "data" : {
-      "playerId" : "player-a",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
-      "playType" : "active"
+      "playerId" : "player-a"
     },
-    "message" : "出牌"
+    "message" : "玩家出無中生有"
   }, {
-    "event" : "WaitForWardEvent",
+    "event" : "DrawCardEvent",
     "data" : {
-      "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SSJ011"
+      "size" : 2,
+      "cards" : [ "BH2028", "BH3029" ],
+      "drawCardPlayerId" : "player-a"
     },
-    "message" : "等待玩家發動無懈可擊"
+    "message" : "玩家摸牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -23,8 +21,8 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ ]
+        "size" : 7,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003", "SSJ011", "BH2028", "BH3029" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -45,7 +43,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 5,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -53,11 +51,11 @@
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -73,5 +71,5 @@
   },
   "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-a"
 }

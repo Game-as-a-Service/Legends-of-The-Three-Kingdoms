@@ -9,20 +9,13 @@
     },
     "message" : "出牌"
   }, {
-    "event" : "WardEvent",
+    "event" : "PlayWardCardEvent",
     "data" : {
       "playerId" : "player-b",
       "cardId" : "SH7046",
       "wardCardId" : "SSJ011"
     },
-    "message" : "發動無懈可擊"
-  }, {
-    "event" : "WaitForWardEvent",
-    "data" : {
-      "wardTriggerPlayerId" : "player-b",
-      "wardTriggerCardId" : "SSJ011"
-    },
-    "message" : "等待其他玩家發動無懈可擊"
+    "message" : "張飛 的無懈可擊抵銷了 劉備 的 無中生有"
   } ],
   "data" : {
     "seats" : [ {
@@ -31,14 +24,14 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003", "SSJ011" ]
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU001",
+      "generalId" : "SHU003",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -49,18 +42,18 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU001",
+      "generalId" : "SHU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "SHU001",
+      "generalId" : "QUN002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -79,7 +72,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "發動無懈可擊",
+  "message" : "出無懈可擊",
   "gameId" : "my-id",
   "playerId" : "player-a"
 }

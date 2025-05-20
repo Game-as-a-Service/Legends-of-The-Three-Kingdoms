@@ -80,6 +80,7 @@ public class WardBehavior extends Behavior {
                     card,
                     true
             );
+            wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, playerId);
             game.updateTopBehavior(wardBehavior);
 
             if (game.doesAnyPlayerHaveWard()) {
@@ -104,7 +105,7 @@ public class WardBehavior extends Behavior {
         if (reactionPlayers.isEmpty()) {
             domainEvents.addAll(doBehaviorAction());
         } else {
-            domainEvents.add(new SkipWardEvent(playerId, cardId));
+            domainEvents.add(new SkipWardEvent(playerId, this.cardId));
         }
 
         return domainEvents;

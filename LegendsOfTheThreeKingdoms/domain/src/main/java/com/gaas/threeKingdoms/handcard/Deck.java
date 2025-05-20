@@ -4,18 +4,18 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
-import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
-import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.*;
+import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import lombok.NoArgsConstructor;
 
-import java.util.Stack;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -50,11 +50,11 @@ public class Deck {
         cardDeck.add(new BarbarianInvasion(SS7007));
 
         cardDeck.add(new Dismantle(SS3003));
-        cardDeck.add( new Dismantle(SS4004));
-        cardDeck.add( new Dismantle(SSQ012));
-        cardDeck.add( new Dismantle(SHQ051));
-        cardDeck.add( new Dismantle(SC3068));
-        cardDeck.add( new Dismantle(SC4069));
+        cardDeck.add(new Dismantle(SS4004));
+        cardDeck.add(new Dismantle(SSQ012));
+        cardDeck.add(new Dismantle(SHQ051));
+        cardDeck.add(new Dismantle(SC3068));
+        cardDeck.add(new Dismantle(SC4069));
 
 
         IntStream.range(0, 4).forEach(i -> {
@@ -67,6 +67,9 @@ public class Deck {
             cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
             cardDeck.add(new ShadowHorse(PlayCard.ES5018));
             cardDeck.add(new QilinBowCard(PlayCard.EH5031));
+            cardDeck.add(new Ward(PlayCard.SSJ011));
+            cardDeck.add(new Ward(PlayCard.SCQ077));
+            cardDeck.add(new Ward(PlayCard.SCK078));
         });
         shuffle();
     }

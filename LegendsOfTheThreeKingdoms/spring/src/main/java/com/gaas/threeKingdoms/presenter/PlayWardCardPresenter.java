@@ -8,7 +8,6 @@ import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
 import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
 import com.gaas.threeKingdoms.usecase.PlayWardCardUseCase;
-import com.gaas.threeKingdoms.usecase.UseEquipmentUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -74,7 +73,20 @@ public class PlayWardCardPresenter implements PlayWardCardUseCase.PlayWardCardPr
         private String wardCardId;
     }
 
+    @Data
+    public static class SkipWardCardViewModel extends ViewModel<PlayWardCardPresenter.SkipWardCardDataViewModel> {
+        public SkipWardCardViewModel(PlayWardCardPresenter.SkipWardCardDataViewModel data, String eventMessage) {
+            super("SkipWardEvent", data, eventMessage);
+        }
+    }
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SkipWardCardDataViewModel {
+        private String playerId;
+        private String wardCardId;
+    }
 
     @Data
     @AllArgsConstructor

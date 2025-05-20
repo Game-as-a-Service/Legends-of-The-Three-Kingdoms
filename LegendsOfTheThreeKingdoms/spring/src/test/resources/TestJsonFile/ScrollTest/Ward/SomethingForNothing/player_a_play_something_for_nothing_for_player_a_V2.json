@@ -3,8 +3,8 @@
     "event" : "PlayCardEvent",
     "data" : {
       "playerId" : "player-a",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
+      "targetPlayerId" : "player-a",
+      "cardId" : "SH7046",
       "playType" : "active"
     },
     "message" : "出牌"
@@ -12,7 +12,7 @@
     "event" : "WaitForWardEvent",
     "data" : {
       "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SSJ011"
+      "wardTriggerCardId" : "SH7046"
     },
     "message" : "等待玩家發動無懈可擊"
   } ],
@@ -24,7 +24,7 @@
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -53,11 +53,11 @@
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -71,7 +71,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出無懈可擊",
+  "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-a"
 }

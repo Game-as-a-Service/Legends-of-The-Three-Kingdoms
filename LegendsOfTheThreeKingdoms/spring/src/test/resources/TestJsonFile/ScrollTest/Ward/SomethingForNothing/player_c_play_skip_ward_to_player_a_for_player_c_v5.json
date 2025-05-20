@@ -1,20 +1,26 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
+    "event" : "PlayWardCardEvent",
     "data" : {
       "playerId" : "player-a",
-      "targetPlayerId" : "",
       "cardId" : "SSJ011",
-      "playType" : "active"
+      "wardCardId" : "SSJ011"
     },
-    "message" : "出牌"
+    "message" : "劉備 的無懈可擊抵銷了 張飛 的 無懈可擊"
   }, {
-    "event" : "WaitForWardEvent",
+    "event" : "SomethingForNothingEvent",
     "data" : {
-      "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SSJ011"
+      "playerId" : "player-a"
     },
-    "message" : "等待玩家發動無懈可擊"
+    "message" : "玩家出無中生有"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ "BH2028", "BH3029" ],
+      "drawCardPlayerId" : "player-a"
+    },
+    "message" : "玩家摸牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -23,7 +29,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 6,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -34,7 +40,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -42,22 +48,22 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ ]
+        "size" : 5,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039", "SSJ011" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -73,5 +79,5 @@
   },
   "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-c"
 }

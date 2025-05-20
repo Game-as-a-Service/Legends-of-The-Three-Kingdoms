@@ -2,20 +2,34 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-b",
+      "playerId" : "player-c",
       "targetPlayerId" : "",
       "cardId" : "SSJ011",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
-    "event" : "WardEvent",
+    "event" : "PlayWardCardEvent",
     "data" : {
-      "playerId" : "player-b",
-      "cardId" : "SH7046",
+      "playerId" : "player-c",
+      "cardId" : "SSJ011",
       "wardCardId" : "SSJ011"
     },
-    "message" : "發動無懈可擊"
+    "message" : "關羽 的無懈可擊抵銷了 張飛 的 無懈可擊"
+  }, {
+    "event" : "SomethingForNothingEvent",
+    "data" : {
+      "playerId" : "player-a"
+    },
+    "message" : "玩家出無中生有"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ "BH2028", "BH3029" ],
+      "drawCardPlayerId" : "player-a"
+    },
+    "message" : "玩家摸牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -24,40 +38,40 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ ]
-      },
-      "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ ]
-    }, {
-      "id" : "player-b",
-      "generalId" : "SHU001",
-      "roleId" : "Minister",
-      "hp" : 4,
-      "hand" : {
-        "size" : 5,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BH2028", "SS4004" ]
-      },
-      "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ ]
-    }, {
-      "id" : "player-c",
-      "generalId" : "SHU001",
-      "roleId" : "",
-      "hp" : 4,
-      "hand" : {
         "size" : 6,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
-      "id" : "player-d",
-      "generalId" : "SHU001",
+      "id" : "player-b",
+      "generalId" : "SHU003",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU002",
+      "roleId" : "Rebel",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "QUN002",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -72,7 +86,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "發動無懈可擊",
+  "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-c"
 }
