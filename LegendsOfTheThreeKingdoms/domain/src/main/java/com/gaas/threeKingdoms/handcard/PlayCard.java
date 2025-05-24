@@ -214,6 +214,9 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SH3042", new BountifulHarvest(SH3042));
         CARD_FACTORY_MAP.put("SH4043", new BountifulHarvest(SH4043));
         CARD_FACTORY_MAP.put("SSA014", new Lightning(SSA014));
+        CARD_FACTORY_MAP.put("SSJ011", new Ward(SSJ011));
+        CARD_FACTORY_MAP.put("SCQ077", new Ward(SCQ077));
+        CARD_FACTORY_MAP.put("SCK078", new Ward(SCK078));
     }
 
     private final String cardId;
@@ -263,6 +266,12 @@ public enum PlayCard {
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
 
+    public static boolean isWardCard(String cardId) {
+        return Arrays.stream(PlayCard.values())
+                .filter(c->c.getCardName().equals("無懈可擊"))
+                .anyMatch(c->c.getCardId().equals(cardId));
+    }
+
     public static boolean isEightDiagramTacticCard(String cardId){
         return Arrays.stream(PlayCard.values())
                 .filter(c->c.getCardName().equals("八卦陣"))
@@ -273,6 +282,10 @@ public enum PlayCard {
 
     public static boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
+    }
+
+    public static boolean isActive(String playType) {
+        return PlayType.ACTIVE.getPlayType().equals(playType);
     }
 
     public static String getCardName(String cardId) {

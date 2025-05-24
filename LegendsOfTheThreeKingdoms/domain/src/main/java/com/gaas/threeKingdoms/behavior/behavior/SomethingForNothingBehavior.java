@@ -3,37 +3,76 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.DomainEvent;
-import com.gaas.threeKingdoms.events.DrawCardEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.events.SomethingForNothingEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.round.Stage;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER_PLAYER_ID;
 
 public class SomethingForNothingBehavior extends Behavior {
 
     public SomethingForNothingBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
     }
 
     @Override
     public List<DomainEvent> playerAction() {
         playerPlayCardNotUpdateActivePlayer(behaviorPlayer, cardId);
-        SomethingForNothingEvent somethingForNothingEvent = new SomethingForNothingEvent(behaviorPlayer.getId());
-        DomainEvent drawCardEvent = game.drawCardToPlayer(behaviorPlayer, false);
         PlayCardEvent playCardEvent = new PlayCardEvent(
                 "出牌",
                 behaviorPlayer.getId(),
                 behaviorPlayer.getId(),
                 cardId,
                 playType);
-        return List.of(playCardEvent, somethingForNothingEvent, drawCardEvent, game.getGameStatusEvent(somethingForNothingEvent.getMessage()));
+
+        List<DomainEvent> domainEvents = new ArrayList<>();
+        domainEvents.add(playCardEvent);
+
+        if (game.doesAnyPlayerHaveWard()) {
+
+            game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
+            setIsOneRound(false);
+
+            Behavior wardBehavior = new WardBehavior(
+                    game,
+                    null,
+                    game.whichPlayersHaveWard().stream().map(Player::getId).collect(Collectors.toList()),
+                    null,
+                    cardId,
+                    PlayType.INACTIVE.getPlayType(),
+                    card,
+                    true
+            );
+            wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+
+            game.updateTopBehavior(wardBehavior);
+            domainEvents.addAll(wardBehavior.playerAction());
+        } else {
+            domainEvents.addAll(doBehaviorAction());
+        }
+        domainEvents.add(game.getGameStatusEvent(""));
+        return domainEvents;
+    }
+
+    @Override
+    public List<DomainEvent> doBehaviorAction() {
+        List<DomainEvent> domainEvents = new ArrayList<>();
+        domainEvents.add(new SomethingForNothingEvent(behaviorPlayer.getId()));
+        domainEvents.add(game.drawCardToPlayer(behaviorPlayer, false));
+        return domainEvents;
     }
 
     @Override
     protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         return Collections.emptyList();
     }
+
 }

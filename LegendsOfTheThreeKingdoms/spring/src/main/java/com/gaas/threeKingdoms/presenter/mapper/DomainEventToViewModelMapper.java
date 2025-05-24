@@ -301,6 +301,40 @@ public class DomainEventToViewModelMapper {
                     lightningEvent.getMessage()
             );
         });
+
+        eventToViewModelMappers.put(WaitForWardEvent.class, event -> {
+            WaitForWardEvent waitForWardEvent = (WaitForWardEvent) event;
+            return new PlayCardPresenter.WaitForWardViewModel(
+                    new PlayCardPresenter.WaitForWardDataViewModel(
+                            waitForWardEvent.getWardTriggerPlayerId(),
+                            waitForWardEvent.getWardTriggerCardId()
+                    ),
+                    waitForWardEvent.getMessage()
+            );
+        });
+
+        eventToViewModelMappers.put(WardEvent.class, event -> {
+            WardEvent wardEvent = (WardEvent) event;
+            return new PlayWardCardPresenter.PlayWardCardViewModel(
+                    new PlayWardCardPresenter.PlayWardCardDataViewModel(
+                            wardEvent.getPlayerId(),
+                            wardEvent.getCardId(),
+                            wardEvent.getWardCardId()
+                    ),
+                    wardEvent.getMessage()
+            );
+        });
+
+        eventToViewModelMappers.put(SkipWardEvent.class, event -> {
+            SkipWardEvent skipWardEvent = (SkipWardEvent) event;
+            return new PlayWardCardPresenter.SkipWardCardViewModel(
+                    new PlayWardCardPresenter.SkipWardCardDataViewModel(
+                            skipWardEvent.getPlayerId(),
+                            skipWardEvent.getSkipWardCardId()
+                    ),
+                    skipWardEvent.getMessage()
+            );
+        });
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {

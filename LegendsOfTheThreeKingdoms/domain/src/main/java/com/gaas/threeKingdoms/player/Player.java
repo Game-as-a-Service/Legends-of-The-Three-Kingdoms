@@ -246,6 +246,12 @@ public class Player {
         }
     }
 
+    public boolean hasCardOfTypeWithIdInHand(String cardId, Class<? extends HandCard> type) {
+        return hand.getCards().stream()
+                .anyMatch(card -> type.isInstance(card) && card.getId().equals(cardId));
+    }
+
+
     public boolean isStillAlive() {
         return HealthStatus.ALIVE.equals(healthStatus);
     }

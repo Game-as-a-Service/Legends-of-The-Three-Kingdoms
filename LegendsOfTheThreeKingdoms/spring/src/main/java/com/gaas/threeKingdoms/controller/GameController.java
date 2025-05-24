@@ -25,6 +25,7 @@ public class GameController {
     private final MonarchChooseGeneralUseCase monarchChooseGeneralUseCase;
     private final OthersChoosePlayerGeneralUseCase othersChoosePlayerGeneralUseCase;
     private final PlayCardUseCase playCardUseCase;
+    private final PlayWardCardUseCase playWardCardUseCase;
     private final FindGameByIdUseCase findGameUseCase;
     private final UseEquipmentUseCase useEquipmentUseCase;
     private final ChooseHorseUseCase chooseHorseUseCase;
@@ -139,4 +140,11 @@ public class GameController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @PostMapping("/api/games/{gameId}/player:playWardCard")
+    public ResponseEntity<?> playerPlayWardCard(@PathVariable String gameId, @RequestBody PlayWardCardRequest playWardCardRequest) {
+        PlayWardCardPresenter playWarCardPresenter = new PlayWardCardPresenter();
+        playWardCardUseCase.execute(gameId, playWardCardRequest.toPlayWardCardRequest(), playWarCardPresenter);
+        webSocketBroadCast.pushPlayWardCardEvent(playWarCardPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
 }

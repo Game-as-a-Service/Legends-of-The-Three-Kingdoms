@@ -16,6 +16,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Hand;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -24,12 +25,15 @@ import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.RoundPhase;
+import com.gaas.threeKingdoms.round.Stage;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import lombok.AllArgsConstructor;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.gaas.threeKingdoms.handcard.PlayCard.isWardCard;
 
 @AllArgsConstructor
 public class Game {
@@ -781,6 +785,29 @@ public class Game {
         throw new IllegalStateException("UseDismantleEffect error.");
     }
 
+    public List<DomainEvent> playWardCard(String playerId, String cardId, String playType) {
+        if (!currentRound.getStage().equals(Stage.Wait_Accept_Ward_Effect)) {
+            throw new IllegalStateException(String.format("CurrentRound stage not Wait_Accept_Ward_Effect but [%s]", currentRound.getStage()));
+        }
+        Player player = getPlayer(playerId);
+        if (PlayType.ACTIVE.getPlayType().equals(playType) && !player.hasCardOfTypeWithIdInHand(cardId, Ward.class)) {
+            throw new IllegalArgumentException(String.format("Current player play card[%s] is not Ward", cardId));
+        }
+
+        Behavior behavior = topBehavior.peek();
+        List<DomainEvent> domainEvents = new ArrayList<>();
+        if (behavior instanceof WardBehavior
+                && behavior.getReactionPlayers().contains(playerId)
+                && (isWardCard(cardId) || PlayType.SKIP.getPlayType().equals(playType))
+        ) {
+            domainEvents.addAll(behavior.responseToPlayerAction(playerId, "", cardId, playType));
+        }
+
+        domainEvents.add(getGameStatusEvent("出無懈可擊"));
+        return domainEvents;
+
+    }
+
     public List<DomainEvent> playerChooseCardFromBountifulHarvest(String currentPlayerId, String cardId) {
         Behavior behavior = topBehavior.peek();
         if (behavior instanceof BountifulHarvestBehavior) {
@@ -822,6 +849,16 @@ public class Game {
         return null;
     }
 
+    public boolean doesAnyPlayerHaveWard() {
+        return players.stream()
+                .anyMatch(player -> player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward));
+    }
+
+    public List<Player> whichPlayersHaveWard() {
+        return players.stream()
+                .filter(player -> player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward))
+                .toList();
+    }
 
 }
 
