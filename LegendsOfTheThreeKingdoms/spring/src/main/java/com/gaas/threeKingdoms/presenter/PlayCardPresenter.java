@@ -60,6 +60,11 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
             personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
                 if (personalViewModel instanceof RoundStartPresenter.DrawCardViewModel drawCardViewModel) {
                     personalViewModel = hiddenOtherPlayerCardIds(drawCardViewModel.getData(), viewModel, drawCardViewModel.getData().getDrawCardPlayerId());
+                } else if (personalViewModel instanceof WaitForWardViewModel waitForWardViewModel) {
+                    WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
+                    if (waitForWardEvent.getPlayerIds().contains(viewModel.getId())) {
+                        personalViewModel = new AskPlayWardViewModel(waitForWardViewModel.getData());
+                    }
                 }
                 return personalViewModel;
             }).collect(Collectors.toList());
@@ -312,6 +317,13 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     }
 
     @Data
+    public static class AskPlayWardViewModel extends ViewModel<WaitForWardDataViewModel> {
+        public AskPlayWardViewModel(WaitForWardDataViewModel data) {
+            super("AskPlayWardViewModel", data, "請選擇是否要出無懈可擊");
+        }
+    }
+
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class WaitForWardDataViewModel {
@@ -332,5 +344,4 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
             this.playerId = playerId;
         }
     }
-
 }

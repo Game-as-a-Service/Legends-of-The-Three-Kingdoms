@@ -40,6 +40,7 @@ public class Deck {
             cardDeck.add(new PeachGarden(SHA027));
             cardDeck.add(new BountifulHarvest(PlayCard.SH3042));
             cardDeck.add(new Lightning(PlayCard.SSA014));
+            cardDeck.add(new Ward(PlayCard.SSJ011));
 //            cardDeck.add(new BorrowedSword(SCQ064));
 //            cardDeck.add(new RedRabbitHorse(PlayCard.EH5044));
 //            cardDeck.add(new ShadowHorse(PlayCard.ES5018));

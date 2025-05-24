@@ -40,7 +40,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
 //        有 玩家 ABCD
 //        A 有無中生有
 //        A 有無懈可擊
-//        B  有無懈可擊
+//        B 有無懈可擊
 //        C 有無懈可擊
 //
 //        A 出 無中生有
