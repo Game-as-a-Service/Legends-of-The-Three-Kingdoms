@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.presenter.mapper;
 
+import com.gaas.threeKingdoms.behavior.behavior.DuelBehavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.*;
 
@@ -335,6 +336,7 @@ public class DomainEventToViewModelMapper {
                     skipWardEvent.getMessage()
             );
         });
+
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {

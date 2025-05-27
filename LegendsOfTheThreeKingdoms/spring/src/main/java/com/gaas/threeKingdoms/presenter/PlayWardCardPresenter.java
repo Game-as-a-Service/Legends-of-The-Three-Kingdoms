@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.presenter;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.GameStatusEvent;
 import com.gaas.threeKingdoms.events.RoundEvent;
+import com.gaas.threeKingdoms.events.WaitForWardEvent;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
@@ -14,7 +15,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static com.gaas.threeKingdoms.presenter.FinishActionPresenter.hiddenOtherPlayerCardIds;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class PlayWardCardPresenter implements PlayWardCardUseCase.PlayWardCardPresenter<List<PlayWardCardPresenter.GameViewModel>> {
@@ -42,8 +45,22 @@ public class PlayWardCardPresenter implements PlayWardCardUseCase.PlayWardCardPr
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            List<ViewModel<?>> personalEventToViewModels = new ArrayList<>(eventToViewModels);
+
+            personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
+                if (personalViewModel instanceof RoundStartPresenter.DrawCardViewModel drawCardViewModel) {
+                    personalViewModel = hiddenOtherPlayerCardIds(drawCardViewModel.getData(), viewModel, drawCardViewModel.getData().getDrawCardPlayerId());
+                } else if (personalViewModel instanceof PlayCardPresenter.WaitForWardViewModel waitForWardViewModel) {
+                    WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
+                    if (waitForWardEvent.getPlayerIds().contains(viewModel.getId())) {
+                        personalViewModel = new PlayCardPresenter.AskPlayWardViewModel(waitForWardViewModel.getData());
+                    }
+                }
+                return personalViewModel;
+            }).collect(Collectors.toList());
+
             viewModels.add(new PlayWardCardPresenter.GameViewModel(
-                    eventToViewModels,
+                    personalEventToViewModels,
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),

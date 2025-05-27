@@ -9,7 +9,7 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 2,
-      "cards" : [ "BH2028", "BH3029" ],
+      "cards" : [ ],
       "drawCardPlayerId" : "player-a"
     },
     "message" : "玩家摸牌"
