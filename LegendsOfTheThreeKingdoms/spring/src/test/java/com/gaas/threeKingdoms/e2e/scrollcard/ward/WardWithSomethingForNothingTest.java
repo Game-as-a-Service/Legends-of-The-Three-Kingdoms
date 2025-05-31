@@ -16,8 +16,6 @@ import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +26,6 @@ import java.util.List;
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
-import static com.gaas.threeKingdoms.handcard.PlayCard.BHK039;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 

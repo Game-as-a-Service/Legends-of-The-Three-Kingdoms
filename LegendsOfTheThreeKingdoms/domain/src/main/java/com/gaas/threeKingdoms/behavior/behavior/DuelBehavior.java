@@ -10,11 +10,14 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER_PLAYER_ID;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isKillCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
@@ -23,7 +26,6 @@ public class DuelBehavior extends Behavior {
     public DuelBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
     }
-
 
     @Override
     public List<DomainEvent> playerAction() {
@@ -37,25 +39,27 @@ public class DuelBehavior extends Behavior {
                 currentReactionPlayerId,
                 cardId,
                 playType));
-        events.add(new DuelEvent(behaviorPlayer.getId(), currentReactionPlayerId, cardId));
 
-        // 判斷 currentReactionPlayer 是否有殺
-        if (!currentReactionPlayer.getHand().hasTypeInHand(Kill.class)) {
-            int originalHp = currentReactionPlayer.getHP();
-            List<DomainEvent> damagedEvents = game.getDamagedEvent(
-                    currentReactionPlayerId,
-                    behaviorPlayer.getId(),
-                    "", // 代替 A 出 skip
+        if (game.doesAnyPlayerHaveWard()) {
+            game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
+            setIsOneRound(false);
+
+            Behavior wardBehavior = new WardBehavior(
+                    game,
+                    null,
+                    game.whichPlayersHaveWard().stream().map(Player::getId).collect(Collectors.toList()),
+                    null,
+                    cardId,
+                    PlayType.INACTIVE.getPlayType(),
                     card,
-                    PlayType.SKIP.getPlayType(),  // 代替 A 出 skip
-                    originalHp,
-                    currentReactionPlayer,
-                    game.getCurrentRound(),
-                    Optional.of(this));
-            events.addAll(damagedEvents);
-            isOneRound = true;
+                    true
+            );
+            wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+
+            game.updateTopBehavior(wardBehavior);
+            events.addAll(wardBehavior.playerAction());
         } else {
-            events.add(new AskKillEvent(currentReactionPlayerId));
+            events.addAll(doBehaviorAction());
         }
 
         events.add(game.getGameStatusEvent("發動決鬥"));
@@ -113,4 +117,30 @@ public class DuelBehavior extends Behavior {
         return null;
     }
 
+    @Override
+    public List<DomainEvent> doBehaviorAction() {
+        List<DomainEvent> events = new ArrayList<>();
+        String currentReactionPlayerId = currentReactionPlayer.getId();
+        events.add(new DuelEvent(behaviorPlayer.getId(), currentReactionPlayerId, cardId));
+        // 判斷 currentReactionPlayer 是否有殺
+        if (!currentReactionPlayer.getHand().hasTypeInHand(Kill.class)) {
+            int originalHp = currentReactionPlayer.getHP();
+            List<DomainEvent> damagedEvents = game.getDamagedEvent(
+                    currentReactionPlayerId,
+                    behaviorPlayer.getId(),
+                    "", // 代替 A 出 skip
+                    card,
+                    PlayType.SKIP.getPlayType(),  // 代替 A 出 skip
+                    originalHp,
+                    currentReactionPlayer,
+                    game.getCurrentRound(),
+                    Optional.of(this));
+            events.addAll(damagedEvents);
+            isOneRound = true;
+        } else {
+            events.add(new AskKillEvent(currentReactionPlayerId));
+        }
+
+        return events;
+    }
 }

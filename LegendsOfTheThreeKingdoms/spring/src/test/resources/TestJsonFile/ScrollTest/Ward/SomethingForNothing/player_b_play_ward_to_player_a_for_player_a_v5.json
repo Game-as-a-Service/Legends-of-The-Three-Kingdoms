@@ -9,12 +9,12 @@
     },
     "message" : "出牌"
   }, {
-    "event" : "WaitForWardEvent",
+    "event" : "AskPlayWardViewModel",
     "data" : {
       "wardTriggerPlayerId" : "player-b",
       "wardTriggerCardId" : "SSJ011"
     },
-    "message" : "等待玩家發動無懈可擊"
+    "message" : "請選擇是否要出無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
