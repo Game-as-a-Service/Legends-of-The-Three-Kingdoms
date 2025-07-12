@@ -6,12 +6,14 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
@@ -416,7 +418,7 @@ public class DismantleTest {
     public void givenPlayerABCD_PlayerAHasContentmentAndPlaysItOnC_WhenPlayerBPlaysDismantleOnC_ThenCJudgmentAreaHasNoDismantle() throws Exception {
         Game game = new Game();
         game.initDeck();
-
+        game.setDeck(new Deck(List.of(new BarbarianInvasion(SSK013), new Dismantle(SS3003))));
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withHand(new Hand())
@@ -466,8 +468,8 @@ public class DismantleTest {
 
         // B 出過河拆橋，指定 C
         game.playerPlayCard(playerB.getId(), SS4004.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType());
-        game.useDismantleEffect(playerB.getId(), playerC.getId(), SS6006.getCardId(), null);
-
+        List<DomainEvent> events = game.useDismantleEffect(playerB.getId(), playerC.getId(), SS6006.getCardId(), null);
+        assertTrue(events.stream().anyMatch(event -> event instanceof DismantleEvent));
         // Assert that C has no dismantle in the judgment area
         assertFalse(playerC.hasAnyContentmentCard());
     }

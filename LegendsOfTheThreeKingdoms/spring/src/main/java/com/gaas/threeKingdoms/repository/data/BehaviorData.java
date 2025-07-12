@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.repository.data;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.*;
 import com.gaas.threeKingdoms.handcard.PlayCard;
@@ -145,15 +146,28 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
-            case "DismantleBehavior" -> new DismantleBehavior(
-                    game,
-                    game.getPlayer(behaviorPlayerId),
-                    reactionPlayers,
-                    game.getPlayer(currentReactionPlayerId),
-                    cardId,
-                    playType,
-                    PlayCard.findById(cardId)
-            );
+            case "DismantleBehavior" -> {
+                DismantleBehavior dismantleBehavior = new DismantleBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId)
+                );
+
+                dismantleBehavior.putParam(
+                        UserCommand.CHOOSE_HAND_CARD.name(), params.get(UserCommand.CHOOSE_HAND_CARD.name()));
+                dismantleBehavior.putParam(
+                        UserCommand.DISMANTLE_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name(), params.get(UserCommand.DISMANTLE_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name()));
+                dismantleBehavior.putParam(
+                        UserCommand.DISMANTLE_BEHAVIOR_PLAYER_ID.name(), params.get(UserCommand.DISMANTLE_BEHAVIOR_PLAYER_ID.name()));
+                dismantleBehavior.putParam(
+                        UserCommand.DISMANTLE_BEHAVIOR_TARGET_PLAYER_ID.name(), params.get(UserCommand.DISMANTLE_BEHAVIOR_TARGET_PLAYER_ID.name())
+                );
+                yield dismantleBehavior;
+            }
             case "ContentmentBehavior" -> new ContentmentBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),

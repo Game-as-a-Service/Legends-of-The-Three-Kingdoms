@@ -145,6 +145,6 @@ public class GameController {
         PlayWardCardPresenter playWarCardPresenter = new PlayWardCardPresenter();
         playWardCardUseCase.execute(gameId, playWardCardRequest.toPlayWardCardRequest(), playWarCardPresenter);
         webSocketBroadCast.pushPlayWardCardEvent(playWarCardPresenter);
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 }

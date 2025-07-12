@@ -33,13 +33,13 @@ public class WardBehavior extends Behavior {
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         List<String> playerIds = new ArrayList<>();
+        String wardTriggerPlayerId = (String) getParam(WARD_TRIGGER_PLAYER_ID);
         game.getPlayers().forEach(player -> {
-                    if (player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward)) {
+            if (player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward) && !player.getId().equals(wardTriggerPlayerId)) {
                         playerIds.add(player.getId());
                     }
                 }
         );
-        String wardTriggerPlayerId = (String) getParam(WARD_TRIGGER_PLAYER_ID);
         events.add(new WaitForWardEvent(new HashSet<>(playerIds), wardTriggerPlayerId, cardId));
         return events;
     }
@@ -154,6 +154,7 @@ public class WardBehavior extends Behavior {
             domainEvents.addAll(firstNotWardBehavior.doBehaviorAction());
         }
         game.getCurrentRound().setStage(Stage.Normal);
+        game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
         return domainEvents;
     }
 }

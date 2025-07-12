@@ -123,7 +123,7 @@ public class WardWithDuelTest {
             
             Then
             A B C D 等待發動無懈可擊 的 event
-            event 裡有可以發動無懈可擊 event 的 A B C
+            event 裡有可以發動無懈可擊 event 的 B C，但沒有出過河拆橋的 A
             """)
     @Test
     public void givenABCHaveWard_WhenAPlaysDuel_ThenABCAreAskedToPlayWardAndDWaits() {
@@ -189,10 +189,10 @@ public class WardWithDuelTest {
                 .filter(WaitForWardEvent.class::isInstance)
                 .map(WaitForWardEvent.class::cast)
                 .findFirst().get();
-        assertTrue(waitForWardEvents.getPlayerIds().contains("player-a"));
+        assertFalse(waitForWardEvents.getPlayerIds().contains("player-a"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-c"));
-        assertEquals(3, waitForWardEvents.getPlayerIds().size());
+        assertEquals(2, waitForWardEvents.getPlayerIds().size());
     }
 
     @DisplayName("""
@@ -746,6 +746,89 @@ public class WardWithDuelTest {
         assertEquals("player-a", wardEvent.getPlayerId());
         assertEquals("SSJ011", wardEvent.getCardId());
         assertEquals("SSJ011", wardEvent.getWardCardId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A, B, C, D
+            A 有決鬥卡
+            B 有無懈可擊卡
+            A 是當前回合玩家
+
+            When
+            A 對 B 出決鬥
+            B 對 A 的決鬥出無懈可擊
+            (假設遊戲依序詢問 C, D, A 是否對 B 的無懈可擊出牌)
+            C skip 對 B 的無懈可擊出無懈可擊
+
+            Then
+            產生 B 的無懈可擊抵銷了 A 的決鬥的事件
+            A 的決鬥沒有生效 (沒有產生後續的 Duel 效果事件，如要求出殺的 AskForCardEvent)
+            A 仍然是 Active Player (當前回合玩家)
+            """)
+    @Test
+    public void testPlayerADuelsPlayerB_PlayerBWardsSuccessfullyAndOthersSkip_ActivePlayerRemainsPlayerA() {
+        // Given
+        Game game = new Game();
+        game.initDeck(); // Consistent with other tests, though cards are manually added.
+
+        Player playerA = PlayerBuilder.construct().withId("player-a")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        Player playerB = PlayerBuilder.construct().withId("player-b")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.關羽)) // Using a different general for B
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        Player playerC = PlayerBuilder.construct().withId("player-c")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.曹操))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+
+        Player playerD = PlayerBuilder.construct().withId("player-d")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.孫權))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Duel duelCard = new Duel(SSA001); // SSA001 is 決鬥
+        Ward wardCardForB = new Ward(SSJ011); // SSJ011 is 無懈可擊
+
+        playerA.getHand().addCardToHand(List.of(duelCard));
+        playerB.getHand().addCardToHand(List.of(wardCardForB));
+        playerC.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011)));
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.setCurrentRound(new Round(playerA)); // Sets current player to A
+        game.enterPhase(new Normal(game)); // Ensure the game is in a phase where cards can be played
+
+        game.playerPlayCard(playerA.getId(), duelCard.getId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        game.playWardCard(playerB.getId(), wardCardForB.getId(), PlayType.ACTIVE.getPlayType());
+
+        List<DomainEvent> events = game.playWardCard(playerC.getId(), "", PlayType.SKIP.getPlayType());
+
+        // Then
+        // Verify that Player A is still the active player.
+        assertEquals(playerA.getId(), game.getActivePlayer().getId(), "Player A should remain the active player.");
+        assertEquals(playerA.getId(), game.getCurrentRound().getCurrentRoundPlayer().getId(), "Player A should remain the current player in the round.");
     }
 
 }
