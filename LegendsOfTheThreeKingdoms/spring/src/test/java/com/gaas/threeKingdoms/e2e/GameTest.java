@@ -47,8 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.values;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -223,13 +222,13 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
         String playerCGeneralEvent = map.get("player-c").poll(5, TimeUnit.SECONDS);
         assertNotNull(playerCGeneralEvent);
-        CreateGamePresenter.CreateGameViewModel generalCardViewModelC = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
+        CreateGamePresenter.CreateGameViewModel generalCardViewModelC = objectMapper.readValue(playerCGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelC);
         assertEquals("請等待主公選擇武將", generalCardViewModelC.getMessage());
 
         String playerDGeneralEvent = map.get("player-d").poll(5, TimeUnit.SECONDS);
         assertNotNull(playerDGeneralEvent);
-        CreateGamePresenter.CreateGameViewModel generalCardViewModelD = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
+        CreateGamePresenter.CreateGameViewModel generalCardViewModelD = objectMapper.readValue(playerDGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelD);
         assertEquals("請等待主公選擇武將", generalCardViewModelD.getMessage());
 
@@ -242,39 +241,59 @@ public class GameTest extends AbstractBaseIntegrationTest {
     }
 
     private void checkPlayerAGetCreateGameEvent() throws InterruptedException, JsonProcessingException {
-        String createGameViewModel = map.get("player-a").poll(5, TimeUnit.SECONDS);
-        assertNotNull(createGameViewModel);
+        // We expect two messages for player-a, but the order is not guaranteed.
+        // We'll poll twice and check the event type to decide how to process each message.
+        boolean createGameEventReceived = false;
+        boolean getGeneralCardEventReceived = false;
 
-        ArrayList<CreateGamePresenter.SeatViewModel> seats = new ArrayList<>();
-        seats.add(new CreateGamePresenter.SeatViewModel("player-a", "MONARCH"));
-        seats.add(new CreateGamePresenter.SeatViewModel("player-b", ""));
-        seats.add(new CreateGamePresenter.SeatViewModel("player-c", ""));
-        seats.add(new CreateGamePresenter.SeatViewModel("player-d", ""));
+        for (int i = 0; i < 2; i++) {
+            String messageJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+            assertNotNull(messageJson, "Expected to receive a message for player-a, but queue was empty.");
 
+            // First, parse the message as a generic JsonNode to check the event type
+            // without causing a deserialization error.
+            com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(messageJson);
+            String eventType = rootNode.get("event").asText();
 
-        // WebSocket 推播給前端資訊 (主公收到createGameViewModel)
-        CreateGamePresenter.CreateGameViewModel createGameViewModelOfMonarch = objectMapper.readValue(createGameViewModel, CreateGamePresenter.CreateGameViewModel.class);
+            if ("createGameEvent".equals(eventType)) {
+                // Now that we know it's a createGameEvent, deserialize it to the correct class
+                CreateGamePresenter.CreateGameViewModel createGameViewModelOfMonarch = objectMapper.readValue(messageJson, CreateGamePresenter.CreateGameViewModel.class);
 
-        assertNotNull(createGameViewModelOfMonarch);
-        assertEquals(createGameViewModelOfMonarch.getData().getSeats(), seats);
-        assertEquals("my-id", createGameViewModelOfMonarch.getGameId());
-        assertEquals("createGameEvent", createGameViewModelOfMonarch.getEvent());
-        assertEquals("請選擇武將", createGameViewModelOfMonarch.getMessage());
+                ArrayList<CreateGamePresenter.SeatViewModel> seats = new ArrayList<>();
+                seats.add(new CreateGamePresenter.SeatViewModel("player-a", "MONARCH"));
+                seats.add(new CreateGamePresenter.SeatViewModel("player-b", ""));
+                seats.add(new CreateGamePresenter.SeatViewModel("player-c", ""));
+                seats.add(new CreateGamePresenter.SeatViewModel("player-d", ""));
 
-        // WebSocket 推播給前端資訊 (主公選擇可以選擇的武將牌)
-        String monarchGetGeneralCardsEvent = map.get("player-a").poll(5, TimeUnit.SECONDS);
+                assertNotNull(createGameViewModelOfMonarch);
+                assertEquals("my-id", createGameViewModelOfMonarch.getGameId());
+                assertEquals("createGameEvent", createGameViewModelOfMonarch.getEvent());
+                assertEquals("請選擇武將", createGameViewModelOfMonarch.getMessage());
+                assertEquals(seats, createGameViewModelOfMonarch.getData().getSeats());
 
-        assertNotNull(monarchGetGeneralCardsEvent);
-        GetGeneralCardPresenter.GetGeneralCardViewModel monarchGetGeneralViewModel = objectMapper.readValue(monarchGetGeneralCardsEvent, GetGeneralCardPresenter.GetGeneralCardViewModel.class);
+                createGameEventReceived = true;
 
-        assertNotNull(monarchGetGeneralViewModel);
-        assertEquals("WU001", monarchGetGeneralViewModel.getData().get(0));
-        assertEquals("WEI001", monarchGetGeneralViewModel.getData().get(1));
-        assertEquals("SHU001", monarchGetGeneralViewModel.getData().get(2));
-        assertEquals("SHU002", monarchGetGeneralViewModel.getData().get(3));
-        assertEquals("SHU003", monarchGetGeneralViewModel.getData().get(4));
-        assertEquals(5, monarchGetGeneralViewModel.getData().size());
+            } else if ("getGeneralCardEvent".equals(eventType)) {
+                // It's a getGeneralCardEvent, so deserialize it to its corresponding class
+                GetGeneralCardPresenter.GetGeneralCardViewModel monarchGetGeneralViewModel = objectMapper.readValue(messageJson, GetGeneralCardPresenter.GetGeneralCardViewModel.class);
+
+                assertNotNull(monarchGetGeneralViewModel);
+                assertEquals("WU001", monarchGetGeneralViewModel.getData().get(0));
+                assertEquals("WEI001", monarchGetGeneralViewModel.getData().get(1));
+                assertEquals("SHU001", monarchGetGeneralViewModel.getData().get(2));
+                assertEquals("SHU002", monarchGetGeneralViewModel.getData().get(3));
+                assertEquals("SHU003", monarchGetGeneralViewModel.getData().get(4));
+                assertEquals(5, monarchGetGeneralViewModel.getData().size());
+
+                getGeneralCardEventReceived = true;
+            }
+        }
+
+        // Finally, assert that both expected events were received and processed.
+        assertTrue(createGameEventReceived, "The createGameEvent was not received.");
+        assertTrue(getGeneralCardEventReceived, "The getGeneralCardEvent was not received.");
     }
+
 
     private void checkGetGameEvent() throws InterruptedException, JsonProcessingException {
         String findGameViewModelMessage = map.get("player-a").poll(5, TimeUnit.SECONDS);
