@@ -191,10 +191,10 @@ public class WardWithSomethingForNothingTest {
                 .filter(WaitForWardEvent.class::isInstance)
                 .map(WaitForWardEvent.class::cast)
                 .findFirst().get();
-        assertTrue(waitForWardEvents.getPlayerIds().contains("player-a"));
+        assertFalse(waitForWardEvents.getPlayerIds().contains("player-a"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-c"));
-        assertEquals(3, waitForWardEvents.getPlayerIds().size());
+        assertEquals(2, waitForWardEvents.getPlayerIds().size());
     }
 
     @DisplayName("""

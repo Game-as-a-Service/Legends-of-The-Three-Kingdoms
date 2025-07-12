@@ -72,7 +72,8 @@ public class DismantleBehavior extends Behavior {
     @Override
     public List<DomainEvent> doBehaviorAction() {
         List<DomainEvent> events = new ArrayList<>();
-        HandCard handCard = (HandCard) getParam(UserCommand.CHOOSE_HAND_CARD.name());
+        String handCardId = (String) getParam(UserCommand.CHOOSE_HAND_CARD.name());
+        HandCard handCard = PlayCard.findById(handCardId);
         String playerId = (String) getParam(UserCommand.DISMANTLE_BEHAVIOR_PLAYER_ID.name());
         String targetPlayerId = (String) getParam(UserCommand.DISMANTLE_BEHAVIOR_TARGET_PLAYER_ID.name());
         String cardId = (String) getParam(UserCommand.DISMANTLE_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name());

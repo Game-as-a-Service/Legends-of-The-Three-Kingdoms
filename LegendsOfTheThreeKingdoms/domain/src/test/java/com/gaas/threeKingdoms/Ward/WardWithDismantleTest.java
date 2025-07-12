@@ -125,7 +125,7 @@ public class WardWithDismantleTest {
             
             Then
             A B C D 等待發動無懈可擊 的 event
-            event 裡有可以發動無懈可擊 event 的 A B C
+            event 裡有可以發動無懈可擊 event 的 B C，但沒有出過河拆橋的 A
             """)
     @Test
     public void givenABCHaveWard_WhenAPlaysDismantle_ThenABCAreAskedToPlayWardAndDWaits() {
@@ -192,10 +192,10 @@ public class WardWithDismantleTest {
                 .filter(WaitForWardEvent.class::isInstance)
                 .map(WaitForWardEvent.class::cast)
                 .findFirst().get();
-        assertTrue(waitForWardEvents.getPlayerIds().contains("player-a"));
+        assertFalse(waitForWardEvents.getPlayerIds().contains("player-a"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-c"));
-        assertEquals(3, waitForWardEvents.getPlayerIds().size());
+        assertEquals(2, waitForWardEvents.getPlayerIds().size());
     }
 
     @DisplayName("""
@@ -568,6 +568,7 @@ public class WardWithDismantleTest {
         assertEquals("SSJ011", wardEventB.getWardCardId());
 
         assertFalse(events.stream().anyMatch(event -> event instanceof DismantleEvent));
+        assertTrue(game.getActivePlayer().getId().equals("player-a"));
     }
 
     @DisplayName("""
@@ -754,5 +755,6 @@ public class WardWithDismantleTest {
         assertEquals("player-a", wardEvent.getPlayerId());
         assertEquals("SSJ011", wardEvent.getCardId());
         assertEquals("SSJ011", wardEvent.getWardCardId());
+        assertTrue(game.getActivePlayer().getId().equals("player-a"));
     }
 }

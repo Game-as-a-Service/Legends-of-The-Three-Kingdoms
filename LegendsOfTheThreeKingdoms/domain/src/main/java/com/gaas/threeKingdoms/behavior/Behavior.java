@@ -22,7 +22,7 @@ public class Behavior {
     protected HandCard card;
     protected boolean isTargetPlayerNeedToResponse = true; // 別人要不要反應
     protected boolean isOneRound = true; // 是不是一回合就結束
-    protected final Map<String, Object> params;
+    protected final Map<String, Object> params; // 注意！ value Object 只能存基本類型
 
     public Behavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer,
                     String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse,

@@ -784,7 +784,7 @@ public class Game {
         if (behavior instanceof DismantleBehavior &&
             currentRound.getActivePlayer().getId().equals(currentPlayerId)
         ) {
-            behavior.putParam(UserCommand.CHOOSE_HAND_CARD.name(), handCard);
+            behavior.putParam(UserCommand.CHOOSE_HAND_CARD.name(), Optional.ofNullable(handCard).map(HandCard::getId).orElse(null));
             behavior.putParam(UserCommand.DISMANTLE_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name(), cardId);
             behavior.putParam(UserCommand.DISMANTLE_BEHAVIOR_PLAYER_ID.name(), currentPlayerId);
             behavior.putParam(UserCommand.DISMANTLE_BEHAVIOR_TARGET_PLAYER_ID.name(), targetPlayerId);

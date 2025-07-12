@@ -23,8 +23,7 @@ public class UseDismantlePresenter implements UseDismantleUseCase.UseDismantlePr
     @Override
     public void renderEvents(List<DomainEvent> events) {
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
-        UseDismantlePresenter.UseDismantleViewModel useDismantleViewModel = getDismantleEvent(events);
-        effectViewModels.add(useDismantleViewModel);
+        effectViewModels = domainEventToViewModelMapper.mapEventsToViewModels(events);
 
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
         RoundEvent roundEvent = gameStatusEvent.getRound();
