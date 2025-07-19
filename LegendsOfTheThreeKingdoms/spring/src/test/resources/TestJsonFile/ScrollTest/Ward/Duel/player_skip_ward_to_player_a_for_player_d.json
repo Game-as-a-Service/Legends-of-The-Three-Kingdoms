@@ -13,7 +13,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 1,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -24,7 +24,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 2,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -35,7 +35,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -46,8 +46,8 @@
       "roleId" : "Traitor",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "size" : 0,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]

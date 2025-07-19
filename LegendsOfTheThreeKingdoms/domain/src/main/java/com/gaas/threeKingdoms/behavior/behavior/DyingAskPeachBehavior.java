@@ -25,7 +25,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 
 public class DyingAskPeachBehavior extends Behavior {
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
         List<Player> players = game.getSeatingChart().getPlayers();
         int damagedPlayerIndex = players.indexOf(behaviorPlayer);
         List<Player> reorderedPlayerList = new ArrayList<>();

@@ -15,6 +15,7 @@ import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -353,8 +354,125 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/player_c_play_skip_ward_to_player_a_for_%s_v5.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
+            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+
+    @Test
+    @DisplayName("Given: A對B出決鬥 / When: B出無懈可擊，而C和其他人放棄響應 / Then: 決鬥被抵銷，當前回合玩家應維持為A")
+    public void givenPlayerADuelsB_WhenBPlaysWardAndOthersSkip_ThenActivePlayerShouldRemainA() throws Exception {
+        // Given: A有決鬥, B和C有無懈可擊
+        givenPlayerAHasDuelAndBCHaveWards();
+
+        // A 對 B 出決鬥
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "SSA001", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        popAllPlayerMessage(); // 清理 A 出決鬥後的訊息
+
+        // When
+        // B 對 A 的決鬥出無懈可擊
+        mockMvcUtil.playWardCard(gameId, "player-b", "SSJ011", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        popAllPlayerMessage(); // 清理 B 出無懈可擊後的訊息
+
+        // C 收到詢問，選擇 skip
+        mockMvcUtil.playWardCard(gameId, "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk());
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/player_c_play_skip_ward_to_player_a_for_%s_v6.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
 //            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
             testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    @Test
+    @DisplayName("Given: A對B出決鬥, B有兩張無懈可擊 / When: B出無懈可擊後再skip / Then: 決鬥被抵銷, 當前回合玩家應維持為A")
+    public void givenBHasTwoWards_WhenBWardsAndThenSkips_ActivePlayerShouldRemainA() throws Exception {
+        // Given: A有決鬥, B有兩張無懈可擊
+        givenPlayerAHasDuelAndBHasTwoWards();
+
+        // A 對 B 出決鬥
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "SSA001", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        popAllPlayerMessage();
+
+        // When
+        // B 對 A 的決鬥出第一張無懈可擊
+        mockMvcUtil.playWardCard(gameId, "player-b", "SSJ011", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        popAllPlayerMessage();
+
+        // B 收到第二次詢問 (是否要無懈自己的無懈)，選擇 skip
+        mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk());
+
+        // Then
+        // 驗證當前回合玩家是否仍然是 A
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/player_b_play_skip_ward_and_check_active_player_to_player_a_for_%s_v5.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    @Test
+    @DisplayName("Given: A duels B / When: B skips Ward and plays Kill / Then: Game should ask A to play a Kill card")
+    public void givenADuelsB_WhenBSkipsWardAndPlaysKill_ThenAskAForKill() throws Exception {
+        // Given: A has a Duel, B has a Ward and a Kill.
+        givenPlayerAHasDuelAndPlayerBHasWardAndKill();
+
+        // A plays Duel on B
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "SSA001", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        popAllPlayerMessage(); // Clear messages after initial card play
+
+        // When
+        // 1. B is asked to play Ward, but skips.
+        mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk());
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/player_skip_ward_to_player_a_for_%s.json";
+
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+        // Then
+        // 2. B is asked to play Kill for the Duel, and plays it.
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/ask_player_a_for_kill_after_b_responds_for_%s.json";
+
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);
@@ -558,6 +676,128 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
+    private void givenPlayerAHasDuelAndBCHaveWards() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Duel(SSA001) // A 有決鬥
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.張飛,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Ward(SSJ011) // B 有無懈可擊
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.關羽,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Ward(SSJ011) // C 也有無懈可擊
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.呂布,
+                HealthStatus.ALIVE,
+                Role.TRAITOR
+                // D 沒有無懈可擊
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
+    private void givenPlayerAHasDuelAndBHasTwoWards() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Duel(SSA001) // A 有決鬥
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.張飛,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Ward(SSJ011), // B 有第一張無懈
+                new Ward(SSJ011)  // B 有第二張無懈
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.關羽,
+                HealthStatus.ALIVE,
+                Role.REBEL
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.呂布,
+                HealthStatus.ALIVE,
+                Role.TRAITOR
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
+    private void givenPlayerAHasDuelAndPlayerBHasWardAndKill() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Duel(SSA001), // A has Duel
+                new Kill(BHK039)  // A also has a Kill to respond
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.張飛,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Ward(SSJ011), // B has a Ward (but won't use it)
+                new Kill(BS8008)  // B has a Kill to play
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.關羽,
+                HealthStatus.ALIVE,
+                Role.REBEL
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.呂布,
+                HealthStatus.ALIVE,
+                Role.TRAITOR
         );
 
         List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);

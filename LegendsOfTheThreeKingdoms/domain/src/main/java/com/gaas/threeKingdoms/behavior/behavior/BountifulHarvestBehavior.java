@@ -18,7 +18,7 @@ public class BountifulHarvestBehavior extends Behavior {
     public static final String BOUNTIFUL_HARVEST_CARDS = "BOUNTIFUL_HARVEST_CARDS";
 
     public BountifulHarvestBehavior(Game game, Player player, List<String> reactivePlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card, true, false);
+        super(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
     }
 
     @Override

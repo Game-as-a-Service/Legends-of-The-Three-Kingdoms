@@ -24,7 +24,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 public class DuelBehavior extends Behavior {
 
     public DuelBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
     }
 
     @Override

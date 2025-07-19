@@ -26,7 +26,7 @@ public class WardBehavior extends Behavior {
     public static final String WARD_TRIGGER_PLAYER_ID = "WARD_TRIGGER_PLAYER_ID";
 
     public WardBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, isTargetPlayerNeedToResponse, false);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, isTargetPlayerNeedToResponse, false, false);
     }
 
     @Override
@@ -120,6 +120,7 @@ public class WardBehavior extends Behavior {
         MutableTriple<String, String /*wardPlayerId*/, String> message = null;
 
         WardEvent wardEvent = null;
+
         for (int i = topBehaviors.size() - 1; i >= 0; i--) {
             Behavior behavior = topBehaviors.get(i);
             if (!(behavior instanceof WardBehavior)) {
@@ -149,12 +150,28 @@ public class WardBehavior extends Behavior {
         }
 
         game.removeCompletedBehaviors();
-        Behavior firstNotWardBehavior = topBehaviors.pop();
+        Behavior firstNotWardBehavior = null;
+        Player activePlayer = null;
+        if (topBehaviors.peek().isOneRound()) {
+            firstNotWardBehavior = topBehaviors.pop();
+            activePlayer = game.getCurrentRoundPlayer();
+        } else {
+            firstNotWardBehavior = topBehaviors.peek();
+            if (firstNotWardBehavior.isTargetPlayerNeedToResponse() && !firstNotWardBehavior.isNeed2ndApiToUseEffect()) {
+                activePlayer = firstNotWardBehavior.getCurrentReactionPlayer();
+            } else {
+                activePlayer = game.getCurrentRoundPlayer();
+            }
+        }
+        // 奇數：清掉所有的 WardBehavior ，並且不發動任何 behavior 效果。
+        // 偶數：清掉所有的 WardBehavior ，發動 stack 中除了 WardBehavior 外第一個遇到的 behavior 效果，發動這個效果可以另外開一隻 doBehaviorAction 的 api。
         if (wardBehaviorSize % 2 == 0) {
             domainEvents.addAll(firstNotWardBehavior.doBehaviorAction());
+        } else {
+            activePlayer = game.getCurrentRoundPlayer();
         }
         game.getCurrentRound().setStage(Stage.Normal);
-        game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+        game.getCurrentRound().setActivePlayer(activePlayer);
         return domainEvents;
     }
 }

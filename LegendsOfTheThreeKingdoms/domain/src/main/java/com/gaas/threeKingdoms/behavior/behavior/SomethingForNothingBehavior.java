@@ -20,7 +20,7 @@ import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER
 public class SomethingForNothingBehavior extends Behavior {
 
     public SomethingForNothingBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true, false);
     }
 
     @Override

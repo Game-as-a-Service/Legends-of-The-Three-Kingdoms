@@ -22,11 +22,12 @@ public class Behavior {
     protected HandCard card;
     protected boolean isTargetPlayerNeedToResponse = true; // 別人要不要反應
     protected boolean isOneRound = true; // 是不是一回合就結束
+    protected boolean isNeed2ndApiToUseEffect = false; // 是不是需要另外一隻 api 啟動卡牌效果
     protected final Map<String, Object> params; // 注意！ value Object 只能存基本類型
 
     public Behavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer,
                     String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse,
-                    boolean isOneRound) {
+                    boolean isOneRound, boolean isNeed2ndApiToUseEffect) {
         this.game = game;
         this.behaviorPlayer = behaviorPlayer;
         this.reactionPlayers = reactionPlayers;
@@ -35,6 +36,7 @@ public class Behavior {
         this.playType = playType;
         this.card = card;
         this.isTargetPlayerNeedToResponse = isTargetPlayerNeedToResponse;
+        this.isNeed2ndApiToUseEffect = isNeed2ndApiToUseEffect;
         this.isOneRound = isOneRound;
         this.params = new HashMap<>();
     }
@@ -100,6 +102,10 @@ public class Behavior {
 
     public boolean isTargetPlayerNeedToResponse() {
         return isTargetPlayerNeedToResponse;
+    }
+
+    public boolean isNeed2ndApiToUseEffect() {
+        return isNeed2ndApiToUseEffect;
     }
 
     public void setIsTargetPlayerNeedToResponse(boolean isTargetPlayerNeedToResponse) {
