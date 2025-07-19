@@ -13,7 +13,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 1,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -24,7 +24,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 2,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -32,10 +32,10 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -43,11 +43,11 @@
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "size" : 0,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -63,5 +63,5 @@
   },
   "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-c"
 }

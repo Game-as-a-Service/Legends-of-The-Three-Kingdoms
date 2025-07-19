@@ -422,7 +422,7 @@ public class LightningTest extends AbstractBaseIntegrationTest {
 
         // Then
         // A 死亡，所有人收到 SettlementEvent，進入 B 的回合
-        List<String> playerIds = List.of("player-b", "player-c", "player-d"); // A 已死亡
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d"); // A 已死亡
         String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/LightningBehavior/player_a_all_skip_then_a_dies_b_starts_for_%s.json";
 
         for (String testPlayerId : playerIds) {
@@ -434,6 +434,21 @@ public class LightningTest extends AbstractBaseIntegrationTest {
             String expectedJson = Files.readString(path);
             assertEquals(expectedJson, testPlayerJson);
         }
+
+        // B 開始回合
+        filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/LightningBehavior/player_b_play_card_after_a_dies_for_%s.json";
+        mockMvcUtil.finishAction(gameId, "player-b");
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+
     }
 
     @Test

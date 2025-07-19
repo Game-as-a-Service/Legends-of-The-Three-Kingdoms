@@ -1,10 +1,12 @@
 {
   "events" : [ {
-    "event" : "AskKillEvent",
+    "event" : "PlayWardCardEvent",
     "data" : {
-      "playerId" : "player-b"
+      "playerId" : "player-b",
+      "cardId" : "SSA001",
+      "wardCardId" : "SSJ011"
     },
-    "message" : "請問 player-b 要否要出殺"
+    "message" : "張飛 的無懈可擊抵銷了 劉備 的 決鬥"
   } ],
   "data" : {
     "seats" : [ {
@@ -13,7 +15,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -24,7 +26,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -32,22 +34,22 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "",
+      "roleId" : "Rebel",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ ]
+        "size" : 1,
+        "cardIds" : [ "SSJ011" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "size" : 0,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -55,7 +57,7 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-b",
+      "activePlayer" : "player-a",
       "dyingPlayer" : "",
       "showKill" : false
     },
@@ -63,5 +65,5 @@
   },
   "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-c"
 }

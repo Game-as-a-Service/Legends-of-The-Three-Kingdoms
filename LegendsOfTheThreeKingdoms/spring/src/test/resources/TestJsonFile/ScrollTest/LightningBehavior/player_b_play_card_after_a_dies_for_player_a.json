@@ -1,42 +1,63 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
-    "data" : {
-      "playerId" : "player-c",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
-      "playType" : "active"
-    },
-    "message" : "出牌"
-  }, {
-    "event" : "PlayWardCardEvent",
-    "data" : {
-      "playerId" : "player-c",
-      "cardId" : "SSJ011",
-      "wardCardId" : "SSJ011"
-    },
-    "message" : "關羽 的無懈可擊抵銷了 張飛 的 無懈可擊"
-  }, {
-    "event" : "AskKillEvent",
+    "event" : "FinishActionEvent",
     "data" : {
       "playerId" : "player-b"
     },
-    "message" : "請問 player-b 要否要出殺"
+    "message" : "結束出牌"
+  }, {
+    "event" : "NotifyDiscardEvent",
+    "data" : {
+      "discardCount" : 0,
+      "discardPlayerId" : "player-b"
+    },
+    "message" : "通知棄牌"
+  }, {
+    "event" : "RoundEndEvent",
+    "data" : "",
+    "message" : "回合已結束"
+  }, {
+    "event" : "RoundStartEvent",
+    "data" : "",
+    "message" : "回合已開始"
+  }, {
+    "event" : "JudgementEvent",
+    "data" : "",
+    "message" : "判定結束"
+  }, {
+    "event" : "DrawCardEvent",
+    "data" : {
+      "size" : 2,
+      "cards" : [ ],
+      "drawCardPlayerId" : "player-c"
+    },
+    "message" : "玩家摸牌"
   } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
       "generalId" : "SHU001",
-      "roleId" : "Monarch",
-      "hp" : 4,
+      "roleId" : "Minister",
+      "hp" : -1,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "SS3003" ]
+        "size" : 0,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
+      "generalId" : "SHU002",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 4,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
       "generalId" : "SHU003",
       "roleId" : "",
       "hp" : 4,
@@ -47,38 +68,27 @@
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
-      "id" : "player-c",
-      "generalId" : "SHU002",
-      "roleId" : "",
-      "hp" : 4,
-      "hand" : {
-        "size" : 4,
-        "cardIds" : [ ]
-      },
-      "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ ]
-    }, {
       "id" : "player-d",
-      "generalId" : "QUN002",
+      "generalId" : "SHU005",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
+        "size" : 2,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Judgement",
-      "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-b",
+      "roundPhase" : "Action",
+      "currentRoundPlayer" : "player-c",
+      "activePlayer" : "player-c",
       "dyingPlayer" : "",
       "showKill" : false
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出無懈可擊",
+  "message" : "玩家 player-c 抽了 2 張牌",
   "gameId" : "my-id",
   "playerId" : "player-a"
 }

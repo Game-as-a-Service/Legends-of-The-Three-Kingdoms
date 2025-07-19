@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PlusMountsBehavior extends Behavior {
     public PlusMountsBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true, false);
     }
 
     @Override
