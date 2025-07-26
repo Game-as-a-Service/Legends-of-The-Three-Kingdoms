@@ -635,4 +635,88 @@ public class SnatchTest {
         assertTrue(playerA.getHand().getCards().stream().anyMatch(c -> c instanceof Kill));
     }
 
+    @DisplayName("""
+        Given
+        玩家ABCD
+        B有一麒麟弓，五張手牌，第一張是 KILL
+        第二張到五張是 Peach
+        A有順手牽羊
+    
+        When
+        A 出順手牽羊，指定 B
+        A 指定 index 5
+    
+        Then
+        拋出錯誤
+    """)
+    @Test
+    public void givenBHasFiveCards_WhenAPlaySnatchAndChoosesInvalidIndex5_ThenThrowException() throws Exception {
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+        playerA.getHand().addCardToHand(List.of(new Snatch(SS3016)));
+
+        Equipment equipmentB = new Equipment();
+        equipmentB.setWeapon(new QilinBowCard(EH5031));
+        Player playerB = PlayerBuilder
+                .construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withEquipment(equipmentB)
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008),
+                new Peach(BH3029),
+                new Peach(BH4030),
+                new Peach(BH6032),
+                new Peach(BH7033)
+        ));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.趙雲))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // When
+        game.playerPlayCard(playerA.getId(), SS3016.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // Then
+        assertThrows(IndexOutOfBoundsException.class, () ->
+                game.useSnatchEffect(playerA.getId(), playerB.getId(), "", 5));
+    }
+
 }
