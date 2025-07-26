@@ -1,20 +1,40 @@
 {
   "events" : [ {
-    "event" : "AskKillEvent",
+    "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-b"
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-a",
+      "cardId" : "BS8008",
+      "playType" : "active"
     },
-    "message" : "請問 player-b 要否要出殺"
+    "message" : "出牌"
+  }, {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "cardId" : "",
+      "playType" : "skip"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "from" : 4,
+      "to" : 3
+    },
+    "message" : "扣血"
   } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
       "generalId" : "SHU001",
       "roleId" : "Monarch",
-      "hp" : 4,
+      "hp" : 3,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ ]
+        "size" : 1,
+        "cardIds" : [ "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -24,7 +44,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 1,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -35,7 +55,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -43,11 +63,11 @@
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "size" : 0,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -55,13 +75,13 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-b",
+      "activePlayer" : "player-a",
       "dyingPlayer" : "",
       "showKill" : false
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出無懈可擊",
+  "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-a"
 }

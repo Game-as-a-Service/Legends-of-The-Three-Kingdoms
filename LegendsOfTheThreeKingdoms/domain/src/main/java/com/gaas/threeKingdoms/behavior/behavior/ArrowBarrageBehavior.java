@@ -20,7 +20,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 public class ArrowBarrageBehavior extends Behavior {
     public ArrowBarrageBehavior(Game game, Player player, List<String> reactivePlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card, true, false);
+        super(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
     }
 
     @Override

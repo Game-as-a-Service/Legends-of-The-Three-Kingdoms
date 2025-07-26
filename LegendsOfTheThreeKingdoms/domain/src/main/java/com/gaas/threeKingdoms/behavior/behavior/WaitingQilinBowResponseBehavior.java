@@ -15,7 +15,7 @@ import java.util.Map;
 public class WaitingQilinBowResponseBehavior extends Behavior {
 
     public WaitingQilinBowResponseBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, false);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, false, false);
     }
 
     @Override
