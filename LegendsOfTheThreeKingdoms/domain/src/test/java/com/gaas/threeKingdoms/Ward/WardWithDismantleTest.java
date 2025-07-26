@@ -755,6 +755,6 @@ public class WardWithDismantleTest {
         assertEquals("player-a", wardEvent.getPlayerId());
         assertEquals("SSJ011", wardEvent.getCardId());
         assertEquals("SSJ011", wardEvent.getWardCardId());
-        assertTrue(game.getActivePlayer().getId().equals("player-a"));
+        assertEquals("player-a", game.getActivePlayer().getId());
     }
 }

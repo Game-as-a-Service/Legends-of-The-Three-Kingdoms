@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class PeachGardenBehavior extends Behavior {
 
     public PeachGardenBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true);
+        super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, false, true, false);
     }
 
     @Override
