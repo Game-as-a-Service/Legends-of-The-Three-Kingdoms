@@ -870,5 +870,28 @@ public class Game {
                 .toList();
     }
 
+    public List<DomainEvent> useSnatchEffect(String currentPlayerId, String targetPlayerId, String cardId, Integer targetCardIndex) {
+        Behavior behavior = topBehavior.peek();
+        List<HandCard> cards = getPlayer(targetPlayerId).getHand().getCards();
+        HandCard handCard = null;
+        if (targetCardIndex != null && targetCardIndex >= cards.size()) {
+            throw new IllegalArgumentException("Hand card index over size");
+        } else if (targetCardIndex != null) {
+            handCard = cards.get(targetCardIndex);
+        }
+
+        if (behavior instanceof SnatchBehavior &&
+                currentRound.getActivePlayer().getId().equals(currentPlayerId)
+        ) {
+            behavior.putParam(UserCommand.CHOOSE_HAND_CARD.name(), Optional.ofNullable(handCard).map(HandCard::getId).orElse(null));
+            behavior.putParam(UserCommand.SNATCH_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name(), cardId);
+            behavior.putParam(UserCommand.SNATCH_BEHAVIOR_PLAYER_ID.name(), currentPlayerId);
+            behavior.putParam(UserCommand.SNATCH_BEHAVIOR_TARGET_PLAYER_ID.name(), targetPlayerId);
+            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(currentPlayerId, targetPlayerId, cardId, PlayType.ACTIVE.getPlayType());
+            removeCompletedBehaviors();
+            return acceptedEvent;
+        }
+        throw new IllegalStateException("useSnatchEffect error.");
+    }
 }
 

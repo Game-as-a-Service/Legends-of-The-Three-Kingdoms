@@ -217,6 +217,11 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SSJ011", new Ward(SSJ011));
         CARD_FACTORY_MAP.put("SCQ077", new Ward(SCQ077));
         CARD_FACTORY_MAP.put("SCK078", new Ward(SCK078));
+        CARD_FACTORY_MAP.put("SD3081", new Snatch(SD3081));
+        CARD_FACTORY_MAP.put("SD4082", new Snatch(SD4082));
+        CARD_FACTORY_MAP.put("SS3016", new Snatch(SS3016));
+        CARD_FACTORY_MAP.put("SS4017", new Snatch(SS4017));
+        CARD_FACTORY_MAP.put("SSJ024", new Snatch(SSJ024));
     }
 
     private final String cardId;
