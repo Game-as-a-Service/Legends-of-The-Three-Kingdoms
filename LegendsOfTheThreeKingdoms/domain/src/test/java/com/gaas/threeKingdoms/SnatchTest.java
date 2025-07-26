@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
+import com.gaas.threeKingdoms.exception.DistanceErrorException;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -41,7 +42,7 @@ public class SnatchTest {
         A有順手牽羊
 
         When
-        A 出過河拆橋，指定 B
+        A 出順手牽羊，指定 B
 
         Then
         拋出錯誤
@@ -178,7 +179,6 @@ public class SnatchTest {
                 () -> game.playerPlayCard(playerA.getId(), SS3016.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType()));
     }
 
-
     @DisplayName("""
         Given
         玩家ABCD
@@ -253,7 +253,7 @@ public class SnatchTest {
     }
 
     @DisplayName("""
-    Given
+        Given
         玩家ABCD
         B有一張裝備 麒麟弓
         A有順手牽羊
@@ -327,17 +327,17 @@ public class SnatchTest {
     }
 
     @DisplayName("""
-    Given
-    玩家ABCD
-    A沒有 - 1馬、有麒麟弓
-    A有順手牽羊
-
-    When
-    A 出順手牽羊，指定 C
-
-    Then
-    拋出錯誤
-""")
+        Given
+        玩家ABCD
+        A沒有 - 1馬、有麒麟弓
+        A有順手牽羊
+    
+        When
+        A 出順手牽羊，指定 C
+    
+        Then
+        拋出錯誤
+    """)
     @Test
     public void givenPlayerAHasQilinBowButNoMinusOneHorse_WhenPlayerAPlaySnatchOnFarPlayer_ThenThrowException() throws Exception {
         Game game = new Game();
@@ -468,7 +468,7 @@ public class SnatchTest {
         game.setCurrentRound(new Round(playerA));
 
         // When & Then
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(DistanceErrorException.class,
                 () -> game.playerPlayCard(playerA.getId(), SS3016.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType()));
     }
 
@@ -524,6 +524,8 @@ public class SnatchTest {
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
+
+        playerC.getHand().addCardToHand(Arrays.asList(new Dodge(BHK039)));
 
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
@@ -715,8 +717,81 @@ public class SnatchTest {
         game.playerPlayCard(playerA.getId(), SS3016.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
         // Then
-        assertThrows(IndexOutOfBoundsException.class, () ->
+        assertThrows(IllegalArgumentException.class, () ->
                 game.useSnatchEffect(playerA.getId(), playerB.getId(), "", 5));
     }
+
+    @DisplayName("""
+            Given
+            玩家 ABCD
+            A 的回合
+            A 有樂不思蜀 x 1
+            A 出樂不思蜀，指定 C
+            A 結束回合
+        
+            When
+            B 的回合，出順手牽羊，指定 C
+        
+            Then
+            拋出錯誤(沒有手牌)
+        """)
+    @Test
+    public void givenCIsTargetedByContentment_WhenBPlaysSnatchOnC_ThenThrowException() throws Exception {
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+        playerA.getHand().addCardToHand(List.of(new Contentment(SC6071)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .build();
+        playerB.getHand().addCardToHand(Arrays.asList(
+                new Snatch(SS3016), new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withGeneralCard(new GeneralCard(General.趙雲))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .build();
+
+        List<Player> players = asList(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // A 出樂不思蜀給 C 並結束回合
+        game.playerPlayCard(playerA.getId(), SC6071.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType());
+        game.finishAction(playerA.getId());
+
+        // 換 B 回合，出順手牽羊指定 C 應拋出錯誤
+        assertThrows(IllegalArgumentException.class, () ->
+                game.playerPlayCard(playerB.getId(), SS3016.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType()));
+    }
+
 
 }

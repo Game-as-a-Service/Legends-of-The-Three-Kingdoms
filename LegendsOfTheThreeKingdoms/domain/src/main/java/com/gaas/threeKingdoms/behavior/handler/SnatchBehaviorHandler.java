@@ -3,10 +3,9 @@ package com.gaas.threeKingdoms.behavior.handler;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.PlayCardBehaviorHandler;
-import com.gaas.threeKingdoms.behavior.behavior.DismantleBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.SnatchBehavior;
+import com.gaas.threeKingdoms.exception.DistanceErrorException;
 import com.gaas.threeKingdoms.handcard.HandCard;
-import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Snatch;
 import com.gaas.threeKingdoms.player.Player;
 
@@ -36,6 +35,10 @@ public class SnatchBehaviorHandler extends PlayCardBehaviorHandler {
         String errorMessage = "對象沒手牌或者裝備牌";
         if (currentReactionPlayer.getHandSize() == 0 && !currentReactionPlayer.getEquipment().hasAnyEquipment()) {
             throw new IllegalArgumentException(errorMessage);
+        }
+
+        if (!game.isInSnatchEffectRange(player, currentReactionPlayer)) {
+            throw new DistanceErrorException("Players are not within range.");
         }
 
         targetPlayerIdList.add(0, playerId);

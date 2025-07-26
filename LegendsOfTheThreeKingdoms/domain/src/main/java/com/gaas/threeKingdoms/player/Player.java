@@ -192,7 +192,7 @@ public class Player {
         return weaponCard.getWeaponDistance();
     }
 
-    private int getMinusOneDistance() {
+    public int getMinusOneDistance() {
         MinusMountsCard minusOne = equipment.getMinusOne();
         if (minusOne == null) {
             return 0;
