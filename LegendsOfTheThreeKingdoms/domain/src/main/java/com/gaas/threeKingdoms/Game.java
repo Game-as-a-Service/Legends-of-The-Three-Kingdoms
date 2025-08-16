@@ -59,7 +59,7 @@ public class Game {
     }
 
     public Game() {
-        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(new PeachGardenBehaviorHandler(new BountifulHarvestHandler(new LightningBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this);
+        playCardHandler = new DyingAskPeachBehaviorHandler(new PeachBehaviorHandler(new NormalActiveKillBehaviorHandler(new MinusMountsBehaviorHandler(new PlusMountsBehaviorHandler(new EquipWeaponBehaviorHandler(new EquipArmorBehaviorHandler(new BarbarianInvasionBehaviorHandler(new BorrowedSwordBehaviorHandler(new DuelBehaviorHandler(new DismantleBehaviorHandler(new ContentmentBehaviorHandler(new SomethingForNothingHandler(new ArrowBarrageBehaviorHandler(new PeachGardenBehaviorHandler(new BountifulHarvestHandler(new LightningBehaviorHandler(new SnatchBehaviorHandler(null, this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this), this);
         equipmentEffectHandler = new EightDiagramTacticEquipmentEffectHandler(new QilinBowEquipmentEffectHandler(null, this), this);
     }
 
@@ -382,6 +382,15 @@ public class Game {
         int escapeDist = targetPlayer.judgeEscapeDistance();
         int attackDist = player.judgeAttackDistance();
         return attackDist >= dist + escapeDist;
+    }
+
+    public boolean isInSnatchEffectRange(Player player, Player targetPlayer) {
+        // 攻擊距離 不用考慮
+        // 基礎距離(座位表) + 使用 順手牽羊 玩家的 -1 馬  + 被使用 順手牽羊 玩家的 +1 馬  <= 1
+        int dist = seatingChart.calculateDistance(player, targetPlayer);
+        int attackDist = player.getMinusOneDistance();
+        int escapeDist = targetPlayer.judgeEscapeDistance();
+        return dist - attackDist + escapeDist <= 1;
     }
 
     public List<DomainEvent> finishAction(String playerId) {
@@ -870,5 +879,28 @@ public class Game {
                 .toList();
     }
 
+    public List<DomainEvent> useSnatchEffect(String currentPlayerId, String targetPlayerId, String cardId, Integer targetCardIndex) {
+        Behavior behavior = topBehavior.peek();
+        List<HandCard> cards = getPlayer(targetPlayerId).getHand().getCards();
+        HandCard handCard = null;
+        if (targetCardIndex != null && targetCardIndex >= cards.size()) {
+            throw new IllegalArgumentException("Hand card index over size");
+        } else if (targetCardIndex != null) {
+            handCard = cards.get(targetCardIndex);
+        }
+
+        if (behavior instanceof SnatchBehavior &&
+                currentRound.getActivePlayer().getId().equals(currentPlayerId)
+        ) {
+            behavior.putParam(UserCommand.CHOOSE_HAND_CARD.name(), Optional.ofNullable(handCard).map(HandCard::getId).orElse(null));
+            behavior.putParam(UserCommand.SNATCH_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name(), cardId);
+            behavior.putParam(UserCommand.SNATCH_BEHAVIOR_PLAYER_ID.name(), currentPlayerId);
+            behavior.putParam(UserCommand.SNATCH_BEHAVIOR_TARGET_PLAYER_ID.name(), targetPlayerId);
+            List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(currentPlayerId, targetPlayerId, cardId, PlayType.ACTIVE.getPlayType());
+            removeCompletedBehaviors();
+            return acceptedEvent;
+        }
+        throw new IllegalStateException("useSnatchEffect error.");
+    }
 }
 
