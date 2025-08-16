@@ -168,6 +168,28 @@ public class BehaviorData {
                 );
                 yield dismantleBehavior;
             }
+            case "SnatchBehavior" -> {
+                SnatchBehavior snatchBehavior = new SnatchBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId)
+                );
+
+                snatchBehavior.putParam(
+                        UserCommand.CHOOSE_HAND_CARD.name(), params.get(UserCommand.CHOOSE_HAND_CARD.name()));
+                snatchBehavior.putParam(
+                        UserCommand.SNATCH_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name(), params.get(UserCommand.SNATCH_BEHAVIOR_USE_DISMANTLE_EFFECT_CARD_ID.name()));
+                snatchBehavior.putParam(
+                        UserCommand.SNATCH_BEHAVIOR_PLAYER_ID.name(), params.get(UserCommand.SNATCH_BEHAVIOR_PLAYER_ID.name()));
+                snatchBehavior.putParam(
+                        UserCommand.SNATCH_BEHAVIOR_TARGET_PLAYER_ID.name(), params.get(UserCommand.SNATCH_BEHAVIOR_TARGET_PLAYER_ID.name())
+                );
+                yield snatchBehavior;
+            }
             case "ContentmentBehavior" -> new ContentmentBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),

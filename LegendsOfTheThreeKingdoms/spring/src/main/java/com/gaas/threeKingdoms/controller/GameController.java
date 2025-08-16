@@ -32,6 +32,7 @@ public class GameController {
     private final UseBorrowedSwordEffectUseCase useBorrowedSwordEffectUseCase;
     private final UseDismantleUseCase useDismantleUseCase;
     private final ChooseCardFromBountifulHarvestUseCase chooseCardFromBountifulHarvestUseCase;
+    private final UseSnatchUseCase useSnatchUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -129,6 +130,14 @@ public class GameController {
         UseDismantlePresenter useDismantlePresenter = new UseDismantlePresenter();
         useDismantleUseCase.execute(gameId, useDismantleRequest.toUseDismantleRequest(), useDismantlePresenter);
         webSocketBroadCast.pushUseDismantleEvent(useDismantlePresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useSnatchEffect")
+    public ResponseEntity<?> playerUseSnatchEffect(@PathVariable String gameId, @RequestBody UseSnatchRequest useSnatchRequest) {
+        UseSnatchPresenter useSnatchPresenter = new UseSnatchPresenter();
+        useSnatchUseCase.execute(gameId, useSnatchRequest.toUseSnatchRequest(), useSnatchPresenter);
+        webSocketBroadCast.pushUseSnatchEvent(useSnatchPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

@@ -192,6 +192,19 @@ public class WebSocketBroadCast {
         }
     }
 
+    public void pushUseSnatchEvent(UseSnatchPresenter presenter) {
+        List<UseSnatchPresenter.GameViewModel> useSnatchViewModels = presenter.present();
+        try {
+            for (UseSnatchPresenter.GameViewModel useSnatchViewModel : useSnatchViewModels) {
+                String useSnatchJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(useSnatchViewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", useSnatchViewModel.getGameId(), useSnatchViewModel.getPlayerId()), useSnatchJson);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushUseDismantleEffectEvent ");
+            e.printStackTrace();
+        }
+    }
+
     public void pushChooseCardFromBountifulHarvest(ChooseCardFromBountifulHarvestPresenter presenter) {
         List<ChooseCardFromBountifulHarvestPresenter.GameViewModel> chooseCardFromBountifulHarvestViewModels = presenter.present();
         try {

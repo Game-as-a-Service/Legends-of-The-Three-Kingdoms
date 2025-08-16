@@ -36,6 +36,23 @@ public class MockMvcUtil {
                 .content(content));
     }
 
+    public ResultActions useSnatchEffect(String gameId, String currentPlayerId, String targetPlayerId, String cardId, Integer targetCardIndex) throws Exception {
+        String formattedCardId = cardId == null || cardId.isEmpty() ? null : "\"" + cardId + "\"";
+
+        String content = String.format("""
+            {
+              "currentPlayerId": "%s",
+              "targetPlayerId": "%s",
+              "cardId": %s,
+              "targetCardIndex": %s
+            }
+            """, currentPlayerId, targetPlayerId, formattedCardId, targetCardIndex);
+
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useSnatchEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content));
+    }
+
 
     public ResultActions useBorrowedSwordEffect(String gameId, String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useBorrowedSwordEffect")

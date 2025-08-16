@@ -336,6 +336,18 @@ public class DomainEventToViewModelMapper {
             );
         });
 
+        eventToViewModelMappers.put(SnatchEvent.class, event -> {
+            SnatchEvent snatchEvent = (SnatchEvent) event;
+            return new UseSnatchPresenter.UseSnatchViewModel(
+                    new UseSnatchPresenter.UseSnatchDataViewModel(
+                            snatchEvent.getPlayerId(),
+                            snatchEvent.getTargetPlayerId(),
+                            snatchEvent.getCardId()
+                    ),
+                    snatchEvent.getMessage()
+            );
+        });
+
     }
 
     public List<ViewModel<?>> mapEventsToViewModels(List<DomainEvent> events) {
