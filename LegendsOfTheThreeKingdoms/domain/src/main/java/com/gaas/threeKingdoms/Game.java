@@ -869,7 +869,15 @@ public class Game {
     }
 
     public boolean doesAnyPlayerHaveWard() {
-        return players.stream()
+        return doesAnyPlayerHaveWard(null);
+    }
+
+    public boolean doesAnyPlayerHaveWard(String expectPlayerId) {
+        Stream<Player> stream = players.stream();
+        if (expectPlayerId != null) {
+            stream = stream.filter(player -> !player.getId().equals(expectPlayerId));
+        }
+        return stream
                 .anyMatch(player -> player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward));
     }
 

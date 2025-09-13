@@ -40,7 +40,7 @@ public class DuelBehavior extends Behavior {
                 cardId,
                 playType));
 
-        if (game.doesAnyPlayerHaveWard()) {
+        if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
             game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
 
