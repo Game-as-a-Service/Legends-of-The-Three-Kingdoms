@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class Behavior {
+public abstract class Behavior   {
     protected Game game;
     protected Player behaviorPlayer; // 發動這個效果的人
     protected List<String> reactionPlayers; // 受到效果、需要反應者
@@ -40,6 +40,8 @@ public class Behavior {
         this.isOneRound = isOneRound;
         this.params = new HashMap<>();
     }
+
+    public abstract boolean isOneRoundDefault();
 
     // hook
     public List<DomainEvent> playerAction() {
@@ -115,5 +117,6 @@ public class Behavior {
     public boolean judgeWhetherRemoveTopBehavior() {
         return this instanceof NormalActiveKillBehavior;
     }
+
 
 }

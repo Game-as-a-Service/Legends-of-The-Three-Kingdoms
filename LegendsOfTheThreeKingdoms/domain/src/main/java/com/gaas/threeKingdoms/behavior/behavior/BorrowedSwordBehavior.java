@@ -23,6 +23,11 @@ public class BorrowedSwordBehavior extends Behavior {
     }
 
     @Override
+    public boolean isOneRoundDefault() {
+        return false;
+    }
+
+    @Override
     public List<DomainEvent> playerAction() {
         String targetPlayerId = reactionPlayers.get(0);
         playerPlayCardNotUpdateActivePlayer(behaviorPlayer, cardId); // 初次打出借刀殺人，還沒選人

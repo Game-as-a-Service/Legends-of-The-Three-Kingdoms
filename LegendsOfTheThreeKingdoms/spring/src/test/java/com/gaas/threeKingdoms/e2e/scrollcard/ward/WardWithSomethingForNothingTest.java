@@ -362,6 +362,45 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
         }
     }
 
+    @Test
+    public void givenPlayerABCD_PlayerAHasTwoSomethingForNothingAndWard_PlayerBHasWard_WhenAPlaysSomethingForNothingAndBPlaysWardAndADeclinesToCounter_ThenAPlaysAnotherSomethingForNothing_AllPlayersReceiveDrawTwoCardsEvent() throws Exception {
+//        Given
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        A 有無中生有 x2 、有無懈可擊x1
+//        B 有無懈可擊 x1
+//
+//       When A出無中生有 B出無懈可擊 A 不出無懈可擊 (A的無中生有被B的無懈可擊抵銷)
+//       AND A再出無中生有
+//
+//        Then
+//        A B C D 收到 event A 發動無中生有 event 並直接抽兩張卡
+        givenPlayerAHaveSomethingForNothingV6();
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-a", "SH7046", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playWardCard(gameId, "player-b", "SSJ011", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.playWardCard(gameId, "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-a", "SH8047", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/SomethingForNothing/player_a_play_something_for_nothing_for_%s_v6.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
 
     private void givenPlayerAHaveSomethingForNothingV1() {
         Player playerA = createPlayer(
@@ -550,6 +589,47 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
                 HealthStatus.ALIVE,
                 Role.REBEL,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new Ward(SSJ011)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.呂布,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
+    private void givenPlayerAHaveSomethingForNothingV6() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029),new SomethingForNothing(SH7046), new Ward(SSJ011), new SomethingForNothing(SH8047)
+        );
+        Player playerB = createPlayer("player-b",
+                4,
+                General.張飛,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH2028), new Peach(BH2028), new Ward(SSJ011)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.關羽,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
         Player playerD = createPlayer(
                 "player-d",

@@ -21,7 +21,11 @@ public class SomethingForNothingBehavior extends Behavior {
 
     public SomethingForNothingBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, true, false);
+
     }
+
+    @Override
+    public boolean isOneRoundDefault(){return true;}
 
     @Override
     public List<DomainEvent> playerAction() {
@@ -36,8 +40,7 @@ public class SomethingForNothingBehavior extends Behavior {
         List<DomainEvent> domainEvents = new ArrayList<>();
         domainEvents.add(playCardEvent);
 
-        if (game.doesAnyPlayerHaveWard()) {
-
+        if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
             game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
 
@@ -72,7 +75,8 @@ public class SomethingForNothingBehavior extends Behavior {
 
     @Override
     protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
-        return Collections.emptyList();
+        throw new UnsupportedOperationException("不應該進入 doResponseToPlayerAction 方法，此牌型不支援響應操作。");
     }
+
 
 }

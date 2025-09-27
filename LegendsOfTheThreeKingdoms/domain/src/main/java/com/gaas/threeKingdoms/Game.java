@@ -320,6 +320,17 @@ public class Game {
         }
     }
 
+    public void removeCompletedWardBehaviors() {
+        while (!topBehavior.isEmpty()) {
+            Behavior nextBehavior = topBehavior.peek();
+            if (nextBehavior instanceof WardBehavior && nextBehavior.isOneRound()) {
+                topBehavior.pop();
+            } else {
+                break;
+            }
+        }
+    }
+
     private void checkIsCurrentRoundValid(String playerId) {
         Player activePlayer = currentRound.getActivePlayer();
         if (!activePlayer.getId().equals(playerId)) {

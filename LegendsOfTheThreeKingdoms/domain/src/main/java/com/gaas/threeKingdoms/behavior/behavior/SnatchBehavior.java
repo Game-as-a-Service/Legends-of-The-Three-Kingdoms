@@ -24,6 +24,8 @@ public class SnatchBehavior extends Behavior {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card,true, false, true);
     }
 
+    @Override
+    public boolean isOneRoundDefault(){return false;}
 
     @Override
     public List<DomainEvent> playerAction() {

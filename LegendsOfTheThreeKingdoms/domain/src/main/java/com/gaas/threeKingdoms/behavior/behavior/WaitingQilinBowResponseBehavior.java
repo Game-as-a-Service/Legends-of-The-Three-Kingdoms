@@ -19,6 +19,9 @@ public class WaitingQilinBowResponseBehavior extends Behavior {
     }
 
     @Override
+    public boolean isOneRoundDefault(){return false;}
+
+    @Override
     public List<DomainEvent> playerAction() {
 
         return Collections.emptyList();

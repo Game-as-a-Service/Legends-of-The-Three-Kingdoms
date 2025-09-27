@@ -344,6 +344,8 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
         // WebSocket 推播給前端資訊
         // 主公選擇的腳色全部人都可以知道
+
+        // 所有玩家都會先收到 MonarchChooseGeneralCardEvent
         for (Player player : game.getPlayers()) {
             String monarchChooseGeneralCardMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
             MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel monarchChooseGeneralCardViewModel = objectMapper.readValue(monarchChooseGeneralCardMessage, MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel.class);
@@ -351,6 +353,18 @@ public class GameTest extends AbstractBaseIntegrationTest {
             assertEquals("主公已選擇 劉備", monarchChooseGeneralCardViewModel.getMessage());
             assertEquals("SHU001", monarchChooseGeneralCardViewModel.getData().getMonarchGeneralCard());
             assertEquals("MonarchGeneralChosenEvent", monarchChooseGeneralCardViewModel.getEvent());
+        }
+
+        // 非主公玩家會再收到 GetGeneralCardByOthersEvent
+        for (Player player : game.getPlayers()) {
+            if (!player.getRoleCard().getRole().equals(Role.MONARCH)) {
+                String getGeneralCardByOthersMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
+                MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel getGeneralCardByOthersViewModel = objectMapper.readValue(getGeneralCardByOthersMessage, MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel.class);
+                assertNotNull(getGeneralCardByOthersMessage);
+                assertEquals("請選擇武將", getGeneralCardByOthersViewModel.getMessage());
+                assertEquals(3, getGeneralCardByOthersViewModel.getData().size());
+                assertEquals("getGeneralCardEventByOthers", getGeneralCardByOthersViewModel.getEvent());
+            }
         }
 
         // PlayerB打主公選擇角色的API
@@ -370,17 +384,8 @@ public class GameTest extends AbstractBaseIntegrationTest {
     }
 
     private void shouldGetGeneralCardsByOthers() throws Exception {
-        Game game = repository.findById("my-id")
-                .orElseThrow(() -> new NotFoundException("Game not found"));
-        List<Player> otherPlayers = game.getPlayers().stream().filter(player -> player.getRoleCard().getRole() != Role.MONARCH).collect(Collectors.toList());
-        for (Player player : otherPlayers) {
-            String getGeneralCardByOthersMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
-            MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel getGeneralCardByOthersViewModel = objectMapper.readValue(getGeneralCardByOthersMessage, MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel.class);
-            assertNotNull(getGeneralCardByOthersMessage);
-            assertEquals("請選擇武將", getGeneralCardByOthersViewModel.getMessage());
-            assertEquals(3, getGeneralCardByOthersViewModel.getData().size());
-            assertEquals("getGeneralCardEventByOthers", getGeneralCardByOthersViewModel.getEvent());
-        }
+        // GetGeneralCardByOthersEvent 已經在 shouldChooseGeneralsByMonarch() 中處理過了
+        // 這個方法現在不需要額外的邏輯
     }
 
 
