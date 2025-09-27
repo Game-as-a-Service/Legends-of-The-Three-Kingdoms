@@ -18,6 +18,11 @@ public class ContentmentBehavior extends Behavior {
     }
 
     @Override
+    public boolean isOneRoundDefault() {
+        return true;
+    }
+
+    @Override
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentReactionPlayerId = currentReactionPlayer.getId();

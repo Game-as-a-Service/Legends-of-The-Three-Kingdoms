@@ -762,4 +762,5 @@ public class WardWithSomethingForNothingTest {
         assertEquals("SSJ011", wardEvent.getWardCardId());
     }
 
+
 }

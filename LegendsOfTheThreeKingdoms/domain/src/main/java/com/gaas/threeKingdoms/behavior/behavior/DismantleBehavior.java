@@ -24,6 +24,11 @@ public class DismantleBehavior extends Behavior {
     }
 
     @Override
+    public boolean isOneRoundDefault() {
+        return false;
+    }
+
+    @Override
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentReactionPlayerId = currentReactionPlayer.getId();
@@ -43,7 +48,7 @@ public class DismantleBehavior extends Behavior {
     protected List<DomainEvent> doResponseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         List<DomainEvent> events = new ArrayList<>();
 
-        if (game.doesAnyPlayerHaveWard()) {
+        if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
             game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
 

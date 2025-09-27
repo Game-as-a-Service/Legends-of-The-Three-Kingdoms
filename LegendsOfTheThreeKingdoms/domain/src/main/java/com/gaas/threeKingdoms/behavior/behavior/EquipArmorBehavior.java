@@ -16,6 +16,11 @@ public class EquipArmorBehavior extends Behavior {
     }
 
     @Override
+    public boolean isOneRoundDefault() {
+        return true;
+    }
+
+    @Override
     public List<DomainEvent> playerAction() {
         playerPlayEquipmentCard(behaviorPlayer, behaviorPlayer, cardId);
         ArmorCard armorCard = behaviorPlayer.getEquipment().getArmor();

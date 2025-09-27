@@ -24,6 +24,11 @@ public class ArrowBarrageBehavior extends Behavior {
     }
 
     @Override
+    public boolean isOneRoundDefault() {
+        return false;
+    }
+
+    @Override
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentReactionPlayerId = currentReactionPlayer.getId();
