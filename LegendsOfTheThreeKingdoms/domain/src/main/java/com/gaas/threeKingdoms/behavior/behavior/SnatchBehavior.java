@@ -37,7 +37,8 @@ public class SnatchBehavior extends Behavior {
                 currentReactionPlayerId,
                 cardId,
                 playType));
-        events.add(game.getGameStatusEvent("發動順手牽羊"));
+        events.add(game.getGameStatusEvent("發動順手牵羊"));
+
         return events;
     }
 
