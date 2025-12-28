@@ -258,7 +258,6 @@ public class BehaviorData {
                 .playType(behavior.getPlayType())
                 .isTargetPlayerNeedToResponse(behavior.isTargetPlayerNeedToResponse())
                 .isOneRound(behavior.isOneRound())
-
                 .params(behavior.getParams())
                 .build();
     }

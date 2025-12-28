@@ -29,9 +29,6 @@ public class NormalActiveKillBehavior extends Behavior {
     }
 
     @Override
-    public boolean isOneRoundDefault(){return false;}
-
-    @Override
     public List<DomainEvent> playerAction() {
         String targetPlayerId = reactionPlayers.get(0);
         Player targetPlayer = game.getPlayer(targetPlayerId);
