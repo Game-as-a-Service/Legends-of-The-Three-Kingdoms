@@ -19,9 +19,6 @@ public class PeachGardenBehavior extends Behavior {
     }
 
     @Override
-    public boolean isOneRoundDefault(){return true;}
-
-    @Override
     public List<DomainEvent> playerAction() {
         playerPlayCardNotUpdateActivePlayer(behaviorPlayer, cardId);
 

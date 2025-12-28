@@ -30,9 +30,6 @@ public class WardBehavior extends Behavior {
     }
 
     @Override
-    public boolean isOneRoundDefault(){return false;}
-
-    @Override
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         List<String> playerIds = new ArrayList<>();
@@ -152,17 +149,14 @@ public class WardBehavior extends Behavior {
             }
         }
 
-        // 刪除所有無懈可擊
-        game.removeCompletedWardBehaviors();
-        Behavior firstNotWardBehavior = topBehaviors.peek();
-        // 將原本狀態的 behavior 還原
-        firstNotWardBehavior.setIsOneRound(firstNotWardBehavior.isOneRoundDefault());
-
+        game.removeCompletedBehaviors();
+        Behavior firstNotWardBehavior = null;
         Player activePlayer = null;
-        if (firstNotWardBehavior.isOneRound()) {
+        if (topBehaviors.peek().isOneRound()) {
             firstNotWardBehavior = topBehaviors.pop();
             activePlayer = game.getCurrentRoundPlayer();
         } else {
+            firstNotWardBehavior = topBehaviors.peek();
             if (firstNotWardBehavior.isTargetPlayerNeedToResponse() && !firstNotWardBehavior.isNeed2ndApiToUseEffect()) {
                 activePlayer = firstNotWardBehavior.getCurrentReactionPlayer();
             } else {

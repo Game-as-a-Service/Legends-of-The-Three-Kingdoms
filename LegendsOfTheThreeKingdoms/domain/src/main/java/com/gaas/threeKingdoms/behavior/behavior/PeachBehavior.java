@@ -16,9 +16,6 @@ public class PeachBehavior extends Behavior {
     }
 
     @Override
-    public boolean isOneRoundDefault(){return true;}
-
-    @Override
     public List<DomainEvent> playerAction() {
         playerPlayCard(behaviorPlayer, behaviorPlayer, cardId);
         int originHp = behaviorPlayer.getHP();
