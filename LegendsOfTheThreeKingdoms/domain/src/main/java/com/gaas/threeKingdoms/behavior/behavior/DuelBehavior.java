@@ -103,6 +103,9 @@ public class DuelBehavior extends Behavior {
                         game.getCurrentRound(),
                         Optional.of(this));
                 events.addAll(damagedEvents);
+                isTargetPlayerNeedToResponse = false;
+                isOneRound = true;
+                System.out.println("1 currentReactionPlayer "+currentReactionPlayer.getId());
                 gameMessage = "扣血";
             } else {
                 AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
@@ -137,7 +140,11 @@ public class DuelBehavior extends Behavior {
                     Optional.of(this));
             events.addAll(damagedEvents);
             isOneRound = true;
+            isTargetPlayerNeedToResponse = false;
+            System.out.println("2 currentReactionPlayer "+currentReactionPlayer.getId());
         } else {
+            System.out.println("2 AskKillEvent currentReactionPlayer"+currentReactionPlayer.getId());
+
             events.add(new AskKillEvent(currentReactionPlayerId));
         }
 
