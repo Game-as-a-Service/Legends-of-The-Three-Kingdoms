@@ -852,6 +852,92 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
         }
     }
 
+    @DisplayName("""
+            Given
+            A有無懈可擊，B有過河拆橋，B的回合
+            B對C使用過河拆橋。
+            
+            When
+            B對C使用過河拆橋
+            
+            Then
+            此時系統應詢問Ａ是否出無懈可擊，但A收到等待玩家出無懈可擊的event(AskPlayWardViewModel)
+            """)
+    @Test
+    public void givenPlayerAHasWard_PlayerBHasDismantle_PlayerBTurn_WhenPlayerBPlaysDismantleOnC_ThenSystemAskAForWardEvent() throws Exception {
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+        playerA.getHand().addCardToHand(Arrays.asList(
+                new Kill(BS8008),
+                new Peach(BH3029),
+                new Ward(SSJ011)
+        ));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerB.getHand().addCardToHand(Arrays.asList(new Dismantle(SS3003)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.呂布))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerB);
+        Deck deck = new Deck();
+        deck.add(Arrays.asList(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // Given
+        mockMvcUtil.playCard(gameId, "player-b", "player-c", "SS3003", PlayType.ACTIVE.getPlayType()).andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+        mockMvcUtil.useDismantleEffect(gameId, "player-b", "player-c", "", 0).andExpect(status().isOk()).andReturn();
+
+
+        // Then
+        List<String> playerIds = List.of("player-a");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Dismantle/SystemAskAForWardEvent_for_%s.json";
+
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+//            String testPlayerJson = websocketUtil.getValue(testPlayerId);
+            String fileSafeId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, fileSafeId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
     private void givenPlayerAHaveDismantle() {
         Player playerA = createPlayer(
                 "player-a",

@@ -757,4 +757,83 @@ public class WardWithDismantleTest {
         assertEquals("SSJ011", wardEvent.getWardCardId());
         assertEquals("player-a", game.getActivePlayer().getId());
     }
+
+    @DisplayName("""
+            Given
+            A有無懈可擊，B有過河拆橋，B的回合
+            B對C使用過河拆橋。
+            
+            When
+            B對C使用過河拆橋
+            
+            Then
+            此時系統應詢問Ａ是否出無懈可擊，但A收到等待玩家出無懈可擊的event(WaitForWardEvent)
+            """)
+    @Test
+    public void givenPlayerAHasWardAndPlayerBHasDismantleAndItIsPlayerBsTurn_WhenPlayerBPlaysDismantleToC_ThenAReceivesWaitForWardEvent() {
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new Deck(List.of(new BarbarianInvasion(SSK013), new Dismantle(SS3003))));
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .build();
+        playerA.getHand().addCardToHand(List.of(new Ward(SSJ011)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withEquipment(new Equipment())
+                .build();
+        playerB.getHand().addCardToHand(List.of(new Dismantle(SS3003)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = List.of(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerB)); // B 的回合
+
+        // When
+        // B 對 C 出過河拆橋
+        game.playerPlayCard(playerB.getId(), SS3003.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.useDismantleEffect(playerB.getId(), playerC.getId(), "", 0);
+
+        // Then
+        WaitForWardEvent waitForWardEvent = events.stream()
+                .filter(WaitForWardEvent.class::isInstance)
+                .map(WaitForWardEvent.class::cast)
+                .findFirst().orElseThrow();
+
+        System.out.println(waitForWardEvent.getPlayerIds());
+        assertTrue(waitForWardEvent.getPlayerIds().contains("player-a"));
+    }
 }
