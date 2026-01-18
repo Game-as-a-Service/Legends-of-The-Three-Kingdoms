@@ -1,5 +1,14 @@
 {
   "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "targetPlayerId" : "",
+      "cardId" : "SSJ011",
+      "playType" : "active"
+    },
+    "message" : "出牌"
+  }, {
     "event" : "PlayWardCardEvent",
     "data" : {
       "playerId" : "player-b",

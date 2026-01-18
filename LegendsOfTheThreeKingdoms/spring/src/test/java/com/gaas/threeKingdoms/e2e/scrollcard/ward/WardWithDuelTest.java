@@ -413,11 +413,6 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         // B 對 A 的決鬥出第一張無懈可擊
         mockMvcUtil.playWardCard(gameId, "player-b", "SSJ011", PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk());
-        popAllPlayerMessage();
-
-        // B 收到第二次詢問 (是否要無懈自己的無懈)，選擇 skip
-        mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType())
-                .andExpect(status().isOk());
 
         // Then
         // 驗證當前回合玩家是否仍然是 A
@@ -879,7 +874,6 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
             String expectedJson = Files.readString(path);
             assertEquals(expectedJson, testPlayerJson);
         }
-
     }
 
     private void givenPlayerOnlyAHasDuel() {
