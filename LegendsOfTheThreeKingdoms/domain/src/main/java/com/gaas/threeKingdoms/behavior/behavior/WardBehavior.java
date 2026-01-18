@@ -83,7 +83,7 @@ public class WardBehavior extends Behavior {
             wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, playerId);
             game.updateTopBehavior(wardBehavior);
 
-            if (game.doesAnyPlayerHaveWard()) {
+            if (game.doesAnyPlayerHaveWard(playerId)) {
                 domainEvents.addAll(wardBehavior.playerAction());
             } else {
                 wardBehavior.setIsTargetPlayerNeedToResponse(false);

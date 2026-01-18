@@ -924,4 +924,87 @@ public class WardWithDuelTest {
         assertEquals(game.getTopBehavior(), List.of());
     }
 
+    @DisplayName("""
+            Given
+            A有兩張無懈可擊 其餘人沒有無懈可擊。
+            B對A使用決鬥
+            
+            When
+            A決定使用無懈可擊
+            
+            Then
+            此時系統應該直接讓無懈可擊生效
+            (不應該收到 WaitForWardEvent)
+            """)
+    @Test
+    public void givenPlayerAHasTwoWardsAndOthersHaveNone_WhenPlayerBPlaysDuelToAAndAPlaysWard_ThenWardTakesEffectImmediately() {
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new Deck(List.of(new BarbarianInvasion(SSK013), new Dismantle(SS3003))));
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+        // A 有兩張無懈可擊
+        playerA.getHand().addCardToHand(List.of(new Ward(SSJ011), new Ward(SSJ011)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+        playerB.getHand().addCardToHand(List.of(new Duel(SSA001)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = List.of(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerB)); // B 的回合
+
+        // B 對 A 出決鬥
+        game.playerPlayCard(playerB.getId(), SSA001.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+
+        // When
+        // A 出無懈可擊
+        List<DomainEvent> events = game.playWardCard(playerA.getId(), SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        System.out.println(events);
+
+        // Then
+        // 應該直接生效，也就是收到 WardEvent (抵銷)，而不是 WaitForWardEvent
+        assertFalse(events.stream().anyMatch(e -> e instanceof WaitForWardEvent));
+        assertTrue(events.stream().anyMatch(e -> e instanceof WardEvent));
+
+        WardEvent wardEvent = getEvent(events, WardEvent.class).orElseThrow();
+        assertEquals("player-a", wardEvent.getPlayerId());
+        assertEquals("SSA001", wardEvent.getCardId());
+    }
 }
