@@ -50,7 +50,7 @@ public class DismantleBehavior extends Behavior {
             Behavior wardBehavior = new WardBehavior(
                     game,
                     null,
-                    game.whichPlayersHaveWard().stream().map(Player::getId).collect(Collectors.toList()),
+                    game.whichPlayersHaveWard(behaviorPlayer.getId()).stream().map(Player::getId).collect(Collectors.toList()),
                     null,
                     cardId,
                     PlayType.INACTIVE.getPlayType(),

@@ -651,8 +651,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
 
     A 出過河拆橋
     B 出 skip 無懈可擊
-    A 出 skip 無懈可擊
-
+    
     When
     C 出 skip 無懈可擊
 
@@ -726,9 +725,6 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
         popAllPlayerMessage();
 
         mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType()).andExpect(status().isOk()).andReturn();
-        popAllPlayerMessage();
-
-        mockMvcUtil.playWardCard(gameId, "player-a", "", PlayType.SKIP.getPlayType()).andExpect(status().isOk()).andReturn();
         popAllPlayerMessage();
 
         // When

@@ -1,6 +1,5 @@
 package com.gaas.threeKingdoms;
 
-import com.gaas.threeKingdoms.behavior.behavior.BorrowedSwordBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.DuelBehavior;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.*;

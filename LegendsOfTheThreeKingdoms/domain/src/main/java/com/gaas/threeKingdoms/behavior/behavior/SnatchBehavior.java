@@ -3,7 +3,6 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
-import com.gaas.threeKingdoms.events.DismantleEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.events.SnatchEvent;
@@ -23,7 +22,6 @@ public class SnatchBehavior extends Behavior {
     public SnatchBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card,true, false, true);
     }
-
 
     @Override
     public List<DomainEvent> playerAction() {
@@ -53,9 +51,9 @@ public class SnatchBehavior extends Behavior {
             Behavior wardBehavior = new WardBehavior(
                     game,
                     null,
-                    game.whichPlayersHaveWard().stream().map(Player::getId).collect(Collectors.toList()),
+                    game.whichPlayersHaveWard(behaviorPlayer.getId()).stream().map(Player::getId).collect(Collectors.toList()),
                     null,
-                    cardId,
+                    this.cardId,  // 使用順手牽羊卡片的 ID，而不是方法參數的 cardId
                     PlayType.INACTIVE.getPlayType(),
                     card,
                     true
@@ -100,7 +98,7 @@ public class SnatchBehavior extends Behavior {
             }
 
             targetPlayer.getEquipment().removeEquipment(cardId);
-            behaviorPlayer.getHand().addCardToHand(handCard);
+            behaviorPlayer.getHand().addCardToHand(card);
             events.add(new SnatchEvent(playerId, targetPlayerId, cardId, String.format("%s 偷走了 %s 的裝備 %s", playerGeneralName, targetPlayerGeneralName, PlayCard.getCardName(cardId))));
             events.add(game.getGameStatusEvent("順手牽羊效果"));
         }
