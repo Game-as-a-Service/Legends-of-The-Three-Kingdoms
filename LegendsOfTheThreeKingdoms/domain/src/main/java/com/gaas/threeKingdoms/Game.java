@@ -882,8 +882,15 @@ public class Game {
     }
 
     public List<Player> whichPlayersHaveWard() {
-        return players.stream()
-                .filter(player -> player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward))
+        return whichPlayersHaveWard(null);
+    }
+
+    public List<Player> whichPlayersHaveWard(String playerId) {
+        Stream<Player> stream = players.stream();
+        if (playerId != null) {
+            stream = stream.filter(player -> !player.getId().equals(playerId));
+        }
+        return stream.filter(player -> player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward))
                 .toList();
     }
 

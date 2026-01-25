@@ -12,7 +12,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static com.gaas.threeKingdoms.presenter.FinishActionPresenter.hiddenOtherPlayerCardIds;
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseSnatchPresenter implements UseSnatchUseCase.UseSnatchPresenter<List<UseSnatchPresenter.GameViewModel>> {
@@ -40,8 +42,22 @@ public class UseSnatchPresenter implements UseSnatchUseCase.UseSnatchPresenter<L
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            List<ViewModel<?>> personalEventToViewModels = new ArrayList<>(effectViewModels);
+
+            personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
+                if (personalViewModel instanceof RoundStartPresenter.DrawCardViewModel drawCardViewModel) {
+                    personalViewModel = hiddenOtherPlayerCardIds(drawCardViewModel.getData(), viewModel, drawCardViewModel.getData().getDrawCardPlayerId());
+                } else if (personalViewModel instanceof PlayCardPresenter.WaitForWardViewModel waitForWardViewModel) {
+                    WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
+                    if (waitForWardEvent.getPlayerIds().contains(viewModel.getId())) {
+                        personalViewModel = new PlayCardPresenter.AskPlayWardViewModel(waitForWardViewModel.getData());
+                    }
+                }
+                return personalViewModel;
+            }).collect(Collectors.toList());
+
             viewModels.add(new UseSnatchPresenter.GameViewModel(
-                    effectViewModels,
+                    personalEventToViewModels,
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),
