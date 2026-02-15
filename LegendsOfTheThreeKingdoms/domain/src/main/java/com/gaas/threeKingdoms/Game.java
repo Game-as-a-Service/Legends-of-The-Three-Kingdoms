@@ -767,6 +767,34 @@ public class Game {
                 throw new IllegalStateException(String.format("%s 不在攻擊範圍", attackTargetPlayerId));
             }
 
+            // Store params for doBehaviorAction (Ward resolution)
+            behavior.putParam(UserCommand.BORROWED_SWORD_PLAYER_ID.name(), currentPlayerId);
+            behavior.putParam(UserCommand.BORROWED_SWORD_BORROWED_PLAYER_ID.name(), borrowedPlayerId);
+            behavior.putParam(UserCommand.BORROWED_SWORD_ATTACK_TARGET_PLAYER_ID.name(), attackTargetPlayerId);
+
+            // Check if any player (excluding the card player) has Ward
+            if (doesAnyPlayerHaveWard(currentPlayerId)) {
+                currentRound.setStage(Stage.Wait_Accept_Ward_Effect);
+                behavior.setIsOneRound(false);
+
+                Behavior wardBehavior = new WardBehavior(
+                        this,
+                        null,
+                        whichPlayersHaveWard(currentPlayerId).stream().map(Player::getId).collect(Collectors.toList()),
+                        null,
+                        behavior.getCardId(),
+                        PlayType.INACTIVE.getPlayType(),
+                        behavior.getCard(),
+                        true
+                );
+                wardBehavior.putParam(WardBehavior.WARD_TRIGGER_PLAYER_ID, currentPlayerId);
+                updateTopBehavior(wardBehavior);
+
+                List<DomainEvent> events = new ArrayList<>(wardBehavior.playerAction());
+                events.add(getGameStatusEvent("發動借刀殺人"));
+                return events;
+            }
+
             //判斷B有沒有殺，若玩家B沒出殺，則玩家A取得玩家B當前的武器
             if (borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)) {
                 List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(borrowedPlayerId, currentPlayerId, "",  PlayType.SKIP.getPlayType());

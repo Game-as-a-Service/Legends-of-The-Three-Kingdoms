@@ -1,11 +1,15 @@
 package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.events.BorrowedSwordEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.events.WeaponUsurpationEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
@@ -55,5 +59,35 @@ public class BorrowedSwordBehavior extends Behavior {
         }
 
         throw new IllegalStateException(String.format("Can't play this card:[%s]", cardId));
+    }
+
+    @Override
+    public List<DomainEvent> doBehaviorAction() {
+        List<DomainEvent> events = new ArrayList<>();
+        String currentPlayerId = (String) getParam(UserCommand.BORROWED_SWORD_PLAYER_ID.name());
+        String borrowedPlayerId = (String) getParam(UserCommand.BORROWED_SWORD_BORROWED_PLAYER_ID.name());
+        String attackTargetPlayerId = (String) getParam(UserCommand.BORROWED_SWORD_ATTACK_TARGET_PLAYER_ID.name());
+
+        Player borrowedPlayer = game.getPlayer(borrowedPlayerId);
+
+        // B has no Kill → weapon usurpation
+        if (borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)) {
+            WeaponCard targetWeaponCard = borrowedPlayer.getEquipmentWeaponCard();
+            borrowedPlayer.getEquipment().setWeapon(null);
+            behaviorPlayer.getHand().addCardToHand(targetWeaponCard);
+            isOneRound = true;
+            events.add(new PlayCardEvent("不出牌", borrowedPlayerId, currentPlayerId, "", PlayType.SKIP.getPlayType()));
+            events.add(new WeaponUsurpationEvent(borrowedPlayerId, behaviorPlayer.getId(), targetWeaponCard.getId()));
+            Round currentRound = game.getCurrentRound();
+            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+            events.add(game.getGameStatusEvent("跳過"));
+            return events;
+        }
+
+        // B has Kill → BorrowedSwordEvent (B chooses to kill or skip)
+        game.getCurrentRound().setActivePlayer(borrowedPlayer);
+        events.add(new BorrowedSwordEvent(cardId, borrowedPlayerId, attackTargetPlayerId));
+        events.add(game.getGameStatusEvent(String.format("要求 %s 出殺", borrowedPlayerId)));
+        return events;
     }
 }

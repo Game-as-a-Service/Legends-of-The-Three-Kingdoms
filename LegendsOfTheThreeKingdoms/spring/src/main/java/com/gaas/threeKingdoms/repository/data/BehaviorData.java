@@ -56,15 +56,26 @@ public class BehaviorData {
                             playType,
                             PlayCard.findById(cardId)
                     );
-            case "BorrowedSwordBehavior" -> new BorrowedSwordBehavior(
-                    game,
-                    game.getPlayer(behaviorPlayerId),
-                    reactionPlayers,
-                    game.getPlayer(currentReactionPlayerId),
-                    cardId,
-                    playType,
-                    PlayCard.findById(cardId)
-            );
+            case "BorrowedSwordBehavior" -> {
+                BorrowedSwordBehavior borrowedSwordBehavior = new BorrowedSwordBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId)
+                );
+                if (params != null) {
+                    borrowedSwordBehavior.putParam(
+                            UserCommand.BORROWED_SWORD_PLAYER_ID.name(), params.get(UserCommand.BORROWED_SWORD_PLAYER_ID.name()));
+                    borrowedSwordBehavior.putParam(
+                            UserCommand.BORROWED_SWORD_BORROWED_PLAYER_ID.name(), params.get(UserCommand.BORROWED_SWORD_BORROWED_PLAYER_ID.name()));
+                    borrowedSwordBehavior.putParam(
+                            UserCommand.BORROWED_SWORD_ATTACK_TARGET_PLAYER_ID.name(), params.get(UserCommand.BORROWED_SWORD_ATTACK_TARGET_PLAYER_ID.name()));
+                }
+                yield borrowedSwordBehavior;
+            }
             case "DyingAskPeachBehavior" -> new DyingAskPeachBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
@@ -215,16 +226,22 @@ public class BehaviorData {
                 );
                 yield bountifulHarvestBehavior;
             }
-            case "WardBehavior" -> new WardBehavior(
-                    game,
-                    behaviorPlayerId != null ? game.getPlayer(behaviorPlayerId) : null,
-                    reactionPlayers,
-                    currentReactionPlayerId != null ? game.getPlayer(currentReactionPlayerId) : null,
-                    cardId,
-                    playType,
-                    PlayCard.findById(cardId),
-                    isTargetPlayerNeedToResponse
-            );
+            case "WardBehavior" -> {
+                WardBehavior wardBehavior = new WardBehavior(
+                        game,
+                        behaviorPlayerId != null ? game.getPlayer(behaviorPlayerId) : null,
+                        reactionPlayers,
+                        currentReactionPlayerId != null ? game.getPlayer(currentReactionPlayerId) : null,
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId),
+                        isTargetPlayerNeedToResponse
+                );
+                if (params != null && params.get(WardBehavior.WARD_TRIGGER_PLAYER_ID) != null) {
+                    wardBehavior.putParam(WardBehavior.WARD_TRIGGER_PLAYER_ID, params.get(WardBehavior.WARD_TRIGGER_PLAYER_ID));
+                }
+                yield wardBehavior;
+            }
             case "SomethingForNothingBehavior" -> new SomethingForNothingBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
