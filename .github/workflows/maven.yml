@@ -46,6 +46,8 @@ jobs:
 
       # Maven Verify
       - name: Maven Verify
+        env:
+          DOCKER_HOST: unix:///var/run/docker.sock
         run: mvn -f LegendsOfTheThreeKingdoms/pom.xml -B verify -DJAR_FILENAME=${{ env.JAR_FILENAME }}
 
       # Dump GitHub Context
