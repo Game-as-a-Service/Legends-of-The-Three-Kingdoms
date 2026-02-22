@@ -1,24 +1,85 @@
+# 三國殺 Legends of The Three Kingdoms
 
-# 三國殺 (Legends of The Three Kingdoms)
-# Intro your game
-三國殺是一款源自中國古代三國時期歷史和文化的桌上卡牌遊戲，通常需要3-8個玩家參與。每個玩家選擇一名三國時期的武將代表自己，並使用各種牌組合來攻擊其他玩家或防禦自己。遊戲中有各種不同的角色、技能和策略，需要玩家們在適當的時機做出明智的選擇，以獲取勝利。遊戲的玩法非常豐富，深受玩家們的喜愛。
+<p align="center">
+  <img src="game_picture.jpeg" width="600" alt="Legends of The Three Kingdoms" />
+</p>
 
-<img src="https://github.com/Game-as-a-Service/Legends-of-The-Three-Kingdoms/blob/main/16pic_4554779_b.jpeg"> </a>
+A multiplayer online card game inspired by the classic Chinese board game **三國殺**, set in the Three Kingdoms era. Players take on the roles of iconic historical generals, using strategy, deception, and combat cards to outwit their opponents.
 
-# Practice Stack
-- Document Driven design -- 落實文件驅動開發，清楚明瞭的規則文件。
-- Event storming -- 同步認知，並清楚了解遊戲最重要的主要功能開發。
-- Example mapping -- 將各種需求與規則藉由User story依依列舉，並作為未來TDD開發的測試的參考範本。
-- OOAD -- 使用UML，需求分析並設計領域模型。
-- Walking skeleton -- 已最簡可行產品 (minimum viable product, MVP),建立最初的版本。
-- ATDD -- 驗收驅動開發，已使用者功能使用的角度寫e2e測試。
-- TDD -- 測試驅動開發，先寫測試再開發。
-- MVC -- 三層式架構
-- Clean Architecture -- 乾淨架構
-   
-# Tech Stack
-- 後端: JDK17 + spring boot 3 + maven
-- CICD: Docker, Jenkins
-- DB: 待決定
-- 前端: 待決定
-   
+> 3–8 players | Role-based hidden identity | Turn-based strategy
+
+## Architecture
+
+The project follows **Clean Architecture** with a multi-module Maven structure:
+
+```
+LegendsOfTheThreeKingdoms/
+├── domain/     # Core business logic, game rules, card behaviors
+├── app/        # Application layer (use cases)
+└── spring/     # Infrastructure: REST API, WebSocket, MongoDB
+```
+
+### Design Principles
+
+- **Domain-Driven Design** — Game rules live in a framework-agnostic domain layer
+- **Behavior Stack** — Card effects are modeled as stackable behaviors (e.g., Ward can interrupt any scroll card)
+- **Test-Driven Development** — Domain tests first, then E2E integration tests (ATDD)
+- **Event-Driven Updates** — Real-time game state pushed to all players via WebSocket
+
+## Tech Stack
+
+| Layer          | Technology                          |
+|----------------|-------------------------------------|
+| Language       | Java 17                             |
+| Framework      | Spring Boot 3                       |
+| Build          | Maven (multi-module)                |
+| Database       | MongoDB                             |
+| Real-time      | WebSocket (STOMP)                   |
+| Testing        | JUnit 5, Testcontainers, MockMvc    |
+| CI/CD          | GitHub Actions, Docker, AWS ECR/EC2 |
+
+## Getting Started
+
+### Prerequisites
+
+- JDK 17
+- Docker (for MongoDB via Testcontainers)
+
+### Run Locally
+
+```bash
+# Start MongoDB
+docker-compose up -d
+
+# Build and run
+./mvnw clean install
+./mvnw spring-boot:run -pl spring
+```
+
+### Run Tests
+
+```bash
+# All tests
+./mvnw verify
+
+# Domain tests only
+./mvnw test -pl domain
+
+# Specific test class
+./mvnw test -Dtest=ClassName
+```
+
+## Development Methodology
+
+This project is built following a rigorous software craftsmanship approach:
+
+1. **Event Storming** — Align team understanding of game flows
+2. **Example Mapping** — Break down rules into concrete scenarios
+3. **OOAD / UML** — Design domain models before coding
+4. **Walking Skeleton** — Ship a minimal viable product first
+5. **ATDD** — Write E2E acceptance tests from the user's perspective
+6. **TDD** — Red-Green-Refactor at the domain level
+
+## License
+
+This project is for educational and practice purposes.
