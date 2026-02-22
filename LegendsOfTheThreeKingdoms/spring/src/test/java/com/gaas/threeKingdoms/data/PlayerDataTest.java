@@ -70,7 +70,7 @@ public class PlayerDataTest {
     @Test
     public void testPlayerDataFromDomainConversion() {
         // Arrange
-        Hand hand = new Hand(Arrays.asList(new Kill(BS8009), new Peach(BH7033)));
+        Hand hand = new Hand(Arrays.asList(new Kill(BS9009), new Peach(BH7033)));
         RoleCard roleCard = new RoleCard(Role.TRAITOR);
         GeneralCard generalCard = new GeneralCard(曹操);
         BloodCard bloodCard = new BloodCard(3);
@@ -90,7 +90,7 @@ public class PlayerDataTest {
         // Assert
         assertEquals("player2", playerData.getId());
         assertEquals(2, playerData.getHand().getCards().size());
-        assertTrue(playerData.getHand().getCards().contains("BS8009"));
+        assertTrue(playerData.getHand().getCards().contains("BS9009"));
         assertEquals("TRAITOR", playerData.getRole().getRoleName());
         assertEquals("WEI001", playerData.getGeneral().getGeneralId());
         assertEquals(曹操.healthPoint, playerData.getGeneral().getHealthPoint());

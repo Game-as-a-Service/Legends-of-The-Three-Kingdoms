@@ -1140,7 +1140,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         currentPlayerPlayedCardToTargetPlayer("player-b", "player-a", "BC0075");
         currentPlayerSkipToTargetPlayer("player-a", "player-b");
         shouldPlayerFinishAction();
-        playerDiscardCard(List.of("\"BS8010\"").toArray(new String[0]));
+        playerDiscardCard(List.of("\"BS0010\"").toArray(new String[0]));
     }
 
     private void shouldPlayerBDiscardCardRound6() throws Exception {
@@ -1185,7 +1185,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
     private void playerCTakeTurnRound7() throws Exception {
         shouldPlayerFinishAction();
-        playerDiscardCard(List.of("\"BS8009\"", "\"BS8008\"").toArray(new String[0]));
+        playerDiscardCard(List.of("\"BS9009\"", "\"BS8008\"").toArray(new String[0]));
     }
 
     private void shouldPlayerCDiscardCardRound7() throws Exception {

@@ -1536,7 +1536,7 @@ public class QilinBowTest {
                 .build();
 
         playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS9009)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -1576,7 +1576,7 @@ public class QilinBowTest {
         game.setCurrentRound(new Round(playerA));
 
         // When
-        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), BS9009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         game.playerUseEquipment(playerB.getId(), EC2067.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
         List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
 
@@ -1624,7 +1624,7 @@ public class QilinBowTest {
                 .build();
 
         playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS9009)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -1664,7 +1664,7 @@ public class QilinBowTest {
         game.setCurrentRound(new Round(playerA));
 
         // When
-        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), BS9009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         game.playerUseEquipment(playerB.getId(), EC2067.getCardId(), playerA.getId(), EquipmentPlayType.SKIP);
         List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
 
@@ -1713,7 +1713,7 @@ public class QilinBowTest {
                 .build();
 
         playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS9009)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -1753,7 +1753,7 @@ public class QilinBowTest {
         game.setPlayers(players);
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerA));
-        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), BS9009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
         // When then
         assertThrows(IllegalStateException.class, () -> game.playerUseEquipment(playerA.getId(), EH5031.getCardId(), playerD.getId(), EquipmentPlayType.ACTIVE));
@@ -1799,7 +1799,7 @@ public class QilinBowTest {
                 .build();
 
         playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS9009)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -1839,7 +1839,7 @@ public class QilinBowTest {
         game.enterPhase(new Normal(game));
 
         // When
-        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerA.getId(), BS9009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         List<DomainEvent> events1 = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
 
         // B 發動八卦陣效果失敗
