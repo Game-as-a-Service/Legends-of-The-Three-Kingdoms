@@ -59,7 +59,7 @@
       "id" : "player-c",
       "generalId" : "SHU001",
       "roleId" : "",
-      "hp" : 2,
+      "hp" : 1,
       "hand" : {
         "size" : 4,
         "cardIds" : [ ]
