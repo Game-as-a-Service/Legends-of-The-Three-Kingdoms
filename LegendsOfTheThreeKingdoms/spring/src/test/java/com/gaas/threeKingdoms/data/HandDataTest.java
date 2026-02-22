@@ -38,7 +38,7 @@ public class HandDataTest {
         // Arrange
         Hand hand = new Hand();
         hand.setCards(Arrays.asList(
-                new Kill(BS8009),
+                new Kill(BS9009),
                 new Peach(BH7033),
                 new Dodge(BHK039)
         ));
@@ -48,7 +48,7 @@ public class HandDataTest {
 
         // Assert
         assertEquals(3, handData.getCards().size());
-        assertTrue(handData.getCards().contains("BS8009"));
+        assertTrue(handData.getCards().contains("BS9009"));
         assertTrue(handData.getCards().contains("BH7033"));
         assertTrue(handData.getCards().contains("BHK039"));
     }

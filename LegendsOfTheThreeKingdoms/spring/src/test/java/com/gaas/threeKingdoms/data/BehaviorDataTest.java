@@ -44,7 +44,7 @@ public class BehaviorDataTest {
                 General.張飛,
                 HealthStatus.ALIVE,
                 Role.REBEL,
-                new Kill(PlayCard.BS8009), new Peach(PlayCard.BH4030)
+                new Kill(PlayCard.BS9009), new Peach(PlayCard.BH4030)
         );
 
         List<String> reactionPlayers = Arrays.asList("player-b");
@@ -93,7 +93,7 @@ public class BehaviorDataTest {
                 General.張飛,
                 HealthStatus.ALIVE,
                 Role.REBEL,
-                new Kill(PlayCard.BS8009), new Peach(PlayCard.BH4030)
+                new Kill(PlayCard.BS9009), new Peach(PlayCard.BH4030)
         );
 
         List<String> reactionPlayers = Arrays.asList("player-b");
@@ -142,7 +142,7 @@ public class BehaviorDataTest {
                 General.張飛,
                 HealthStatus.ALIVE,
                 Role.REBEL,
-                new Kill(PlayCard.BS8009), new Peach(PlayCard.BH4030)
+                new Kill(PlayCard.BS9009), new Peach(PlayCard.BH4030)
         );
 
         List<String> reactionPlayers = Arrays.asList("player-b");
@@ -195,7 +195,7 @@ public class BehaviorDataTest {
                 General.張飛,
                 HealthStatus.ALIVE,
                 Role.REBEL,
-                new Kill(PlayCard.BS8009), new Peach(PlayCard.BH4030)
+                new Kill(PlayCard.BS9009), new Peach(PlayCard.BH4030)
         );
 
         List<String> reactionPlayers = Arrays.asList("player-b");

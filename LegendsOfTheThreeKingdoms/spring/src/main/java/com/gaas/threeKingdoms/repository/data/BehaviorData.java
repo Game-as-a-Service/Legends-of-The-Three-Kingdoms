@@ -242,6 +242,15 @@ public class BehaviorData {
                 }
                 yield wardBehavior;
             }
+            case "PeachGardenBehavior" -> new PeachGardenBehavior(
+                    game,
+                    game.getPlayer(behaviorPlayerId),
+                    reactionPlayers,
+                    game.getPlayer(currentReactionPlayerId),
+                    cardId,
+                    playType,
+                    PlayCard.findById(cardId)
+            );
             case "SomethingForNothingBehavior" -> new SomethingForNothingBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),

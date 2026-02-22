@@ -100,7 +100,7 @@ public class DiscardCardTest {
                 playerC,
                 playerD);
 
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Kill(BH0036), new Kill(BC4056), new Dodge(BHK039)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Kill(BH0036), new Kill(BC4056), new Dodge(BHK039)));
 
         game.setPlayers(players);
         Round currentRound = new Round(playerA);
@@ -112,7 +112,7 @@ public class DiscardCardTest {
         game.playerDiscardCard(asList("BHK039"));
 
         //Then
-        Assertions.assertEquals(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Kill(BH0036), new Kill(BC4056)), game.getPlayer("player-a").getHand().getCards());
+        Assertions.assertEquals(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Kill(BH0036), new Kill(BC4056)), game.getPlayer("player-a").getHand().getCards());
         Assertions.assertEquals(RoundPhase.Action, game.getCurrentRoundPhase());
         Assertions.assertEquals("player-b", game.getCurrentRoundPlayer().getId());
 

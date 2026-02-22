@@ -53,7 +53,7 @@ public class PlayRedRabbitHorseTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RedRabbitHorse(EH5044)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RedRabbitHorse(EH5044)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
