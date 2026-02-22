@@ -317,7 +317,7 @@ public class DuelTest {
         equipment.setArmor(new EightDiagramTactic(ES2015));
         playerB.setEquipment(equipment);
 
-        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Dodge(BHK039), new Duel(SSA001)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Dodge(BHK039), new Duel(SSA001)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")

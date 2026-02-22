@@ -50,7 +50,7 @@ public class GameDataTest {
                 .delayScrolls(new ArrayList<>())
                 .build();
 
-        HandData handData2 = new HandData(Arrays.asList("BS9009", "BH4031")); // Kill and Peach for player2
+        HandData handData2 = new HandData(Arrays.asList("BS8009", "BH4031")); // Kill and Peach for player2
         RoleCardData roleCardData2 = new RoleCardData("TRAITOR");
         GeneralCardData generalCardData2 = new GeneralCardData("WEI001", "曹操", 4);
         BloodCardData bloodCardData2 = new BloodCardData(3, 3);
@@ -177,7 +177,7 @@ public class GameDataTest {
                 General.張飛,
                 HealthStatus.ALIVE,
                 Role.REBEL,
-                new Kill(PlayCard.BS9009), new Peach(PlayCard.BH4030)
+                new Kill(PlayCard.BS8009), new Peach(PlayCard.BH4030)
         );
         Player playerC = createPlayer(
                 "player-c",

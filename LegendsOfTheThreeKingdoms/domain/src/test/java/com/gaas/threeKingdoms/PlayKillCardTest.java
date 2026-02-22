@@ -50,7 +50,7 @@ public class PlayKillCardTest {
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
-                .withHand(new Hand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039))))
+                .withHand(new Hand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039))))
                 .withBloodCard(new BloodCard(4))
                 .withEquipment(new Equipment())
                 .build();
@@ -123,7 +123,7 @@ public class PlayKillCardTest {
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+                new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -162,7 +162,7 @@ public class PlayKillCardTest {
         game.setCurrentRound(new Round(playerA));
         game.enterPhase(new Normal(game));
         //playerA 對 playerB打殺
-        game.playerPlayCard(playerA.getId(), BS9009.getCardId(), playerB.getId(), "active");
+        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), "active");
 
 
         //When Then
@@ -378,7 +378,7 @@ public class PlayKillCardTest {
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+                new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -391,7 +391,7 @@ public class PlayKillCardTest {
                 .build();
 
         playerB.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+                new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")

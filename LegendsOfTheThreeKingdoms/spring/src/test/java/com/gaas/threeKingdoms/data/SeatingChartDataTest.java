@@ -42,7 +42,7 @@ public class SeatingChartDataTest {
                 General.張飛,
                 HealthStatus.ALIVE,
                 Role.REBEL,
-                new Kill(PlayCard.BS9009), new Peach(PlayCard.BH4030)
+                new Kill(PlayCard.BS8009), new Peach(PlayCard.BH4030)
         );
 
         List<Player> players = Arrays.asList(player1, player2);
@@ -65,7 +65,7 @@ public class SeatingChartDataTest {
                 .build();
 
         PlayerData playerData2 = PlayerData.builder()
-                .hand(new HandData(Arrays.asList("BS9009", "BH7033")))
+                .hand(new HandData(Arrays.asList("BS8009", "BH7033")))
                 .id("player2")
                 .role(new RoleCardData("TRAITOR"))
                 .general(new GeneralCardData("WEI001", "曹操", 3))

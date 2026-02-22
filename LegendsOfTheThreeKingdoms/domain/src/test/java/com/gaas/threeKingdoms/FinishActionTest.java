@@ -161,7 +161,7 @@ public class FinishActionTest {
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS9009), new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+                new Kill(BS8009), new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -235,7 +235,7 @@ public class FinishActionTest {
                 .build();
 
         playerA.getHand().addCardToHand(Arrays.asList(
-                new Kill(BS9009), new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
+                new Kill(BS8009), new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Dodge(BHK039)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")

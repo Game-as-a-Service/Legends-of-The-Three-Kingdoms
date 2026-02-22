@@ -50,7 +50,7 @@ public class PlayRepeatingCrossbowTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RepeatingCrossbowCard(ECA066)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new RepeatingCrossbowCard(ECA066)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -129,7 +129,7 @@ public class PlayRepeatingCrossbowTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -173,7 +173,7 @@ public class PlayRepeatingCrossbowTest {
 
         assertEquals("player-a", game.getActivePlayer().getId());
 
-        game.playerPlayCard(playerA.getId(), BS9009.getCardId(), playerD.getId(), "active");
+        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerD.getId(), "active");
         game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
 
         //Then
@@ -214,7 +214,7 @@ public class PlayRepeatingCrossbowTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Kill(BS0010), new Kill(BS7020), new Dodge(BH2028)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS8009), new Kill(BS8010), new Kill(BS7020), new Dodge(BH2028)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -256,10 +256,10 @@ public class PlayRepeatingCrossbowTest {
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active");
         game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
-        game.playerPlayCard(playerA.getId(), BS9009.getCardId(), playerB.getId(), "active");
+        game.playerPlayCard(playerA.getId(), BS8009.getCardId(), playerB.getId(), "active");
         game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
-        game.playerPlayCard(playerA.getId(), BS0010.getCardId(), playerB.getId(), "active");
+        game.playerPlayCard(playerA.getId(), BS8010.getCardId(), playerB.getId(), "active");
         game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
 
         game.playerPlayCard(playerA.getId(), BS7020.getCardId(), playerB.getId(), "active");

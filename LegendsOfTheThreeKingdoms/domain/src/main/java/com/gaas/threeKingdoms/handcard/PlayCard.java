@@ -24,8 +24,8 @@ public enum PlayCard {
     SS6006("SS6006", "樂不思蜀", Suit.SPADE, Rank.SIX),
     SS7007("SS7007", "南蠻入侵", Suit.SPADE, Rank.SEVEN),
     BS8008("BS8008", "殺", Suit.SPADE, Rank.EIGHT),
-    BS9009("BS9009", "殺", Suit.SPADE, Rank.NINE),
-    BS0010("BS0010", "殺", Suit.SPADE, Rank.TEN),
+    BS8009("BS8009", "殺", Suit.SPADE, Rank.NINE),
+    BS8010("BS8010", "殺", Suit.SPADE, Rank.TEN),
     SSJ011("SSJ011", "無懈可擊", Suit.SPADE, Rank.J),
     SSQ012("SSQ012", "過河拆橋", Suit.SPADE, Rank.Q),
     SSK013("SSK013", "南蠻入侵", Suit.SPADE, Rank.K),
@@ -132,8 +132,8 @@ public enum PlayCard {
 
     static {
         CARD_FACTORY_MAP.put("BS8008", new Kill(BS8008));
-        CARD_FACTORY_MAP.put("BS9009", new Kill(BS9009));
-        CARD_FACTORY_MAP.put("BS0010", new Kill(BS0010));
+        CARD_FACTORY_MAP.put("BS8009", new Kill(BS8009));
+        CARD_FACTORY_MAP.put("BS8010", new Kill(BS8010));
         CARD_FACTORY_MAP.put("BH0049", new Kill(BH0049));
         CARD_FACTORY_MAP.put("BH0036", new Kill(BH0036));
         CARD_FACTORY_MAP.put("BHJ037", new Kill(BHJ037));

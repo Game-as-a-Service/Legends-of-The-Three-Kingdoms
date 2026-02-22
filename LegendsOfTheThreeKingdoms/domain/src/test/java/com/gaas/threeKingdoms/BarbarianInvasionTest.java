@@ -815,7 +815,7 @@ public class BarbarianInvasionTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        playerD.getHand().addCardToHand(Arrays.asList(new Kill(BS9009)));
+        playerD.getHand().addCardToHand(Arrays.asList(new Kill(BS8009)));
 
         List<Player> players = asList(
                 playerA, playerB, playerC, playerD);
@@ -827,7 +827,7 @@ public class BarbarianInvasionTest {
 
         //When
         game.playerPlayCard(playerC.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
-        game.playerPlayCard(playerD.getId(), BS9009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerD.getId(), BS8009.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
         List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BH0036.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
         //Then
