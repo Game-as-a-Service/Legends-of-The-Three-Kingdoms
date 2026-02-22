@@ -23,10 +23,10 @@ public class PeachGardenBehavior extends Behavior {
         playerPlayCardNotUpdateActivePlayer(behaviorPlayer, cardId);
 
         List<DomainEvent> events = new ArrayList<>();
-        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), "", cardId, playType));
 
         // Check if any player (excluding card player) has Ward
         if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
+            events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), "", cardId, playType));
             game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
             game.updateTopBehavior(this);
@@ -50,6 +50,7 @@ public class PeachGardenBehavior extends Behavior {
         }
 
         // No Ward holders → execute effect immediately
+        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), "", cardId, playType));
         events.add(game.getGameStatusEvent("出牌"));
         events.add(executePeachGardenEffect());
         return events;
