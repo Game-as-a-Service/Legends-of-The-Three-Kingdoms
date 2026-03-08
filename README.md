@@ -82,4 +82,4 @@ This project is built following a rigorous software craftsmanship approach:
 
 ## License
 
-This project is for educational and practice purposes.
+This project is licensed under the [MIT License](LICENSE).
