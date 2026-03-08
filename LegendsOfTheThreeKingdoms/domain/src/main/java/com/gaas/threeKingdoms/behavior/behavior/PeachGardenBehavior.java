@@ -42,6 +42,7 @@ public class PeachGardenBehavior extends Behavior {
                     true
             );
             wardBehavior.putParam(WardBehavior.WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+            wardBehavior.putParam(WardBehavior.WARD_TARGET_PLAYER_IDS, game.getPlayers().stream().map(Player::getId).collect(Collectors.toList()));
             game.updateTopBehavior(wardBehavior);
 
             events.addAll(wardBehavior.playerAction());

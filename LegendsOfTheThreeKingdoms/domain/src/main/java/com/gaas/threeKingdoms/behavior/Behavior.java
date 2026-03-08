@@ -56,6 +56,11 @@ public class Behavior {
         return null;
     }
 
+    // hook: 被 Ward 取消時的自訂行為，回傳 null 表示走標準移除邏輯
+    public List<DomainEvent> doWardCancelledAction() {
+        return null;
+    }
+
     public List<DomainEvent> responseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         throwExceptionWhenPlayerIsNotInReactionPlayers(playerId);
         return doResponseToPlayerAction(playerId, targetPlayerId, cardId, playType);

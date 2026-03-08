@@ -110,6 +110,7 @@ public class WardWithDismantleTest {
                 .findFirst().get();
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertEquals(1, waitForWardEvents.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvents.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -196,6 +197,7 @@ public class WardWithDismantleTest {
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-c"));
         assertEquals(2, waitForWardEvents.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvents.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -368,6 +370,7 @@ public class WardWithDismantleTest {
         WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-c"));
         assertEquals(1, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvent.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -835,5 +838,6 @@ public class WardWithDismantleTest {
 
         System.out.println(waitForWardEvent.getPlayerIds());
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-a"));
+        assertEquals(List.of("player-c"), waitForWardEvent.getTargetPlayerIds());
     }
 }

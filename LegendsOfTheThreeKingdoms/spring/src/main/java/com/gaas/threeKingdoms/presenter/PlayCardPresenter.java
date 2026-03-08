@@ -329,6 +329,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     public static class WaitForWardDataViewModel {
         private String wardTriggerPlayerId;
         private String wardTriggerCardId;
+        private List<String> targetPlayerIds;
     }
 
     @Data

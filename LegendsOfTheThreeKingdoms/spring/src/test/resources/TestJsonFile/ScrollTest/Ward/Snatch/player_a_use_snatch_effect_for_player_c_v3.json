@@ -3,7 +3,8 @@
     "event" : "AskPlayWardViewModel",
     "data" : {
       "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SS3016"
+      "wardTriggerCardId" : "SS3016",
+      "targetPlayerIds" : [ "player-b" ]
     },
     "message" : "請選擇是否要出無懈可擊"
   } ],

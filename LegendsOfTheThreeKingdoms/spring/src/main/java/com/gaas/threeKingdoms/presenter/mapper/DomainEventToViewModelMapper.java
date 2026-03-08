@@ -307,7 +307,8 @@ public class DomainEventToViewModelMapper {
             return new PlayCardPresenter.WaitForWardViewModel(
                     new PlayCardPresenter.WaitForWardDataViewModel(
                             waitForWardEvent.getWardTriggerPlayerId(),
-                            waitForWardEvent.getWardTriggerCardId()
+                            waitForWardEvent.getWardTriggerCardId(),
+                            waitForWardEvent.getTargetPlayerIds()
                     ),
                     waitForWardEvent.getMessage()
             );

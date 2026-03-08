@@ -98,6 +98,7 @@ public class WardWithPeachGardenTest {
         WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow();
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-b"));
         assertEquals(1, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-a", "player-b", "player-c", "player-d"), waitForWardEvent.getTargetPlayerIds());
         // C HP should not change yet
         assertEquals(3, game.getPlayer("player-c").getBloodCard().getHp());
     }
@@ -143,6 +144,7 @@ public class WardWithPeachGardenTest {
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-c"));
         assertFalse(waitForWardEvent.getPlayerIds().contains("player-a"));
         assertEquals(2, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-a", "player-b", "player-c", "player-d"), waitForWardEvent.getTargetPlayerIds());
     }
 
     // === Test 3: B 出無懈可擊 → 抵銷桃園結義 ===

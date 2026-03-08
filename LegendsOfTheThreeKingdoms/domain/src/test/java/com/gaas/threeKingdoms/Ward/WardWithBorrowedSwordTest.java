@@ -114,6 +114,7 @@ public class WardWithBorrowedSwordTest {
                 .findFirst().get();
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-b"));
         assertEquals(1, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvent.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -201,6 +202,7 @@ public class WardWithBorrowedSwordTest {
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-b"));
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-c"));
         assertEquals(2, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvent.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -379,6 +381,7 @@ public class WardWithBorrowedSwordTest {
         WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-c"));
         assertEquals(1, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvent.getTargetPlayerIds());
     }
 
     @DisplayName("""
