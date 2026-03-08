@@ -319,7 +319,7 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
     @Data
     public static class AskPlayWardViewModel extends ViewModel<WaitForWardDataViewModel> {
         public AskPlayWardViewModel(WaitForWardDataViewModel data) {
-            super("AskPlayWardViewModel", data, "請選擇是否要出無懈可擊");
+            super("AskPlayWardEvent", data, "請選擇是否要出無懈可擊");
         }
     }
 

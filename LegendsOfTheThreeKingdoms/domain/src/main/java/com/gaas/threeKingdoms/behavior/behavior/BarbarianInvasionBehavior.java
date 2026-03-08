@@ -134,7 +134,6 @@ public class BarbarianInvasionBehavior extends Behavior {
 
             List<DomainEvent> events = new ArrayList<>(damagedEvent);
             if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) { // 如果受到傷害且沒死亡
-                events.add(game.getGameStatusEvent("扣血但還活著"));
                 isOneRound = false;
 
                 // 最後一個人
@@ -142,6 +141,11 @@ public class BarbarianInvasionBehavior extends Behavior {
                     isOneRound = true;
                     game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
                 } else {
+                    game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+                }
+                events.add(game.getGameStatusEvent("扣血但還活著"));
+
+                if (!reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                     events.addAll(askNextPlayerOrWard());
                 }
             } else {
@@ -158,13 +162,16 @@ public class BarbarianInvasionBehavior extends Behavior {
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
             List<DomainEvent> events = new ArrayList<>();
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-            events.add(game.getGameStatusEvent(playerId + "出殺"));
-            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
             // 最後一個人，結束此behavior
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isOneRound = true;
                 game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
             } else {
+                game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+            }
+            events.add(game.getGameStatusEvent(playerId + "出殺"));
+            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
+            if (!reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 events.addAll(askNextPlayerOrWard());
             }
             return events;

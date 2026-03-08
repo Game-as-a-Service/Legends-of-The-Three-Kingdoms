@@ -1,6 +1,6 @@
 {
   "events" : [ {
-    "event" : "AskPlayWardViewModel",
+    "event" : "AskPlayWardEvent",
     "data" : {
       "wardTriggerPlayerId" : "player-a",
       "wardTriggerCardId" : "SS3016",

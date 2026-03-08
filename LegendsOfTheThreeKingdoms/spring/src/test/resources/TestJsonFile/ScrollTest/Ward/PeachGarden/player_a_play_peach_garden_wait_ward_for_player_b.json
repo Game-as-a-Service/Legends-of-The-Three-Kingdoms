@@ -9,7 +9,7 @@
     },
     "message" : "出牌"
   }, {
-    "event" : "AskPlayWardViewModel",
+    "event" : "AskPlayWardEvent",
     "data" : {
       "wardTriggerPlayerId" : "player-a",
       "wardTriggerCardId" : "SHA027",

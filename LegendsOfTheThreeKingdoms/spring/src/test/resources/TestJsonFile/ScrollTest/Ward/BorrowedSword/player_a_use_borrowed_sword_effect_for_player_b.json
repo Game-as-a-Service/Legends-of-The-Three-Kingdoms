@@ -1,5 +1,13 @@
 {
-  "events" : [ ],
+  "events" : [ {
+    "event" : "AskPlayWardEvent",
+    "data" : {
+      "wardTriggerPlayerId" : "player-a",
+      "wardTriggerCardId" : "SCK065",
+      "targetPlayerIds" : [ "player-b" ]
+    },
+    "message" : "請選擇是否要出無懈可擊"
+  } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
