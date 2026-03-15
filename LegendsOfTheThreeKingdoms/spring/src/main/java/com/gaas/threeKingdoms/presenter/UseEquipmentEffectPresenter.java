@@ -56,7 +56,7 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
 
     public static class UseEquipmentEffectViewModel extends ViewModel<UseEquipmentEffectDataViewModel> {
         public UseEquipmentEffectViewModel(UseEquipmentEffectDataViewModel data) {
-            super("UseEquipmentEffectViewModel", data, String.format("發動效果 %s", data.isSuccess ? "成功" : "失敗"));
+            super("UseEquipmentEffectEvent", data, String.format("發動效果 %s", data.isSuccess ? "成功" : "失敗"));
         }
     }
 
@@ -68,13 +68,13 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
 
     public static class UseQilinBowCardEffectViewModel extends ViewModel<UseQilinBowCardEffectDataViewModel> {
         public UseQilinBowCardEffectViewModel(UseQilinBowCardEffectDataViewModel data) {
-            super("UseQilinBowCardEffectViewModel", data, "發動效果麒麟弓效果");
+            super("UseQilinBowCardEffectEvent", data, "發動效果麒麟弓效果");
         }
     }
 
     public static class SkipEquipmentEffectViewModel extends ViewModel<SkipEquipmentEffectDataViewModel> {
         public SkipEquipmentEffectViewModel(SkipEquipmentEffectDataViewModel data) {
-            super("SkipEquipmentEffectViewModel", data, "跳過裝備效果");
+            super("SkipEquipmentEffectEvent", data, "跳過裝備效果");
         }
     }
 

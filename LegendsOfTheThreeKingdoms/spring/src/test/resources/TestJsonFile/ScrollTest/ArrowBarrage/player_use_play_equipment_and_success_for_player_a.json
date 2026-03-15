@@ -1,6 +1,6 @@
 {
   "events" : [ {
-    "event" : "UseEquipmentEffectViewModel",
+    "event" : "UseEquipmentEffectEvent",
     "data" : {
       "drawCardId" : "BH3029",
       "success" : true

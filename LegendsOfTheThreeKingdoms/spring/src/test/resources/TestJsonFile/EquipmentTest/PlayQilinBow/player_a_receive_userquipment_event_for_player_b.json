@@ -1,6 +1,6 @@
 {
   "events" : [ {
-    "event" : "UseQilinBowCardEffectViewModel",
+    "event" : "UseQilinBowCardEffectEvent",
     "data" : {
       "mountCardId" : "EH5044"
     },

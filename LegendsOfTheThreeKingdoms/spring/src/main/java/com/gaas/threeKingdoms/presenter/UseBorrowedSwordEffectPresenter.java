@@ -63,7 +63,7 @@ public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUs
 
     public static class WeaponUsurpationViewModel extends ViewModel<UseBorrowedSwordEffectPresenter.WeaponUsurpationDataViewModel> {
         public WeaponUsurpationViewModel(UseBorrowedSwordEffectPresenter.WeaponUsurpationDataViewModel data, String message) {
-            super("WeaponUsurpationViewModel", data, message);
+            super("WeaponUsurpationEvent", data, message);
         }
     }
 

@@ -1,6 +1,6 @@
 {
   "events" : [ {
-    "event" : "RemoveHorseViewModel",
+    "event" : "RemoveHorseEvent",
     "data" : {
       "playerId" : "player-b",
       "mountCardId" : "EH5044"

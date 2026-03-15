@@ -69,7 +69,7 @@ public class ChooseHorsePresenter implements ChooseHorseUseCase.ChooseHorsePrese
 
     public static class RemoveHorseViewModel extends ViewModel<RemoveHorseDataViewModel> {
         public RemoveHorseViewModel(RemoveHorseDataViewModel data) {
-            super("RemoveHorseViewModel", data, "移除馬匹");
+            super("RemoveHorseEvent", data, "移除馬匹");
         }
     }
 
