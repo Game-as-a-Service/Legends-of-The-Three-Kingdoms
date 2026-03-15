@@ -7,18 +7,23 @@ import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
-import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior.isEquipmentHasSpecialEffect;
+import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TARGET_PLAYER_IDS;
+import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER_PLAYER_ID;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
 public class ArrowBarrageBehavior extends Behavior {
+    private boolean pollingStarted = false;
+
     public ArrowBarrageBehavior(Game game, Player player, List<String> reactivePlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, player, reactivePlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
     }
@@ -27,27 +32,101 @@ public class ArrowBarrageBehavior extends Behavior {
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentReactionPlayerId = currentReactionPlayer.getId();
-        Player targetPlayer = game.getPlayer(currentReactionPlayerId);
-
         playerPlayCard(behaviorPlayer, currentReactionPlayer, cardId);
 
-        Round currentRound = game.getCurrentRound();
+        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), "", cardId, playType));
 
-        events.add(new PlayCardEvent(
-                "出牌",
-                behaviorPlayer.getId(),
-                "",
-                cardId,
-                playType));
-        if (isEquipmentHasSpecialEffect(targetPlayer)) {
-            currentRound.setStage(Stage.Wait_Equipment_Effect);
-            DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
-            events.add(askPlayEquipmentEffectEvent);
+        if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
+            // Phase 1: Ward 可取消整個萬箭齊發
+            game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
+            setIsOneRound(false);
+
+            Behavior wardBehavior = new WardBehavior(
+                    game, null,
+                    game.whichPlayersHaveWard(behaviorPlayer.getId()).stream()
+                            .map(Player::getId).collect(Collectors.toList()),
+                    null, cardId, PlayType.INACTIVE.getPlayType(), card, true
+            );
+            wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+            wardBehavior.putParam(WARD_TARGET_PLAYER_IDS, new ArrayList<>(reactionPlayers));
+            game.updateTopBehavior(wardBehavior);
+
+            events.addAll(wardBehavior.playerAction());
         } else {
-            events.add(new AskDodgeEvent(currentReactionPlayerId));
+            // 沒人有 Ward → 直接開始輪詢
+            pollingStarted = true;
+            events.addAll(askNextPlayerOrWard());
         }
-        events.add(game.getGameStatusEvent("發動萬箭齊發"));
 
+        events.add(game.getGameStatusEvent("發動萬箭齊發"));
+        return events;
+    }
+
+    @Override
+    public List<DomainEvent> doBehaviorAction() {
+        List<DomainEvent> events = new ArrayList<>();
+        if (!pollingStarted) {
+            // Phase 1 Ward even → 開始輪詢第一個玩家
+            pollingStarted = true;
+            events.addAll(askNextPlayerOrWard());
+        } else {
+            // Phase 2 Ward even → 直接問當前玩家出閃
+            events.add(new AskDodgeEvent(currentReactionPlayer.getId()));
+            game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+        }
+        return events;
+    }
+
+    @Override
+    public List<DomainEvent> doWardCancelledAction() {
+        if (!pollingStarted) {
+            return null; // Phase 1: 標準移除
+        }
+        // Phase 2: 跳過這個玩家，繼續輪詢
+        List<DomainEvent> events = new ArrayList<>();
+        String currentId = currentReactionPlayer.getId();
+        boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(currentId);
+
+        if (isLastPlayer) {
+            isOneRound = true;
+            game.getCurrentRound().setStage(Stage.Normal);
+            game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+            return events;
+        }
+
+        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+        events.addAll(askNextPlayerOrWard());
+        return events;
+    }
+
+    private List<DomainEvent> askNextPlayerOrWard() {
+        List<DomainEvent> events = new ArrayList<>();
+        if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
+            game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
+            setIsOneRound(false);
+
+            Behavior wardBehavior = new WardBehavior(
+                    game, null,
+                    game.whichPlayersHaveWard(behaviorPlayer.getId()).stream()
+                            .map(Player::getId).collect(Collectors.toList()),
+                    null, cardId, PlayType.INACTIVE.getPlayType(), card, true
+            );
+            wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+            wardBehavior.putParam(WARD_TARGET_PLAYER_IDS, List.of(currentReactionPlayer.getId()));
+            game.updateTopBehavior(wardBehavior);
+
+            events.addAll(wardBehavior.playerAction());
+        } else {
+            game.getCurrentRound().setStage(Stage.Normal);
+            Player targetPlayer = game.getPlayer(currentReactionPlayer.getId());
+            if (isEquipmentHasSpecialEffect(targetPlayer)) {
+                game.getCurrentRound().setStage(Stage.Wait_Equipment_Effect);
+                events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
+            } else {
+                events.add(new AskDodgeEvent(currentReactionPlayer.getId()));
+            }
+            game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+        }
         return events;
     }
 
@@ -62,16 +141,19 @@ public class ArrowBarrageBehavior extends Behavior {
 
             List<DomainEvent> events = new ArrayList<>(damagedEvent);
             if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) { // 如果受到傷害且沒死亡
-                AskDodgeEvent askDodgeEvent = new AskDodgeEvent(currentReactionPlayer.getId());
-                events.add(askDodgeEvent);
-                game.getCurrentRound().setActivePlayer(currentReactionPlayer);
-                events.add(game.getGameStatusEvent("扣血但還活著"));
                 isOneRound = false;
 
                 // 最後一個人
                 if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                     isOneRound = true;
-                    events.remove(askDodgeEvent);
+                    game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+                } else {
+                    game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+                }
+                events.add(game.getGameStatusEvent("扣血但還活著"));
+
+                if (!reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+                    events.addAll(askNextPlayerOrWard());
                 }
             } else {
                 events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
@@ -87,15 +169,17 @@ public class ArrowBarrageBehavior extends Behavior {
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
             List<DomainEvent> events = new ArrayList<>();
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-            game.getCurrentRound().setActivePlayer(currentReactionPlayer);
-            events.add(game.getGameStatusEvent(playerId + "出閃"));
-            AskDodgeEvent askDodgeEvent = new AskDodgeEvent(currentReactionPlayer.getId());
-            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
-            events.add(askDodgeEvent);
-            // 最後一個人，結束此behavior，askDodgeEvent不再出現
+            // 最後一個人，結束此behavior
             if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
                 isOneRound = true;
-                events.remove(askDodgeEvent);
+                game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+            } else {
+                game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+            }
+            events.add(game.getGameStatusEvent(playerId + "出閃"));
+            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
+            if (!reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+                events.addAll(askNextPlayerOrWard());
             }
             return events;
         } else {
