@@ -37,7 +37,7 @@ public class SomethingForNothingBehavior extends Behavior {
         List<DomainEvent> domainEvents = new ArrayList<>();
         domainEvents.add(playCardEvent);
 
-        if (game.doesAnyPlayerHaveWard()) {
+        if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
 
             game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
