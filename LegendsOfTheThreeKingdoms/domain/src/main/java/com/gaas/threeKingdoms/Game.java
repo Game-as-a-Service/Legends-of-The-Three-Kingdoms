@@ -788,6 +788,7 @@ public class Game {
                         true
                 );
                 wardBehavior.putParam(WardBehavior.WARD_TRIGGER_PLAYER_ID, currentPlayerId);
+                wardBehavior.putParam(WardBehavior.WARD_TARGET_PLAYER_IDS, List.of(borrowedPlayerId));
                 updateTopBehavior(wardBehavior);
 
                 List<DomainEvent> events = new ArrayList<>(wardBehavior.playerAction());

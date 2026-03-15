@@ -9,10 +9,11 @@
     },
     "message" : "出牌"
   }, {
-    "event" : "AskPlayWardViewModel",
+    "event" : "AskPlayWardEvent",
     "data" : {
       "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SSJ011"
+      "wardTriggerCardId" : "SSJ011",
+      "targetPlayerIds" : [ "player-b" ]
     },
     "message" : "請選擇是否要出無懈可擊"
   } ],

@@ -110,6 +110,7 @@ public class WardWithDuelTest {
                 .findFirst().get();
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertEquals(1, waitForWardEvents.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvents.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -194,6 +195,7 @@ public class WardWithDuelTest {
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-c"));
         assertEquals(2, waitForWardEvents.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvents.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -365,6 +367,7 @@ public class WardWithDuelTest {
         WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-c"));
         assertEquals(1, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-b"), waitForWardEvent.getTargetPlayerIds());
     }
 
     @DisplayName("""

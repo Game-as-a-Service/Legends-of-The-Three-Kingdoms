@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TARGET_PLAYER_IDS;
 import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER_PLAYER_ID;
 
 public class DismantleBehavior extends Behavior {
@@ -58,6 +59,7 @@ public class DismantleBehavior extends Behavior {
                     true
             );
             wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+            wardBehavior.putParam(WARD_TARGET_PLAYER_IDS, List.of(currentReactionPlayer.getId()));
 
             game.updateTopBehavior(wardBehavior);
             events.addAll(wardBehavior.playerAction());

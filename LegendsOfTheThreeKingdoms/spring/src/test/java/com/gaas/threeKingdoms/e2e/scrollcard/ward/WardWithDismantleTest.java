@@ -857,7 +857,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
             B對C使用過河拆橋
             
             Then
-            此時系統應詢問Ａ是否出無懈可擊，但A收到等待玩家出無懈可擊的event(AskPlayWardViewModel)
+            此時系統應詢問Ａ是否出無懈可擊，但A收到等待玩家出無懈可擊的event(AskPlayWardEvent)
             """)
     @Test
     public void givenPlayerAHasWard_PlayerBHasDismantle_PlayerBTurn_WhenPlayerBPlaysDismantleOnC_ThenSystemAskAForWardEvent() throws Exception {

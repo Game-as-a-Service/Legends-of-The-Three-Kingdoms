@@ -4,36 +4,28 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
+import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
 import com.gaas.threeKingdoms.usecase.UseBorrowedSwordEffectUseCase;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
 public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUseCase.UseBorrowedSwordPresenter<List<UseBorrowedSwordEffectPresenter.GameViewModel>> {
 
     private List<UseBorrowedSwordEffectPresenter.GameViewModel> viewModels = new ArrayList<>();
-    private List<ViewModel<?>> effectViewModels = new ArrayList<>();
+    private final DomainEventToViewModelMapper domainEventToViewModelMapper = new DomainEventToViewModelMapper();
 
     @Override
     public void renderEvents(List<DomainEvent> events) {
+        List<ViewModel<?>> effectViewModels = domainEventToViewModelMapper.mapEventsToViewModels(events);
+
         GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
-        UseBorrowedSwordEffectPresenter.WeaponUsurpationViewModel weaponUsurpationViewModel = getWeaponUsurpationEventViewModel(events);
-        UseBorrowedSwordEffectPresenter.BorrowedSwordViewModel borrowedSwordViewModel = getBorrowedSwordViewModel(events);
-        PlayCardPresenter.PlayCardViewModel playCardViewModel = getPlayCardEventViewModel(events);
-
-        updateViewModels(
-                playCardViewModel,
-                weaponUsurpationViewModel,
-                borrowedSwordViewModel
-        );
-
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
         RoundEvent roundEvent = gameStatusEvent.getRound();
         List<PlayerDataViewModel> playerDataViewModels = playerEvents.stream().map(PlayerDataViewModel::new).toList();
@@ -48,58 +40,25 @@ public class UseBorrowedSwordEffectPresenter implements UseBorrowedSwordEffectUs
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            List<ViewModel<?>> personalEventToViewModels = new ArrayList<>(effectViewModels);
+
+            personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
+                if (personalViewModel instanceof PlayCardPresenter.WaitForWardViewModel waitForWardViewModel) {
+                    WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
+                    if (waitForWardEvent.getPlayerIds().contains(viewModel.getId())) {
+                        return (ViewModel<?>) new PlayCardPresenter.AskPlayWardViewModel(waitForWardViewModel.getData());
+                    }
+                }
+                return personalViewModel;
+            }).collect(Collectors.toList());
+
             viewModels.add(new UseBorrowedSwordEffectPresenter.GameViewModel(
-                    effectViewModels,
+                    personalEventToViewModels,
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),
                     viewModel.getId()));
         }
-    }
-
-    private void updateViewModels(ViewModel<?>... viewModels) {
-        Arrays.stream(viewModels)
-                .filter(Objects::nonNull)
-                .forEach(effectViewModels::add);
-    }
-
-
-
-    public static BorrowedSwordViewModel getBorrowedSwordViewModel(List<DomainEvent> events) {
-        return getEvent(events, BorrowedSwordEvent.class)
-                .map(event -> {
-                    BorrowedSwordDataViewModel borrowedSwordDataViewModel = new BorrowedSwordDataViewModel(event.getCardId(), event.getBorrowedPlayerId(), event.getAttackTargetPlayerId());
-                    return new BorrowedSwordViewModel(borrowedSwordDataViewModel, event.getMessage());
-                })
-                .orElse(null);
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class PlayCardDataViewModel {
-        private String playerId;
-        private String targetPlayerId;
-        private String cardId;
-        private String playType;
-    }
-
-    private PlayCardPresenter.PlayCardViewModel getPlayCardEventViewModel(List<DomainEvent> events) {
-        return getEvent(events, PlayCardEvent.class)
-                .map(event -> {
-                    PlayCardPresenter.PlayCardDataViewModel playCardDataViewModel = new PlayCardPresenter.PlayCardDataViewModel(event.getPlayerId(), event.getTargetPlayerId(), event.getCardId(), event.getPlayType());
-                    return new PlayCardPresenter.PlayCardViewModel(playCardDataViewModel, event.getMessage());
-                })
-                .orElse(null);
-    }
-
-    public static UseBorrowedSwordEffectPresenter.WeaponUsurpationViewModel getWeaponUsurpationEventViewModel(List<DomainEvent> events) {
-        return getEvent(events, WeaponUsurpationEvent.class)
-                .map(event -> {
-                    UseBorrowedSwordEffectPresenter.WeaponUsurpationDataViewModel weaponUsurpationDataViewModel = new UseBorrowedSwordEffectPresenter.WeaponUsurpationDataViewModel(event.getGivenWeaponPlayerId(), event.getTakenWeaponPlayerId(), event.getWeaponCardId());
-                    return new UseBorrowedSwordEffectPresenter.WeaponUsurpationViewModel(weaponUsurpationDataViewModel, event.getMessage());
-                })
-                .orElse(null);
     }
 
     public static class WeaponUsurpationViewModel extends ViewModel<UseBorrowedSwordEffectPresenter.WeaponUsurpationDataViewModel> {

@@ -3,7 +3,8 @@
     "event" : "WaitForWardEvent",
     "data" : {
       "wardTriggerPlayerId" : "player-a",
-      "wardTriggerCardId" : "SS3016"
+      "wardTriggerCardId" : "SS3016",
+      "targetPlayerIds" : [ "player-b" ]
     },
     "message" : "等待玩家發動無懈可擊"
   } ],

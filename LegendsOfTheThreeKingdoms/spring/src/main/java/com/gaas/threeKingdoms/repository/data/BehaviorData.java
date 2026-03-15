@@ -240,6 +240,9 @@ public class BehaviorData {
                 if (params != null && params.get(WardBehavior.WARD_TRIGGER_PLAYER_ID) != null) {
                     wardBehavior.putParam(WardBehavior.WARD_TRIGGER_PLAYER_ID, params.get(WardBehavior.WARD_TRIGGER_PLAYER_ID));
                 }
+                if (params != null && params.get(WardBehavior.WARD_TARGET_PLAYER_IDS) != null) {
+                    wardBehavior.putParam(WardBehavior.WARD_TARGET_PLAYER_IDS, params.get(WardBehavior.WARD_TARGET_PLAYER_IDS));
+                }
                 yield wardBehavior;
             }
             case "PeachGardenBehavior" -> new PeachGardenBehavior(

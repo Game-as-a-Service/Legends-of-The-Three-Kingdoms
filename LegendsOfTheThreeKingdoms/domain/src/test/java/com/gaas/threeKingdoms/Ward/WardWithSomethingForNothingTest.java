@@ -111,6 +111,7 @@ public class WardWithSomethingForNothingTest {
                 .findFirst().get();
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertEquals(1, waitForWardEvents.getPlayerIds().size());
+        assertEquals(List.of("player-a"), waitForWardEvents.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -195,6 +196,7 @@ public class WardWithSomethingForNothingTest {
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-b"));
         assertTrue(waitForWardEvents.getPlayerIds().contains("player-c"));
         assertEquals(2, waitForWardEvents.getPlayerIds().size());
+        assertEquals(List.of("player-a"), waitForWardEvents.getTargetPlayerIds());
     }
 
     @DisplayName("""
@@ -369,6 +371,7 @@ public class WardWithSomethingForNothingTest {
         WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
         assertTrue(waitForWardEvent.getPlayerIds().contains("player-c"));
         assertEquals(1, waitForWardEvent.getPlayerIds().size());
+        assertEquals(List.of("player-a"), waitForWardEvent.getTargetPlayerIds());
 
     }
 

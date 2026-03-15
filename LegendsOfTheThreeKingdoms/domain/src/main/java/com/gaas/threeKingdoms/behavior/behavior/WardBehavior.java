@@ -24,6 +24,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 public class WardBehavior extends Behavior {
 
     public static final String WARD_TRIGGER_PLAYER_ID = "WARD_TRIGGER_PLAYER_ID";
+    public static final String WARD_TARGET_PLAYER_IDS = "WARD_TARGET_PLAYER_IDS";
 
     public WardBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, isTargetPlayerNeedToResponse, false, false);
@@ -40,7 +41,8 @@ public class WardBehavior extends Behavior {
                     }
                 }
         );
-        events.add(new WaitForWardEvent(new HashSet<>(playerIds), wardTriggerPlayerId, cardId));
+        List<String> targetPlayerIds = (List<String>) getParam(WARD_TARGET_PLAYER_IDS);
+        events.add(new WaitForWardEvent(new HashSet<>(playerIds), wardTriggerPlayerId, cardId, targetPlayerIds));
         return events;
     }
 
@@ -81,6 +83,7 @@ public class WardBehavior extends Behavior {
                     true
             );
             wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, playerId);
+            wardBehavior.putParam(WARD_TARGET_PLAYER_IDS, getParam(WARD_TARGET_PLAYER_IDS));
             game.updateTopBehavior(wardBehavior);
 
             if (game.doesAnyPlayerHaveWard(playerId)) {
@@ -171,9 +174,22 @@ public class WardBehavior extends Behavior {
         // 偶數：清掉所有的 WardBehavior ，發動 stack 中除了 WardBehavior 外第一個遇到的 behavior 效果，發動這個效果可以另外開一隻 doBehaviorAction 的 api。
         if (wardBehaviorSize % 2 == 0) {
             domainEvents.addAll(firstNotWardBehavior.doBehaviorAction()); // 相信這裡會幫我們設定好 activePlayer
+            // Check if doBehaviorAction created a new Ward challenge (e.g., Phase 2 Ward for BarbarianInvasion)
+            if (!game.getTopBehavior().isEmpty() && game.getTopBehavior().peek() instanceof WardBehavior) {
+                game.removeCompletedBehaviors();
+                return domainEvents;
+            }
             activePlayer = game.getCurrentRound().getActivePlayer();
             System.out.println("activePlayer 3 "+activePlayer);
         } else {
+            // 奇數: Ward 取消效果
+            List<DomainEvent> cancelledEvents = firstNotWardBehavior.doWardCancelledAction();
+            if (cancelledEvents != null) {
+                // Phase 2 per-player cancel: 不移除 behavior，不 reset stage
+                domainEvents.addAll(cancelledEvents);
+                game.removeCompletedBehaviors();
+                return domainEvents;
+            }
             // 如果上面是可以多回合的 Behavior 那上面就會走 peek 路線，這時候還存在 TopBehavior ，但當 WardBehavior 為奇數代表已經被抵銷，就該移除
             if (game.getTopBehavior().peek().equals(firstNotWardBehavior)) {
                 game.removeTopBehavior();

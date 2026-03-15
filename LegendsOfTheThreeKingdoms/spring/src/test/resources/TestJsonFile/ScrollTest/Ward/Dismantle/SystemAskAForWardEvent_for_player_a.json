@@ -1,9 +1,10 @@
 {
   "events" : [ {
-    "event" : "AskPlayWardViewModel",
+    "event" : "AskPlayWardEvent",
     "data" : {
       "wardTriggerPlayerId" : "player-b",
-      "wardTriggerCardId" : ""
+      "wardTriggerCardId" : "",
+      "targetPlayerIds" : [ "player-c" ]
     },
     "message" : "請選擇是否要出無懈可擊"
   } ],

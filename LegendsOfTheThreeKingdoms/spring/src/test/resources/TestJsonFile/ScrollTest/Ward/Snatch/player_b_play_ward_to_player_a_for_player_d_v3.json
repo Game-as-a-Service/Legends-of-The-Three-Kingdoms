@@ -12,7 +12,8 @@
     "event" : "WaitForWardEvent",
     "data" : {
       "wardTriggerPlayerId" : "player-b",
-      "wardTriggerCardId" : "SSJ011"
+      "wardTriggerCardId" : "SSJ011",
+      "targetPlayerIds" : [ "player-b" ]
     },
     "message" : "等待玩家發動無懈可擊"
   } ],

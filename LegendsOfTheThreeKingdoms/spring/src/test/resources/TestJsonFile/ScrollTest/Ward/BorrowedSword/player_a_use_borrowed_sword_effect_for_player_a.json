@@ -1,5 +1,13 @@
 {
-  "events" : [ ],
+  "events" : [ {
+    "event" : "WaitForWardEvent",
+    "data" : {
+      "wardTriggerPlayerId" : "player-a",
+      "wardTriggerCardId" : "SCK065",
+      "targetPlayerIds" : [ "player-b" ]
+    },
+    "message" : "等待玩家發動無懈可擊"
+  } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
