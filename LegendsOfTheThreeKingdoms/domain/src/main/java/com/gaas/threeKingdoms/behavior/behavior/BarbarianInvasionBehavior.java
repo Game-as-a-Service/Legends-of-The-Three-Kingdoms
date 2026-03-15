@@ -27,6 +27,14 @@ public class BarbarianInvasionBehavior extends Behavior {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
     }
 
+    public boolean isPollingStarted() {
+        return pollingStarted;
+    }
+
+    public void setPollingStarted(boolean pollingStarted) {
+        this.pollingStarted = pollingStarted;
+    }
+
     @Override
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();

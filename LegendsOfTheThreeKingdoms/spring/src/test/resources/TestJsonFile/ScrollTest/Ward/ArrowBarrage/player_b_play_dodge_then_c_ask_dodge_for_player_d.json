@@ -3,25 +3,17 @@
     "event" : "PlayCardEvent",
     "data" : {
       "playerId" : "player-b",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
-      "playType" : "active"
+      "targetPlayerId" : "player-a",
+      "cardId" : "BH2028",
+      "playType" : "inactive"
     },
     "message" : "出牌"
   }, {
-    "event" : "PlayWardCardEvent",
-    "data" : {
-      "playerId" : "player-b",
-      "cardId" : "SS7007",
-      "wardCardId" : "SSJ011"
-    },
-    "message" : "張飛 的無懈可擊抵銷了 劉備 的 南蠻入侵"
-  }, {
-    "event" : "AskKillEvent",
+    "event" : "AskDodgeEvent",
     "data" : {
       "playerId" : "player-c"
     },
-    "message" : "請問 player-c 要否要出殺"
+    "message" : "請問 player-c 要否要出閃"
   } ],
   "data" : {
     "seats" : [ {
@@ -41,7 +33,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 2,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -49,22 +41,22 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "Rebel",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "size" : 3,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "",
+      "roleId" : "Traitor",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -78,7 +70,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出無懈可擊",
+  "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-c"
+  "playerId" : "player-d"
 }

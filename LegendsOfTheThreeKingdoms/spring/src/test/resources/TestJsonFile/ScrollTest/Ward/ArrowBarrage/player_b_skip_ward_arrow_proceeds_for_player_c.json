@@ -1,27 +1,12 @@
 {
   "events" : [ {
-    "event" : "PlayCardEvent",
+    "event" : "WaitForWardEvent",
     "data" : {
-      "playerId" : "player-b",
-      "targetPlayerId" : "",
-      "cardId" : "SSJ011",
-      "playType" : "active"
+      "wardTriggerPlayerId" : "player-a",
+      "wardTriggerCardId" : "SHA040",
+      "targetPlayerIds" : [ "player-b" ]
     },
-    "message" : "出牌"
-  }, {
-    "event" : "PlayWardCardEvent",
-    "data" : {
-      "playerId" : "player-b",
-      "cardId" : "SS7007",
-      "wardCardId" : "SSJ011"
-    },
-    "message" : "張飛 的無懈可擊抵銷了 劉備 的 南蠻入侵"
-  }, {
-    "event" : "AskKillEvent",
-    "data" : {
-      "playerId" : "player-c"
-    },
-    "message" : "請問 player-c 要否要出殺"
+    "message" : "等待玩家發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
@@ -41,7 +26,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -72,7 +57,7 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-c",
+      "activePlayer" : "player-b",
       "dyingPlayer" : "",
       "showKill" : false
     },

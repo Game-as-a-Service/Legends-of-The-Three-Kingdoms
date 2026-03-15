@@ -2,26 +2,20 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-b",
+      "playerId" : "player-a",
       "targetPlayerId" : "",
-      "cardId" : "SSJ011",
+      "cardId" : "SHA040",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
-    "event" : "PlayWardCardEvent",
+    "event" : "WaitForWardEvent",
     "data" : {
-      "playerId" : "player-b",
-      "cardId" : "SS7007",
-      "wardCardId" : "SSJ011"
+      "wardTriggerPlayerId" : "player-a",
+      "wardTriggerCardId" : "SHA040",
+      "targetPlayerIds" : [ "player-b", "player-c", "player-d" ]
     },
-    "message" : "張飛 的無懈可擊抵銷了 劉備 的 南蠻入侵"
-  }, {
-    "event" : "AskKillEvent",
-    "data" : {
-      "playerId" : "player-c"
-    },
-    "message" : "請問 player-c 要否要出殺"
+    "message" : "等待玩家發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
@@ -31,7 +25,7 @@
       "hp" : 4,
       "hand" : {
         "size" : 3,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -41,7 +35,7 @@
       "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 3,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -49,11 +43,11 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "Rebel",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -72,13 +66,13 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-c",
+      "activePlayer" : "player-b",
       "dyingPlayer" : "",
       "showKill" : false
     },
     "gamePhase" : "Normal"
   },
-  "message" : "出無懈可擊",
+  "message" : "出牌",
   "gameId" : "my-id",
-  "playerId" : "player-c"
+  "playerId" : "player-a"
 }

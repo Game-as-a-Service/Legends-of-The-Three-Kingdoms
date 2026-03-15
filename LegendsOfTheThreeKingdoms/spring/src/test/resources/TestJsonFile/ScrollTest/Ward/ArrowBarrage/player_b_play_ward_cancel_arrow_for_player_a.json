@@ -12,16 +12,10 @@
     "event" : "PlayWardCardEvent",
     "data" : {
       "playerId" : "player-b",
-      "cardId" : "SS7007",
+      "cardId" : "SHA040",
       "wardCardId" : "SSJ011"
     },
-    "message" : "張飛 的無懈可擊抵銷了 劉備 的 南蠻入侵"
-  }, {
-    "event" : "AskKillEvent",
-    "data" : {
-      "playerId" : "player-c"
-    },
-    "message" : "請問 player-c 要否要出殺"
+    "message" : "張飛 的無懈可擊抵銷了 劉備 的 萬箭齊發"
   } ],
   "data" : {
     "seats" : [ {
@@ -31,7 +25,7 @@
       "hp" : 4,
       "hand" : {
         "size" : 3,
-        "cardIds" : [ ]
+        "cardIds" : [ "BS8008", "BH3029", "BH2028" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -49,11 +43,11 @@
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "Rebel",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -72,7 +66,7 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-c",
+      "activePlayer" : "player-a",
       "dyingPlayer" : "",
       "showKill" : false
     },
@@ -80,5 +74,5 @@
   },
   "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-c"
+  "playerId" : "player-a"
 }

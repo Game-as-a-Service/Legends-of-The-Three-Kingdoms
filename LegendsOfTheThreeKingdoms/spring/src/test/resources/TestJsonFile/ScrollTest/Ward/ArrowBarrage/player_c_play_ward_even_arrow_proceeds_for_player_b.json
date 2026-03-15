@@ -2,26 +2,26 @@
   "events" : [ {
     "event" : "PlayCardEvent",
     "data" : {
-      "playerId" : "player-b",
+      "playerId" : "player-c",
       "targetPlayerId" : "",
-      "cardId" : "SSJ011",
+      "cardId" : "SCK078",
       "playType" : "active"
     },
     "message" : "出牌"
   }, {
     "event" : "PlayWardCardEvent",
     "data" : {
-      "playerId" : "player-b",
-      "cardId" : "SS7007",
-      "wardCardId" : "SSJ011"
+      "playerId" : "player-c",
+      "cardId" : "SSJ011",
+      "wardCardId" : "SCK078"
     },
-    "message" : "張飛 的無懈可擊抵銷了 劉備 的 南蠻入侵"
+    "message" : "關羽 的無懈可擊抵銷了 張飛 的 無懈可擊"
   }, {
-    "event" : "AskKillEvent",
+    "event" : "AskDodgeEvent",
     "data" : {
-      "playerId" : "player-c"
+      "playerId" : "player-b"
     },
-    "message" : "請問 player-c 要否要出殺"
+    "message" : "請問 player-b 要否要出閃"
   } ],
   "data" : {
     "seats" : [ {
@@ -38,22 +38,22 @@
     }, {
       "id" : "player-b",
       "generalId" : "SHU003",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
         "size" : 3,
-        "cardIds" : [ ]
+        "cardIds" : [ "BH2028", "BH3029", "BHK039" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU002",
-      "roleId" : "Rebel",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "size" : 3,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -72,7 +72,7 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-c",
+      "activePlayer" : "player-b",
       "dyingPlayer" : "",
       "showKill" : false
     },
@@ -80,5 +80,5 @@
   },
   "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-c"
+  "playerId" : "player-b"
 }
