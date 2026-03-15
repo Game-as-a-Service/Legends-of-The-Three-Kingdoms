@@ -9,7 +9,7 @@
     },
     "message" : "不出牌"
   }, {
-    "event" : "WeaponUsurpationViewModel",
+    "event" : "WeaponUsurpationEvent",
     "data" : {
       "givenWeaponPlayerId" : "player-b",
       "takenWeaponPlayerId" : "player-a",

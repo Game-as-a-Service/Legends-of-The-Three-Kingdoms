@@ -16,6 +16,12 @@
       "wardCardId" : "SSJ011"
     },
     "message" : "張飛 的無懈可擊抵銷了 劉備 的 南蠻入侵"
+  }, {
+    "event" : "AskKillEvent",
+    "data" : {
+      "playerId" : "player-c"
+    },
+    "message" : "請問 player-c 要否要出殺"
   } ],
   "data" : {
     "seats" : [ {
@@ -66,7 +72,7 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-a",
+      "activePlayer" : "player-c",
       "dyingPlayer" : "",
       "showKill" : false
     },

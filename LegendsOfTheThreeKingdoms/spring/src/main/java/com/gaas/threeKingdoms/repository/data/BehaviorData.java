@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +21,8 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BehaviorData {
+    private static final String POLLING_STARTED = "POLLING_STARTED";
+
     private String behaviorName;
     private String behaviorPlayerId;
     private List<String> reactionPlayers;
@@ -36,8 +39,8 @@ public class BehaviorData {
 
     private Behavior createBehavior(Game game, String behaviorName) {
         Behavior behavior = switch (behaviorName) {
-            case "BarbarianInvasionBehavior" ->
-                new BarbarianInvasionBehavior(
+            case "BarbarianInvasionBehavior" -> {
+                BarbarianInvasionBehavior barbarianInvasionBehavior = new BarbarianInvasionBehavior(
                         game,
                         game.getPlayer(behaviorPlayerId),
                         reactionPlayers,
@@ -46,16 +49,26 @@ public class BehaviorData {
                         playType,
                         PlayCard.findById(cardId)
                 );
-            case "ArrowBarrageBehavior" ->
-                    new ArrowBarrageBehavior(
-                            game,
-                            game.getPlayer(behaviorPlayerId),
-                            reactionPlayers,
-                            game.getPlayer(currentReactionPlayerId),
-                            cardId,
-                            playType,
-                            PlayCard.findById(cardId)
-                    );
+                if (params != null && Boolean.TRUE.equals(params.get(POLLING_STARTED))) {
+                    barbarianInvasionBehavior.setPollingStarted(true);
+                }
+                yield barbarianInvasionBehavior;
+            }
+            case "ArrowBarrageBehavior" -> {
+                ArrowBarrageBehavior arrowBarrageBehavior = new ArrowBarrageBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId)
+                );
+                if (params != null && Boolean.TRUE.equals(params.get(POLLING_STARTED))) {
+                    arrowBarrageBehavior.setPollingStarted(true);
+                }
+                yield arrowBarrageBehavior;
+            }
             case "BorrowedSwordBehavior" -> {
                 BorrowedSwordBehavior borrowedSwordBehavior = new BorrowedSwordBehavior(
                         game,
@@ -272,6 +285,12 @@ public class BehaviorData {
 
 
     public static BehaviorData fromDomain(Behavior behavior) {
+        Map<String, Object> params = new HashMap<>(behavior.getParams());
+        if (behavior instanceof ArrowBarrageBehavior ab) {
+            params.put(POLLING_STARTED, ab.isPollingStarted());
+        } else if (behavior instanceof BarbarianInvasionBehavior bi) {
+            params.put(POLLING_STARTED, bi.isPollingStarted());
+        }
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())
                 .behaviorPlayerId(
@@ -287,7 +306,7 @@ public class BehaviorData {
                 .playType(behavior.getPlayType())
                 .isTargetPlayerNeedToResponse(behavior.isTargetPlayerNeedToResponse())
                 .isOneRound(behavior.isOneRound())
-                .params(behavior.getParams())
+                .params(params)
                 .build();
     }
 }

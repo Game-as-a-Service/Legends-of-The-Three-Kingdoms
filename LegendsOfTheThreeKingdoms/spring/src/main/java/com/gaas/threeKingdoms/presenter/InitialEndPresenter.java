@@ -59,7 +59,7 @@ public class InitialEndPresenter implements OthersChoosePlayerGeneralUseCase.Ini
         private String playerId;
 
         public InitialEndViewModel(String gameId, GameDataViewModel data, String message, String playerId) {
-            super("initialEndViewModel", data, message);
+            super("InitialEndEvent", data, message);
             this.gameId = gameId;
             this.playerId = playerId;
         }

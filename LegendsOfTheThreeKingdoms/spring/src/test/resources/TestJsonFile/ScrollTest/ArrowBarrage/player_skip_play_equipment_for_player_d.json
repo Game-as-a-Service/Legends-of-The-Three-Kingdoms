@@ -1,6 +1,6 @@
 {
   "events" : [ {
-    "event" : "SkipEquipmentEffectViewModel",
+    "event" : "SkipEquipmentEffectEvent",
     "data" : {
       "playerId" : "player-c",
       "cardId" : "ES2015"
