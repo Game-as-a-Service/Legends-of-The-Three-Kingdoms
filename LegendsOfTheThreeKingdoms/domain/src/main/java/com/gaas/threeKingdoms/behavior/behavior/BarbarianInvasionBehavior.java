@@ -30,7 +30,6 @@ public class BarbarianInvasionBehavior extends Behavior {
     @Override
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
-        String currentReactionPlayerId = currentReactionPlayer.getId();
         playerPlayCard(behaviorPlayer, currentReactionPlayer, cardId);
 
         events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), "", cardId, playType));
@@ -134,18 +133,16 @@ public class BarbarianInvasionBehavior extends Behavior {
 
             List<DomainEvent> events = new ArrayList<>(damagedEvent);
             if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) { // 如果受到傷害且沒死亡
-                isOneRound = false;
-
-                // 最後一個人
-                if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+                boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
+                if (isLastPlayer) {
                     isOneRound = true;
                     game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
                 } else {
+                    isOneRound = false;
                     game.getCurrentRound().setActivePlayer(currentReactionPlayer);
                 }
                 events.add(game.getGameStatusEvent("扣血但還活著"));
-
-                if (!reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+                if (!isLastPlayer) {
                     events.addAll(askNextPlayerOrWard());
                 }
             } else {
@@ -162,8 +159,8 @@ public class BarbarianInvasionBehavior extends Behavior {
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
             List<DomainEvent> events = new ArrayList<>();
             currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-            // 最後一個人，結束此behavior
-            if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+            boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
+            if (isLastPlayer) {
                 isOneRound = true;
                 game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
             } else {
@@ -171,7 +168,7 @@ public class BarbarianInvasionBehavior extends Behavior {
             }
             events.add(game.getGameStatusEvent(playerId + "出殺"));
             events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
-            if (!reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+            if (!isLastPlayer) {
                 events.addAll(askNextPlayerOrWard());
             }
             return events;

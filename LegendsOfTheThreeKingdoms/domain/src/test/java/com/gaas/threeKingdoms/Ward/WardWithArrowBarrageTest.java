@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
@@ -708,5 +709,58 @@ public class WardWithArrowBarrageTest {
         assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
         AskDodgeEvent cAskDodge = getEvent(bSkipEvents, AskDodgeEvent.class).orElseThrow();
         assertEquals("player-c", cAskDodge.getPlayerId());
+    }
+
+    // =============================================
+    // Equipment + Ward Tests
+    // =============================================
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，A 的回合
+            A 有萬箭齊發
+            B 有八卦陣（裝備）
+            C 有無懈可擊
+
+            A 出萬箭齊發
+            Phase 1: C skip → proceeds
+            Phase 2 for B: C has Ward → WaitForWardEvent → C skip
+
+            Then
+            B 有八卦陣 → 收到 AskPlayEquipmentEffectEvent（而非 AskDodgeEvent）
+            """)
+    @Test
+    public void test14_givenBHasEightDiagramTactic_WhenWardSkipped_ThenBAskEquipmentEffect() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new ArrowBarrage(SHA040)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        Equipment equipmentB = new Equipment();
+        equipmentB.setArmor(new EightDiagramTactic(ES2015));
+        playerB.setEquipment(equipmentB);
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        playerC.getHand().addCardToHand(Arrays.asList(new Ward(SCK078)));
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerA);
+
+        // A plays ArrowBarrage → Phase 1 Ward (C has Ward) → WaitForWardEvent
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Phase 1: C skips → 0 wards → proceeds → Phase 2 for B (C has Ward) → WaitForWardEvent
+        game.playWardCard("player-c", "", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for B: C skips → 0 wards → B should get equipment check
+        List<DomainEvent> events = game.playWardCard("player-c", "", PlayType.SKIP.getPlayType());
+
+        // Then: B has EightDiagramTactic → AskPlayEquipmentEffectEvent (not AskDodgeEvent)
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskPlayEquipmentEffectEvent));
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+        AskPlayEquipmentEffectEvent equipmentEvent = getEvent(events, AskPlayEquipmentEffectEvent.class).orElseThrow();
+        assertEquals("player-b", equipmentEvent.getPlayerId());
     }
 }
