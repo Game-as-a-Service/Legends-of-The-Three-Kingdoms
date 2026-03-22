@@ -354,6 +354,107 @@ public class WardWithArrowBarrageTest extends AbstractBaseIntegrationTest {
         repository.save(game);
     }
 
+    @DisplayName("""
+        Given
+        玩家 A B C D，B 的回合
+        A 有 2 張無懈可擊 (SSJ011, SCQ077)
+        B 有萬箭齊發 + 1 張無懈可擊 (SCK078)
+
+        B 出萬箭齊發
+        A skip Phase 1 Ward → Phase 2 開始
+        Phase 2 for C: A skip Ward → C AskDodgeEvent → C skip → C 扣血
+        Phase 2 for D: A 出 Ward (SSJ011) 保護 D
+
+        When
+        WaitForWardEvent → B 可以 counter（A 被排除）
+
+        Then
+        B skip counter → 1 Ward（奇數）→ D 被保護
+        遊戲不會卡住，繼續到 A
+    """)
+    @Test
+    public void givenCounterChainStuck_WhenBSkipsCounterWard_ThenDProtectedAndGameContinues() throws Exception {
+        givenArrowBarrageCounterChain();
+
+        // B plays ArrowBarrage
+        mockMvcUtil.playCard(gameId, "player-b", "", "SHA040", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // Phase 1: A skips
+        mockMvcUtil.playWardCard(gameId, "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // Phase 2 for C: A skips Ward → AskDodgeEvent for C
+        mockMvcUtil.playWardCard(gameId, "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // C skips Dodge → takes damage
+        mockMvcUtil.playCard(gameId, "player-c", "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // Phase 2 for D: A plays Ward (SSJ011) to protect D → WaitForWardEvent for counter
+        mockMvcUtil.playWardCard(gameId, "player-a", "SSJ011", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // Validate: WaitForWardEvent shows B can counter, A excluded
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = BASE_PATH + "counter_chain_a_ward_for_d_for_%s.json";
+        for (String testPlayerId : playerIds) {
+//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            String testPlayerJson = websocketUtil.getValue(testPlayerId);
+            String fileSafeId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, fileSafeId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+
+        // B skips counter → 1 Ward (odd) → D protected → game continues to A
+        mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // Validate: D protected, game not stuck, continues to A
+        filePathTemplate = BASE_PATH + "counter_chain_b_skip_d_protected_for_%s.json";
+        for (String testPlayerId : playerIds) {
+//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            String testPlayerJson = websocketUtil.getValue(testPlayerId);
+            String fileSafeId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, fileSafeId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    // Counter-chain setup: B's turn, A has 2 Ward, B has ArrowBarrage + 1 Ward
+    private void givenArrowBarrageCounterChain() {
+        Player playerA = createPlayer(
+                "player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Ward(SSJ011), new Ward(SCQ077), new Kill(BS8008), new Peach(BH3029)
+        );
+        Player playerB = createPlayer(
+                "player-b", 4, General.張飛, HealthStatus.ALIVE, Role.MINISTER,
+                new ArrowBarrage(SHA040), new Ward(SCK078), new Dodge(BH2028), new Peach(BH3029)
+        );
+        Player playerC = createPlayer(
+                "player-c", 4, General.關羽, HealthStatus.ALIVE, Role.REBEL,
+                new Peach(BH3029), new Kill(BS8008), new Kill(BS8008), new Kill(BS8008)
+        );
+        Player playerD = createPlayer(
+                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerB);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
     private void popAllPlayerMessage() {
         websocketUtil.getValue("player-a");
         websocketUtil.getValue("player-b");

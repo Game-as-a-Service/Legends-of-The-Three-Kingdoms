@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.Ward;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.behavior.behavior.WardBehavior;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
@@ -1009,5 +1010,258 @@ public class WardWithDuelTest {
         WardEvent wardEvent = getEvent(events, WardEvent.class).orElseThrow();
         assertEquals("player-a", wardEvent.getPlayerId());
         assertEquals("SSA001", wardEvent.getCardId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            B 有決鬥 + 無懈可擊
+            C 有無懈可擊
+
+            B 對 A 出決鬥
+            WaitForWardEvent: C 可以出無懈可擊（B 被排除，因為 B 是出牌者）
+
+            When
+            C skip 無懈可擊
+
+            Then
+            決鬥正常生效（0 Ward even → 決鬥繼續）
+            不會卡住（修復前 B 會留在 reactionPlayers 導致卡住）
+            A 被問是否出殺
+            """)
+    @Test
+    public void test_givenDuelCasterHasWard_WhenOnlyCounterPlayerSkips_ThenDuelProceedsNotStuck() {
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct().withId("player-a")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerB = PlayerBuilder.construct().withId("player-b")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerB.getHand().addCardToHand(List.of(new Duel(SSA001), new Ward(SSJ011)));
+
+        Player playerC = PlayerBuilder.construct().withId("player-c")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerC.getHand().addCardToHand(List.of(new Ward(SCQ077)));
+
+        Player playerD = PlayerBuilder.construct().withId("player-d")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.孫權))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = List.of(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerB));
+
+        // B plays Duel targeting A → WaitForWardEvent (C has Ward, B excluded as caster)
+        List<DomainEvent> playEvents = game.playerPlayCard(playerB.getId(), SSA001.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent waitWard = getEvent(playEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(waitWard.getPlayerIds().contains("player-c"));
+        assertFalse(waitWard.getPlayerIds().contains("player-b"), "Duel caster B should be excluded from WaitForWardEvent");
+
+        // C skips Ward → 0 wards (even) → Duel proceeds
+        List<DomainEvent> skipEvents = game.playWardCard("player-c", "", PlayType.SKIP.getPlayType());
+
+        // Duel should proceed: A is asked to play Kill (DuelEvent + AskKillEvent)
+        assertTrue(skipEvents.stream().anyMatch(e -> e instanceof DuelEvent), "Duel should proceed after all Ward holders skip");
+        assertEquals(0, game.getTopBehavior().stream().filter(b -> b instanceof WardBehavior).count(), "No WardBehavior should remain");
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，A 的回合
+            A 有決鬥
+            C 有 2 張無懈可擊
+            D 有 1 張無懈可擊
+
+            A 對 B 出決鬥
+            C plays Ward → D counters → C counter-counters
+
+            Then
+            3 Ward（奇數）→ 決鬥被取消
+            A 仍然是 active player
+            """)
+    @Test
+    public void test_givenTripleWardChainForDuel_WhenOddWards_ThenDuelCancelled() {
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct().withId("player-a")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerA.getHand().addCardToHand(List.of(new Duel(SSA001)));
+
+        Player playerB = PlayerBuilder.construct().withId("player-b")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct().withId("player-c")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerC.getHand().addCardToHand(List.of(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerD = PlayerBuilder.construct().withId("player-d")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.孫權))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerD.getHand().addCardToHand(List.of(new Ward(SCK078)));
+
+        List<Player> players = List.of(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        // A plays Duel targeting B → WaitForWardEvent (C, D have Ward)
+        List<DomainEvent> playEvents = game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent waitWard1 = getEvent(playEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(waitWard1.getPlayerIds().contains("player-c"));
+        assertTrue(waitWard1.getPlayerIds().contains("player-d"));
+        assertFalse(waitWard1.getPlayerIds().contains("player-a"), "Duel caster A should be excluded");
+
+        // C plays Ward (SSJ011) to protect B from Duel
+        List<DomainEvent> cWardEvents = game.playWardCard("player-c", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        // D can counter C's Ward → WaitForWardEvent for D (C excluded as trigger)
+        WaitForWardEvent waitWard2 = getEvent(cWardEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(waitWard2.getPlayerIds().contains("player-d"));
+        assertFalse(waitWard2.getPlayerIds().contains("player-c"), "Ward trigger C should be excluded");
+
+        // D plays Ward (SCK078) to counter C → C can counter (C has 1 more Ward)
+        List<DomainEvent> dWardEvents = game.playWardCard("player-d", SCK078.getCardId(), PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent waitWard3 = getEvent(dWardEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(waitWard3.getPlayerIds().contains("player-c"));
+        assertFalse(waitWard3.getPlayerIds().contains("player-d"), "Ward trigger D should be excluded");
+
+        // C plays Ward (SCQ077) to counter D → 3 wards (odd) → Duel cancelled
+        List<DomainEvent> finalEvents = game.playWardCard("player-c", SCQ077.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // Duel cancelled, active player back to A
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(4, game.getPlayer("player-b").getBloodCard().getHp(), "B should not take damage");
+        assertTrue(finalEvents.stream().anyMatch(e -> e instanceof WardEvent), "Should have WardEvent for cancellation");
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            B 有決鬥 + 1 無懈可擊
+            C 有 1 無懈可擊
+
+            B 對 A 出決鬥
+            C plays Ward → B counters C's Ward
+
+            When
+            nobody has Ward left
+
+            Then
+            2 Ward（偶數）→ C 的 Ward 被抵銷 → 決鬥生效
+            A 被問出殺
+            """)
+    @Test
+    public void test_givenDoubleWardChainForDuel_WhenEvenWards_ThenDuelProceeds() {
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct().withId("player-a")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerB = PlayerBuilder.construct().withId("player-b")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerB.getHand().addCardToHand(List.of(new Duel(SSA001), new Ward(SCK078)));
+
+        Player playerC = PlayerBuilder.construct().withId("player-c")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+        playerC.getHand().addCardToHand(List.of(new Ward(SSJ011)));
+
+        Player playerD = PlayerBuilder.construct().withId("player-d")
+                .withHand(new Hand())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.孫權))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = List.of(playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerB));
+
+        // B plays Duel targeting A → WaitForWardEvent (C has Ward, B excluded)
+        game.playerPlayCard(playerB.getId(), SSA001.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+
+        // C plays Ward (SSJ011) to protect A
+        List<DomainEvent> cWardEvents = game.playWardCard("player-c", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        // B can counter (B has Ward) → WaitForWardEvent
+        WaitForWardEvent waitWard = getEvent(cWardEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(waitWard.getPlayerIds().contains("player-b"));
+        assertFalse(waitWard.getPlayerIds().contains("player-c"), "Ward trigger C should be excluded");
+
+        // B plays Ward (SCK078) to counter C → 2 wards (even), nobody has Ward left → resolve directly
+        List<DomainEvent> bWardEvents = game.playWardCard("player-b", SCK078.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // 2 wards even → Duel proceeds → A asked to play Kill
+        assertTrue(bWardEvents.stream().anyMatch(e -> e instanceof DuelEvent), "Duel should proceed after even Ward count");
+        assertTrue(bWardEvents.stream().anyMatch(e -> e instanceof WardEvent), "Should have WardEvent showing cancellation chain");
     }
 }

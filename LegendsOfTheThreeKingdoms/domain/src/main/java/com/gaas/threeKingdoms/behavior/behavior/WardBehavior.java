@@ -75,7 +75,7 @@ public class WardBehavior extends Behavior {
             Behavior wardBehavior = new WardBehavior(
                     game,
                     player,
-                    game.whichPlayersHaveWard().stream().map(Player::getId).collect(Collectors.toList()),
+                    game.whichPlayersHaveWard(playerId).stream().map(Player::getId).collect(Collectors.toList()),
                     null,
                     cardId,
                     PlayType.INACTIVE.getPlayType(),

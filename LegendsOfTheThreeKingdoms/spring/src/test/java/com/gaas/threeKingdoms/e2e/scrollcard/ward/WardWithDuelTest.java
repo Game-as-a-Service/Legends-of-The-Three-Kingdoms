@@ -958,6 +958,108 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         repository.save(game);
     }
 
+    @DisplayName("""
+        Given
+        玩家 A B C D，B 的回合
+        B 有決鬥 + 1 張無懈可擊 (SCK078)
+        C 有 1 張無懈可擊 (SSJ011)
+
+        When
+        B 對 A 出決鬥 → WaitForWardEvent（C 可以出，B 被排除因為是出牌者）
+
+        Then
+        WaitForWardEvent 不包含 B（修復前 B 會在 reactionPlayers 導致卡住）
+    """)
+    @Test
+    public void givenDuelCasterHasWard_WhenBPlaysDuel_ThenWaitForWardExcludesB() throws Exception {
+        givenDuelCounterChain();
+
+        // B plays Duel targeting A → WaitForWardEvent
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "SSA001", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // Validate: WaitForWardEvent shows C can counter, B excluded
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/counter_chain_b_play_duel_for_%s.json";
+        for (String testPlayerId : playerIds) {
+//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            String testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    @DisplayName("""
+        Given
+        玩家 A B C D，B 的回合
+        B 有決鬥 + 1 張無懈可擊 (SCK078)
+        C 有 1 張無懈可擊 (SSJ011)
+
+        B 對 A 出決鬥 → WaitForWardEvent（C 可以出）
+
+        When
+        C skip 無懈可擊
+
+        Then
+        0 Ward（偶數）→ 決鬥生效
+        遊戲不會卡住（修復前 B 留在 reactionPlayers 導致卡住）
+        A 收到 AskKillEvent
+    """)
+    @Test
+    public void givenDuelCasterHasWard_WhenCSkipsWard_ThenDuelProceedsNotStuck() throws Exception {
+        givenDuelCounterChain();
+
+        // B plays Duel targeting A
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "SSA001", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // C skips Ward → 0 wards (even) → Duel proceeds → AskKillEvent for A
+        mockMvcUtil.playWardCard(gameId, "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // Validate: Duel proceeds, game not stuck, A asked for Kill
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/counter_chain_c_skip_duel_proceeds_for_%s.json";
+        for (String testPlayerId : playerIds) {
+//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            String testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    // Counter-chain setup: B's turn, B has Duel + Ward, C has Ward
+    private void givenDuelCounterChain() {
+        Player playerA = createPlayer(
+                "player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerB = createPlayer(
+                "player-b", 4, General.張飛, HealthStatus.ALIVE, Role.MINISTER,
+                new Duel(SSA001), new Ward(SCK078), new Kill(BS8008), new Peach(BH3029)
+        );
+        Player playerC = createPlayer(
+                "player-c", 4, General.關羽, HealthStatus.ALIVE, Role.REBEL,
+                new Ward(SSJ011), new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
+        );
+        Player playerD = createPlayer(
+                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerB);
+        Deck deck = new Deck();
+        deck.add(List.of(new Dodge(BDJ089), new Peach(BH3029), new Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
     private void popAllPlayerMessage() {
         websocketUtil.getValue("player-a");
         websocketUtil.getValue("player-b");
