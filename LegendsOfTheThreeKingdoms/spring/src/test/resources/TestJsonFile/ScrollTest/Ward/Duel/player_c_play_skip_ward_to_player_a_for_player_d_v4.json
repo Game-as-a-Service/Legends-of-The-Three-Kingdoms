@@ -1,10 +1,11 @@
 {
   "events" : [ {
-    "event" : "AskKillEvent",
+    "event" : "SkipWardEvent",
     "data" : {
-      "playerId" : "player-b"
+      "playerId" : "player-c",
+      "wardCardId" : "SSA001"
     },
-    "message" : "請問 player-b 要否要出殺"
+    "message" : "不發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {

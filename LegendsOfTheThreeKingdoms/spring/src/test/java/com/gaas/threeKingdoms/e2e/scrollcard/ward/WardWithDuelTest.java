@@ -225,14 +225,12 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
 
 //        Given
 //        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
-//        A 有決鬥
-//        A 有無懈可擊
+//        A 有決鬥 + 無懈可擊
 //        B 有無懈可擊
 //        C 有無懈可擊
 //
-//        A 出決鬥
+//        A 出決鬥（A 是出牌者，被排除在 reactionPlayers 之外）
 //        B 出 skip 無懈可擊
-//        A 出 skip 無懈可擊
 //
 //        When
 //        C 出 skip 無懈可擊
@@ -252,20 +250,6 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        for (String testPlayerId : playerIds) {
-            String testPlayerJson = "";
-//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-            testPlayerJson = websocketUtil.getValue(testPlayerId);
-            testPlayerId = testPlayerId.replace("-", "_");
-            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
-            String expectedJson = Files.readString(path);
-            assertEquals(expectedJson, testPlayerJson);
-        }
-
-        mockMvcUtil.playWardCard(gameId, "player-a", "", PlayType.SKIP.getPlayType())
-                .andExpect(status().isOk()).andReturn();
-
-        filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/player_a_play_skip_ward_to_player_a_for_%s_v4.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
 //            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
