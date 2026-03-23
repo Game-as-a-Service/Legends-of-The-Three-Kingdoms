@@ -1,11 +1,20 @@
 {
   "events" : [ {
-    "event" : "SkipWardEvent",
+    "event" : "PlayWardCardEvent",
     "data" : {
       "playerId" : "player-a",
-      "wardCardId" : "SSA001"
+      "cardId" : "SS7007",
+      "wardCardId" : "SSJ011"
     },
-    "message" : "不發動無懈可擊"
+    "message" : "劉備 的無懈可擊抵銷了 張飛 的 南蠻入侵"
+  }, {
+    "event" : "WaitForWardEvent",
+    "data" : {
+      "wardTriggerPlayerId" : "player-b",
+      "wardTriggerCardId" : "SS7007",
+      "targetPlayerIds" : [ "player-a" ]
+    },
+    "message" : "等待玩家發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
@@ -14,7 +23,7 @@
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
+        "size" : 3,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -22,11 +31,11 @@
     }, {
       "id" : "player-b",
       "generalId" : "SHU003",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
-        "size" : 5,
-        "cardIds" : [ ]
+        "size" : 3,
+        "cardIds" : [ "SCK078", "BS8008", "BH3029" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -34,9 +43,9 @@
       "id" : "player-c",
       "generalId" : "SHU002",
       "roleId" : "",
-      "hp" : 4,
+      "hp" : 3,
       "hand" : {
-        "size" : 5,
+        "size" : 4,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -44,19 +53,19 @@
     }, {
       "id" : "player-d",
       "generalId" : "QUN002",
-      "roleId" : "Traitor",
+      "roleId" : "",
       "hp" : 4,
       "hand" : {
         "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
     } ],
     "round" : {
       "roundPhase" : "Judgement",
-      "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-b",
+      "currentRoundPlayer" : "player-b",
+      "activePlayer" : "player-d",
       "dyingPlayer" : "",
       "showKill" : false
     },
@@ -64,5 +73,5 @@
   },
   "message" : "出無懈可擊",
   "gameId" : "my-id",
-  "playerId" : "player-d"
+  "playerId" : "player-b"
 }

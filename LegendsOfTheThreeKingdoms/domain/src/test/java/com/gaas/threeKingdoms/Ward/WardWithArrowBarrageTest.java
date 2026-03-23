@@ -763,4 +763,121 @@ public class WardWithArrowBarrageTest {
         AskPlayEquipmentEffectEvent equipmentEvent = getEvent(events, AskPlayEquipmentEffectEvent.class).orElseThrow();
         assertEquals("player-b", equipmentEvent.getPlayerId());
     }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            A 有 2 張無懈可擊
+            B 有萬箭齊發 + 1 張無懈可擊
+
+            B 出萬箭齊發
+            Phase 1: A skip
+            Phase 2 for C: A skip → C skip 閃 → C 扣血
+            Phase 2 for D: A plays Ward → B skips counter
+
+            When
+            B skips counter-Ward
+
+            Then
+            1 Ward（奇數）→ D 保護
+            A 還有 Ward → Phase 2 for A WaitForWardEvent
+            (Bug: 與 BI 相同，trigger player 被包含在 reactionPlayers 中導致卡住)
+            """)
+    @Test
+    public void test15_givenWardCounterChain_WhenAllOthersSkip_ThenGameShouldNotGetStuck() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new ArrowBarrage(SHA040), new Ward(SCK078)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerB);
+
+        // B plays ArrowBarrage → Phase 1 WaitForWardEvent (A has Ward)
+        game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Phase 1: A skips → Phase 2 for C: A has Ward
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for C: A skips → C AskDodgeEvent → C skips → C takes damage
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-c", "", "player-b", PlayType.SKIP.getPlayType());
+        assertEquals(3, game.getPlayer("player-c").getBloodCard().getHp());
+
+        // Phase 2 for D: A plays Ward (SSJ011) to protect D
+        List<DomainEvent> aPlayWardEvents = game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent counterWard = getEvent(aPlayWardEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(counterWard.getPlayerIds().contains("player-b"));
+        assertFalse(counterWard.getPlayerIds().contains("player-a"));
+
+        // B skips counter-Ward → 1 Ward (odd) → D protected → next player A
+        List<DomainEvent> bSkipEvents = game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+
+        // D protected, A still has Ward → Phase 2 WaitForWardEvent for A
+        WaitForWardEvent phase2AWard = getEvent(bSkipEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(phase2AWard.getPlayerIds().contains("player-a"));
+
+        // A skips self-Ward → AskDodgeEvent for A
+        List<DomainEvent> aSkipEvents = game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        AskDodgeEvent aDodge = getEvent(aSkipEvents, AskDodgeEvent.class).orElseThrow();
+        assertEquals("player-a", aDodge.getPlayerId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            A 有 2 張無懈可擊
+            B 有萬箭齊發 + 1 張無懈可擊
+
+            B 出萬箭齊發
+            Phase 1: A skip
+            Phase 2 for C: A skip → C skip → C 扣血
+            Phase 2 for D: A plays Ward → B counters → A counters B
+
+            Then
+            3 Ward（奇數）→ D 保護
+            A 無 Ward → A AskDodgeEvent
+            """)
+    @Test
+    public void test16_givenTripleWardChainInPhase2_WhenOddWards_ThenPlayerProtected() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new ArrowBarrage(SHA040), new Ward(SCK078)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerB);
+
+        // B plays ArrowBarrage
+        game.playerPlayCard(playerB.getId(), SHA040.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Phase 1: A skips
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for C: A skips → C skips → C takes damage
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-c", "", "player-b", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for D: A plays Ward → B counters → A counters B
+        game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        game.playWardCard("player-b", SCK078.getCardId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> finalEvents = game.playWardCard("player-a", SCQ077.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // 3 Ward (odd) → D protected, A has no Ward → AskDodgeEvent for A directly
+        AskDodgeEvent aDodge = getEvent(finalEvents, AskDodgeEvent.class).orElseThrow();
+        assertEquals("player-a", aDodge.getPlayerId());
+        assertEquals(4, game.getPlayer("player-d").getBloodCard().getHp());
+    }
 }

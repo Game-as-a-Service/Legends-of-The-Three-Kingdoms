@@ -712,4 +712,347 @@ public class WardWithBarbarianInvasionTest {
         AskKillEvent cAskKill = getEvent(bSkipEvents, AskKillEvent.class).orElseThrow();
         assertEquals("player-c", cAskKill.getPlayerId());
     }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            A 有 2 張無懈可擊
+            B 有南蠻入侵 + 1 張無懈可擊
+
+            B 出南蠻入侵
+            Phase 1: A skip（不取消整體）
+            Phase 2 for C: A skip（不保護 C）→ C 出殺
+            Phase 2 for D: A 出 Ward 保護 D → B 出 Ward 反制 A 的 Ward
+
+            When
+            系統應發 WaitForWardEvent 給 A（A 還有 1 張 Ward）
+
+            Then
+            A skip → 2 張 Ward（偶數）→ D 仍需出殺
+            """)
+    @Test
+    public void test14_givenWardCounterChainInPhase2_WhenBCountersAWard_ThenAShouldBeAskedToCounterAndGameNotStuck() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007), new Ward(SCK078)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerB);
+
+        // Step 1: B plays BarbarianInvasion → Phase 1 WaitForWardEvent (A has Ward, B excluded as caster)
+        List<DomainEvent> playBIEvents = game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent phase1Ward = getEvent(playBIEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(phase1Ward.getPlayerIds().contains("player-a"));
+
+        // Step 2: A skips Phase 1 Ward → 0 wards → proceeds to Phase 2
+        // Phase 2 for C: A has Ward → WaitForWardEvent
+        List<DomainEvent> aSkipPhase1Events = game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+
+        // Step 3: A skips Phase 2 Ward for C → C gets AskKillEvent
+        List<DomainEvent> aSkipPhase2CEvents = game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        AskKillEvent cAskKill = getEvent(aSkipPhase2CEvents, AskKillEvent.class).orElseThrow();
+        assertEquals("player-c", cAskKill.getPlayerId());
+
+        // Step 4: C plays Kill → Phase 2 for D: A has Ward → WaitForWardEvent
+        List<DomainEvent> cKillEvents = game.playerPlayCard("player-c", BS8008.getCardId(), "player-b", PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent phase2DWard = getEvent(cKillEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(phase2DWard.getPlayerIds().contains("player-a"));
+        assertEquals(List.of("player-d"), phase2DWard.getTargetPlayerIds());
+
+        // Step 5: A plays Ward to protect D → counter-Ward WaitForWardEvent should include B
+        List<DomainEvent> aPlayWardEvents = game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent counterWard = getEvent(aPlayWardEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(counterWard.getPlayerIds().contains("player-b"));
+
+        // Step 6: B plays Ward to counter A's Ward → should ask A (who has 1 Ward left)
+        List<DomainEvent> bPlayWardEvents = game.playWardCard("player-b", SCK078.getCardId(), PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent counterCounterWard = getEvent(bPlayWardEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(counterCounterWard.getPlayerIds().contains("player-a"),
+                "A should be asked to counter B's Ward since A has 1 Ward left");
+
+        // Step 7: A skips → 2 wards (even) → Ward protection cancelled → D still needs to respond
+        List<DomainEvent> aSkipCounterEvents = game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        AskKillEvent dAskKill = getEvent(aSkipCounterEvents, AskKillEvent.class).orElseThrow();
+        assertEquals("player-d", dAskKill.getPlayerId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            A 有 2 張無懈可擊
+            B 有南蠻入侵 + 1 張無懈可擊
+
+            B 出南蠻入侵
+            Phase 1: A skip
+            Phase 2 for C: A skip → C AskKillEvent → C plays Kill
+            Phase 2 for D: A plays Ward (to protect D)
+            → counter-Ward: B is asked (WaitForWardEvent), A is trigger (excluded from event)
+
+            When
+            B skips counter-Ward
+
+            Then
+            所有人都 skip → 1 Ward（奇數）→ D 被保護
+            A 是最後一個 reaction player → A 收到 AskKillEvent
+            (Bug: game gets stuck because trigger player A remains in reactionPlayers
+             but was excluded from WaitForWardEvent, so reactionPlayers never empties)
+            """)
+    @Test
+    public void test15_givenWardCounterChain_WhenAllOthersSkip_ThenGameShouldNotGetStuck() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007), new Ward(SCK078)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerB);
+
+        // Step 1: B plays BarbarianInvasion → Phase 1 WaitForWardEvent (A has Ward)
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Step 2: A skips Phase 1 → 0 wards → proceeds to Phase 2
+        // Phase 2 for C: A has Ward → WaitForWardEvent
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+
+        // Step 3: A skips Phase 2 for C → C gets AskKillEvent
+        List<DomainEvent> phase2CEvents = game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        AskKillEvent cAskKill = getEvent(phase2CEvents, AskKillEvent.class).orElseThrow();
+        assertEquals("player-c", cAskKill.getPlayerId());
+
+        // Step 4: C plays Kill → Phase 2 for D: A has Ward → WaitForWardEvent
+        List<DomainEvent> cKillEvents = game.playerPlayCard("player-c", BS8008.getCardId(), "player-b", PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent phase2DWard = getEvent(cKillEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(phase2DWard.getPlayerIds().contains("player-a"));
+
+        // Step 5: A plays Ward to protect D (uses SSJ011, has SCQ077 left)
+        // → counter-Ward WaitForWardEvent: B has Ward, A is trigger (excluded)
+        List<DomainEvent> aPlayWardEvents = game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        WaitForWardEvent counterWard = getEvent(aPlayWardEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(counterWard.getPlayerIds().contains("player-b"),
+                "B should be asked to counter A's Ward");
+        assertFalse(counterWard.getPlayerIds().contains("player-a"),
+                "A (trigger) should NOT be in WaitForWardEvent");
+
+        // Step 6: B skips counter-Ward → all asked players have responded
+        // → 1 Ward (odd) → D protected → skip to next player A
+        // BUG: A remains in reactionPlayers (due to whichPlayersHaveWard() not excluding trigger),
+        //       reactionPlayers never empties, doBehaviorAction() never called → game stuck
+        List<DomainEvent> bSkipEvents = game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+
+        // D is protected (1 Ward odd), BI moves to next player: A
+        // A still has 1 Ward (SCQ077) → Phase 2 WaitForWardEvent for A
+        WaitForWardEvent phase2AWard = getEvent(bSkipEvents, WaitForWardEvent.class).orElseThrow();
+        assertTrue(phase2AWard.getPlayerIds().contains("player-a"));
+
+        // A skips Ward for themselves → 0 wards → A gets AskKillEvent
+        List<DomainEvent> aSkipSelfWardEvents = game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        AskKillEvent aAskKill = getEvent(aSkipSelfWardEvents, AskKillEvent.class).orElseThrow();
+        assertEquals("player-a", aAskKill.getPlayerId());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            A 有 2 張無懈可擊
+            B 有南蠻入侵 + 1 張無懈可擊
+
+            B 出南蠻入侵
+            Phase 1: A skip
+            Phase 2 for C: A skip → C AskKillEvent → C skip (takes damage)
+            Phase 2 for D: A plays Ward → B plays Ward (counter) → A plays Ward (counter-counter)
+
+            Then
+            3 張 Ward（奇數）→ D 被保護
+            D 不是最後一個 → 繼續到 A
+            A 沒有 Ward → AskKillEvent for A
+            A skip → A takes damage → BI 結束
+            """)
+    @Test
+    public void test16_givenTripleWardChainInPhase2_WhenOddWards_ThenPlayerProtected() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007), new Ward(SCK078)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerB);
+
+        // B plays BI → Phase 1 WaitForWardEvent (A has Ward)
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Phase 1: A skips → Phase 2 for C
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for C: A skips → C AskKillEvent
+        List<DomainEvent> cEvents = game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        assertEquals("player-c", getEvent(cEvents, AskKillEvent.class).orElseThrow().getPlayerId());
+
+        // C skips kill → takes damage → Phase 2 for D
+        game.playerPlayCard("player-c", "", "player-b", PlayType.SKIP.getPlayType());
+        assertEquals(3, game.getPlayer("player-c").getBloodCard().getHp());
+
+        // Phase 2 for D: A plays Ward (SSJ011) to protect D
+        game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // B plays Ward (SCK078) to counter A
+        game.playWardCard("player-b", SCK078.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // A plays Ward (SCQ077) to counter B → 3 wards (odd) → D protected
+        List<DomainEvent> tripleWardEvents = game.playWardCard("player-a", SCQ077.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // D protected (3 odd), nobody has Ward → AskKillEvent for A
+        assertEquals(4, game.getPlayer("player-d").getBloodCard().getHp());
+        AskKillEvent aKill = getEvent(tripleWardEvents, AskKillEvent.class).orElseThrow();
+        assertEquals("player-a", aKill.getPlayerId());
+
+        // A skips kill → takes damage → A is last → BI ends
+        game.playerPlayCard("player-a", "", "player-b", PlayType.SKIP.getPlayType());
+        assertEquals(3, game.getPlayer("player-a").getBloodCard().getHp());
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(0, game.getTopBehavior().size());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            A 有 2 張無懈可擊
+            B 有南蠻入侵 + 1 張無懈可擊
+
+            B 出南蠻入侵
+            Phase 1: A skip
+            Phase 2 for C: A skip → C AskKillEvent → C skip (takes damage)
+            Phase 2 for D: A plays Ward → B plays Ward (counter) → A plays Ward (counter-counter)
+
+            Then
+            3 張 Ward（奇數）→ D 被保護
+            D 不是最後一個 → 繼續到 A
+            A 沒有 Ward → AskKillEvent for A
+            A skip → A takes damage → BI 結束
+            """)
+    @Test
+    public void test17_givenTripleWardThenContinueToLastPlayer_WhenDProtected_ThenAStillNeedsKill() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007), new Ward(SCK078)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        playerC.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerB);
+
+        // B plays BI
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Phase 1: A skips
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for C: A skips → C AskKillEvent → C plays Kill
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-c", BS8008.getCardId(), "player-b", PlayType.ACTIVE.getPlayType());
+
+        // Phase 2 for D: A plays Ward (protect D) → B counters → A counter-counters
+        game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        game.playWardCard("player-b", SCK078.getCardId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> tripleWardEvents = game.playWardCard("player-a", SCQ077.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // D protected (3 odd), A has no Ward → AskKillEvent for A (no Ward check needed)
+        AskKillEvent aKill = getEvent(tripleWardEvents, AskKillEvent.class).orElseThrow();
+        assertEquals("player-a", aKill.getPlayerId());
+
+        // A skips kill → takes damage → BI ends
+        game.playerPlayCard("player-a", "", "player-b", PlayType.SKIP.getPlayType());
+        assertEquals(3, game.getPlayer("player-a").getBloodCard().getHp());
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(0, game.getTopBehavior().size());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，B 的回合
+            A 有 2 張無懈可擊
+            B 有南蠻入侵 + 1 張無懈可擊
+
+            B 出南蠻入侵
+            Phase 1: A skip
+            Phase 2 for C: A skip → C skip (takes damage)
+            Phase 2 for D: A plays Ward → B counters → A counters B（3 奇數 → D 保護）
+            Phase 2 for A: 沒有人有 Ward → AskKillEvent for A
+
+            When
+            A plays Ward (SCQ077) to counter B's Ward (3 wards)
+
+            Then
+            系統不該出 WaitForWardEvent（沒人還有 Ward）
+            直接算出 3 Ward odd → D protected → AskKillEvent for A
+            """)
+    @Test
+    public void test18_givenTripleWardNoOneHasWardLeft_ThenDirectlyResolve() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007), new Ward(SCK078)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerB);
+
+        // B plays BI
+        game.playerPlayCard(playerB.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Phase 1: A skip
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for C: A skip → C AskKillEvent → C skip → C takes damage
+        game.playWardCard("player-a", "", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-c", "", "player-b", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for D: A plays Ward (SSJ011)
+        game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        // B plays Ward (SCK078) to counter
+        game.playWardCard("player-b", SCK078.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // A plays Ward (SCQ077) to counter B → 3 wards, no one has Ward left
+        // Should NOT get WaitForWardEvent, should directly resolve
+        List<DomainEvent> finalEvents = game.playWardCard("player-a", SCQ077.getCardId(), PlayType.ACTIVE.getPlayType());
+
+        // No WaitForWardEvent because no one has Ward
+        assertFalse(finalEvents.stream().anyMatch(e -> e instanceof WaitForWardEvent),
+                "No one has Ward left, should not get WaitForWardEvent");
+
+        // D protected (3 odd), next player A has no Ward → AskKillEvent for A
+        AskKillEvent aKill = getEvent(finalEvents, AskKillEvent.class).orElseThrow();
+        assertEquals("player-a", aKill.getPlayerId());
+    }
 }
