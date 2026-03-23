@@ -1,11 +1,20 @@
 {
   "events" : [ {
-    "event" : "SkipWardEvent",
+    "event" : "PlayWardCardEvent",
     "data" : {
-      "playerId" : "player-b",
+      "playerId" : "player-a",
+      "cardId" : "SHA040",
       "wardCardId" : "SSJ011"
     },
-    "message" : "不發動無懈可擊"
+    "message" : "劉備 的無懈可擊抵銷了 張飛 的 萬箭齊發"
+  }, {
+    "event" : "WaitForWardEvent",
+    "data" : {
+      "wardTriggerPlayerId" : "player-b",
+      "wardTriggerCardId" : "SHA040",
+      "targetPlayerIds" : [ "player-a" ]
+    },
+    "message" : "等待玩家發動無懈可擊"
   } ],
   "data" : {
     "seats" : [ {

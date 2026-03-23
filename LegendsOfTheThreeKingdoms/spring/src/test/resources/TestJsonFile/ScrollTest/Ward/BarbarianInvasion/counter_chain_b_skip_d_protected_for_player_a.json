@@ -1,11 +1,20 @@
 {
   "events" : [ {
-    "event" : "SkipWardEvent",
+    "event" : "PlayWardCardEvent",
     "data" : {
-      "playerId" : "player-b",
+      "playerId" : "player-a",
+      "cardId" : "SS7007",
       "wardCardId" : "SSJ011"
     },
-    "message" : "不發動無懈可擊"
+    "message" : "劉備 的無懈可擊抵銷了 張飛 的 南蠻入侵"
+  }, {
+    "event" : "AskPlayWardEvent",
+    "data" : {
+      "wardTriggerPlayerId" : "player-b",
+      "wardTriggerCardId" : "SS7007",
+      "targetPlayerIds" : [ "player-a" ]
+    },
+    "message" : "請選擇是否要出無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
