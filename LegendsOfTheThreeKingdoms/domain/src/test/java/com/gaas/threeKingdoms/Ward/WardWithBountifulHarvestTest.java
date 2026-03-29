@@ -382,10 +382,7 @@ public class WardWithBountifulHarvestTest {
         game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
         game.playerChooseCardFromBountifulHarvest("player-b", BH3029.getCardId());
 
-        // C picks (no Ward left after B skipped once per Phase 2 round... wait, B still has Ward card)
-        // Actually B still has SSJ011 - let me reconsider...
-        // B only skips Ward, B still has the Ward card. B used SKIP playType, not ACTIVE.
-        // So Phase 2 for C: B has Ward → WaitForWardEvent → B skips
+        // Phase 2 for C: B still has Ward (skipped, not played) → WaitForWardEvent → B skips
         game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
         game.playerChooseCardFromBountifulHarvest("player-c", BC2054.getCardId());
 
@@ -549,5 +546,106 @@ public class WardWithBountifulHarvestTest {
 
         // Then: BH proceeds, WardEvent present
         assertTrue(phase1Events.stream().anyMatch(e -> e instanceof WardEvent));
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，A 的回合
+            A 有五穀豐登
+            沒有人有無懈可擊
+
+            A 出五穀豐登
+            A 選 BS8008, B 選 BH3029, C 選 BC2054
+
+            When
+            D（最後一個玩家）選 BH0036
+
+            Then
+            五穀豐登結束
+            activePlayer 回到 A（currentRoundPlayer）
+            """)
+    @Test
+    public void test11_givenLastPlayerPicks_ThenActivePlayerReturnsToCurrentRoundPlayer() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new BountifulHarvest(SH3042)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerA);
+
+        // A plays BH (no Ward) → direct picking
+        game.playerPlayCard(playerA.getId(), SH3042.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // All players pick
+        game.playerChooseCardFromBountifulHarvest("player-a", BS8008.getCardId());
+        game.playerChooseCardFromBountifulHarvest("player-b", BH3029.getCardId());
+        game.playerChooseCardFromBountifulHarvest("player-c", BC2054.getCardId());
+        game.playerChooseCardFromBountifulHarvest("player-d", BH0036.getCardId());
+
+        // Then: BH ends, activePlayer should be A (currentRoundPlayer)
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(0, game.getTopBehavior().size());
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，A 的回合
+            A 有五穀豐登
+            B 有無懈可擊
+
+            Phase 2 Ward 跳過 B 後，剩餘牌池數量正確
+
+            Then
+            A 選完後牌池剩 3 張
+            B 被跳過後牌池仍為 3 張
+            C 選完後牌池剩 2 張
+            """)
+    @Test
+    public void test12_givenPhase2WardSkipsPlayer_ThenCardPoolSizeCorrect() {
+        Game game = createGame();
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new BountifulHarvest(SH3042)));
+
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        playerB.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011)));
+
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerA);
+
+        // A plays BH → Phase 1 WaitForWardEvent
+        game.playerPlayCard(playerA.getId(), SH3042.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // Phase 1: B skips → proceeds
+        game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+
+        // Phase 2 for A: B skips → A picks BS8008
+        game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        game.playerChooseCardFromBountifulHarvest("player-a", BS8008.getCardId());
+
+        // Phase 2 for B: B plays Ward → B skipped → C gets BountifulHarvestEvent
+        List<DomainEvent> wardEvents = game.playWardCard("player-b", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        BountifulHarvestEvent cEvent = getEvent(wardEvents, BountifulHarvestEvent.class).orElseThrow();
+        assertEquals("player-c", cEvent.getNextChoosingPlayerId());
+        // B was skipped, pool should still have 3 cards (only A picked 1 from 4)
+        assertEquals(3, cEvent.getAssignmentCardIds().size());
+
+        // C picks BH3029
+        game.playerChooseCardFromBountifulHarvest("player-c", BH3029.getCardId());
+
+        // D picks (last) → BH ends
+        game.playerChooseCardFromBountifulHarvest("player-d", BC2054.getCardId());
+
+        // Then: A picked, B skipped, C picked, D picked
+        assertEquals(1, playerA.getHandSize());
+        assertEquals(0, playerB.getHandSize()); // Ward was used, no pick
+        assertEquals(1, playerC.getHandSize());
+        assertEquals(1, playerD.getHandSize());
     }
 }

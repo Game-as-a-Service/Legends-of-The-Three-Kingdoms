@@ -60,6 +60,8 @@ public class BountifulHarvestBehavior extends Behavior {
                     null, cardId, PlayType.INACTIVE.getPlayType(), card, true
             );
             wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+            // BH 的 targetPlayerIds 包含施術者（caster），因為五穀豐登是全體效果，施術者也需要選牌
+            // 這與南蠻入侵/萬箭齊發不同（它們排除施術者）
             wardBehavior.putParam(WARD_TARGET_PLAYER_IDS, new ArrayList<>(reactionPlayers));
             game.updateTopBehavior(wardBehavior);
 
@@ -150,6 +152,8 @@ public class BountifulHarvestBehavior extends Behavior {
 
         if (isLastReactionPlayers(playerId)) {
             isOneRound = true;
+            game.getCurrentRound().setStage(Stage.Normal);
+            game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
         } else {
             events.addAll(askNextPlayerOrWard());
         }
