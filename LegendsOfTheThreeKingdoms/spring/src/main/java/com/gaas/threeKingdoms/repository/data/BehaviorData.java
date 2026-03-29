@@ -237,6 +237,9 @@ public class BehaviorData {
                         BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS,
                         params.get(BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS)
                 );
+                if (params != null && Boolean.TRUE.equals(params.get(POLLING_STARTED))) {
+                    bountifulHarvestBehavior.setPollingStarted(true);
+                }
                 yield bountifulHarvestBehavior;
             }
             case "WardBehavior" -> {
@@ -290,6 +293,8 @@ public class BehaviorData {
             params.put(POLLING_STARTED, ab.isPollingStarted());
         } else if (behavior instanceof BarbarianInvasionBehavior bi) {
             params.put(POLLING_STARTED, bi.isPollingStarted());
+        } else if (behavior instanceof BountifulHarvestBehavior bh) {
+            params.put(POLLING_STARTED, bh.isPollingStarted());
         }
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())
