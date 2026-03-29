@@ -111,6 +111,16 @@ jobs:
             -f docker/Dockerfile \
             .
           docker push ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }} --all-tags
+
+      # Login to NAS Registry
+      - name: Login to NAS Registry
+        run: echo "${{ secrets.NAS_REGISTRY_PASSWORD }}" | docker login registry.parsons125.in -u "${{ secrets.NAS_REGISTRY_USERNAME }}" --password-stdin
+
+      # Docker tag & push to NAS Registry
+      - name: Docker push to NAS Registry
+        run: |
+          docker tag ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:latest
+          docker push registry.parsons125.in/three-kingdoms:latest
   deploy:
     name: Deploy to AWS EC2
     needs: docker-push
