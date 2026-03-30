@@ -124,6 +124,10 @@ jobs:
           docker tag ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:${TIMESTAMP}
           docker push registry.parsons125.in/three-kingdoms:latest
           docker push registry.parsons125.in/three-kingdoms:${TIMESTAMP}
+
+      # Trigger NAS redeploy
+      - name: Trigger NAS Redeploy
+        run: curl -sf -X POST "https://webhook.parsons125.in/hooks/redeploy-3k-be-app?token=${{ secrets.NAS_REDEPLOY_TOKEN }}"
   deploy:
     name: Deploy to AWS EC2
     needs: docker-push
