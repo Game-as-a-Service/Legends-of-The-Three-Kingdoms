@@ -1,6 +1,10 @@
 name: Build and Deploy to AWS
 
-on: [push, workflow_dispatch]
+on:
+  push:
+  pull_request:
+    types: [opened]
+  workflow_dispatch:
 
 env:
   JAR_FILENAME: LegendsOfTheThreeKingdoms
@@ -150,38 +154,46 @@ jobs:
             pwd
             sudo systemctl restart ${{ env.SYSTEMD_SERVICE_NAME }}
 
-  send-to-discord-webhook-url:
+  # === Discord 通知：PR 開啟 ===
+  notify-pr-opened:
+    name: Notify PR Opened
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
     steps:
-      - name: crawl-commit-message-headers
-        id: crawl-commit-message-headers
+      - name: Send PR notification to Discord
         uses: actions/github-script@v7
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const payload = {
+              content: `## :scroll: 新的奏摺（Pull Request）\n**${pr.title}** (#${pr.number})\n提交者：${pr.user.login}\n\n:point_right: [查看奏摺](${pr.html_url})`,
+              username: '關羽',
+              avatar_url: 'https://3k.parsons125.in/guan-yu.png'
+            };
+            const res = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error(`Discord webhook failed: ${res.status}`);
+
+  # === Discord 通知：Merge + CI/CD 成功 ===
+  notify-deploy-success:
+    name: Notify Deploy Success
+    runs-on: ubuntu-latest
+    needs: [build, docker-push, deploy]
+    if: github.event_name == 'push' && github.ref_name == 'main' && success()
+    steps:
+      - name: Send success notification to Discord
+        uses: actions/github-script@v7
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           script: |
             const commits = context.payload.commits;
             const issueRegex = /\#(\d+)/g;
-            const messages = commits.map(commit => {
-              const message = commit.message.split('\n')[0];
-              const issueMatches = commit.message.match(issueRegex);
-              console.log('issueMatches: ', issueMatches);
-              const issues = issueMatches ? issueMatches.map(match => match.slice(1)) : []; // 提取 issue number
-              return { message, issues };
-            });
-            console.log(commits, messages);
-            console.log('context: ', context)
-            core.exportVariable('messages', JSON.stringify(messages));
-      - name: build-discord-webhook-payload
-        id: build-discord-webhook-payload
-        uses: actions/github-script@v7
-        env:
-          # # sandbox webhook url
-          # DISCORD_WEBHOOK_URL: ${{ secrets.SANDBOX_DISCORD_WEBHOOK_URL }}
-          # real webhook url
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          script: |
-            const { messages } = process.env;
-            const jsonMessages = JSON.parse(messages);
             const icons = {
               feat: '<:thumb:1239951662832156752>',
               fix: ':construction_site:',
@@ -189,31 +201,63 @@ jobs:
               default: ':hammer_and_wrench:'
             };
 
-            const iconMessages = jsonMessages.map(({ message, issues }) => {
+            const iconMessages = commits.map(commit => {
+              const message = commit.message.split('\n')[0];
               const [commitType, ...rest] = message.split(': ');
-              if (commitType !== 'feat' && commitType !== 'fix' && commitType !== 'style' && commitType !== 'refactor') {
-                return;
-              }
+              if (!['feat', 'fix', 'style', 'refactor'].includes(commitType)) return;
               const icon = icons[commitType] || icons.default;
-              const issueLinks = issues.map(issue => `[#${issue}](${context.payload.repository.html_url}/issues/${issue})`).join(', ');
-              return icon + ' ' + rest.join(': ') + (issueLinks ? ' (' + issueLinks + ')' : ''); 
+              const issueMatches = commit.message.match(issueRegex);
+              const issues = issueMatches ? issueMatches.map(m => m.slice(1)) : [];
+              const issueLinks = issues.map(i => `[#${i}](${context.payload.repository.html_url}/issues/${i})`).join(', ');
+              return icon + ' ' + rest.join(': ') + (issueLinks ? ' (' + issueLinks + ')' : '');
             }).filter(Boolean);
 
-            const discordWebhookPayload = {
-              content: '## 奉天承運，皇帝詔曰：' + '\n' + iconMessages.join('\n') + '\n\n望卿等克盡厥職，共創霸業！ :point_right: [三國殺](https://3k.parsons125.in/)',
+            const commitList = iconMessages.length > 0 ? iconMessages.join('\n') : ':package: 維護更新';
+
+            const payload = {
+              content: `## :white_check_mark: 奉天承運，皇帝詔曰：\n${commitList}\n\n部署成功！望卿等克盡厥職，共創霸業！ :point_right: [三國殺](https://3k.parsons125.in/)`,
               username: '關羽',
               avatar_url: 'https://3k.parsons125.in/guan-yu.png'
             };
-
-            const req = new Request(process.env.DISCORD_WEBHOOK_URL, {
+            const res = await fetch(process.env.DISCORD_WEBHOOK_URL, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(discordWebhookPayload)
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
             });
+            if (!res.ok) throw new Error(`Discord webhook failed: ${res.status}`);
 
-            const res = await fetch(req);
-            if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
-            }
+  # === Discord 通知：Merge + CI/CD 失敗 ===
+  notify-deploy-failure:
+    name: Notify Deploy Failure
+    runs-on: ubuntu-latest
+    needs: [build, docker-push, deploy]
+    if: always() && github.event_name == 'push' && github.ref_name == 'main' && (needs.build.result == 'failure' || needs.docker-push.result == 'failure' || needs.deploy.result == 'failure')
+    steps:
+      - name: Send failure notification to Discord
+        uses: actions/github-script@v7
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          script: |
+            const buildResult = '${{ needs.build.result }}';
+            const pushResult = '${{ needs.docker-push.result }}';
+            const deployResult = '${{ needs.deploy.result }}';
+
+            const failedSteps = [];
+            if (buildResult === 'failure') failedSteps.push(':hammer_and_wrench: Build');
+            if (pushResult === 'failure') failedSteps.push(':whale: Docker Push');
+            if (deployResult === 'failure') failedSteps.push(':rocket: Deploy');
+
+            const runUrl = `${context.payload.repository.html_url}/actions/runs/${context.runId}`;
+            const payload = {
+              content: `## :x: 戰報：部署失敗！\n失敗環節：${failedSteps.join('、')}\n\n:point_right: [查看詳情](${runUrl})`,
+              username: '關羽',
+              avatar_url: 'https://3k.parsons125.in/guan-yu.png'
+            };
+            const res = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error(`Discord webhook failed: ${res.status}`);
+
