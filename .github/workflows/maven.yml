@@ -168,9 +168,9 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const payload = {
-              content: `## :scroll: 新的奏摺（Pull Request）\n**${pr.title}** (#${pr.number})\n提交者：${pr.user.login}\n\n:point_right: [查看奏摺](${pr.html_url})`,
-              username: '關羽',
-              avatar_url: 'https://3k.parsons125.in/guan-yu.png'
+              content: `## :scroll: 新的奏摺（Pull Request）\n亮有一計，可助破敵：\n**${pr.title}** (#${pr.number})\n提交者：${pr.user.login}\n\n觀星象，知天時 :point_right:[審閱軍情](${pr.html_url})`,
+              username: '諸葛亮',
+              avatar_url: 'https://3k.parsons125.in/zhuge-liang.png'
             };
             const res = await fetch(process.env.DISCORD_WEBHOOK_URL, {
               method: 'POST',
@@ -260,4 +260,3 @@ jobs:
               body: JSON.stringify(payload)
             });
             if (!res.ok) throw new Error(`Discord webhook failed: ${res.status}`);
-
