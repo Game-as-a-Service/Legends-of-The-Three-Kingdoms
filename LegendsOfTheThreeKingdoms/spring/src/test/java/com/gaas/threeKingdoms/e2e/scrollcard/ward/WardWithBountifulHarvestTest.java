@@ -251,8 +251,94 @@ public class WardWithBountifulHarvestTest extends AbstractBaseIntegrationTest {
     }
 
     // =============================================
+    // Phase 2 Bug Fix: C has Ward (not B)
+    // =============================================
+
+    @DisplayName("""
+        Given
+        玩家 A B C D，A 的回合
+        A 有五穀豐登
+        C 有無懈可擊
+
+        A 出五穀豐登
+        Phase 1: C skip → proceeds
+        Phase 2 for A: C skip → A picks BS8008
+
+        When
+        A picks BS8008 (ChooseCardFromBountifulHarvest)
+
+        Then
+        Phase 2 for B: C 有 Ward → WaitForWardEvent
+        C 收到 AskPlayWardEvent（不是 WaitForWardEvent），其他人收到 WaitForWardEvent
+    """)
+    @Test
+    public void givenCHasWard_WhenAPicksCard_ThenCReceivesAskPlayWardEvent() throws Exception {
+        givenBountifulHarvestWithWardV2();
+
+        // A plays BH → Phase 1 WaitForWardEvent (C has Ward)
+        mockMvcUtil.playCard(gameId, "player-a", "", "SH3042", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // Phase 1: C skips → 0 wards → proceeds to Phase 2
+        mockMvcUtil.playWardCard(gameId, "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // Phase 2 for A: C skips → A gets BountifulHarvestEvent
+        mockMvcUtil.playWardCard(gameId, "player-c", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // When: A picks BS8008 → ChooseCardFromBountifulHarvestPresenter handles events
+        // Phase 2 for B triggers WaitForWardEvent (C still has Ward)
+        mockMvcUtil.chooseCardFromBountifulHarvest(gameId, "player-a", "BS8008")
+                .andExpect(status().isOk()).andReturn();
+
+        // Then: C should receive AskPlayWardEvent, others receive WaitForWardEvent
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = BASE_PATH + "player_a_picks_phase2_ward_for_b_for_%s.json";
+
+        for (String testPlayerId : playerIds) {
+//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            String testPlayerJson = websocketUtil.getValue(testPlayerId);
+            String fileSafeId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, fileSafeId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    // =============================================
     // Setup methods
     // =============================================
+
+    // V2: A 有五穀豐登, C 有無懈可擊 (Ward 持有者不是相鄰玩家，用來測試 ChooseCardFromBountifulHarvestPresenter 的 per-player Ward 轉換)
+    private void givenBountifulHarvestWithWardV2() {
+        Player playerA = createPlayer(
+                "player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new BountifulHarvest(SH3042), new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
+        );
+        Player playerB = createPlayer(
+                "player-b", 4, General.張飛, HealthStatus.ALIVE, Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerC = createPlayer(
+                "player-c", 4, General.關羽, HealthStatus.ALIVE, Role.REBEL,
+                new Ward(SSJ011), new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
+        );
+        Player playerD = createPlayer(
+                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)));
+        game.setDeck(deck);
+        repository.save(game);
+    }
 
     // V1: A 有五穀豐登, B 有無懈可擊
     private void givenBountifulHarvestWithWardV1() {
