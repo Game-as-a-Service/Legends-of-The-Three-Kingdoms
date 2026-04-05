@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.GameStatusEvent;
 import com.gaas.threeKingdoms.events.PlayerEvent;
 import com.gaas.threeKingdoms.events.RoundEvent;
+import com.gaas.threeKingdoms.events.WaitForWardEvent;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.presenter.ViewModel.getEvent;
 
@@ -43,8 +45,21 @@ public class ChooseCardFromBountifulHarvestPresenter implements ChooseCardFromBo
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            // Per-player 個人化 events：將 WaitForWardEvent 轉換為 AskPlayWardEvent（給有 Ward 的玩家）
+            List<ViewModel<?>> personalEventToViewModels = new ArrayList<>(effectViewModels);
+
+            personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
+                if (personalViewModel instanceof PlayCardPresenter.WaitForWardViewModel waitForWardViewModel) {
+                    WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
+                    if (waitForWardEvent.getPlayerIds().contains(viewModel.getId())) {
+                        personalViewModel = new PlayCardPresenter.AskPlayWardViewModel(waitForWardViewModel.getData());
+                    }
+                }
+                return personalViewModel;
+            }).collect(Collectors.toList());
+
             viewModels.add(new ChooseCardFromBountifulHarvestPresenter.GameViewModel(
-                    effectViewModels,
+                    personalEventToViewModels,
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),
