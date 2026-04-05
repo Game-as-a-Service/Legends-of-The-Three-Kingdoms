@@ -8,7 +8,30 @@ When a player's turn begins, the game calls:
 
 1. `Game.playerTakeTurn(player)` (line 156) sets `RoundPhase.Judgement` and calls `playerTakeTurnStartInJudgement(player)`.
 
-2. `Game.playerTakeTurnStartInJudgement(player)` (line 165) calls `judgePlayerShouldDelay()` to process all delay scroll cards.
+2. `Game.playerTakeTurnStartInJudgement(player)` (line 165) calls `judgePlayerShouldDelay()` to process all delay scroll cards:
+   ```java
+   public List<DomainEvent> playerTakeTurnStartInJudgement(Player currentRoundPlayer) {
+       List<DomainEvent> events = new ArrayList<>();
+       if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
+           List<DomainEvent> judgeEvents = judgePlayerShouldDelay();  // line 168
+           events.addAll(judgeEvents);
+           boolean contentmentEventSuccess = judgeEvents.stream()
+                   .filter(event -> event instanceof ContentmentEvent)
+                   .map(event -> (ContentmentEvent) event)
+                   .anyMatch(ContentmentEvent::isSuccess);
+
+           if (RoundPhase.Drawing.equals(currentRound.getRoundPhase())) {
+               DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentEventSuccess);
+               events.add(drawCardEvent);
+               if (contentmentEventSuccess) {
+                   events.addAll(finishAction(currentRoundPlayer.getId()));  // skip to Discard
+               } else {
+                   events.add(getGameStatusEvent(drawCardEvent.getMessage()));
+               }
+           }
+       }
+   ```
+   **Critical observation:** This method checks `contentmentEventSuccess` from the returned events, then decides whether to skip Action phase. When Ward is involved, `judgePlayerShouldDelay()` will return early (due to `!topBehavior.isEmpty()`), so `RoundPhase` will still be `Judgement` -- the Drawing/Action logic won't execute yet. This is correct: the game pauses.
 
 3. `Game.judgePlayerShouldDelay()` (line 445) is the key method:
    ```java
@@ -24,15 +47,16 @@ When a player's turn begins, the game calls:
                    DomainEvent contentmentEvent = handleContentmentJudgement(player); // line 454
                    judgementEvents.add(contentmentEvent);
                } else if (card instanceof Lightning) {
-                   // ... lightning handling
+                   List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
+                   judgementEvents.addAll(lightningEvents);
                }
-               if (!topBehavior.isEmpty()) { // line 461: early return if behaviors are pending
+               if (!topBehavior.isEmpty()) { // line 461: early return if behaviors pending
                    return judgementEvents;
                }
            }
        }
        judgementEvents.add(new JudgementEvent());
-       currentRound.setRoundPhase(RoundPhase.Drawing); // line 468
+       currentRound.setRoundPhase(RoundPhase.Drawing);  // line 468
        return judgementEvents;
    }
    ```
@@ -40,30 +64,37 @@ When a player's turn begins, the game calls:
 4. `Game.handleContentmentJudgement(player)` (line 513):
    ```java
    private ContentmentEvent handleContentmentJudgement(Player player) {
-       List<HandCard> cards = drawCardForCardEffect(1); // line 515: draws judgement card
+       List<HandCard> cards = drawCardForCardEffect(1);  // draws judgement card from deck
        HandCard drawnCard = cards.get(0);
-       boolean contentmentSuccess = Suit.HEART != drawnCard.getSuit(); // line 519
+       boolean contentmentSuccess = Suit.HEART != drawnCard.getSuit();  // Heart = fail
        return new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard.getId(), drawnCard.getSuit());
    }
    ```
 
-5. Back in `playerTakeTurnStartInJudgement` (line 165), after getting judge events:
-   - If `contentmentSuccess` is true: player draws 2 cards but immediately goes to discard phase (skips Action phase).
-   - If `contentmentSuccess` is false (heart drawn): player proceeds normally through Drawing -> Action.
-
 ### Key Problem
 
-Currently, the judgement card draw happens **immediately** with NO opportunity for anyone to play Ward. In the real 三國殺 rules, **before** the judgement card is drawn, all players should be asked if they want to play Ward to cancel the Contentment effect entirely. If Ward cancels it, the judgement draw is skipped and the Contentment card is removed without effect.
+The judgement card draw happens **immediately** with NO opportunity for anyone to play Ward. In real 三國殺 rules, **before** the judgement card is drawn, all players should be asked if they want to play Ward to cancel the Contentment effect entirely. If Ward cancels it, the judgement draw is skipped and the Contentment card is removed without effect.
+
+### Why This Is the Same Problem Pattern as Other Cards
+
+This is the same Ward integration pattern already implemented for:
+- `BarbarianInvasionBehavior` -- Phase 1 cancel whole AoE, Phase 2 protect individual targets
+- `ArrowBarrageBehavior` -- same Phase 1/Phase 2 pattern
+- `BountifulHarvestBehavior` -- Phase 1 cancel whole harvest, Phase 2 protect individual pickers
+- `DuelBehavior` -- single-target cancel
+
+Contentment judgement is closest to the **single-target** pattern (like Duel), but with an important difference: it's **system-initiated** during Judgement phase, not player-initiated during Action phase.
 
 ### File Locations
 
 | File | Path | Purpose |
 |------|------|---------|
-| Game.java | `domain/src/main/java/com/gaas/threeKingdoms/Game.java` | Contains `judgePlayerShouldDelay()` (line 445) and `handleContentmentJudgement()` (line 513) |
-| ContentmentBehavior.java | `domain/src/main/java/com/gaas/threeKingdoms/behavior/behavior/ContentmentBehavior.java` | Handles playing Contentment onto a target (not the judgement phase) |
-| ContentmentEvent.java | `domain/src/main/java/com/gaas/threeKingdoms/events/ContentmentEvent.java` | Event for judgement result |
-| WardBehavior.java | `domain/src/main/java/com/gaas/threeKingdoms/behavior/behavior/WardBehavior.java` | Core Ward counter-chain logic |
-| Round.java | `domain/src/main/java/com/gaas/threeKingdoms/round/Round.java` | Round state (phase, stage, active player) |
+| Game.java | `domain/.../Game.java` | `judgePlayerShouldDelay()` (line 445), `handleContentmentJudgement()` (line 513), `playerTakeTurnStartInJudgement()` (line 165) |
+| ContentmentBehavior.java | `domain/.../behavior/behavior/ContentmentBehavior.java` | Handles **playing** Contentment onto a target (Action phase) -- NOT the judgement |
+| ContentmentEvent.java | `domain/.../events/ContentmentEvent.java` | Event for judgement result (has `drawCardId`, `suit`, `isSuccess`) |
+| WardBehavior.java | `domain/.../behavior/behavior/WardBehavior.java` | Core Ward counter-chain: `playerAction()`, `doResponseToPlayerAction()`, `doBehaviorAction()` |
+| Round.java | `domain/.../round/Round.java` | Round state: `RoundPhase`, `Stage`, `activePlayer`, `currentRoundPlayer` |
+| BehaviorData.java | `spring/.../repository/data/BehaviorData.java` | Serialization/deserialization of all Behavior types |
 
 ---
 
@@ -71,7 +102,7 @@ Currently, the judgement card draw happens **immediately** with NO opportunity f
 
 ### Why Ward Must Go BEFORE the Judgement Card Draw
 
-In 三國殺 rules, Ward (無懈可擊) targets the **scroll card itself**, not the judgement result. The purpose of Ward against Contentment is to prevent the entire judgement from happening -- the Contentment card is removed from the delay area without any effect. This is fundamentally different from modifying the judgement result.
+In 三國殺 rules, Ward (無懈可擊) targets the **scroll card itself**, not the judgement result. The purpose of Ward against Contentment is to prevent the entire judgement from happening -- the Contentment card is removed from the delay area without any effect.
 
 If Ward were inserted after the draw, the judgement card would already have been consumed from the deck, which would incorrectly alter game state even when Ward cancels the effect. The Ward check must happen before `drawCardForCardEffect(1)` is called.
 
@@ -82,29 +113,45 @@ Player turn starts
   -> playerTakeTurn()
     -> playerTakeTurnStartInJudgement()
       -> judgePlayerShouldDelay()
-        -> For each delay scroll card:
+        -> For each delay scroll card (delayCards.pop()):
           -> If card is Contentment:
-            -> [NEW] Check if anyone has Ward
-              -> YES: Push ContentmentJudgementBehavior onto topBehavior stack,
-                      push WardBehavior on top, emit WaitForWardEvent, RETURN EARLY
-                      (game pauses, waits for Ward responses via playWardCard API)
+            -> [NEW] Check doesAnyPlayerHaveWard(null)  // null = no one excluded
+              -> YES: Create ContentmentJudgementBehavior, push onto topBehavior stack
+                      ContentmentJudgementBehavior.playerAction() creates WardBehavior,
+                      pushes it on top, emits WaitForWardEvent
+                      judgePlayerShouldDelay() returns early (topBehavior not empty)
+                      Game pauses, waits for Ward responses via playWardCard API
               -> NO:  Proceed to handleContentmentJudgement() as before (draw card, judge)
 ```
 
-When Ward responses complete (all players skip or Ward counter-chain resolves):
+### What Happens When Ward Responses Complete
 
-- **Ward count is ODD (effect cancelled):** Contentment is removed from delay area. The `doWardCancelledAction()` on ContentmentJudgementBehavior resumes `judgePlayerShouldDelay()` flow -- checks for more delay cards, then proceeds to Drawing phase.
-- **Ward count is EVEN (effect proceeds):** The `doBehaviorAction()` on ContentmentJudgementBehavior calls `handleContentmentJudgement()` to draw the judgement card and determine the outcome, then resumes the normal flow.
+The WardBehavior resolves (all players skip or counter-chain ends) and calls `doBehaviorAction()` on `ContentmentJudgementBehavior`:
+
+**Ward count is EVEN (effect proceeds):**
+1. `ContentmentJudgementBehavior.doBehaviorAction()` calls `game.handleContentmentJudgement(player)` to draw judgement card.
+2. Emits `ContentmentEvent` with the result.
+3. Calls `game.playerTakeTurnStartInJudgement(player)` to resume the turn flow.
+4. `playerTakeTurnStartInJudgement` re-enters `judgePlayerShouldDelay()` which processes remaining delay cards, then transitions to Drawing phase.
+
+**Ward count is ODD (effect cancelled):**
+1. `ContentmentJudgementBehavior.doWardCancelledAction()` is called.
+2. The Contentment card was already popped from delayCards (at line 451), so it's simply discarded -- no judgement.
+3. Calls `game.playerTakeTurnStartInJudgement(player)` to resume the turn flow.
+4. Remaining delay scrolls (if any) are processed, then Drawing phase.
 
 ### Why a New Behavior Class Is Needed
 
-The existing `ContentmentBehavior` handles **playing** the Contentment card onto a target during the Action phase. The judgement-phase Ward check is a completely different game moment -- it happens at turn start, is system-initiated (not player-initiated), and needs `doBehaviorAction()` and `doWardCancelledAction()` hooks. A new `ContentmentJudgementBehavior` (or similar name) is needed to:
+The existing `ContentmentBehavior` handles **playing** the Contentment card onto a target during the Action phase. The judgement-phase Ward check is a completely different game moment:
 
-1. Hold the Contentment card reference and the affected player.
-2. Implement `doBehaviorAction()` to execute the judgement when Ward resolves to "even" (effect proceeds).
-3. Implement `doWardCancelledAction()` to skip the judgement when Ward resolves to "odd" (effect cancelled), then continue processing remaining delay scrolls.
-
-This follows the same pattern used by other Behaviors that interact with Ward (e.g., `DuelBehavior`, `BountifulHarvestBehavior`).
+| Aspect | ContentmentBehavior (existing) | ContentmentJudgementBehavior (new) |
+|--------|-------------------------------|-------------------------------------|
+| When | Action phase, player plays card | Judgement phase, system-initiated |
+| Who triggers | The player who plays Contentment | The system, at turn start |
+| behaviorPlayer | The caster | null (system) or the affected player |
+| Purpose | Place Contentment in target's delay area | Ward check before judgement draw |
+| Needs doBehaviorAction | No | Yes (draw judgement card) |
+| Needs doWardCancelledAction | No | Yes (skip judgement, resume) |
 
 ---
 
@@ -114,51 +161,119 @@ This follows the same pattern used by other Behaviors that interact with Ward (e
 
 **Location:** `domain/src/main/java/com/gaas/threeKingdoms/behavior/behavior/ContentmentJudgementBehavior.java`
 
-**Why:** This is the core of the feature. It represents the system-initiated moment when a Contentment card is about to be judged at turn start. It needs to:
-- Push a WardBehavior onto the stack if any player has Ward.
-- Implement `doBehaviorAction()` for when Ward resolves to "even" (proceed with judgement).
-- Implement `doWardCancelledAction()` for when Ward resolves to "odd" (skip judgement, continue to next delay card or Drawing phase).
+**Why:** Core of the feature. Represents the system-initiated moment when a Contentment card is about to be judged.
 
-**Pattern reference:** Similar to how `BountifulHarvestBehavior` (line 40-77) checks for Ward in `playerAction()` and implements both hooks.
+**Implementation sketch:**
+```java
+public class ContentmentJudgementBehavior extends Behavior {
+
+    public ContentmentJudgementBehavior(Game game, Player affectedPlayer,
+            List<String> reactionPlayers, Player currentReactionPlayer,
+            String cardId, String playType, HandCard card) {
+        // isTargetPlayerNeedToResponse=true, isOneRound=false, isNeed2ndApiToUseEffect=false
+        super(game, affectedPlayer, reactionPlayers, currentReactionPlayer,
+              cardId, playType, card, true, false, false);
+    }
+
+    @Override
+    public List<DomainEvent> playerAction() {
+        // Called from judgePlayerShouldDelay() when Ward holders exist
+        // 1. Set stage to Wait_Accept_Ward_Effect
+        // 2. Create WardBehavior with:
+        //    - behaviorPlayer = null (system-initiated)
+        //    - reactionPlayers = all players with Ward (doesAnyPlayerHaveWard(null))
+        //    - WARD_TRIGGER_PLAYER_ID = null (no excludes -- everyone can Ward)
+        //    - WARD_TARGET_PLAYER_IDS = [affectedPlayer.getId()]
+        // 3. Push WardBehavior on top
+        // 4. Return WaitForWardEvent + playerAction() events
+    }
+
+    @Override
+    public List<DomainEvent> doBehaviorAction() {
+        // Called when Ward count is EVEN (effect proceeds)
+        // 1. Call game.handleContentmentJudgement(behaviorPlayer)
+        // 2. Emit ContentmentEvent
+        // 3. Mark isOneRound = true
+        // 4. Call game.playerTakeTurnStartInJudgement(behaviorPlayer) to resume
+        // 5. Return all events
+    }
+
+    @Override
+    public List<DomainEvent> doWardCancelledAction() {
+        // Called when Ward count is ODD (effect cancelled)
+        // 1. Contentment already popped from delay area -- nothing to restore
+        // 2. Mark isOneRound = true
+        // 3. Call game.playerTakeTurnStartInJudgement(behaviorPlayer) to resume
+        // 4. Return events from resumed judgement flow
+    }
+}
+```
+
+**Key pattern references:**
+- `BountifulHarvestBehavior.playerAction()` lines 40-77 for Ward setup pattern
+- `DuelBehavior.playerAction()` lines 32-69 for single-target Ward pattern
+- WardBehavior constants: `WARD_TRIGGER_PLAYER_ID`, `WARD_TARGET_PLAYER_IDS`
 
 ### 3.2 Modify: `Game.java`
 
-**Location:** `domain/src/main/java/com/gaas/threeKingdoms/Game.java`
+**Changes needed:**
 
-**Why:** The `judgePlayerShouldDelay()` method (line 445) needs to be modified to check for Ward before calling `handleContentmentJudgement()`. Specifically:
+1. **`judgePlayerShouldDelay()` (line 445):** In the `if (card instanceof Contentment)` block (line 453-455), add Ward check before `handleContentmentJudgement()`:
+   ```java
+   if (card instanceof Contentment) {
+       if (doesAnyPlayerHaveWard(null)) {  // null = no player excluded
+           // Create ContentmentJudgementBehavior, push onto topBehavior
+           ContentmentJudgementBehavior cjb = new ContentmentJudgementBehavior(
+               this, player, /* reactionPlayers */, null, card.getId(),
+               PlayType.INACTIVE.getPlayType(), card
+           );
+           topBehavior.push(cjb);
+           judgementEvents.addAll(cjb.playerAction());
+           // Early return will happen via existing check at line 461
+       } else {
+           DomainEvent contentmentEvent = handleContentmentJudgement(player);
+           judgementEvents.add(contentmentEvent);
+       }
+   }
+   ```
 
-- **Line 453-455:** Instead of immediately calling `handleContentmentJudgement(player)`, first check `doesAnyPlayerHaveWard()`. If true, create a `ContentmentJudgementBehavior`, push it and a `WardBehavior` onto `topBehavior`, and return early with `WaitForWardEvent`.
-- **`handleContentmentJudgement()`** (line 513): This method should become `public` (or package-private) so that `ContentmentJudgementBehavior.doBehaviorAction()` can call it.
-- **`playerTakeTurnStartInJudgement()`** (line 165): The early return when `!topBehavior.isEmpty()` at line 461 already handles the case where Ward is pending, so this method needs minimal changes. However, we need a way for the game to resume judgement processing after Ward resolves. This likely requires a new method or a way for `ContentmentJudgementBehavior` to trigger continuation of `judgePlayerShouldDelay()`.
+2. **`handleContentmentJudgement()` (line 513):** Change visibility from `private` to `public` (or package-private) so `ContentmentJudgementBehavior.doBehaviorAction()` can call it.
 
-**Key design consideration:** After Ward resolves (either cancelling or allowing Contentment), the game needs to:
-1. Continue processing remaining delay scroll cards (e.g., if player has both Contentment and Lightning).
-2. Eventually transition to Drawing phase.
+3. **`playerTakeTurnStartInJudgement()` (line 165):** Currently `public`. The ContentmentJudgementBehavior needs to call this to resume the turn after Ward resolves. No changes needed to the method itself -- it already correctly handles re-entry because:
+   - If `RoundPhase` is still `Judgement`, it calls `judgePlayerShouldDelay()` again
+   - `judgePlayerShouldDelay()` will process remaining delay cards (if any)
+   - Eventually sets `RoundPhase.Drawing` and returns
 
-The existing `if (!topBehavior.isEmpty()) return judgementEvents;` at line 461 provides the early-exit mechanism. The `ContentmentJudgementBehavior`'s `doBehaviorAction()` / `doWardCancelledAction()` must handle resuming the judgement flow. This may require making parts of `judgePlayerShouldDelay()` accessible or refactoring it slightly.
+   **IMPORTANT:** The `contentmentEventSuccess` check in `playerTakeTurnStartInJudgement()` (line 170-173) needs consideration. When `doBehaviorAction()` calls this method, the `ContentmentEvent` will be in the returned events from the resumed `judgePlayerShouldDelay()` call. This should work correctly as-is.
+
+   When `doWardCancelledAction()` calls this method, there will be no `ContentmentEvent` in the events (judgement was skipped), so `contentmentEventSuccess` will be `false`, which means the player gets a normal turn. This is correct.
 
 ### 3.3 Modify: `BehaviorData.java`
 
 **Location:** `spring/src/main/java/com/gaas/threeKingdoms/repository/data/BehaviorData.java`
 
-**Why:** The persistence layer needs to know how to serialize/deserialize the new `ContentmentJudgementBehavior`. A new `case "ContentmentJudgementBehavior"` must be added to the `createBehavior()` switch (around line 41). This follows the same pattern as every other Behavior in the project.
+**Why:** Add serialization/deserialization for the new `ContentmentJudgementBehavior`.
 
-### 3.4 Potentially Modify: `DomainEventToViewModelMapper.java` and/or `FinishActionPresenter.java`
+**Changes:**
+1. In `createBehavior()` switch (line 41), add:
+   ```java
+   case "ContentmentJudgementBehavior" -> new ContentmentJudgementBehavior(
+       game,
+       behaviorPlayerId != null ? game.getPlayer(behaviorPlayerId) : null,
+       reactionPlayers,
+       currentReactionPlayerId != null ? game.getPlayer(currentReactionPlayerId) : null,
+       cardId,
+       playType,
+       PlayCard.findById(cardId)
+   );
+   ```
+2. `fromDomain()` (line 290) already uses `behavior.getClass().getSimpleName()` which will produce `"ContentmentJudgementBehavior"` automatically. No changes needed there.
 
-**Location:** `spring/src/main/java/com/gaas/threeKingdoms/presenter/mapper/DomainEventToViewModelMapper.java` and `spring/src/main/java/com/gaas/threeKingdoms/presenter/FinishActionPresenter.java`
+### 3.4 No Changes Needed: Event Classes and Presenters
 
-**Why:** If the Ward-cancelled path for Contentment needs a new event type (e.g., `ContentmentWardCancelledEvent`), the presenter layer needs to map it to a view model. However, this may not be necessary if we reuse existing events (`WardEvent`, `ContentmentEvent`). The existing `WardEvent` and `WaitForWardEvent` are already mapped, so those paths should work. We need to verify that the `ContentmentEvent` continues to be emitted correctly in the "Ward even, proceed with judgement" path.
-
-### 3.5 Potentially Modify: `ContentmentEvent.java`
-
-**Location:** `domain/src/main/java/com/gaas/threeKingdoms/events/ContentmentEvent.java`
-
-**Why:** We may need a way to represent "Contentment was cancelled by Ward" (no judgement card drawn). The current `ContentmentEvent` always includes a `drawCardId` and `suit`, which assume a judgement card was drawn. If Ward cancels the effect, there is no drawn card. Options:
-- Add a new `ContentmentWardCancelledEvent` (cleaner separation).
-- Allow `drawCardId` to be null in `ContentmentEvent` (less clean but simpler).
-- Rely solely on `WardEvent` to communicate the cancellation (simplest, may be sufficient).
-
-The simplest approach is likely to rely on `WardEvent` for the cancellation notification, and only emit `ContentmentEvent` when the judgement actually occurs (Ward count even or no Ward at all). This means no changes to `ContentmentEvent.java`.
+- **`ContentmentEvent.java`:** No changes. It is only emitted when the judgement actually occurs (Ward even or no Ward). When Ward cancels, we rely on `WardEvent` to communicate the cancellation.
+- **`WaitForWardEvent.java`:** Already works for this case. `wardTriggerPlayerId` will be `null` (system-initiated). `targetPlayerIds` will be `[affectedPlayerId]`.
+- **`DomainEventToViewModelMapper.java` / `FinishActionPresenter.java`:** Already map `WardEvent` and `WaitForWardEvent`. No new event types needed.
 
 ---
 
@@ -168,66 +283,79 @@ All domain tests go in: `domain/src/test/java/com/gaas/threeKingdoms/Ward/WardWi
 
 ### Test 1: Ward Trigger on Contentment Judgement
 
-**What:** When a player's turn starts and they have Contentment in their delay area, and another player has Ward, a `WaitForWardEvent` should be emitted with the correct eligible player IDs.
+**What:** When a player's turn starts and they have Contentment in their delay area, and another player has Ward, a `WaitForWardEvent` should be emitted.
 
-**Why:** Verifies the entry point -- that the Ward check is properly inserted before the judgement card draw. This is the most fundamental test: without it, Ward would never be offered.
+**Why:** Verifies the entry point -- that the Ward check is properly inserted before the judgement card draw. Without this, Ward would never be offered for delay scrolls.
 
-**Setup:** Player A's turn. Player B has Contentment in delay area. Player C has Ward. Deck has enough cards. Previous player (A) finishes action, triggering B's turn.
+**Setup:**
+- Players A, B, C, D. A's turn ends, triggering B's turn.
+- Player B has Contentment in delay area.
+- Player C has Ward in hand.
+- Deck has enough cards.
 
 **Assertions:**
 - `WaitForWardEvent` is present in the returned events.
-- `WaitForWardEvent.playerIds` contains player C (the Ward holder).
+- `WaitForWardEvent.playerIds` contains player C.
 - No `ContentmentEvent` is emitted (judgement hasn't happened yet).
-- `topBehavior` stack contains a `WardBehavior` on top of a `ContentmentJudgementBehavior`.
+- `topBehavior` stack contains WardBehavior on top of ContentmentJudgementBehavior.
+- `RoundPhase` is still `Judgement` (game is paused).
 
-### Test 2: Ward Cancels Contentment (Odd Ward Count)
+### Test 2: Ward Cancels Contentment (Odd Ward Count = 1)
 
-**What:** Player C plays Ward, no one counter-Wards. Ward count is 1 (odd) -> Contentment is cancelled. Player B proceeds to normal turn (Drawing -> Action).
+**What:** Player C plays Ward, no counter-Ward. Ward count is 1 (odd) -> Contentment is cancelled. Player B proceeds to normal turn.
 
-**Why:** Verifies the core cancel path. The judgement card must NOT be drawn, and the player should enter their turn normally.
+**Why:** Verifies the core cancel path. The judgement card must NOT be drawn, and the player should get Drawing -> Action.
 
-**Setup:** Same as Test 1. After WaitForWardEvent, player C plays Ward. No other players have Ward.
+**Setup:** Same as Test 1. After WaitForWardEvent, player C plays Ward. Only C has Ward.
 
 **Assertions:**
-- `WardEvent` is emitted (showing C's Ward cancelling the Contentment).
+- `WardEvent` is emitted.
 - No `ContentmentEvent` is emitted (judgement was skipped).
 - Player B draws 2 cards (normal Drawing phase).
 - `RoundPhase` is `Action` after drawing.
-- Player B's delay scroll area is empty (Contentment was removed).
+- Player B's delay scroll area is empty.
 
-### Test 3: Double Ward, Contentment Proceeds (Even Ward Count)
+### Test 3: Double Ward, Contentment Proceeds (Even Ward Count = 2)
 
-**What:** Player C plays Ward (count=1), then Player D counter-Wards (count=2, even) -> Contentment effect proceeds. Judgement card is drawn.
+**What:** Player C plays Ward (count=1), Player D counter-Wards (count=2, even) -> Contentment proceeds. Judgement card is drawn.
 
-**Why:** Verifies the counter-chain resolution. Even Ward count means the original scroll effect proceeds, so the judgement must occur.
+**Why:** Verifies counter-chain resolution. Even count means the scroll effect proceeds.
 
-**Setup:** Player B has Contentment in delay area. Player C has Ward. Player D also has Ward. Deck top card is a Spade (Contentment succeeds -- player skips Action).
+**Setup:**
+- Player B has Contentment in delay area.
+- Players C and D both have Ward.
+- Deck top card is a Spade (non-Heart -> Contentment succeeds, player skips Action).
 
 **Assertions:**
-- Two `WardEvent`s are emitted.
-- `ContentmentEvent` is emitted with `isSuccess=true` (Spade drawn).
+- `WardEvent`s are emitted for both Ward plays.
+- `ContentmentEvent` is emitted with `isSuccess=true`.
 - Player B enters Discard phase (skips Action).
 
-### Test 4: All Players Skip Ward
+### Test 4: All Players Skip Ward, Contentment Proceeds
 
-**What:** No player plays Ward (all skip). Contentment judgement proceeds normally.
+**What:** Players C and D both have Ward but both skip. Contentment judgement proceeds normally.
 
-**Why:** Verifies that when all Ward-eligible players decline, the game correctly falls through to the existing judgement logic without any behavioral changes.
+**Why:** Verifies the "all skip" path falls through to the existing judgement logic correctly.
 
-**Setup:** Player B has Contentment in delay area. Players C and D both have Ward. Both skip.
+**Setup:**
+- Player B has Contentment in delay area.
+- Players C and D both have Ward.
+- After WaitForWardEvent, C skips, then D skips.
 
 **Assertions:**
 - `ContentmentEvent` is emitted (judgement card drawn).
 - Normal Contentment effect applies based on drawn card suit.
-- No `WardEvent` is emitted.
+- No `WardEvent` is emitted (nobody played Ward).
 
 ### Test 5: Ward Cancels Contentment, Player Still Has Lightning
 
 **What:** Player B has both Contentment and Lightning in delay area. Ward cancels Contentment. Lightning judgement still processes.
 
-**Why:** Verifies that after Ward cancels one delay scroll, the game correctly continues processing remaining delay scrolls. This is a critical edge case since `judgePlayerShouldDelay()` loops through all delay cards.
+**Why:** This is a critical edge case. `judgePlayerShouldDelay()` loops through all delay cards. After Ward cancels Contentment, the game must resume and process the Lightning. This verifies that `doWardCancelledAction()` -> `playerTakeTurnStartInJudgement()` -> `judgePlayerShouldDelay()` correctly handles remaining delay scrolls.
 
-**Setup:** Player B has Contentment AND Lightning in delay area. Player C has Ward. Player C plays Ward to cancel Contentment.
+**Setup:**
+- Player B has Contentment AND Lightning in delay area (Contentment on top of stack).
+- Player C has Ward. Player C plays Ward to cancel Contentment.
 
 **Assertions:**
 - Contentment is cancelled (no `ContentmentEvent`).
@@ -236,28 +364,29 @@ All domain tests go in: `domain/src/test/java/com/gaas/threeKingdoms/Ward/WardWi
 
 ### Test 6: No Player Has Ward, Contentment Proceeds Immediately
 
-**What:** When no player has Ward, the Contentment judgement happens immediately (no `WaitForWardEvent`).
+**What:** No player has Ward -> Contentment judgement happens immediately with no WaitForWardEvent.
 
-**Why:** Verifies backward compatibility. The Ward check should be a no-op when no Ward cards exist.
+**Why:** Backward compatibility. Existing behavior must be preserved when no Ward cards exist.
 
 **Setup:** Player B has Contentment in delay area. No player has Ward cards.
 
 **Assertions:**
 - No `WaitForWardEvent` emitted.
 - `ContentmentEvent` is emitted immediately.
-- Behavior identical to current implementation.
+- Behavior identical to current implementation (this is a regression test).
 
-### Test 7: Ward on Contentment, Player Who Has Contentment Also Has Ward
+### Test 7: Affected Player Can Ward Their Own Contentment
 
-**What:** Player B has Contentment in their delay area AND Ward in hand. Player B should be eligible to Ward their own Contentment.
+**What:** Player B has Contentment in delay area AND Ward in hand. Player B should be eligible to play Ward on their own Contentment.
 
-**Why:** In 三國殺 rules, any player can Ward any scroll card, including the affected player themselves. This tests that the player with the delay scroll is correctly included in Ward-eligible players (they are NOT the "caster" -- the caster was whoever played Contentment on them in a previous turn).
+**Why:** In 三國殺 rules, any player can Ward any scroll card, including the affected player themselves. Since there is no "caster" at judgement time (the caster played Contentment in a previous turn), `doesAnyPlayerHaveWard(null)` should include ALL players. This is different from the Action-phase Ward pattern where the caster is excluded.
 
 **Setup:** Player B has Contentment in delay area AND Ward in hand. No other player has Ward.
 
 **Assertions:**
 - `WaitForWardEvent.playerIds` includes player B.
 - Player B can play Ward to cancel their own Contentment.
+- After Ward, player B proceeds to normal turn.
 
 ---
 
@@ -269,106 +398,136 @@ JSON fixtures go in: `spring/src/test/resources/TestJsonFile/ScrollTest/Ward/Con
 
 ### E2E Test 1: Ward Trigger When Turn Starts with Contentment
 
-**What:** Player A plays Contentment on Player B. Player A finishes action. When B's turn starts, if Player C has Ward, all four players should receive a websocket message containing `WaitForWardEvent`.
+**What:** Player A plays Contentment on Player B. Player A finishes action. B's turn starts. Player C has Ward -> all players receive `WaitForWardEvent` via websocket.
 
-**Why:** End-to-end verification that the Ward prompt is sent to the frontend at the right time (turn start, during judgement phase). This tests the full stack: domain logic -> repository persistence -> websocket broadcast.
+**Why:** Full-stack verification that the Ward prompt is sent at the right time (turn start, judgement phase). Tests domain -> repository persistence -> websocket broadcast.
 
 **Flow:**
-1. Given: Player A has Contentment. Player C has Ward. Deck is set up.
-2. Player A plays Contentment targeting Player B.
-3. Player A finishes action (triggers B's turn).
-4. Assert: All players receive JSON containing `WaitForWardEvent` with Player C as eligible.
+1. Given: Player A has Contentment. Player C has Ward. Deck set up.
+2. Player A plays Contentment targeting Player B (`mockMvcUtil.playCard`).
+3. Player A finishes action (`mockMvcUtil.finishAction`).
+4. Assert: All 4 players receive JSON containing `WaitForWardEvent` with Player C as eligible.
 
-### E2E Test 2: Ward Cancels Contentment
+### E2E Test 2: Ward Cancels Contentment, Player B Gets Normal Turn
 
-**What:** Following Test 1, Player C plays Ward. Contentment is cancelled. Player B proceeds to normal turn.
+**What:** Player C plays Ward -> Contentment cancelled -> Player B gets normal Drawing -> Action turn.
 
-**Why:** End-to-end verification of the cancel path. Verifies that the websocket messages contain the correct state transitions: Ward resolution -> normal turn start for Player B.
+**Why:** Full-stack verification of the cancel path including websocket state transitions.
 
 **Flow:**
 1. Given: Same setup as E2E Test 1.
 2. Player A plays Contentment on B, finishes action.
 3. Pop all messages.
-4. Player C plays Ward (via `mockMvcUtil.playWardCard`).
-5. Assert: All players receive JSON containing `WardEvent` and Player B's normal turn (Drawing phase, draw cards, Action phase).
+4. Player C plays Ward (`mockMvcUtil.playWardCard(gameId, "player-c", wardCardId, PlayType.ACTIVE.getPlayType())`).
+5. Assert: All players receive JSON with `WardEvent` and Player B's normal turn start (draw cards, Action phase).
 
 ### E2E Test 3: All Skip Ward, Contentment Succeeds (Non-Heart Drawn)
 
-**What:** Player C has Ward but skips. Contentment judgement proceeds, non-heart card drawn, Player B's turn is skipped.
+**What:** Player C has Ward but skips. Contentment judgement proceeds, Spade drawn -> Player B's turn skipped.
 
-**Why:** End-to-end verification of the skip-then-judge path. Verifies correct JSON output when Ward is offered but declined and Contentment succeeds.
+**Why:** Full-stack verification of skip-then-judge path when Contentment succeeds.
 
 **Flow:**
-1. Given: Player B has Contentment in delay area. Player C has Ward. Deck top is a Spade card.
-2. Player A finishes action (triggers B's turn).
+1. Given: Player B has Contentment. Player C has Ward. Deck top is Spade.
+2. Player A finishes action.
 3. Pop messages (WaitForWardEvent).
-4. Player C skips Ward (via `mockMvcUtil.playWardCard` with SKIP play type).
-5. Assert: All players receive JSON with `ContentmentEvent(isSuccess=true)` and Player B entering Discard phase.
+4. Player C skips (`mockMvcUtil.playWardCard(gameId, "player-c", "", PlayType.SKIP.getPlayType())`).
+5. Assert: All players receive JSON with `ContentmentEvent(isSuccess=true)` and Player B in Discard phase.
 
 ### E2E Test 4: All Skip Ward, Contentment Fails (Heart Drawn)
 
-**What:** Player C has Ward but skips. Contentment judgement proceeds, heart card drawn, Player B gets a normal turn.
+**What:** Same as Test 3 but deck top is Heart -> Contentment fails -> Player B gets normal turn.
 
-**Why:** End-to-end verification of the skip-then-judge path with Contentment failing. Ensures the full flow from Ward prompt to normal turn works correctly.
+**Why:** Verifies the Ward-skip + Contentment-fail path produces correct websocket output.
 
 **Flow:**
-1. Given: Same as E2E Test 3 but deck top is a Heart card.
-2. Player A finishes action (triggers B's turn).
-3. Pop messages.
-4. Player C skips Ward.
-5. Assert: All players receive JSON with `ContentmentEvent(isSuccess=false)` and Player B entering Action phase normally.
+1. Given: Same as Test 3 but deck top is Heart card.
+2. Player A finishes action, pop messages.
+3. Player C skips Ward.
+4. Assert: `ContentmentEvent(isSuccess=false)` and Player B in Action phase.
 
-### E2E Test 5: Ward Counter-Chain (Two Wards, Even = Effect Proceeds)
+### E2E Test 5: Ward Counter-Chain (Two Wards, Even = Contentment Proceeds)
 
-**What:** Player C plays Ward, Player D counter-Wards. Ward count is even, so Contentment proceeds.
+**What:** Player C plays Ward, Player D counter-Wards. Even count -> Contentment proceeds -> judgement drawn.
 
-**Why:** End-to-end verification that the Ward counter-chain works correctly in the delay scroll context, including proper persistence of the behavior stack across multiple API calls.
+**Why:** Full-stack verification of counter-chain with delay scroll, including behavior stack persistence across multiple API calls.
 
 **Flow:**
 1. Given: Player B has Contentment. Players C and D both have Ward. Deck top is Spade.
-2. Player A finishes action.
-3. Pop messages.
-4. Player C plays Ward -> Pop messages -> New WaitForWardEvent for counter-Ward.
-5. Player D counter-Wards -> Contentment proceeds -> Judgement happens.
-6. Assert: `ContentmentEvent(isSuccess=true)` and Player B enters Discard phase.
+2. Player A finishes action, pop messages.
+3. Player C plays Ward -> pop messages -> new WaitForWardEvent for counter-Ward.
+4. Player D counter-Wards.
+5. Assert: `ContentmentEvent(isSuccess=true)` and Player B enters Discard phase.
 
 ---
 
 ## 6. Implementation Order
 
-1. **Create `ContentmentJudgementBehavior.java`** -- the new Behavior class with Ward integration hooks.
-2. **Modify `Game.judgePlayerShouldDelay()`** -- insert Ward check before `handleContentmentJudgement()`.
-3. **Modify `Game.handleContentmentJudgement()`** -- make it accessible from the new Behavior.
-4. **Modify `BehaviorData.java`** -- add serialization/deserialization for the new Behavior.
-5. **Write domain tests** (`WardWithContentmentTest.java`).
-6. **Write E2E tests** (`WardWithContentmentTest.java` in spring).
-7. **Generate JSON fixtures** using `JsonFileWriterUtil.writeJsonToFile()`, then switch to `websocketUtil.getValue()`.
+1. **Create `ContentmentJudgementBehavior.java`** -- the new Behavior class with `playerAction()`, `doBehaviorAction()`, `doWardCancelledAction()`.
+2. **Modify `Game.java`:**
+   - Change `handleContentmentJudgement()` from `private` to `public`.
+   - Modify `judgePlayerShouldDelay()`: add Ward check in the Contentment branch.
+3. **Modify `BehaviorData.java`** -- add `case "ContentmentJudgementBehavior"` for persistence.
+4. **Write domain tests** (`WardWithContentmentTest.java` in `domain/src/test/java/.../Ward/`).
+5. **Write E2E tests** (`WardWithContentmentTest.java` in `spring/src/test/java/.../e2e/scrollcard/ward/`).
+6. **Generate JSON fixtures** using `JsonFileWriterUtil.writeJsonToFile()`, verify they look correct, then switch to `websocketUtil.getValue()`.
 
 ---
 
 ## 7. Key Design Decisions
 
-### Who is the "caster" for Ward targeting?
+### 7.1 Who is excluded from Ward targeting? (`WARD_TRIGGER_PLAYER_ID`)
 
-For Contentment judgement, the Contentment card was placed by a different player (e.g., Player A placed it on Player B in a previous turn). At judgement time, there is no "caster" in the current turn. For the Ward check:
-- `WARD_TRIGGER_PLAYER_ID` should be `null` or a special sentinel, since this is a system-initiated trigger, not a player action. (Looking at the pattern in `BountifulHarvestBehavior` line 57, the WardBehavior is created with `behaviorPlayer = null` for system-initiated Ward challenges.)
-- `WARD_TARGET_PLAYER_IDS` should contain the player who has the Contentment (the one whose turn it is).
-- All players (including the affected player) should be eligible to play Ward. The `doesAnyPlayerHaveWard()` without excluding anyone (or pass `null`) should be used.
+**Decision:** Pass `null` -- no player is excluded.
 
-### How to resume judgement after Ward resolves?
+**Why:** For Action-phase cards (Duel, BarbarianInvasion, etc.), the caster is excluded because they initiated the effect. For Contentment judgement, the original caster played Contentment in a **previous turn** -- they are not the "trigger" now. The trigger is the system. ALL players (including the affected player) should be able to Ward.
 
-The `ContentmentJudgementBehavior` must handle two outcomes:
-- **`doBehaviorAction()`** (Ward even/no Ward): Call the judgement logic, then check for more delay scrolls.
-- **`doWardCancelledAction()`** (Ward odd): Skip judgement, then check for more delay scrolls.
+**How this differs from existing patterns:**
+- `DuelBehavior` line 58: `WARD_TRIGGER_PLAYER_ID = behaviorPlayer.getId()` (caster excluded)
+- `BountifulHarvestBehavior` line 62: `WARD_TRIGGER_PLAYER_ID = behaviorPlayer.getId()` (caster excluded)
+- `ContentmentJudgementBehavior`: `WARD_TRIGGER_PLAYER_ID = null` (nobody excluded)
 
-In both cases, the Behavior needs to trigger continuation of the delay scroll processing. This could be done by:
-- Calling `game.playerTakeTurnStartInJudgement()` from the Behavior (which re-enters the judgement flow).
-- Or by having the Behavior directly call a refactored version of the remaining loop in `judgePlayerShouldDelay()`.
+This means `doesAnyPlayerHaveWard(null)` and `whichPlayersHaveWard(null)` will include all players. Looking at `Game.java` line 904-911 and 917-923, passing `null` correctly skips the filter.
 
-The cleanest approach is to have `ContentmentJudgementBehavior` handle just the single Contentment card, and after it resolves (whether cancelled or judged), call back into `game.playerTakeTurnStartInJudgement()` to continue processing any remaining delay scrolls and eventually transition to Drawing phase.
+### 7.2 How to resume judgement after Ward resolves?
 
-### State that ContentmentJudgementBehavior needs to store
+**Decision:** Call `game.playerTakeTurnStartInJudgement(behaviorPlayer)` from both `doBehaviorAction()` and `doWardCancelledAction()`.
 
-- The `Player` who has the Contentment (the current round player).
-- The `ScrollCard` reference (the Contentment card that was popped from the delay area).
-- These can be stored via the existing Behavior fields (`behaviorPlayer`, `card`) or via the `params` map.
+**Why:** This is the cleanest approach because:
+1. `playerTakeTurnStartInJudgement()` is already public (line 165).
+2. It re-enters `judgePlayerShouldDelay()` which handles remaining delay cards.
+3. It handles the Drawing -> Action / Drawing -> Discard transition.
+4. The `contentmentEventSuccess` check (line 170) will work correctly:
+   - For `doBehaviorAction()`: The `ContentmentEvent` from `handleContentmentJudgement()` is returned in the events from the resumed `judgePlayerShouldDelay()`.
+   - For `doWardCancelledAction()`: No `ContentmentEvent` is returned -> `contentmentEventSuccess = false` -> player gets normal turn.
+
+**Alternative considered:** Refactoring `judgePlayerShouldDelay()` to be resumable. Rejected because it would require tracking "which delay cards have been processed" as state, which is more complex than re-entering from `playerTakeTurnStartInJudgement()`. Since the Contentment card is already popped from the delay stack before the Behavior is created, re-entering will correctly process only the remaining cards.
+
+### 7.3 What about the `WardBehavior.doBehaviorAction()` Stage/activePlayer reset?
+
+**Observation:** `WardBehavior.doBehaviorAction()` (line 119-208) ends by setting:
+```java
+game.getCurrentRound().setStage(Stage.Normal);       // line 202
+game.getCurrentRound().setActivePlayer(activePlayer); // line 204
+```
+
+For Action-phase cards, this is correct -- it restores the stage and sets the active player back to the round player. For Contentment judgement, we need to verify:
+- `Stage.Normal` is correct (judgement phase doesn't use a special stage).
+- `activePlayer` should be the current round player (the one with Contentment).
+
+The even-count path calls `firstNotWardBehavior.doBehaviorAction()` (line 176), which is `ContentmentJudgementBehavior.doBehaviorAction()`. This method should set `activePlayer` correctly by having `playerTakeTurnStartInJudgement()` handle it. The `WardBehavior` code at line 182 sets `activePlayer = game.getCurrentRound().getActivePlayer()`, so `ContentmentJudgementBehavior.doBehaviorAction()` should ensure the round's activePlayer is set correctly before returning.
+
+### 7.4 State stored in ContentmentJudgementBehavior
+
+| Field | Value | Why |
+|-------|-------|-----|
+| `behaviorPlayer` | The player who has Contentment (current round player) | Needed to call `handleContentmentJudgement(player)` and `playerTakeTurnStartInJudgement(player)` |
+| `card` | The Contentment ScrollCard reference | For card ID in events and WardBehavior |
+| `cardId` | The Contentment card's ID | For WardBehavior and events |
+| `reactionPlayers` | Empty list or `[affectedPlayer.getId()]` | ContentmentJudgementBehavior doesn't need reaction players itself -- Ward handles that |
+| `isOneRound` | Initially `false` | Set to `true` when Ward resolves |
+| `isTargetPlayerNeedToResponse` | `true` | Required for WardBehavior integration |
+
+### 7.5 Lightning Ward support (future consideration)
+
+The same pattern could be applied to Lightning in `judgePlayerShouldDelay()`. The `handleLightningJudgement()` method also draws a judgement card immediately. A future `LightningJudgementBehavior` would follow the same design. This plan does NOT include Lightning Ward -- it is out of scope. However, the implementation should be designed with Lightning extensibility in mind (e.g., the Ward check pattern in `judgePlayerShouldDelay()` should be easy to replicate for the Lightning branch).
