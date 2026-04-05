@@ -69,6 +69,7 @@ public class SomethingForNothingBehavior extends Behavior {
         List<DomainEvent> domainEvents = new ArrayList<>();
         domainEvents.add(new SomethingForNothingEvent(behaviorPlayer.getId()));
         domainEvents.add(game.drawCardToPlayer(behaviorPlayer, false));
+        isOneRound = true;
         return domainEvents;
     }
 
