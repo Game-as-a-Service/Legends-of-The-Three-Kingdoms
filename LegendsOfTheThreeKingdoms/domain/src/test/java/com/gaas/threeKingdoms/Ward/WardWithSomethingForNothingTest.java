@@ -765,4 +765,90 @@ public class WardWithSomethingForNothingTest {
         assertEquals("SSJ011", wardEvent.getWardCardId());
     }
 
+    @DisplayName("""
+               Given
+               有 玩家 ABCD
+               B 有無中生有
+               A 有無懈可擊
+               B 的回合
+
+               B 出無中生有
+               A skip 無懈可擊
+
+               Then
+               B 抽牌成功
+               topBehavior stack 為空
+               B 可以結束回合（不會拋出 IllegalStateException）
+            """)
+    @Test
+    public void givenPlayerBPlaysSomethingForNothingAndPlayerASkipsWard_ThenTopBehaviorIsEmptyAndPlayerBCanFinishAction() {
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new Deck(List.of(new BarbarianInvasion(SSK013), new Dismantle(SS3003))));
+        Player playerA = PlayerBuilder
+                .construct()
+                .withId("player-a")
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .build();
+
+        playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withEquipment(new Equipment())
+                .build();
+
+        playerB.getHand().addCardToHand(Arrays.asList(new SomethingForNothing(SH7046)));
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withHand(new Hand())
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withEquipment(new Equipment())
+                .build();
+
+        List<Player> players = asList(
+                playerA, playerB, playerC, playerD);
+        game.setPlayers(players);
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerB));
+
+        // B 出無中生有
+        game.playerPlayCard(playerB.getId(), SH7046.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // A skip 無懈可擊
+        List<DomainEvent> events = game.playWardCard(playerA.getId(), "", PlayType.SKIP.getPlayType());
+
+        // Then: B 抽牌成功
+        assertTrue(events.stream().anyMatch(event -> event instanceof SomethingForNothingEvent));
+
+        // topBehavior stack 為空
+        assertEquals(0, game.getTopBehavior().size(), "topBehavior should be empty after Ward skip and SomethingForNothing effect");
+
+        // B 可以結束回合，不會拋出 IllegalStateException
+        assertDoesNotThrow(() -> game.finishAction(playerB.getId()));
+    }
+
 }
