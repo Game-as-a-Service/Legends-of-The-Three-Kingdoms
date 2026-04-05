@@ -169,6 +169,123 @@ public class WardWithContentmentTest extends AbstractBaseIntegrationTest {
         }
     }
 
+    @Test
+    public void givenPlayerBHasContentmentAndBHasWard_WhenAFinishesAction_ThenBReceivesAskPlayWardEvent() throws Exception {
+//        Given
+//        玩家 ABCD，A 的回合
+//        B 判定區有樂不思蜀，B 手牌有無懈可擊
+//        沒有其他人有無懈可擊
+//
+//        When
+//        A 結束回合 → B 的回合開始
+//
+//        Then
+//        B 收到 AskPlayWardEvent（不是 WaitForWardEvent）
+//        A C D 收到 WaitForWardEvent
+        givenPlayerBHasContentmentAndBHasWard();
+
+        mockMvcUtil.finishAction(gameId, "player-a")
+                .andExpect(status().isOk()).andReturn();
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Contentment/self_ward_contentment_trigger_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    @Test
+    public void givenPlayerBHasContentmentAndBHasWard_WhenBPlaysWard_ThenContentmentCancelled() throws Exception {
+//        Given
+//        玩家 ABCD，A 的回合
+//        B 判定區有樂不思蜀，B 手牌有無懈可擊
+//        沒有其他人有無懈可擊
+//
+//        A 結束回合 → B 收到 AskPlayWardEvent
+//
+//        When
+//        B 出無懈可擊取消自己的樂不思蜀
+//
+//        Then
+//        樂不思蜀被取消，B 正常抽牌進入 Action phase
+        givenPlayerBHasContentmentAndBHasWard();
+
+        mockMvcUtil.finishAction(gameId, "player-a")
+                .andExpect(status().isOk()).andReturn();
+
+        popAllPlayerMessage();
+
+        mockMvcUtil.playWardCard(gameId, "player-b", "SSJ011", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
+        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Contentment/self_ward_cancels_contentment_for_%s.json";
+        for (String testPlayerId : playerIds) {
+            String testPlayerJson = "";
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
+            testPlayerId = testPlayerId.replace("-", "_");
+            Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
+            String expectedJson = Files.readString(path);
+            assertEquals(expectedJson, testPlayerJson);
+        }
+    }
+
+    private void givenPlayerBHasContentmentAndBHasWard() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Kill(BS8008)
+        );
+        Player playerB = createPlayer(
+                "player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH3029), new Peach(BH3029), new Ward(SSJ011)
+        );
+        playerB.addDelayScrollCard(new Contentment(SC6071));
+
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = new Game(gameId, players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+        Deck deck = new Deck();
+        deck.add(List.of(
+                new Peach(BH3029), new Peach(BH3029), new Peach(BH3029),
+                new Peach(BH3029), new Peach(BH3029)
+        ));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
     private void givenPlayerBHasContentmentAndCHasWard() {
         Player playerA = createPlayer(
                 "player-a",
