@@ -185,6 +185,29 @@ public class Game {
         return events;
     }
 
+    public List<DomainEvent> continueJudgementAndDraw(Player currentRoundPlayer, boolean contentmentSuccess) {
+        List<DomainEvent> events = new ArrayList<>();
+        if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
+            List<DomainEvent> judgeEvents = judgePlayerShouldDelay();
+            events.addAll(judgeEvents);
+
+            if (!topBehavior.isEmpty()) {
+                return events;
+            }
+
+            if (RoundPhase.Drawing.equals(currentRound.getRoundPhase())) {
+                DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentSuccess);
+                events.add(drawCardEvent);
+                if (contentmentSuccess) {
+                    events.addAll(finishAction(currentRoundPlayer.getId()));
+                } else {
+                    events.add(getGameStatusEvent(drawCardEvent.getMessage()));
+                }
+            }
+        }
+        return events;
+    }
+
     private List<DomainEvent> getOtherCanChooseGeneralCards() {
         return players.stream()
                 .filter(p -> !p.getRoleCard().getRole().equals(Role.MONARCH))
@@ -451,8 +474,17 @@ public class Game {
                 ScrollCard card = delayCards.pop();
                 currentRound.setCurrentCard(card);
                 if (card instanceof Contentment) {
-                    DomainEvent contentmentEvent = handleContentmentJudgement(player);
-                    judgementEvents.add(contentmentEvent);
+                    if (doesAnyPlayerHaveWard(null)) {
+                        ContentmentJudgementBehavior cjb = new ContentmentJudgementBehavior(
+                                this, player, List.of(player.getId()), null,
+                                card.getId(), PlayType.INACTIVE.getPlayType(), card
+                        );
+                        topBehavior.push(cjb);
+                        judgementEvents.addAll(cjb.playerAction());
+                    } else {
+                        DomainEvent contentmentEvent = handleContentmentJudgement(player);
+                        judgementEvents.add(contentmentEvent);
+                    }
                 } else if (card instanceof Lightning) {
                     List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
                     judgementEvents.addAll(lightningEvents);
@@ -510,7 +542,7 @@ public class Game {
         return domainEvents;
     }
 
-    private ContentmentEvent handleContentmentJudgement(Player player) {
+    public ContentmentEvent handleContentmentJudgement(Player player) {
         // 抽一張卡判定
         List<HandCard> cards = drawCardForCardEffect(1);
         HandCard drawnCard = cards.get(0);

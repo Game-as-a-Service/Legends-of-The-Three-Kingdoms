@@ -223,6 +223,15 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "ContentmentJudgementBehavior" -> new ContentmentJudgementBehavior(
+                    game,
+                    behaviorPlayerId != null ? game.getPlayer(behaviorPlayerId) : null,
+                    reactionPlayers,
+                    currentReactionPlayerId != null ? game.getPlayer(currentReactionPlayerId) : null,
+                    cardId,
+                    playType,
+                    PlayCard.findById(cardId)
+            );
             case "BountifulHarvestBehavior" -> {
                 BountifulHarvestBehavior bountifulHarvestBehavior = new BountifulHarvestBehavior(
                         game,
