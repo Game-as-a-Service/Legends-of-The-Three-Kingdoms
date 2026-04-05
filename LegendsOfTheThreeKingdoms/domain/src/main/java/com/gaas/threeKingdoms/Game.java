@@ -486,8 +486,17 @@ public class Game {
                         judgementEvents.add(contentmentEvent);
                     }
                 } else if (card instanceof Lightning) {
-                    List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
-                    judgementEvents.addAll(lightningEvents);
+                    if (doesAnyPlayerHaveWard(null)) {
+                        LightningJudgementBehavior ljb = new LightningJudgementBehavior(
+                                this, player, List.of(player.getId()), null,
+                                card.getId(), PlayType.INACTIVE.getPlayType(), card
+                        );
+                        topBehavior.push(ljb);
+                        judgementEvents.addAll(ljb.playerAction());
+                    } else {
+                        List<DomainEvent> lightningEvents = handleLightningJudgement(card, player);
+                        judgementEvents.addAll(lightningEvents);
+                    }
                 }
 
                 if (!topBehavior.isEmpty()) { // something happened
@@ -501,7 +510,7 @@ public class Game {
         return judgementEvents;
     }
 
-    private List<DomainEvent> handleLightningJudgement(ScrollCard card, Player player) {
+    public List<DomainEvent> handleLightningJudgement(ScrollCard card, Player player) {
         // 抽一張卡判定
         List<HandCard> cards = drawCardForCardEffect(1);
         HandCard drawnCard = cards.get(0);
