@@ -9,7 +9,6 @@ on:
 env:
   JAR_FILENAME: LegendsOfTheThreeKingdoms
   ARTIFACT_NAME: backend-app
-  SYSTEMD_SERVICE_NAME: ThreeKingdoms
 
 jobs:
   build:
@@ -132,28 +131,6 @@ jobs:
       # Trigger NAS redeploy
       - name: Trigger NAS Redeploy
         run: curl -sf -X POST "https://webhook.parsons125.in/hooks/redeploy-3k-be-app?token=${{ secrets.NAS_REDEPLOY_TOKEN }}"
-  deploy:
-    name: Deploy to AWS EC2
-    needs: docker-push
-    runs-on: ubuntu-latest
-    environment: production
-    if: github.event_name == 'push' && github.ref_name == 'main'
-
-    steps:
-      # Restart systemd service
-      - name: Run Application
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          port: 22
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            uname -a
-            whoami
-            pwd
-            sudo systemctl restart ${{ env.SYSTEMD_SERVICE_NAME }}
-
   # === Discord 通知：PR 開啟 ===
   notify-pr-opened:
     name: Notify PR Opened
@@ -183,7 +160,7 @@ jobs:
   notify-deploy-success:
     name: Notify Deploy Success
     runs-on: ubuntu-latest
-    needs: [build, docker-push, deploy]
+    needs: [build, docker-push]
     if: github.event_name == 'push' && github.ref_name == 'main' && success()
     steps:
       - name: Send success notification to Discord
@@ -230,8 +207,8 @@ jobs:
   notify-deploy-failure:
     name: Notify Deploy Failure
     runs-on: ubuntu-latest
-    needs: [build, docker-push, deploy]
-    if: always() && github.event_name == 'push' && github.ref_name == 'main' && (needs.build.result == 'failure' || needs.docker-push.result == 'failure' || needs.deploy.result == 'failure')
+    needs: [build, docker-push]
+    if: always() && github.event_name == 'push' && github.ref_name == 'main' && (needs.build.result == 'failure' || needs.docker-push.result == 'failure')
     steps:
       - name: Send failure notification to Discord
         uses: actions/github-script@v7
@@ -241,12 +218,10 @@ jobs:
           script: |
             const buildResult = '${{ needs.build.result }}';
             const pushResult = '${{ needs.docker-push.result }}';
-            const deployResult = '${{ needs.deploy.result }}';
 
             const failedSteps = [];
             if (buildResult === 'failure') failedSteps.push(':hammer_and_wrench: Build');
             if (pushResult === 'failure') failedSteps.push(':whale: Docker Push');
-            if (deployResult === 'failure') failedSteps.push(':rocket: Deploy');
 
             const runUrl = `${context.payload.repository.html_url}/actions/runs/${context.runId}`;
             const payload = {
