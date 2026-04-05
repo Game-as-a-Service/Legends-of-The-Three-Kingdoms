@@ -21,13 +21,13 @@
     "data" : "",
     "message" : "回合已開始"
   }, {
-    "event" : "WaitForWardEvent",
+    "event" : "AskPlayWardEvent",
     "data" : {
       "wardTriggerPlayerId" : null,
       "wardTriggerCardId" : "SC6071",
       "targetPlayerIds" : [ "player-b" ]
     },
-    "message" : "等待玩家發動無懈可擊"
+    "message" : "請選擇是否要出無懈可擊"
   } ],
   "data" : {
     "seats" : [ {
