@@ -9,7 +9,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -25,7 +25,7 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class PlayShadowHorseTest {
+public class PlayShadowrunnerTest {
 
 
     @DisplayName("""
@@ -41,7 +41,7 @@ public class PlayShadowHorseTest {
          A玩家裝備卡有絕影馬
             """)
     @Test
-    public void givenPlayerAHaveShadowHorse_WhenPlayerAPlayShadowHorse_ThenPlayerAEquipShadowHorse() {
+    public void givenPlayerAHaveShadowrunner_WhenPlayerAPlayShadowrunner_ThenPlayerAEquipShadowrunner() {
         Game game = new Game();
         game.initDeck();
 
@@ -54,7 +54,7 @@ public class PlayShadowHorseTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new ShadowHorse(ES5018)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028), new Shadowrunner(ES5018)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -127,7 +127,7 @@ public class PlayShadowHorseTest {
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
 
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new ShadowHorse(ES5018)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new Shadowrunner(ES5018)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -171,7 +171,7 @@ public class PlayShadowHorseTest {
 
         //Then
         assertEquals(new RedRabbitHorse(EH5044), game.getPlayer("player-a").getEquipmentMinusOneMountsCard());
-        assertEquals(new ShadowHorse(ES5018), game.getPlayer("player-a").getEquipmentPlusOneMountsCard());
+        assertEquals(new Shadowrunner(ES5018), game.getPlayer("player-a").getEquipmentPlusOneMountsCard());
     }
 
     @DisplayName("""
@@ -206,15 +206,15 @@ public class PlayShadowHorseTest {
 
         playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new RedRabbitHorse(EH5044)));
 
-        Equipment equipmentShadowHorse = new Equipment();
-        equipmentShadowHorse.setPlusOne(new ShadowHorse(ES5018));
+        Equipment equipmentShadowrunner = new Equipment();
+        equipmentShadowrunner.setPlusOne(new Shadowrunner(ES5018));
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
                 .withBloodCard(new BloodCard(3))
                 .withHand(new Hand())
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withHealthStatus(HealthStatus.ALIVE)
-                .withEquipment(equipmentShadowHorse)
+                .withEquipment(equipmentShadowrunner)
                 .withRoleCard(new RoleCard(Role.TRAITOR))
                 .build();
 
@@ -268,7 +268,7 @@ public class PlayShadowHorseTest {
         Game game = new Game();
         game.initDeck();
         Equipment equipment = new Equipment();
-        equipment.setPlusOne(new ShadowHorse(ES5018));
+        equipment.setPlusOne(new Shadowrunner(ES5018));
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")

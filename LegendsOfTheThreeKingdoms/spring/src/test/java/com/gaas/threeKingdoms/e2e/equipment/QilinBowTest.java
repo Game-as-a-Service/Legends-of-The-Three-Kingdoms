@@ -12,7 +12,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import com.gaas.threeKingdoms.player.Equipment;
@@ -817,7 +817,7 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         );
         Equipment equipmentB = new Equipment();
         equipmentB.setMinusOne(new RedRabbitHorse(EH5044));
-        equipmentB.setPlusOne(new ShadowHorse(ES5018));
+        equipmentB.setPlusOne(new Shadowrunner(ES5018));
         playerB.setEquipment(equipmentB);
         Player playerC = createPlayer(
                 "player-c",

@@ -2,9 +2,9 @@ package com.gaas.threeKingdoms.handcard.equipmentcard.mountscard;
 
 import com.gaas.threeKingdoms.handcard.PlayCard;
 
-public class YellowClawFlyingElectric extends MinusMountsCard {
+public class FerghanaHorse extends MinusMountsCard {
 
-    public YellowClawFlyingElectric(PlayCard playCard) {
+    public FerghanaHorse(PlayCard playCard) {
         super(playCard);
     }
 }

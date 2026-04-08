@@ -47,41 +47,41 @@ public class RegisterMissingCardsTest {
     }
 
     @Test
-    @DisplayName("EC5070 的盧 should be registered in factory and return DiLu (+1 mount)")
-    public void testEC5070_DiLu() {
+    @DisplayName("EC5070 的盧 should be registered in factory and return HexMark (+1 mount)")
+    public void testEC5070_HexMark() {
         HandCard card = PlayCard.findById("EC5070");
         assertNotNull(card);
-        assertInstanceOf(DiLu.class, card);
+        assertInstanceOf(HexMark.class, card);
         assertInstanceOf(PlusMountsCard.class, card);
         assertEquals("EC5070", card.getId());
     }
 
     @Test
-    @DisplayName("EDK104 紫騂 should be registered in factory and return ZiXing (-1 mount)")
-    public void testEDK104_ZiXing() {
+    @DisplayName("EDK104 紫騂 should be registered in factory and return VioletStallion (-1 mount)")
+    public void testEDK104_VioletStallion() {
         HandCard card = PlayCard.findById("EDK104");
         assertNotNull(card);
-        assertInstanceOf(ZiXing.class, card);
+        assertInstanceOf(VioletStallion.class, card);
         assertInstanceOf(MinusMountsCard.class, card);
         assertEquals("EDK104", card.getId());
     }
 
     @Test
-    @DisplayName("EHK052 爪黃飛電 should be registered in factory and return ClawYellowFlyingElectric (+1 mount)")
-    public void testEHK052_ClawYellowFlyingElectric() {
+    @DisplayName("EHK052 爪黃飛電 should be registered in factory and return YellowFlash (+1 mount)")
+    public void testEHK052_YellowFlash() {
         HandCard card = PlayCard.findById("EHK052");
         assertNotNull(card);
-        assertInstanceOf(ClawYellowFlyingElectric.class, card);
+        assertInstanceOf(YellowFlash.class, card);
         assertInstanceOf(PlusMountsCard.class, card);
         assertEquals("EHK052", card.getId());
     }
 
     @Test
-    @DisplayName("ESK026 黃爪飛電 should be registered in factory and return YellowClawFlyingElectric (-1 mount)")
-    public void testESK026_YellowClawFlyingElectric() {
+    @DisplayName("ESK026 大宛 should be registered in factory and return FerghanaHorse (-1 mount)")
+    public void testESK026_FerghanaHorse() {
         HandCard card = PlayCard.findById("ESK026");
         assertNotNull(card);
-        assertInstanceOf(YellowClawFlyingElectric.class, card);
+        assertInstanceOf(FerghanaHorse.class, card);
         assertInstanceOf(MinusMountsCard.class, card);
         assertEquals("ESK026", card.getId());
     }
@@ -94,12 +94,12 @@ public class RegisterMissingCardsTest {
         assertTrue(EC5070.isMountsCard(), "的盧 should be a mount");
         assertTrue(EDK104.isMountsCard(), "紫騂 should be a mount");
         assertTrue(EHK052.isMountsCard(), "爪黃飛電 should be a mount");
-        assertTrue(ESK026.isMountsCard(), "黃爪飛電 should be a mount");
+        assertTrue(ESK026.isMountsCard(), "大宛 should be a mount");
     }
 
     @Test
-    @DisplayName("DiLu (+1 mount) should equip as plusOne and affect distance calculation")
-    public void testDiLuEquipAndDistance() {
+    @DisplayName("HexMark (+1 mount) should equip as plusOne and affect distance calculation")
+    public void testHexMarkEquipAndDistance() {
         Game game = new Game();
         game.initDeck();
 
@@ -113,7 +113,7 @@ public class RegisterMissingCardsTest {
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028),
-                new Dodge(BHK039), new DiLu(EC5070)));
+                new Dodge(BHK039), new HexMark(EC5070)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -150,16 +150,16 @@ public class RegisterMissingCardsTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerA));
 
-        // When A plays DiLu
+        // When A plays HexMark
         game.playerPlayCard(playerA.getId(), EC5070.getCardId(), playerA.getId(), "active");
 
-        // Then A's equipment should have DiLu as +1 mount
+        // Then A's equipment should have HexMark as +1 mount
         assertEquals(EC5070.getCardId(), game.getPlayer("player-a").getEquipmentPlusOneMountsCard().getId());
     }
 
     @Test
-    @DisplayName("ZiXing (-1 mount) should equip as minusOne and affect distance calculation")
-    public void testZiXingEquipAndDistance() {
+    @DisplayName("VioletStallion (-1 mount) should equip as minusOne and affect distance calculation")
+    public void testVioletStallionEquipAndDistance() {
         Game game = new Game();
         game.initDeck();
 
@@ -173,7 +173,7 @@ public class RegisterMissingCardsTest {
                 .build();
         playerA.getHand().addCardToHand(Arrays.asList(
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028),
-                new Dodge(BHK039), new ZiXing(EDK104)));
+                new Dodge(BHK039), new VioletStallion(EDK104)));
 
         Player playerB = PlayerBuilder.construct()
                 .withId("player-b")
@@ -210,10 +210,10 @@ public class RegisterMissingCardsTest {
         game.enterPhase(new Normal(game));
         game.setCurrentRound(new Round(playerA));
 
-        // When A plays ZiXing
+        // When A plays VioletStallion
         game.playerPlayCard(playerA.getId(), EDK104.getCardId(), playerA.getId(), "active");
 
-        // Then A's equipment should have ZiXing as -1 mount
+        // Then A's equipment should have VioletStallion as -1 mount
         assertEquals(EDK104.getCardId(), game.getPlayer("player-a").getEquipmentMinusOneMountsCard().getId());
     }
 }

@@ -9,7 +9,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import com.gaas.threeKingdoms.player.Equipment;
@@ -105,7 +105,7 @@ public class BorrowedSwordTest extends AbstractBaseIntegrationTest {
         //A的回合
         //A有借刀殺人
         //B 有裝備武器，有一張殺，B攻擊範圍內沒有人可以殺
-        givenPlayerAHaveBorrowedSwordAndPlayerCAEquipedShadowHorse(3);
+        givenPlayerAHaveBorrowedSwordAndPlayerCAEquipedShadowrunner(3);
 
         //When
         //A 出借刀殺人，指定 B
@@ -419,7 +419,7 @@ public class BorrowedSwordTest extends AbstractBaseIntegrationTest {
         repository.save(game);
     }
 
-    private void givenPlayerAHaveBorrowedSwordAndPlayerCAEquipedShadowHorse(int playerCHp) {
+    private void givenPlayerAHaveBorrowedSwordAndPlayerCAEquipedShadowrunner(int playerCHp) {
         Player playerA = createPlayer(
                 "player-a",
                 4,
@@ -454,8 +454,8 @@ public class BorrowedSwordTest extends AbstractBaseIntegrationTest {
 
         Equipment equipmentA = new Equipment();
         Equipment equipmentC = new Equipment();
-        equipmentA.setPlusOne(new ShadowHorse(ES5018));
-        equipmentC.setPlusOne(new ShadowHorse(ES5018));
+        equipmentA.setPlusOne(new Shadowrunner(ES5018));
+        equipmentC.setPlusOne(new Shadowrunner(ES5018));
         playerA.setEquipment(equipmentA);
         playerC.setEquipment(equipmentC);
         Equipment equipmentB = new Equipment();

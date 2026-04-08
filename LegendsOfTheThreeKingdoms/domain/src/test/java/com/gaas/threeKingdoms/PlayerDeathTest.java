@@ -12,7 +12,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
@@ -352,7 +352,7 @@ public class PlayerDeathTest {
                 new Kill(BS8008), new Dodge(BH2028), new Dodge(BH2028), new Dodge(BH2028)));
         playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
         playerA.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
-        playerA.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        playerA.getEquipment().setPlusOne(new Shadowrunner(ES5018));
         playerA.getEquipment().setArmor(new EightDiagramTactic(EC2067));
 
         Player playerB = PlayerBuilder.construct()
@@ -475,7 +475,7 @@ public class PlayerDeathTest {
                 new Kill(BS8008), new Dodge(BH2028), new Dodge(BH2028), new Dodge(BH2028)));
         playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
         playerA.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
-        playerA.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        playerA.getEquipment().setPlusOne(new Shadowrunner(ES5018));
         playerA.getEquipment().setArmor(new EightDiagramTactic(EC2067));
 
         Player playerB = PlayerBuilder.construct()
@@ -1196,7 +1196,7 @@ public class PlayerDeathTest {
                 new Kill(BS8008), new Dodge(BH2028), new Dodge(BH2028), new Dodge(BH2028), new BorrowedSword(SCK065)));
         playerA.getEquipment().setWeapon(new QilinBowCard(EH5031));
         playerA.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
-        playerA.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        playerA.getEquipment().setPlusOne(new Shadowrunner(ES5018));
         playerA.getEquipment().setArmor(new EightDiagramTactic(EC2067));
 
         Player playerB = PlayerBuilder.construct()

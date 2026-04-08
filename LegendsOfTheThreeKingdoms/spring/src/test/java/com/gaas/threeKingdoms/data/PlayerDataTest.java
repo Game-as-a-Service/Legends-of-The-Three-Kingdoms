@@ -5,7 +5,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.player.*;
@@ -75,7 +75,7 @@ public class PlayerDataTest {
         GeneralCard generalCard = new GeneralCard(曹操);
         BloodCard bloodCard = new BloodCard(3);
         Equipment equipment = new Equipment();
-        equipment.setPlusOne(new ShadowHorse(ES5018));
+        equipment.setPlusOne(new Shadowrunner(ES5018));
         equipment.setMinusOne(new RedRabbitHorse(BH3029));
         equipment.setArmor(new EightDiagramTactic(ES2015));
         equipment.setWeapon(new QilinBowCard(EH5031));

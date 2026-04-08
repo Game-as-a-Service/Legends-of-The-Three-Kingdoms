@@ -6,7 +6,7 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -24,7 +24,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class PlayShadowHorseTest extends AbstractBaseIntegrationTest {
+public class PlayShadowrunnerTest extends AbstractBaseIntegrationTest {
 
     @Test
     public void testPlayerAPlayRedRabbitHorse() throws Exception {
@@ -41,22 +41,22 @@ public class PlayShadowHorseTest extends AbstractBaseIntegrationTest {
 
         //Then A裝備有絕影馬
         String playerAPlayPeachJsonForA = websocketUtil.getValue("player-a");
-        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowHorse/player_a_playshadowhorse_for_player_a.json");
+        Path path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowrunner/player_a_playshadowhorse_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForA);
 
         String playerAPlayPeachJsonForB = websocketUtil.getValue("player-b");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowHorse/player_a_playshadowhorse_for_player_b.json");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowrunner/player_a_playshadowhorse_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForB);
 
         String playerAPlayPeachJsonForC = websocketUtil.getValue("player-c");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowHorse/player_a_playshadowhorse_for_player_c.json");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowrunner/player_a_playshadowhorse_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForC);
 
         String playerAPlayPeachJsonForD = websocketUtil.getValue("player-d");
-        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowHorse/player_a_playshadowhorse_for_player_d.json");
+        path = Paths.get("src/test/resources/TestJsonFile/EquipmentTest/PlayShadowrunner/player_a_playshadowhorse_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAPlayPeachJsonForD);
     }
@@ -68,7 +68,7 @@ public class PlayShadowHorseTest extends AbstractBaseIntegrationTest {
                 General.劉備,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
-                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new ShadowHorse(ES5018)
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new Shadowrunner(ES5018)
         );
 
         Player playerB = createPlayer("player-b",

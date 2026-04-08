@@ -2,12 +2,9 @@ package com.gaas.threeKingdoms.handcard.equipmentcard.mountscard;
 
 import com.gaas.threeKingdoms.handcard.PlayCard;
 
-/**
- * 紫騂 (-1馬)
- */
-public class ZiXing extends MinusMountsCard {
+public class HexMark extends PlusMountsCard {
 
-    public ZiXing(PlayCard playCard) {
+    public HexMark(PlayCard playCard) {
         super(playCard);
     }
 }

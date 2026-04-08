@@ -10,7 +10,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
@@ -399,7 +399,7 @@ public class SnatchTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
                 new Snatch(SS3016), new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039));
         Player playerB = createPlayer("player-b", 4, General.張飛, HealthStatus.ALIVE, Role.TRAITOR);
-        playerB.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        playerB.getEquipment().setPlusOne(new Shadowrunner(ES5018));
         Player playerC = createPlayer("player-c", 4, General.關羽, HealthStatus.ALIVE, Role.TRAITOR);
         Player playerD = createPlayer("player-d", 4, General.趙雲, HealthStatus.ALIVE, Role.TRAITOR);
 

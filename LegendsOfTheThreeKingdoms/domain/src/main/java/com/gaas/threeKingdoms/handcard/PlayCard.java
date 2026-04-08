@@ -4,14 +4,15 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ClawYellowFlyingElectric;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.DiLu;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.FerghanaHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.HexMark;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.YellowClawFlyingElectric;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ZiXing;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.YellowFlash;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.*;
 
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public enum PlayCard {
     BS0023("BS0023", "殺", Suit.SPADE, Rank.TEN),
     SSJ024("SSJ024", "順手牽羊", Suit.SPADE, Rank.J),
     ESQ025("ESQ025", "丈八蛇矛", Suit.SPADE, Rank.Q),
-    ESK026("ESK026", "黃爪飛電", Suit.SPADE, Rank.K),
+    ESK026("ESK026", "大宛", Suit.SPADE, Rank.K),
 
     SHA027("SHA027", "桃園結義", Suit.HEART, Rank.ACE),
     BH2028("BH2028", "閃", Suit.HEART, Rank.TWO),
@@ -188,11 +189,11 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("BD2080", new Dodge(BD2080));
         CARD_FACTORY_MAP.put("BDJ089", new Dodge(BDJ089));
         CARD_FACTORY_MAP.put("EH5044", new RedRabbitHorse(EH5044));
-        CARD_FACTORY_MAP.put("ES5018", new ShadowHorse(ES5018));
-        CARD_FACTORY_MAP.put("EC5070", new DiLu(EC5070));
-        CARD_FACTORY_MAP.put("EHK052", new ClawYellowFlyingElectric(EHK052));
-        CARD_FACTORY_MAP.put("EDK104", new ZiXing(EDK104));
-        CARD_FACTORY_MAP.put("ESK026", new YellowClawFlyingElectric(ESK026));
+        CARD_FACTORY_MAP.put("ES5018", new Shadowrunner(ES5018));
+        CARD_FACTORY_MAP.put("EC5070", new HexMark(EC5070));
+        CARD_FACTORY_MAP.put("EHK052", new YellowFlash(EHK052));
+        CARD_FACTORY_MAP.put("EDK104", new VioletStallion(EDK104));
+        CARD_FACTORY_MAP.put("ESK026", new FerghanaHorse(ESK026));
         CARD_FACTORY_MAP.put("EH5031", new QilinBowCard(EH5031));
         CARD_FACTORY_MAP.put("SSK013", new BarbarianInvasion(SSK013));
         CARD_FACTORY_MAP.put("SC7072", new BarbarianInvasion(SC7072));
@@ -296,7 +297,7 @@ public enum PlayCard {
         return Arrays.stream(PlayCard.values())
                 .filter(c -> "赤兔".equals(c.getCardName()) || "絕影".equals(c.getCardName())
                         || "的盧".equals(c.getCardName()) || "紫騂".equals(c.getCardName())
-                        || "爪黃飛電".equals(c.getCardName()) || "黃爪飛電".equals(c.getCardName()))
+                        || "爪黃飛電".equals(c.getCardName()) || "大宛".equals(c.getCardName()))
                 .anyMatch(c -> c.getCardId().equals(this.cardId));
     }
 

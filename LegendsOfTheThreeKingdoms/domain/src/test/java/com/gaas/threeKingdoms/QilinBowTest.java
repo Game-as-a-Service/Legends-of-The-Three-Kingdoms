@@ -14,7 +14,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.player.*;
@@ -1057,7 +1057,7 @@ public class QilinBowTest {
 
         Equipment equipmentD = new Equipment();
         equipmentD.setMinusOne(new RedRabbitHorse(EH5044));
-        equipmentD.setPlusOne(new ShadowHorse(ES5018));
+        equipmentD.setPlusOne(new Shadowrunner(ES5018));
 
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
@@ -1145,7 +1145,7 @@ public class QilinBowTest {
 
         Equipment equipmentD = new Equipment();
         equipmentD.setMinusOne(new RedRabbitHorse(EH5044));
-        equipmentD.setPlusOne(new ShadowHorse(ES5018));
+        equipmentD.setPlusOne(new Shadowrunner(ES5018));
 
         Player playerA = PlayerBuilder
                 .construct()
@@ -1385,7 +1385,7 @@ public class QilinBowTest {
 
         Equipment equipmentD = new Equipment();
         equipmentD.setMinusOne(new RedRabbitHorse(EH5044));
-        equipmentD.setPlusOne(new ShadowHorse(ES5018));
+        equipmentD.setPlusOne(new Shadowrunner(ES5018));
 
         Player playerA = PlayerBuilder
                 .construct()
@@ -1727,7 +1727,7 @@ public class QilinBowTest {
 
         playerB.getEquipment().setArmor(new EightDiagramTactic(EC2067));
         playerB.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
-        playerB.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        playerB.getEquipment().setPlusOne(new Shadowrunner(ES5018));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -1812,7 +1812,7 @@ public class QilinBowTest {
                 .build();
 
         playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
-        playerB.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        playerB.getEquipment().setPlusOne(new Shadowrunner(ES5018));
 
         Player playerC = PlayerBuilder.construct()
                 .withId("player-c")
@@ -1902,7 +1902,7 @@ public class QilinBowTest {
         Equipment equipmentB = new Equipment();
         equipmentB.setArmor(new EightDiagramTactic(ES2015));
         equipmentB.setMinusOne(new RedRabbitHorse(EH5044));
-        equipmentB.setPlusOne(new ShadowHorse(ES5018));
+        equipmentB.setPlusOne(new Shadowrunner(ES5018));
 
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")

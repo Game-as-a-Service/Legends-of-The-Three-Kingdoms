@@ -12,7 +12,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
-import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.Shadowrunner;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.*;
 import com.gaas.threeKingdoms.player.*;
@@ -417,7 +417,7 @@ public class SnatchTest {
 
         Equipment equipmentA = new Equipment(); // 無馬
         Equipment equipmentB = new Equipment();
-        equipmentB.setPlusOne(new ShadowHorse(ES5018)); // B 有 +1 馬
+        equipmentB.setPlusOne(new Shadowrunner(ES5018)); // B 有 +1 馬
 
         Player playerA = PlayerBuilder
                 .construct()
