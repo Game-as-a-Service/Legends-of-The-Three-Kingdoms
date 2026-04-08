@@ -44,6 +44,11 @@ public class DiscardPresenter implements DiscardCardUseCase.DiscardPresenter<Lis
             personalEventToViewModels = personalEventToViewModels.stream().map(personalViewModel -> {
                 if (personalViewModel instanceof RoundStartPresenter.DrawCardViewModel drawCardViewModel) {
                     personalViewModel = hiddenOtherPlayerCardIds(drawCardViewModel.getData(), viewModel, drawCardViewModel.getData().getDrawCardPlayerId());
+                } else if (personalViewModel instanceof PlayCardPresenter.WaitForWardViewModel waitForWardViewModel) {
+                    WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
+                    if (waitForWardEvent.getPlayerIds().contains(viewModel.getId())) {
+                        personalViewModel = new PlayCardPresenter.AskPlayWardViewModel(waitForWardViewModel.getData());
+                    }
                 }
                 return personalViewModel;
             }).collect(Collectors.toList());

@@ -122,6 +122,12 @@ public class MockMvcUtil {
                         }""", currentPlayerId, cardId)));
     }
 
+    public ResultActions discardCards(String gameId, String cardIdsJson) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:discardCards")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(cardIdsJson));
+    }
+
     public ResultActions playWardCard(String gameId, String currentPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playWardCard")
                 .contentType(MediaType.APPLICATION_JSON)
