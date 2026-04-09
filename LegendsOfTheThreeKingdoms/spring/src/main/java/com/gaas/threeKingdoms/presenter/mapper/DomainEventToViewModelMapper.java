@@ -214,6 +214,25 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.YinYangSwordsEffectViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(AskGreenDragonCrescentBladeEffectEvent.class, event -> {
+            AskGreenDragonCrescentBladeEffectEvent askEvent = (AskGreenDragonCrescentBladeEffectEvent) event;
+            UseEquipmentEffectPresenter.AskGreenDragonCrescentBladeEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskGreenDragonCrescentBladeEffectDataViewModel(
+                    askEvent.getAttackerPlayerId(),
+                    askEvent.getTargetPlayerId()
+            );
+            return new UseEquipmentEffectPresenter.AskGreenDragonCrescentBladeEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(GreenDragonCrescentBladeTriggerEvent.class, event -> {
+            GreenDragonCrescentBladeTriggerEvent triggerEvent = (GreenDragonCrescentBladeTriggerEvent) event;
+            UseEquipmentEffectPresenter.GreenDragonCrescentBladeTriggerDataViewModel dataViewModel = new UseEquipmentEffectPresenter.GreenDragonCrescentBladeTriggerDataViewModel(
+                    triggerEvent.getAttackerPlayerId(),
+                    triggerEvent.getTargetPlayerId(),
+                    triggerEvent.getKillCardId()
+            );
+            return new UseEquipmentEffectPresenter.GreenDragonCrescentBladeTriggerViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(

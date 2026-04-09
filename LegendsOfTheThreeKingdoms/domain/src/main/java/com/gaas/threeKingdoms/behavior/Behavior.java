@@ -117,6 +117,14 @@ public class Behavior {
         this.isTargetPlayerNeedToResponse = isTargetPlayerNeedToResponse;
     }
 
+    public void setCardId(String cardId) {
+        this.cardId = cardId;
+    }
+
+    public void setCard(HandCard card) {
+        this.card = card;
+    }
+
     public boolean judgeWhetherRemoveTopBehavior() {
         return this instanceof NormalActiveKillBehavior;
     }

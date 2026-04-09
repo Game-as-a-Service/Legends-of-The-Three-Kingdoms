@@ -90,6 +90,18 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         }
     }
 
+    public static class AskGreenDragonCrescentBladeEffectViewModel extends ViewModel<AskGreenDragonCrescentBladeEffectDataViewModel> {
+        public AskGreenDragonCrescentBladeEffectViewModel(AskGreenDragonCrescentBladeEffectDataViewModel data) {
+            super("AskGreenDragonCrescentBladeEffectEvent", data, "青龍偃月刀效果：是否要再出一張殺");
+        }
+    }
+
+    public static class GreenDragonCrescentBladeTriggerViewModel extends ViewModel<GreenDragonCrescentBladeTriggerDataViewModel> {
+        public GreenDragonCrescentBladeTriggerViewModel(GreenDragonCrescentBladeTriggerDataViewModel data) {
+            super("GreenDragonCrescentBladeTriggerEvent", data, "青龍偃月刀發動");
+        }
+    }
+
     public static class SkipEquipmentEffectViewModel extends ViewModel<SkipEquipmentEffectDataViewModel> {
         public SkipEquipmentEffectViewModel(SkipEquipmentEffectDataViewModel data) {
             super("SkipEquipmentEffectEvent", data, "跳過裝備效果");
@@ -136,6 +148,23 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         private String targetPlayerId;
         private String choice;
         private String discardedCardId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskGreenDragonCrescentBladeEffectDataViewModel {
+        private String attackerPlayerId;
+        private String targetPlayerId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class GreenDragonCrescentBladeTriggerDataViewModel {
+        private String attackerPlayerId;
+        private String targetPlayerId;
+        private String killCardId;
     }
 
     @Data

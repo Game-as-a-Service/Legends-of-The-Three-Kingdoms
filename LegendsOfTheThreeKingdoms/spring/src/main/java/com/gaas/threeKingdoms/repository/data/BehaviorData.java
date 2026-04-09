@@ -170,6 +170,15 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "WaitingGreenDragonCrescentBladeResponseBehavior" -> new WaitingGreenDragonCrescentBladeResponseBehavior(
+                    game,
+                    game.getPlayer(behaviorPlayerId),
+                    reactionPlayers,
+                    game.getPlayer(currentReactionPlayerId),
+                    cardId,
+                    playType,
+                    PlayCard.findById(cardId)
+            );
             case "DuelBehavior" -> new DuelBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
