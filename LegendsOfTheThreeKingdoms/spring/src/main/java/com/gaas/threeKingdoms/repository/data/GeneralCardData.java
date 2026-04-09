@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.repository.data;
 
+import com.gaas.threeKingdoms.generalcard.Gender;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,15 @@ public class GeneralCardData {
     private String generalId;
     private String generalName;
     private int healthPoint;
+    private Gender gender;
+
+    // Backward-compat constructor for tests created before gender field was added
+    public GeneralCardData(String generalId, String generalName, int healthPoint) {
+        this.generalId = generalId;
+        this.generalName = generalName;
+        this.healthPoint = healthPoint;
+        this.gender = null;
+    }
 
     // Convert to domain object
     public GeneralCard toDomain() {
@@ -21,6 +31,7 @@ public class GeneralCardData {
         generalCard.setGeneralId(this.generalId);
         generalCard.setGeneralName(this.generalName);
         generalCard.setHealthPoint(this.healthPoint);
+        generalCard.setGender(this.gender);
         return generalCard;
     }
 
@@ -34,6 +45,7 @@ public class GeneralCardData {
                 .generalId(generalCard.getGeneralId())
                 .generalName(generalCard.getGeneralName())
                 .healthPoint(generalCard.getHealthPoint())
+                .gender(generalCard.getGender())
                 .build();
     }
 }

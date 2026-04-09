@@ -797,6 +797,20 @@ public class Game {
         return List.of(getGameStatusEvent(message));
     }
 
+    public List<DomainEvent> playerUseYinYangSwordsEffect(String playerId, YinYangSwordsEffectEvent.Choice choice, String cardId) {
+        if (topBehavior.isEmpty()) {
+            throw new IllegalStateException("No active behavior waiting for YinYangSwords effect response");
+        }
+        Behavior behavior = topBehavior.peek();
+        if (!(behavior instanceof WaitingYinYangSwordsResponseBehavior)) {
+            throw new IllegalStateException("Current behavior is not WaitingYinYangSwordsResponseBehavior");
+        }
+        WaitingYinYangSwordsResponseBehavior yinYangBehavior = (WaitingYinYangSwordsResponseBehavior) behavior;
+        List<DomainEvent> events = yinYangBehavior.resolveChoice(playerId, choice, cardId);
+        removeCompletedBehaviors();
+        return events;
+    }
+
     public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {
         Behavior behavior = topBehavior.peek();
         Player borrowedPlayer = getPlayer(borrowedPlayerId);

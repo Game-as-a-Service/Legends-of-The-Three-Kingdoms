@@ -33,6 +33,7 @@ public class GameController {
     private final UseDismantleUseCase useDismantleUseCase;
     private final ChooseCardFromBountifulHarvestUseCase chooseCardFromBountifulHarvestUseCase;
     private final UseSnatchUseCase useSnatchUseCase;
+    private final UseYinYangSwordsEffectUseCase useYinYangSwordsEffectUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -138,6 +139,14 @@ public class GameController {
         UseSnatchPresenter useSnatchPresenter = new UseSnatchPresenter();
         useSnatchUseCase.execute(gameId, useSnatchRequest.toUseSnatchRequest(), useSnatchPresenter);
         webSocketBroadCast.pushUseSnatchEvent(useSnatchPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useYinYangSwordsEffect")
+    public ResponseEntity<?> playerUseYinYangSwordsEffect(@PathVariable String gameId, @RequestBody UseYinYangSwordsEffectRequest request) {
+        UseYinYangSwordsEffectPresenter presenter = new UseYinYangSwordsEffectPresenter();
+        useYinYangSwordsEffectUseCase.execute(gameId, request.toUseYinYangSwordsEffectRequest(), presenter);
+        webSocketBroadCast.pushUseYinYangSwordsEffectEvent(presenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

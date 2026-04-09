@@ -114,13 +114,24 @@ public class YinYangSwordsTest {
         // A plays Kill on B -> triggers YinYangSwords
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
-        // B chooses to discard BH3029 (Peach)
-        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), BH3029.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        // B uses YinYangSwords effect API to discard BH3029 (Peach)
+        List<DomainEvent> events = game.playerUseYinYangSwordsEffect(
+                playerB.getId(), YinYangSwordsEffectEvent.Choice.TARGET_DISCARDS, BH3029.getCardId());
 
         // B should have 1 card left (BH2028)
         assertEquals(1, playerB.getHandSize());
         // Should now ask B to dodge
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+        // YinYangSwordsEffectEvent with TARGET_DISCARDS choice
+        YinYangSwordsEffectEvent effectEvent = events.stream()
+                .filter(e -> e instanceof YinYangSwordsEffectEvent)
+                .map(e -> (YinYangSwordsEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("YinYangSwordsEffectEvent should be emitted"));
+        assertEquals("player-a", effectEvent.getAttackerPlayerId());
+        assertEquals("player-b", effectEvent.getTargetPlayerId());
+        assertEquals(YinYangSwordsEffectEvent.Choice.TARGET_DISCARDS, effectEvent.getChoice());
+        assertEquals(BH3029.getCardId(), effectEvent.getDiscardedCardId());
     }
 
     @DisplayName("""
@@ -150,8 +161,9 @@ public class YinYangSwordsTest {
         // A plays Kill on B -> triggers YinYangSwords
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
-        // B chooses to let A draw (skip)
-        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+        // B uses YinYangSwords effect API to let A draw
+        List<DomainEvent> events = game.playerUseYinYangSwordsEffect(
+                playerB.getId(), YinYangSwordsEffectEvent.Choice.ATTACKER_DRAWS, "");
 
         // A should have drawn 1 card (was 0 after Kill, now 1)
         assertEquals(1, playerA.getHandSize());
@@ -159,6 +171,14 @@ public class YinYangSwordsTest {
         assertEquals(2, playerB.getHandSize());
         // Should now ask B to dodge
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+        // YinYangSwordsEffectEvent with ATTACKER_DRAWS choice
+        YinYangSwordsEffectEvent effectEvent = events.stream()
+                .filter(e -> e instanceof YinYangSwordsEffectEvent)
+                .map(e -> (YinYangSwordsEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("YinYangSwordsEffectEvent should be emitted"));
+        assertEquals(YinYangSwordsEffectEvent.Choice.ATTACKER_DRAWS, effectEvent.getChoice());
+        assertEquals(null, effectEvent.getDiscardedCardId());
     }
 
     @DisplayName("""
@@ -316,6 +336,131 @@ public class YinYangSwordsTest {
 
         // Should trigger YinYangSwords effect
         assertTrue(killEvents.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
+    }
+
+    // ============= New Test Scenarios =============
+
+    @DisplayName("呼叫 useYinYangSwordsEffect 傳入的 playerId 不是當前需要回應的玩家 → 拋異常")
+    @Test
+    public void givenYinYangSwordsTriggered_WhenWrongPlayerCallsAPI_ThenThrowsException() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028)));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // Wrong player (C) tries to respond
+        assertThrows(IllegalStateException.class, () ->
+                game.playerUseYinYangSwordsEffect(playerC.getId(),
+                        YinYangSwordsEffectEvent.Choice.TARGET_DISCARDS, BH2028.getCardId()));
+    }
+
+    @DisplayName("DISCARD 但傳入的 cardId 不在目標手牌 → 拋異常")
+    @Test
+    public void givenYinYangSwordsTriggered_WhenDiscardCardIdNotInHand_ThenThrowsException() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028)));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // B tries to discard a card not in hand
+        assertThrows(RuntimeException.class, () ->
+                game.playerUseYinYangSwordsEffect(playerB.getId(),
+                        YinYangSwordsEffectEvent.Choice.TARGET_DISCARDS, BH3029.getCardId()));
+    }
+
+    @DisplayName("沒有 YinYangSwords behavior 時呼叫 API → 拋異常")
+    @Test
+    public void givenNoYinYangSwordsBehavior_WhenCallAPI_ThenThrowsException() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerB = game.getPlayer("player-b");
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028)));
+
+        assertThrows(IllegalStateException.class, () ->
+                game.playerUseYinYangSwordsEffect(playerB.getId(),
+                        YinYangSwordsEffectEvent.Choice.TARGET_DISCARDS, BH2028.getCardId()));
+    }
+
+    @DisplayName("攻擊者為女性角色 (甄姬) 對男性 (劉備) 出殺 → 反向觸發雌雄雙股劍")
+    @Test
+    public void givenFemaleAttackerOppositeGenderMaleTarget_WhenKill_ThenTriggerYinYangSwords() {
+        Game game = initGameWith4Players(General.甄姬, General.劉備, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028), new Peach(BH3029)));
+
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
+    }
+
+    @DisplayName("DISCARD 後 B 出閃 → B 不受傷害")
+    @Test
+    public void givenYinYangSwordsDiscarded_WhenTargetPlaysDodge_ThenNoDamage() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028), new Peach(BH3029)));
+        int playerBHpBefore = playerB.getHP();
+
+        // A plays Kill on B -> YinYangSwords triggers
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // B discards Peach
+        game.playerUseYinYangSwordsEffect(playerB.getId(),
+                YinYangSwordsEffectEvent.Choice.TARGET_DISCARDS, BH3029.getCardId());
+
+        // B plays Dodge
+        game.playerPlayCard(playerB.getId(), BH2028.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+
+        // B should have no cards left, HP unchanged
+        assertEquals(0, playerB.getHandSize());
+        assertEquals(playerBHpBefore, playerB.getHP());
+    }
+
+    @DisplayName("ATTACKER_DRAWS 後 B 不出閃 → B 扣血，A 手牌 +1")
+    @Test
+    public void givenAttackerDraws_WhenTargetSkipsDodge_ThenTargetHpDecreasesAndAttackerDraws() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        int playerBHpBefore = playerB.getHP();
+
+        // A plays Kill on B -> YinYangSwords triggers (B has no cards, auto draws)
+        // Wait — B has no cards so it auto draws. Let me give B cards.
+        playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH3029)));
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // B lets A draw
+        game.playerUseYinYangSwordsEffect(playerB.getId(),
+                YinYangSwordsEffectEvent.Choice.ATTACKER_DRAWS, "");
+
+        // B skips dodge
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), PlayType.SKIP.getPlayType());
+
+        // B HP -1
+        assertEquals(playerBHpBefore - 1, playerB.getHP());
+        // A drew 1 card
+        assertEquals(1, playerA.getHandSize());
     }
 
     // Helper method to initialize a 4-player game

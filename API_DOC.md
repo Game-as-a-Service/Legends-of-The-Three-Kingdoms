@@ -300,6 +300,37 @@ POST /api/games/{gameId}/player:chooseCardFromBountifulHarvest
 
 ---
 
+## 15. 雌雄雙股劍效果選擇
+
+```
+POST /api/games/{gameId}/player:useYinYangSwordsEffect
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| playerId | String | 做選擇的玩家 ID（被殺的目標 B） |
+| choice | String | `TARGET_DISCARDS`（目標棄一張手牌）或 `ATTACKER_DRAWS`（讓攻擊者摸牌） |
+| cardId | String | 要棄的手牌 cardId（choice=TARGET_DISCARDS 時必填；ATTACKER_DRAWS 時傳空字串） |
+
+**觸發時機**：收到 `AskYinYangSwordsEffectEvent` 後呼叫
+
+**流程**：
+```
+A(男) 對 B(女) 出殺 → A 裝備雌雄雙股劍 + 異性
+  → 系統發出 AskYinYangSwordsEffectEvent
+  → B 呼叫本 API 做選擇：
+    - TARGET_DISCARDS: B 棄一張手牌到墓地 → 發出 YinYangSwordsEffectEvent → 繼續 AskDodge
+    - ATTACKER_DRAWS: A 從牌堆摸 1 張 → 發出 YinYangSwordsEffectEvent → 繼續 AskDodge
+```
+
+**特殊情況**：
+- B 目標沒有手牌時，系統自動讓 A 摸牌，不會發送 `AskYinYangSwordsEffectEvent`，直接進入 AskDodge
+- 同性出殺時，不觸發雌雄雙股劍，直接進入 AskDodge
+
+**備註**：此 API 獨立於 `playCard`，不使用 `playType=active/skip` 路由
+
+---
+
 ## WebSocket 事件類型
 
 前端透過 WebSocket 接收以下事件，根據事件類型決定 UI 行為：
@@ -324,6 +355,7 @@ POST /api/games/{gameId}/player:chooseCardFromBountifulHarvest
 | `AskDodgeEvent` | 需要出閃（萬箭齊發/被殺） | playCard |
 | `AskPeachEvent` | 瀕死需要出桃 | playCard |
 | `BountifulHarvestEvent` | 五穀豐登輪到你選牌 | chooseCardFromBountifulHarvest |
+| `AskYinYangSwordsEffectEvent` | 雌雄雙股劍效果：目標選擇棄牌或讓攻擊者摸牌 | useYinYangSwordsEffect |
 
 ### 效果事件
 
@@ -342,5 +374,5 @@ POST /api/games/{gameId}/player:chooseCardFromBountifulHarvest
 | `BorrowedSwordEvent` | 借刀殺人效果 |
 | `EquipmentEvent` | 裝備效果 |
 | `JudgementEvent` | 判定結果（八卦陣/樂不思蜀/閃電） |
-| `AskYinYangSwordsEffectEvent` | 雌雄雙股劍異性出殺，目標選擇棄牌或讓攻擊者摸牌 |
+| `YinYangSwordsEffectEvent` | 雌雄雙股劍效果結算：含 attackerPlayerId、targetPlayerId、choice（TARGET_DISCARDS/ATTACKER_DRAWS）、discardedCardId |
 | `BlackPommelEffectEvent` | 青釭劍發動，殺無視目標防具（含 attackerPlayerId、targetPlayerId） |

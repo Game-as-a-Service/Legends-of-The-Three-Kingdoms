@@ -64,6 +64,16 @@ public class MockMvcUtil {
                         }""", currentPlayerId, borrowedPlayerId, attackTargetPlayerId)));
     }
 
+    public ResultActions useYinYangSwordsEffect(String gameId, String playerId, String choice, String cardId) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useYinYangSwordsEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "choice": "%s",
+                          "cardId": "%s"
+                        }""", playerId, choice, cardId)));
+    }
+
     public ResultActions playCard(String gameId, String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)
