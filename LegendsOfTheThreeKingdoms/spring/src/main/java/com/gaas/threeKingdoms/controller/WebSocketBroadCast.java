@@ -218,6 +218,19 @@ public class WebSocketBroadCast {
         }
     }
 
+    public void pushUseViperSpearKillEvent(UseViperSpearKillPresenter presenter) {
+        List<UseViperSpearKillPresenter.GameViewModel> viewModels = presenter.present();
+        try {
+            for (UseViperSpearKillPresenter.GameViewModel viewModel : viewModels) {
+                String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(viewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", viewModel.getGameId(), viewModel.getPlayerId()), json);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushUseViperSpearKillEvent ");
+            e.printStackTrace();
+        }
+    }
+
     public void pushUseDismantleEvent(UseDismantlePresenter presenter) {
         List<UseDismantlePresenter.GameViewModel> useDismantleViewModels = presenter.present();
         try {

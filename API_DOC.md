@@ -403,6 +403,42 @@ A (裝備貫石斧) 對 B 出殺 → B 出閃抵銷
 
 ---
 
+## 18. 丈八蛇矛出殺（棄兩張牌當殺）
+
+```
+POST /api/games/{gameId}/player:useViperSpearKill
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| playerId | String | 攻擊者玩家 ID（裝備丈八蛇矛） |
+| targetPlayerId | String | 被攻擊玩家 ID |
+| discardCardIds | List\<String\> | 作為殺的兩張手牌 cardId（長度必須為 2） |
+
+**觸發時機**：裝備丈八蛇矛的玩家主動使用（不透過 `playCard` API）
+
+**流程**：
+```
+A (裝備丈八蛇矛) 呼叫本 API → 棄兩張手牌到墓地 → 視為出殺
+  → 系統發出 ViperSpearKillTriggerEvent（通知前端丈八蛇矛發動）
+  → 進入殺流程：B 收到 AskDodgeEvent
+    - B 出閃 → 殺被抵銷
+    - B 不出閃 → B 扣血（HP=0 進入瀕死流程）
+```
+
+**特殊情況**：
+- 攻擊者必須裝備丈八蛇矛
+- 攻擊者本回合若已出過殺（無諸葛連弩）仍受殺次數限制
+- discardCardIds 必須剛好為 2 張，且必須是攻擊者手牌中的 cardId
+- 不可與其他 Behavior 同時進行（topBehavior 必須為空）
+
+**備註**：
+- 此 API 獨立於 `playCard`
+- 內部使用虛擬殺（VirtualKill，cardId = `VIPER_SPEAR_VIRTUAL_KILL`），不在手牌也不在 PlayCard enum 中
+- Phase 2 TODO：被動場景（被決鬥/南蠻入侵/借刀殺人要求出殺時改用丈八蛇矛回應）尚未支援
+
+---
+
 ## WebSocket 事件類型
 
 前端透過 WebSocket 接收以下事件，根據事件類型決定 UI 行為：
@@ -430,6 +466,7 @@ A (裝備貫石斧) 對 B 出殺 → B 出閃抵銷
 | `AskYinYangSwordsEffectEvent` | 雌雄雙股劍效果：目標選擇棄牌或讓攻擊者摸牌 | useYinYangSwordsEffect |
 | `AskGreenDragonCrescentBladeEffectEvent` | 青龍偃月刀效果：攻擊者選擇是否再出一張殺 | useGreenDragonCrescentBladeEffect |
 | `AskStonePiercingAxeEffectEvent` | 貫石斧效果：攻擊者選擇是否棄兩張牌強制命中 | useStonePiercingAxeEffect |
+| `ViperSpearKillTriggerEvent` | 丈八蛇矛發動：攻擊者棄兩張牌作為虛擬殺使用（通知事件，無需回應） | useViperSpearKill |
 
 ### 效果事件
 
@@ -452,3 +489,4 @@ A (裝備貫石斧) 對 B 出殺 → B 出閃抵銷
 | `BlackPommelEffectEvent` | 青釭劍發動，殺無視目標防具（含 attackerPlayerId、targetPlayerId） |
 | `GreenDragonCrescentBladeTriggerEvent` | 青龍偃月刀發動，追加一張殺（含 attackerPlayerId、targetPlayerId、killCardId） |
 | `StonePiercingAxeTriggerEvent` | 貫石斧發動，棄兩張牌強制命中（含 attackerPlayerId、targetPlayerId、discardedCardIds） |
+| `ViperSpearKillTriggerEvent` | 丈八蛇矛發動，棄兩張牌當殺使用（含 attackerPlayerId、targetPlayerId、discardedCardIds） |

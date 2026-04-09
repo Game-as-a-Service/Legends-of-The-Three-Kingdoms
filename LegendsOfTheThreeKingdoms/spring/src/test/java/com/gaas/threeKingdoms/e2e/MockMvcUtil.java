@@ -97,6 +97,19 @@ public class MockMvcUtil {
                         }""", playerId, choice, cardIdsJson)));
     }
 
+    public ResultActions useViperSpearKill(String gameId, String playerId, String targetPlayerId, java.util.List<String> discardCardIds) throws Exception {
+        String cardIdsJson = discardCardIds.stream()
+                .map(id -> "\"" + id + "\"")
+                .collect(java.util.stream.Collectors.joining(","));
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useViperSpearKill")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "targetPlayerId": "%s",
+                          "discardCardIds": [%s]
+                        }""", playerId, targetPlayerId, cardIdsJson)));
+    }
+
     public ResultActions playCard(String gameId, String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.*;
 import com.gaas.threeKingdoms.handcard.PlayCard;
+import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class BehaviorData {
     private static final String POLLING_STARTED = "POLLING_STARTED";
+    private static final String VIPER_SPEAR_DISCARDED_CARD_IDS = "VIPER_SPEAR_DISCARDED_CARD_IDS";
 
     private String behaviorName;
     private String behaviorPlayerId;
@@ -134,6 +136,20 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "ViperSpearKillBehavior" -> {
+                @SuppressWarnings("unchecked")
+                List<String> discardedCardIds = params != null
+                        ? (List<String>) params.get(VIPER_SPEAR_DISCARDED_CARD_IDS)
+                        : List.of();
+                yield new ViperSpearKillBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        new VirtualKill(),
+                        discardedCardIds
+                );
+            }
             case "PeachBehavior" -> new PeachBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
@@ -340,6 +356,8 @@ public class BehaviorData {
             params.put(POLLING_STARTED, bi.isPollingStarted());
         } else if (behavior instanceof BountifulHarvestBehavior bh) {
             params.put(POLLING_STARTED, bh.isPollingStarted());
+        } else if (behavior instanceof ViperSpearKillBehavior vs) {
+            params.put(VIPER_SPEAR_DISCARDED_CARD_IDS, vs.getDiscardedCardIds());
         }
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())
