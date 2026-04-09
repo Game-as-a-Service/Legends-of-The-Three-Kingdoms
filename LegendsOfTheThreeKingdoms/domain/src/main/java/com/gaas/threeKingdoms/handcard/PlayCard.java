@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.YellowFlash;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.BlackPommelCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.YinYangSwordsCard;
@@ -196,6 +197,7 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("ESK026", new FerghanaHorse(ESK026));
         CARD_FACTORY_MAP.put("EH5031", new QilinBowCard(EH5031));
         CARD_FACTORY_MAP.put("ES2002", new YinYangSwordsCard(ES2002));
+        CARD_FACTORY_MAP.put("ES6019", new BlackPommelCard(ES6019));
         CARD_FACTORY_MAP.put("SSK013", new BarbarianInvasion(SSK013));
         CARD_FACTORY_MAP.put("SC7072", new BarbarianInvasion(SC7072));
         CARD_FACTORY_MAP.put("SS7007", new BarbarianInvasion(SS7007));

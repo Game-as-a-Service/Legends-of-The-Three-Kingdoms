@@ -4,12 +4,14 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
+import com.gaas.threeKingdoms.events.BlackPommelEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.events.AskYinYangSwordsEffectEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.BlackPommelCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.YinYangSwordsCard;
 import com.gaas.threeKingdoms.player.Player;
@@ -60,11 +62,15 @@ public class NormalActiveKillBehavior extends Behavior {
                         targetPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
                 events.add(new AskYinYangSwordsEffectEvent(behaviorPlayer.getId(), targetPlayerId));
             }
-        } else if (isEquipmentHasSpecialEffect(targetPlayer)) {
+        } else if (isEquipmentHasSpecialEffect(targetPlayer) && !isAttackerHasBlackPommel(behaviorPlayer)) {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
             events.add(askPlayEquipmentEffectEvent);
         } else {
+            // 青釭劍發動：攻擊者有青釭劍且目標有防具時，發出效果事件
+            if (isAttackerHasBlackPommel(behaviorPlayer) && isEquipmentHasSpecialEffect(targetPlayer)) {
+                events.add(new BlackPommelEffectEvent(behaviorPlayer.getId(), targetPlayerId));
+            }
             events.add(new AskDodgeEvent(targetPlayerId));
         }
         events.add(game.getGameStatusEvent("出牌"));
@@ -139,6 +145,10 @@ public class NormalActiveKillBehavior extends Behavior {
 
     static public boolean isEquipmentHasSpecialEffect(Player targetPlayer) {
         return targetPlayer.getEquipment().hasSpecialEffect();
+    }
+
+    private boolean isAttackerHasBlackPommel(Player attackPlayer) {
+        return attackPlayer.getEquipmentWeaponCard() instanceof BlackPommelCard;
     }
 
 }

@@ -72,6 +72,12 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         }
     }
 
+    public static class BlackPommelEffectViewModel extends ViewModel<BlackPommelEffectDataViewModel> {
+        public BlackPommelEffectViewModel(BlackPommelEffectDataViewModel data) {
+            super("BlackPommelEffectEvent", data, "青釭劍發動，殺無視防具");
+        }
+    }
+
     public static class SkipEquipmentEffectViewModel extends ViewModel<SkipEquipmentEffectDataViewModel> {
         public SkipEquipmentEffectViewModel(SkipEquipmentEffectDataViewModel data) {
             super("SkipEquipmentEffectEvent", data, "跳過裝備效果");
@@ -92,6 +98,14 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
     @NoArgsConstructor
     public static class UseQilinBowCardEffectDataViewModel {
         private String mountCardId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class BlackPommelEffectDataViewModel {
+        private String attackerPlayerId;
+        private String targetPlayerId;
     }
 
     @Data

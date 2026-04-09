@@ -185,6 +185,15 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.UseQilinBowCardEffectViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(BlackPommelEffectEvent.class, event -> {
+            BlackPommelEffectEvent blackPommelEvent = (BlackPommelEffectEvent) event;
+            UseEquipmentEffectPresenter.BlackPommelEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.BlackPommelEffectDataViewModel(
+                    blackPommelEvent.getAttackerPlayerId(),
+                    blackPommelEvent.getTargetPlayerId()
+            );
+            return new UseEquipmentEffectPresenter.BlackPommelEffectViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(
