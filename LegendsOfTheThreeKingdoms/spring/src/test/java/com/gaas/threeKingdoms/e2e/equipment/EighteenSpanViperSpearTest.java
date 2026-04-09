@@ -1,7 +1,6 @@
 package com.gaas.threeKingdoms.e2e.equipment;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
@@ -16,27 +15,20 @@ import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
 
-    /**
-     * 把這個 flag 翻成 true 會改為寫入模式：每次跑測試都覆蓋 JSON fixtures，
-     * 方便大幅更動事件時重新產生 golden files。平常應保持 false，只在本地產生/更新 fixture 時短暫打開。
-     */
-    private static final boolean REGENERATE_FIXTURES = false;
-
-    private static final List<String> PLAYER_IDS = List.of("player-a", "player-b", "player-c", "player-d");
+    // 若需要重產本 class 的 fixture，把以下 method 的 return 改為 true，
+    // 產完後務必 revert 回 false 再 commit。
+    // @Override
+    // protected boolean shouldRegenerateFixtures() { return true; }
 
     @Test
     public void testEquipEighteenSpanViperSpear() throws Exception {
@@ -215,15 +207,4 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
         repository.save(game);
     }
 
-    private void assertAllPlayerJson(String filePathTemplate) throws Exception {
-        for (String testPlayerId : PLAYER_IDS) {
-            String testPlayerJson = REGENERATE_FIXTURES
-                    ? JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate)
-                    : websocketUtil.getValue(testPlayerId);
-            String filePlayerId = testPlayerId.replace("-", "_");
-            Path path = Paths.get(String.format(filePathTemplate, filePlayerId));
-            String expectedJson = Files.readString(path);
-            assertEquals(expectedJson, testPlayerJson);
-        }
-    }
 }
