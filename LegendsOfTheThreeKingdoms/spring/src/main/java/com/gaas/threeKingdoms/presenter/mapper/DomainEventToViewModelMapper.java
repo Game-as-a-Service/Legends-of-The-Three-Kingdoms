@@ -252,6 +252,16 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.StonePiercingAxeTriggerViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(ViperSpearKillTriggerEvent.class, event -> {
+            ViperSpearKillTriggerEvent triggerEvent = (ViperSpearKillTriggerEvent) event;
+            UseEquipmentEffectPresenter.ViperSpearKillTriggerDataViewModel dataViewModel = new UseEquipmentEffectPresenter.ViperSpearKillTriggerDataViewModel(
+                    triggerEvent.getAttackerPlayerId(),
+                    triggerEvent.getTargetPlayerId(),
+                    triggerEvent.getDiscardedCardIds()
+            );
+            return new UseEquipmentEffectPresenter.ViperSpearKillTriggerViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(

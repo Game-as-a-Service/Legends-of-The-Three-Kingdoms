@@ -36,6 +36,7 @@ public class GameController {
     private final UseYinYangSwordsEffectUseCase useYinYangSwordsEffectUseCase;
     private final UseGreenDragonCrescentBladeEffectUseCase useGreenDragonCrescentBladeEffectUseCase;
     private final UseStonePiercingAxeEffectUseCase useStonePiercingAxeEffectUseCase;
+    private final UseViperSpearKillUseCase useViperSpearKillUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -165,6 +166,14 @@ public class GameController {
         UseStonePiercingAxeEffectPresenter presenter = new UseStonePiercingAxeEffectPresenter();
         useStonePiercingAxeEffectUseCase.execute(gameId, request.toUseStonePiercingAxeEffectRequest(), presenter);
         webSocketBroadCast.pushUseStonePiercingAxeEffectEvent(presenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useViperSpearKill")
+    public ResponseEntity<?> playerUseViperSpearKill(@PathVariable String gameId, @RequestBody UseViperSpearKillRequest request) {
+        UseViperSpearKillPresenter presenter = new UseViperSpearKillPresenter();
+        useViperSpearKillUseCase.execute(gameId, request.toUseViperSpearKillRequest(), presenter);
+        webSocketBroadCast.pushUseViperSpearKillEvent(presenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

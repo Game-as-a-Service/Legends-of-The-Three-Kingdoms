@@ -11,6 +11,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.YellowFlash;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.BlackPommelCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
@@ -201,6 +202,7 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("ES2002", new YinYangSwordsCard(ES2002));
         CARD_FACTORY_MAP.put("ES5005", new GreenDragonCrescentBladeCard(ES5005));
         CARD_FACTORY_MAP.put("ED5083", new StonePiercingAxeCard(ED5083));
+        CARD_FACTORY_MAP.put("ESQ025", new EighteenSpanViperSpearCard(ESQ025));
         CARD_FACTORY_MAP.put("ES6019", new BlackPommelCard(ES6019));
         CARD_FACTORY_MAP.put("SSK013", new BarbarianInvasion(SSK013));
         CARD_FACTORY_MAP.put("SC7072", new BarbarianInvasion(SC7072));
