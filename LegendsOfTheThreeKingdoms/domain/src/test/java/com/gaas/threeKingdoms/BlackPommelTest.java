@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.BlackPommelCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -153,11 +154,18 @@ public class BlackPommelTest {
         // When: B攻擊A
         List<DomainEvent> events = game.playerPlayCard(playerB.getId(), BS8008.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
 
-        // Then: 無視八卦陣, 直接收到AskDodgeEvent
+        // Then: 無視八卦陣, 直接收到AskDodgeEvent, 且有 BlackPommelEffectEvent
         assertFalse(events.stream().anyMatch(event -> event instanceof AskPlayEquipmentEffectEvent),
                 "BlackPommel should bypass armor effect");
         assertTrue(events.stream().anyMatch(event -> event instanceof AskDodgeEvent),
                 "Target should be asked to dodge directly");
+        BlackPommelEffectEvent blackPommelEvent = events.stream()
+                .filter(e -> e instanceof BlackPommelEffectEvent)
+                .map(e -> (BlackPommelEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("BlackPommelEffectEvent should be emitted"));
+        assertEquals("player-b", blackPommelEvent.getAttackerPlayerId());
+        assertEquals("player-a", blackPommelEvent.getTargetPlayerId());
     }
 
     @DisplayName("givenPlayerBHasNoWeapon_WhenPlayerBKillsPlayerAWithEightDiagram_ThenArmorEffectTriggered")
@@ -240,7 +248,7 @@ public class BlackPommelTest {
                 .withGeneralCard(new GeneralCard(General.劉備))
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
-        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new BorrowedSword(SCK065)));
 
         Equipment equipmentB = new Equipment();
         equipmentB.setWeapon(new BlackPommelCard(ES6019));

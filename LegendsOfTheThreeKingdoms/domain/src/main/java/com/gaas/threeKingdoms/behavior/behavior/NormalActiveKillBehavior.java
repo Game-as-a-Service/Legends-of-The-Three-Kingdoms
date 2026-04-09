@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
+import com.gaas.threeKingdoms.events.BlackPommelEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
 import com.gaas.threeKingdoms.events.AskYinYangSwordsEffectEvent;
@@ -66,6 +67,10 @@ public class NormalActiveKillBehavior extends Behavior {
             DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
             events.add(askPlayEquipmentEffectEvent);
         } else {
+            // 青釭劍發動：攻擊者有青釭劍且目標有防具時，發出效果事件
+            if (isAttackerHasBlackPommel(behaviorPlayer) && isEquipmentHasSpecialEffect(targetPlayer)) {
+                events.add(new BlackPommelEffectEvent(behaviorPlayer.getId(), targetPlayerId));
+            }
             events.add(new AskDodgeEvent(targetPlayerId));
         }
         events.add(game.getGameStatusEvent("出牌"));

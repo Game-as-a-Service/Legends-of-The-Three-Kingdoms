@@ -9,6 +9,13 @@
     },
     "message" : "出牌"
   }, {
+    "event" : "BlackPommelEffectEvent",
+    "data" : {
+      "attackerPlayerId" : "player-a",
+      "targetPlayerId" : "player-b"
+    },
+    "message" : "青釭劍發動，殺無視防具"
+  }, {
     "event" : "AskDodgeEvent",
     "data" : {
       "playerId" : "player-b"

@@ -69,7 +69,7 @@ public class BlackPommelTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        // Then B 不會收到 AskPlayEquipmentEffectEvent，而是直接收到 AskDodgeEvent
+        // Then B 不會收到 AskPlayEquipmentEffectEvent，而是直接收到 AskDodgeEvent，且有 BlackPommelEffectEvent
         List<String> playerIds = List.of("player-a", "player-b", "player-c", "player-d");
         String filePathTemplate = "src/test/resources/TestJsonFile/EquipmentTest/BlackPommel/player_a_kill_player_b_bypass_eightdiagram_for_%s.json";
         for (String testPlayerId : playerIds) {
