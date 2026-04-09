@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.player;
 
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.RemoveHorseEvent;
+import com.gaas.threeKingdoms.generalcard.Gender;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
@@ -276,6 +277,10 @@ public class Player {
 
     public String getGeneralName() {
         return generalCard.getGeneralName();
+    }
+
+    public Gender getGender() {
+        return generalCard.getGender();
     }
 
 
