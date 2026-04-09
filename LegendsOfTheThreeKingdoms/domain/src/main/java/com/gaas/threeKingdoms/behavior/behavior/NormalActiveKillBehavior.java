@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.events.AskYinYangSwordsEffectEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.BlackPommelCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.YinYangSwordsCard;
 import com.gaas.threeKingdoms.player.Player;
@@ -60,7 +61,7 @@ public class NormalActiveKillBehavior extends Behavior {
                         targetPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
                 events.add(new AskYinYangSwordsEffectEvent(behaviorPlayer.getId(), targetPlayerId));
             }
-        } else if (isEquipmentHasSpecialEffect(targetPlayer)) {
+        } else if (isEquipmentHasSpecialEffect(targetPlayer) && !isAttackerHasBlackPommel(behaviorPlayer)) {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
             events.add(askPlayEquipmentEffectEvent);
@@ -139,6 +140,10 @@ public class NormalActiveKillBehavior extends Behavior {
 
     static public boolean isEquipmentHasSpecialEffect(Player targetPlayer) {
         return targetPlayer.getEquipment().hasSpecialEffect();
+    }
+
+    private boolean isAttackerHasBlackPommel(Player attackPlayer) {
+        return attackPlayer.getEquipmentWeaponCard() instanceof BlackPommelCard;
     }
 
 }
