@@ -84,6 +84,19 @@ public class MockMvcUtil {
                         }""", playerId, choice, killCardId)));
     }
 
+    public ResultActions useStonePiercingAxeEffect(String gameId, String playerId, String choice, java.util.List<String> discardCardIds) throws Exception {
+        String cardIdsJson = discardCardIds.stream()
+                .map(id -> "\"" + id + "\"")
+                .collect(java.util.stream.Collectors.joining(","));
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useStonePiercingAxeEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "choice": "%s",
+                          "discardCardIds": [%s]
+                        }""", playerId, choice, cardIdsJson)));
+    }
+
     public ResultActions playCard(String gameId, String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -233,6 +233,25 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.GreenDragonCrescentBladeTriggerViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(AskStonePiercingAxeEffectEvent.class, event -> {
+            AskStonePiercingAxeEffectEvent askEvent = (AskStonePiercingAxeEffectEvent) event;
+            UseEquipmentEffectPresenter.AskStonePiercingAxeEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskStonePiercingAxeEffectDataViewModel(
+                    askEvent.getAttackerPlayerId(),
+                    askEvent.getTargetPlayerId()
+            );
+            return new UseEquipmentEffectPresenter.AskStonePiercingAxeEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(StonePiercingAxeTriggerEvent.class, event -> {
+            StonePiercingAxeTriggerEvent triggerEvent = (StonePiercingAxeTriggerEvent) event;
+            UseEquipmentEffectPresenter.StonePiercingAxeTriggerDataViewModel dataViewModel = new UseEquipmentEffectPresenter.StonePiercingAxeTriggerDataViewModel(
+                    triggerEvent.getAttackerPlayerId(),
+                    triggerEvent.getTargetPlayerId(),
+                    triggerEvent.getDiscardedCardIds()
+            );
+            return new UseEquipmentEffectPresenter.StonePiercingAxeTriggerViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(

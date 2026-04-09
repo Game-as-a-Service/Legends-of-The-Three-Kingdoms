@@ -102,6 +102,18 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         }
     }
 
+    public static class AskStonePiercingAxeEffectViewModel extends ViewModel<AskStonePiercingAxeEffectDataViewModel> {
+        public AskStonePiercingAxeEffectViewModel(AskStonePiercingAxeEffectDataViewModel data) {
+            super("AskStonePiercingAxeEffectEvent", data, "貫石斧效果：是否棄兩張牌強制命中");
+        }
+    }
+
+    public static class StonePiercingAxeTriggerViewModel extends ViewModel<StonePiercingAxeTriggerDataViewModel> {
+        public StonePiercingAxeTriggerViewModel(StonePiercingAxeTriggerDataViewModel data) {
+            super("StonePiercingAxeTriggerEvent", data, "貫石斧發動");
+        }
+    }
+
     public static class SkipEquipmentEffectViewModel extends ViewModel<SkipEquipmentEffectDataViewModel> {
         public SkipEquipmentEffectViewModel(SkipEquipmentEffectDataViewModel data) {
             super("SkipEquipmentEffectEvent", data, "跳過裝備效果");
@@ -165,6 +177,23 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         private String attackerPlayerId;
         private String targetPlayerId;
         private String killCardId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskStonePiercingAxeEffectDataViewModel {
+        private String attackerPlayerId;
+        private String targetPlayerId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class StonePiercingAxeTriggerDataViewModel {
+        private String attackerPlayerId;
+        private String targetPlayerId;
+        private List<String> discardedCardIds;
     }
 
     @Data
