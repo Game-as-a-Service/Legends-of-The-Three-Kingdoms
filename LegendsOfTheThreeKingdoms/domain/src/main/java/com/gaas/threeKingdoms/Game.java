@@ -825,6 +825,20 @@ public class Game {
         return events;
     }
 
+    public List<DomainEvent> playerUseStonePiercingAxeEffect(String playerId, AskStonePiercingAxeEffectEvent.Choice choice, List<String> discardCardIds) {
+        if (topBehavior.isEmpty()) {
+            throw new IllegalStateException("No active behavior waiting for StonePiercingAxe effect response");
+        }
+        Behavior behavior = topBehavior.peek();
+        if (!(behavior instanceof WaitingStonePiercingAxeResponseBehavior)) {
+            throw new IllegalStateException("Current behavior is not WaitingStonePiercingAxeResponseBehavior");
+        }
+        WaitingStonePiercingAxeResponseBehavior spaBehavior = (WaitingStonePiercingAxeResponseBehavior) behavior;
+        List<DomainEvent> events = spaBehavior.resolveChoice(playerId, choice, discardCardIds);
+        removeCompletedBehaviors();
+        return events;
+    }
+
     public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {
         Behavior behavior = topBehavior.peek();
         Player borrowedPlayer = getPlayer(borrowedPlayerId);

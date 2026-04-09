@@ -1,0 +1,86 @@
+{
+  "events" : [ {
+    "event" : "StonePiercingAxeTriggerEvent",
+    "data" : {
+      "attackerPlayerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "discardedCardIds" : [ "BH3029", "BH4030" ]
+    },
+    "message" : "貫石斧發動"
+  }, {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "targetPlayerId" : "player-a",
+      "cardId" : "BH2028",
+      "playType" : "active"
+    },
+    "message" : "不出牌"
+  }, {
+    "event" : "PlayerDamagedEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "from" : 4,
+      "to" : 4
+    },
+    "message" : "扣血"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "ED5083", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "Rebel",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : true
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "貫石斧發動強制命中",
+  "gameId" : "my-id",
+  "playerId" : "player-c"
+}

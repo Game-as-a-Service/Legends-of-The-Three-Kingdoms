@@ -139,6 +139,7 @@ POST /api/games/{gameId}/player:playCard
 | 雌雄雙股劍 Yin-Yang Swords | ES2002 | 空字串 | 裝備武器（range 2） → 對異性出殺時目標選棄牌或讓攻擊者摸牌（AskYinYangSwordsEffectEvent） |
 | 青釭劍 Black Pommel | ES6019 | 空字串 | 裝備武器（range 2） → 殺無視目標防具（觸發時發 BlackPommelEffectEvent） |
 | 青龍偃月刀 Green Dragon Crescent Blade | ES5005 | 空字串 | 裝備武器（range 3） → 殺被閃抵銷時可再出一張殺對同一目標（AskGreenDragonCrescentBladeEffectEvent + GreenDragonCrescentBladeTriggerEvent） |
+| 貫石斧 Stone Piercing Axe | ED5083 | 空字串 | 裝備武器（range 3） → 殺被閃抵銷時可棄兩張牌強制命中（AskStonePiercingAxeEffectEvent + StonePiercingAxeTriggerEvent） |
 | 八卦陣 Eight Diagrams | ES2015, EC2067 | 空字串 | 裝備防具 → 需出閃時可判定（紅色=閃） |
 | 絕影 ShadowHorse | ES5018 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
 | 的盧 HexMark | EC5070 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
@@ -367,6 +368,41 @@ A (裝備青龍偃月刀) 對 B 出殺 → B 出閃抵銷
 
 ---
 
+## 17. 貫石斧效果選擇
+
+```
+POST /api/games/{gameId}/player:useStonePiercingAxeEffect
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| playerId | String | 攻擊者玩家 ID |
+| choice | String | `DISCARD_TWO`（棄兩張牌強制命中）或 `SKIP`（不發動） |
+| discardCardIds | List\<String\> | 要棄的兩張 cardId（DISCARD_TWO 時必填，長度必須為 2；SKIP 時傳空陣列） |
+
+**觸發時機**：收到 `AskStonePiercingAxeEffectEvent` 後呼叫
+
+**流程**：
+```
+A (裝備貫石斧) 對 B 出殺 → B 出閃抵銷
+  → 系統檢查 A 是否有 ≥2 張可棄牌（手牌 + 裝備區）
+  → 有：發出 AskStonePiercingAxeEffectEvent（詢問 A）
+  → A 呼叫本 API 做選擇：
+    - SKIP: 殺被抵銷結束
+    - DISCARD_TWO: A 棄兩張牌到墓地 → 發出 StonePiercingAxeTriggerEvent
+                   → B 強制扣血（跳過 AskDodge）
+                   → 若 B HP=0 進入瀕死流程
+```
+
+**特殊情況**：
+- 可棄的牌可以是手牌或裝備區的牌（包括貫石斧本身）
+- A 可棄牌總數 < 2 時，不會觸發貫石斧，殺直接被閃抵銷
+- 棄牌不足 2 張、傳入非 A 擁有的 cardId → 拋例外
+
+**備註**：此 API 獨立於 `playCard`
+
+---
+
 ## WebSocket 事件類型
 
 前端透過 WebSocket 接收以下事件，根據事件類型決定 UI 行為：
@@ -393,6 +429,7 @@ A (裝備青龍偃月刀) 對 B 出殺 → B 出閃抵銷
 | `BountifulHarvestEvent` | 五穀豐登輪到你選牌 | chooseCardFromBountifulHarvest |
 | `AskYinYangSwordsEffectEvent` | 雌雄雙股劍效果：目標選擇棄牌或讓攻擊者摸牌 | useYinYangSwordsEffect |
 | `AskGreenDragonCrescentBladeEffectEvent` | 青龍偃月刀效果：攻擊者選擇是否再出一張殺 | useGreenDragonCrescentBladeEffect |
+| `AskStonePiercingAxeEffectEvent` | 貫石斧效果：攻擊者選擇是否棄兩張牌強制命中 | useStonePiercingAxeEffect |
 
 ### 效果事件
 
@@ -414,3 +451,4 @@ A (裝備青龍偃月刀) 對 B 出殺 → B 出閃抵銷
 | `YinYangSwordsEffectEvent` | 雌雄雙股劍效果結算：含 attackerPlayerId、targetPlayerId、choice（TARGET_DISCARDS/ATTACKER_DRAWS）、discardedCardId |
 | `BlackPommelEffectEvent` | 青釭劍發動，殺無視目標防具（含 attackerPlayerId、targetPlayerId） |
 | `GreenDragonCrescentBladeTriggerEvent` | 青龍偃月刀發動，追加一張殺（含 attackerPlayerId、targetPlayerId、killCardId） |
+| `StonePiercingAxeTriggerEvent` | 貫石斧發動，棄兩張牌強制命中（含 attackerPlayerId、targetPlayerId、discardedCardIds） |

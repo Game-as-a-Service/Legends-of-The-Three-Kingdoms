@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskGreenDragonCrescentBladeEffectEvent;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
+import com.gaas.threeKingdoms.events.AskStonePiercingAxeEffectEvent;
 import com.gaas.threeKingdoms.events.BlackPommelEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
@@ -15,6 +16,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.BlackPommelCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.YinYangSwordsCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
@@ -133,6 +135,19 @@ public class NormalActiveKillBehavior extends Behavior {
                 return List.of(playCardEvent, askEvent, game.getGameStatusEvent("出牌"));
             }
 
+            // 貫石斧效果：攻擊者裝備貫石斧且可棄牌 ≥2 張時，可棄兩牌強制命中
+            if (behaviorPlayer.getEquipmentWeaponCard() instanceof StonePiercingAxeCard
+                    && getDiscardableCardCount(behaviorPlayer) >= 2) {
+                isOneRound = false;
+                currentRound.setActivePlayer(behaviorPlayer);
+                game.updateTopBehavior(new WaitingStonePiercingAxeResponseBehavior(
+                        game, behaviorPlayer, List.of(playerId),
+                        behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
+                AskStonePiercingAxeEffectEvent askEvent = new AskStonePiercingAxeEffectEvent(
+                        behaviorPlayer.getId(), playerId);
+                return List.of(playCardEvent, askEvent, game.getGameStatusEvent("出牌"));
+            }
+
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             isOneRound = true;
             return List.of(playCardEvent, game.getGameStatusEvent("出牌"));
@@ -164,6 +179,10 @@ public class NormalActiveKillBehavior extends Behavior {
 
     private boolean isAttackerHasBlackPommel(Player attackPlayer) {
         return attackPlayer.getEquipmentWeaponCard() instanceof BlackPommelCard;
+    }
+
+    private int getDiscardableCardCount(Player player) {
+        return player.getHand().getCards().size() + player.getEquipment().getAllEquipmentCards().size();
     }
 
 }
