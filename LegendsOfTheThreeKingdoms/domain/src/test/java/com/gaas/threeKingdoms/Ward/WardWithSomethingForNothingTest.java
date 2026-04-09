@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
@@ -784,7 +785,15 @@ public class WardWithSomethingForNothingTest {
     public void givenPlayerBPlaysSomethingForNothingAndPlayerASkipsWard_ThenTopBehaviorIsEmptyAndPlayerBCanFinishAction() {
         Game game = new Game();
         game.initDeck();
-        game.setDeck(new Deck(List.of(new BarbarianInvasion(SSK013), new Dismantle(SS3003))));
+        // 牌堆需要有足夠的卡：B 出無中生有抽 2 張 + C 下回合摸牌階段 2 張 = 至少 4 張
+        game.setDeck(new Deck(List.of(
+                new BarbarianInvasion(SSK013),
+                new Dismantle(SS3003),
+                new Kill(BS8008),
+                new Peach(BH3029),
+                new Dodge(BH2028),
+                new Kill(BS9009)
+        )));
         Player playerA = PlayerBuilder
                 .construct()
                 .withId("player-a")
@@ -792,6 +801,7 @@ public class WardWithSomethingForNothingTest {
                 .withEquipment(new Equipment())
                 .withBloodCard(new BloodCard(4))
                 .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .build();
 
