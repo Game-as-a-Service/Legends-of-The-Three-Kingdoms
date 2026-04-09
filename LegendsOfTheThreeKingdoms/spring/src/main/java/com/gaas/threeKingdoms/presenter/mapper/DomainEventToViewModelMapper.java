@@ -194,6 +194,26 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.BlackPommelEffectViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(AskYinYangSwordsEffectEvent.class, event -> {
+            AskYinYangSwordsEffectEvent askEvent = (AskYinYangSwordsEffectEvent) event;
+            UseEquipmentEffectPresenter.AskYinYangSwordsEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskYinYangSwordsEffectDataViewModel(
+                    askEvent.getAttackerPlayerId(),
+                    askEvent.getTargetPlayerId()
+            );
+            return new UseEquipmentEffectPresenter.AskYinYangSwordsEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(YinYangSwordsEffectEvent.class, event -> {
+            YinYangSwordsEffectEvent effectEvent = (YinYangSwordsEffectEvent) event;
+            UseEquipmentEffectPresenter.YinYangSwordsEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.YinYangSwordsEffectDataViewModel(
+                    effectEvent.getAttackerPlayerId(),
+                    effectEvent.getTargetPlayerId(),
+                    effectEvent.getChoice().name(),
+                    effectEvent.getDiscardedCardId()
+            );
+            return new UseEquipmentEffectPresenter.YinYangSwordsEffectViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(
