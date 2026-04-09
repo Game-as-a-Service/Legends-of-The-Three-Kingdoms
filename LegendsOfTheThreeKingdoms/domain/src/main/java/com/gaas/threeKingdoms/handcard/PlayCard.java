@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.YinYangSwordsCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.*;
 
 import java.util.Arrays;
@@ -186,6 +187,7 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("EH5044", new RedRabbitHorse(EH5044));
         CARD_FACTORY_MAP.put("ES5018", new ShadowHorse(ES5018));
         CARD_FACTORY_MAP.put("EH5031", new QilinBowCard(EH5031));
+        CARD_FACTORY_MAP.put("ES2002", new YinYangSwordsCard(ES2002));
         CARD_FACTORY_MAP.put("SSK013", new BarbarianInvasion(SSK013));
         CARD_FACTORY_MAP.put("SC7072", new BarbarianInvasion(SC7072));
         CARD_FACTORY_MAP.put("SS7007", new BarbarianInvasion(SS7007));
