@@ -134,11 +134,17 @@ POST /api/games/{gameId}/player:playCard
 
 | 牌名 | cardId 範例 | targetPlayerId | 流程 |
 |------|------------|----------------|------|
-| 諸葛連弩 | ECA066 | 空字串 | 裝備武器 → 出殺無次數限制 |
-| 麒麟弓 | EH5031 | 空字串 | 裝備武器 → 殺命中後可棄對方一匹馬（useEquipmentEffect API） |
-| 八卦陣 | ES2015 | 空字串 | 裝備防具 → 需出閃時可判定（紅色=閃） |
-| 絕影 | ES5018 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
-| 赤兔 | EH5044 | 空字串 | 裝備-1馬 → 你對其他人距離-1 |
+| 諸葛連弩 Chu Ko Nu | ECA066, EDA092 | 空字串 | 裝備武器（range 1） → 出殺無次數限制 |
+| 麒麟弓 Qilin Bow | EH5031 | 空字串 | 裝備武器（range 5） → 殺命中後可棄對方一匹馬（useEquipmentEffect API） |
+| 雌雄雙股劍 Yin-Yang Swords | ES2002 | 空字串 | 裝備武器（range 2） → 對異性出殺時目標選棄牌或讓攻擊者摸牌（AskYinYangSwordsEffectEvent） |
+| 青釭劍 Black Pommel | ES6019 | 空字串 | 裝備武器（range 2） → 殺無視目標防具（觸發時發 BlackPommelEffectEvent） |
+| 八卦陣 Eight Diagrams | ES2015, EC2067 | 空字串 | 裝備防具 → 需出閃時可判定（紅色=閃） |
+| 絕影 ShadowHorse | ES5018 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
+| 的盧 HexMark | EC5070 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
+| 爪黃飛電 YellowFlash | EHK052 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
+| 赤兔 RedRabbitHorse | EH5044 | 空字串 | 裝備-1馬 → 你對其他人距離-1 |
+| 紫騂 VioletStallion | EDK104 | 空字串 | 裝備-1馬 → 你對其他人距離-1 |
+| 黃爪飛電 FerghanaHorse | ESK026 | 空字串 | 裝備-1馬 → 你對其他人距離-1 |
 
 ---
 
@@ -336,3 +342,5 @@ POST /api/games/{gameId}/player:chooseCardFromBountifulHarvest
 | `BorrowedSwordEvent` | 借刀殺人效果 |
 | `EquipmentEvent` | 裝備效果 |
 | `JudgementEvent` | 判定結果（八卦陣/樂不思蜀/閃電） |
+| `AskYinYangSwordsEffectEvent` | 雌雄雙股劍異性出殺，目標選擇棄牌或讓攻擊者摸牌 |
+| `BlackPommelEffectEvent` | 青釭劍發動，殺無視目標防具（含 attackerPlayerId、targetPlayerId） |
