@@ -4,8 +4,12 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.FerghanaHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.HexMark;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.YellowFlash;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.*;
@@ -185,6 +189,10 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("BDJ089", new Dodge(BDJ089));
         CARD_FACTORY_MAP.put("EH5044", new RedRabbitHorse(EH5044));
         CARD_FACTORY_MAP.put("ES5018", new ShadowHorse(ES5018));
+        CARD_FACTORY_MAP.put("EC5070", new HexMark(EC5070));
+        CARD_FACTORY_MAP.put("EDK104", new VioletStallion(EDK104));
+        CARD_FACTORY_MAP.put("EHK052", new YellowFlash(EHK052));
+        CARD_FACTORY_MAP.put("ESK026", new FerghanaHorse(ESK026));
         CARD_FACTORY_MAP.put("EH5031", new QilinBowCard(EH5031));
         CARD_FACTORY_MAP.put("SSK013", new BarbarianInvasion(SSK013));
         CARD_FACTORY_MAP.put("SC7072", new BarbarianInvasion(SC7072));
@@ -192,7 +200,9 @@ public enum PlayCard {
         CARD_FACTORY_MAP.put("SCK065", new BorrowedSword(SCK065));
         CARD_FACTORY_MAP.put("SCQ064", new BorrowedSword(SCQ064));
         CARD_FACTORY_MAP.put("ECA066", new RepeatingCrossbowCard(ECA066));
+        CARD_FACTORY_MAP.put("EDA092", new RepeatingCrossbowCard(EDA092));
         CARD_FACTORY_MAP.put("ES2015", new EightDiagramTactic(ES2015));
+        CARD_FACTORY_MAP.put("EC2067", new EightDiagramTactic(EC2067));
         CARD_FACTORY_MAP.put("SSA001", new Duel(SSA001));
         CARD_FACTORY_MAP.put("SCA053", new Duel(SCA053));
         CARD_FACTORY_MAP.put("SDA079", new Duel(SDA079));
@@ -282,7 +292,15 @@ public enum PlayCard {
                 .filter(c->c.getCardName().equals("八卦陣"))
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
-    public boolean isMountsCard() {return Arrays.stream(PlayCard.values()).filter(c -> "赤兔".equals(c.getCardName()) || "絕影".equals(c.getCardName())).anyMatch(c->c.getCardId().equals(this.cardId));
+    public boolean isMountsCard() {
+        return Arrays.stream(PlayCard.values())
+                .filter(c -> "赤兔".equals(c.getCardName())
+                        || "絕影".equals(c.getCardName())
+                        || "的盧".equals(c.getCardName())
+                        || "紫騂".equals(c.getCardName())
+                        || "爪黃飛電".equals(c.getCardName())
+                        || "黃爪飛電".equals(c.getCardName()))
+                .anyMatch(c -> c.getCardId().equals(this.cardId));
     }
 
     public static boolean isSkip(String playType) {
