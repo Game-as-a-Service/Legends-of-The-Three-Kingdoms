@@ -192,6 +192,19 @@ public class WebSocketBroadCast {
         }
     }
 
+    public void pushUseGreenDragonCrescentBladeEffectEvent(UseGreenDragonCrescentBladeEffectPresenter presenter) {
+        List<UseGreenDragonCrescentBladeEffectPresenter.GameViewModel> viewModels = presenter.present();
+        try {
+            for (UseGreenDragonCrescentBladeEffectPresenter.GameViewModel viewModel : viewModels) {
+                String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(viewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", viewModel.getGameId(), viewModel.getPlayerId()), json);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushUseGreenDragonCrescentBladeEffectEvent ");
+            e.printStackTrace();
+        }
+    }
+
     public void pushUseDismantleEvent(UseDismantlePresenter presenter) {
         List<UseDismantlePresenter.GameViewModel> useDismantleViewModels = presenter.present();
         try {

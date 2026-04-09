@@ -811,6 +811,20 @@ public class Game {
         return events;
     }
 
+    public List<DomainEvent> playerUseGreenDragonCrescentBladeEffect(String playerId, AskGreenDragonCrescentBladeEffectEvent.Choice choice, String killCardId) {
+        if (topBehavior.isEmpty()) {
+            throw new IllegalStateException("No active behavior waiting for GreenDragonCrescentBlade effect response");
+        }
+        Behavior behavior = topBehavior.peek();
+        if (!(behavior instanceof WaitingGreenDragonCrescentBladeResponseBehavior)) {
+            throw new IllegalStateException("Current behavior is not WaitingGreenDragonCrescentBladeResponseBehavior");
+        }
+        WaitingGreenDragonCrescentBladeResponseBehavior gdcbBehavior = (WaitingGreenDragonCrescentBladeResponseBehavior) behavior;
+        List<DomainEvent> events = gdcbBehavior.resolveChoice(playerId, choice, killCardId);
+        removeCompletedBehaviors();
+        return events;
+    }
+
     public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {
         Behavior behavior = topBehavior.peek();
         Player borrowedPlayer = getPlayer(borrowedPlayerId);

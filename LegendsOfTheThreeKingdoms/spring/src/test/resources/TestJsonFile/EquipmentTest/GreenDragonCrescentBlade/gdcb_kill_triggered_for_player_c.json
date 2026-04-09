@@ -1,0 +1,84 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "cardId" : "BS9009",
+      "playType" : "active"
+    },
+    "message" : "出牌"
+  }, {
+    "event" : "GreenDragonCrescentBladeTriggerEvent",
+    "data" : {
+      "attackerPlayerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "killCardId" : "BS9009"
+    },
+    "message" : "青龍偃月刀發動"
+  }, {
+    "event" : "AskDodgeEvent",
+    "data" : {
+      "playerId" : "player-b"
+    },
+    "message" : "請問 player-b 要否要出閃"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "ES5005", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 1,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "Rebel",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-b",
+      "dyingPlayer" : "",
+      "showKill" : true
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "青龍偃月刀發動",
+  "gameId" : "my-id",
+  "playerId" : "player-c"
+}

@@ -138,6 +138,7 @@ POST /api/games/{gameId}/player:playCard
 | 麒麟弓 Qilin Bow | EH5031 | 空字串 | 裝備武器（range 5） → 殺命中後可棄對方一匹馬（useEquipmentEffect API） |
 | 雌雄雙股劍 Yin-Yang Swords | ES2002 | 空字串 | 裝備武器（range 2） → 對異性出殺時目標選棄牌或讓攻擊者摸牌（AskYinYangSwordsEffectEvent） |
 | 青釭劍 Black Pommel | ES6019 | 空字串 | 裝備武器（range 2） → 殺無視目標防具（觸發時發 BlackPommelEffectEvent） |
+| 青龍偃月刀 Green Dragon Crescent Blade | ES5005 | 空字串 | 裝備武器（range 3） → 殺被閃抵銷時可再出一張殺對同一目標（AskGreenDragonCrescentBladeEffectEvent + GreenDragonCrescentBladeTriggerEvent） |
 | 八卦陣 Eight Diagrams | ES2015, EC2067 | 空字串 | 裝備防具 → 需出閃時可判定（紅色=閃） |
 | 絕影 ShadowHorse | ES5018 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
 | 的盧 HexMark | EC5070 | 空字串 | 裝備+1馬 → 其他人對你距離+1 |
@@ -331,6 +332,41 @@ A(男) 對 B(女) 出殺 → A 裝備雌雄雙股劍 + 異性
 
 ---
 
+## 16. 青龍偃月刀效果選擇
+
+```
+POST /api/games/{gameId}/player:useGreenDragonCrescentBladeEffect
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| playerId | String | 攻擊者玩家 ID |
+| choice | String | `KILL`（再出一張殺）或 `SKIP`（不發動） |
+| killCardId | String | 要追加的殺 cardId（choice=KILL 時必填；SKIP 時傳空字串） |
+
+**觸發時機**：收到 `AskGreenDragonCrescentBladeEffectEvent` 後呼叫
+
+**流程**：
+```
+A (裝備青龍偃月刀) 對 B 出殺 → B 出閃抵銷
+  → 系統發出 AskGreenDragonCrescentBladeEffectEvent（詢問 A）
+  → A 呼叫本 API 做選擇：
+    - SKIP: 殺被抵銷結束，流程正常結束
+    - KILL: A 棄第二張殺到墓地 → 發出 GreenDragonCrescentBladeTriggerEvent
+            → B 收到 AskDodgeEvent（若有防具先 AskPlayEquipmentEffectEvent）
+            → B 再出閃 → 回到青龍偃月刀詢問（可多次循環）
+            → B 不出閃 → 扣血，流程結束
+```
+
+**特殊情況**：
+- A 沒有殺或提供非殺 cardId → 拋例外
+- 青龍偃月刀追加的殺**不計入**每回合殺次數限制
+- 可與八卦陣並存：B 出閃若是八卦陣判定，觸發青龍偃月刀後，A 再出殺，B 再判定八卦陣
+
+**備註**：此 API 獨立於 `playCard`
+
+---
+
 ## WebSocket 事件類型
 
 前端透過 WebSocket 接收以下事件，根據事件類型決定 UI 行為：
@@ -356,6 +392,7 @@ A(男) 對 B(女) 出殺 → A 裝備雌雄雙股劍 + 異性
 | `AskPeachEvent` | 瀕死需要出桃 | playCard |
 | `BountifulHarvestEvent` | 五穀豐登輪到你選牌 | chooseCardFromBountifulHarvest |
 | `AskYinYangSwordsEffectEvent` | 雌雄雙股劍效果：目標選擇棄牌或讓攻擊者摸牌 | useYinYangSwordsEffect |
+| `AskGreenDragonCrescentBladeEffectEvent` | 青龍偃月刀效果：攻擊者選擇是否再出一張殺 | useGreenDragonCrescentBladeEffect |
 
 ### 效果事件
 
@@ -376,3 +413,4 @@ A(男) 對 B(女) 出殺 → A 裝備雌雄雙股劍 + 異性
 | `JudgementEvent` | 判定結果（八卦陣/樂不思蜀/閃電） |
 | `YinYangSwordsEffectEvent` | 雌雄雙股劍效果結算：含 attackerPlayerId、targetPlayerId、choice（TARGET_DISCARDS/ATTACKER_DRAWS）、discardedCardId |
 | `BlackPommelEffectEvent` | 青釭劍發動，殺無視目標防具（含 attackerPlayerId、targetPlayerId） |
+| `GreenDragonCrescentBladeTriggerEvent` | 青龍偃月刀發動，追加一張殺（含 attackerPlayerId、targetPlayerId、killCardId） |

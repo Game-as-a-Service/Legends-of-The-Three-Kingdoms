@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
+import com.gaas.threeKingdoms.events.AskGreenDragonCrescentBladeEffectEvent;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.BlackPommelEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
@@ -12,6 +13,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.BlackPommelCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.YinYangSwordsCard;
 import com.gaas.threeKingdoms.player.Player;
@@ -116,9 +118,22 @@ public class NormalActiveKillBehavior extends Behavior {
             return events;
         } else if (isDodgeCard(cardId)) {
             Round currentRound = game.getCurrentRound();
-            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             damagedPlayer.playCard(cardId);
             PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
+
+            // 青龍偃月刀效果：攻擊者裝備青龍偃月刀時，可再出一張殺
+            if (behaviorPlayer.getEquipmentWeaponCard() instanceof GreenDragonCrescentBladeCard) {
+                isOneRound = false;
+                currentRound.setActivePlayer(behaviorPlayer);
+                game.updateTopBehavior(new WaitingGreenDragonCrescentBladeResponseBehavior(
+                        game, behaviorPlayer, List.of(playerId),
+                        behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
+                AskGreenDragonCrescentBladeEffectEvent askEvent = new AskGreenDragonCrescentBladeEffectEvent(
+                        behaviorPlayer.getId(), playerId);
+                return List.of(playCardEvent, askEvent, game.getGameStatusEvent("出牌"));
+            }
+
+            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             isOneRound = true;
             return List.of(playCardEvent, game.getGameStatusEvent("出牌"));
         } else if (isQilinBowSuccess(playType)) {

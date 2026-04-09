@@ -34,6 +34,7 @@ public class GameController {
     private final ChooseCardFromBountifulHarvestUseCase chooseCardFromBountifulHarvestUseCase;
     private final UseSnatchUseCase useSnatchUseCase;
     private final UseYinYangSwordsEffectUseCase useYinYangSwordsEffectUseCase;
+    private final UseGreenDragonCrescentBladeEffectUseCase useGreenDragonCrescentBladeEffectUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -147,6 +148,14 @@ public class GameController {
         UseYinYangSwordsEffectPresenter presenter = new UseYinYangSwordsEffectPresenter();
         useYinYangSwordsEffectUseCase.execute(gameId, request.toUseYinYangSwordsEffectRequest(), presenter);
         webSocketBroadCast.pushUseYinYangSwordsEffectEvent(presenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useGreenDragonCrescentBladeEffect")
+    public ResponseEntity<?> playerUseGreenDragonCrescentBladeEffect(@PathVariable String gameId, @RequestBody UseGreenDragonCrescentBladeEffectRequest request) {
+        UseGreenDragonCrescentBladeEffectPresenter presenter = new UseGreenDragonCrescentBladeEffectPresenter();
+        useGreenDragonCrescentBladeEffectUseCase.execute(gameId, request.toUseGreenDragonCrescentBladeEffectRequest(), presenter);
+        webSocketBroadCast.pushUseGreenDragonCrescentBladeEffectEvent(presenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
