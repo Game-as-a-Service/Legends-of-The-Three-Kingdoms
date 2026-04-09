@@ -14,6 +14,8 @@ import com.gaas.threeKingdoms.generalcard.GeneralCardDeck;
 import com.gaas.threeKingdoms.handcard.*;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
@@ -853,7 +855,7 @@ public class Game {
         }
 
         // 驗證：裝備丈八蛇矛
-        if (!(attacker.getEquipmentWeaponCard() instanceof com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard)) {
+        if (!(attacker.getEquipmentWeaponCard() instanceof EighteenSpanViperSpearCard)) {
             throw new IllegalStateException("Player is not equipped with EighteenSpanViperSpear");
         }
 
@@ -865,7 +867,7 @@ public class Game {
         // 驗證：兩張 cardIds 都在攻擊者手牌
         for (String discardCardId : discardCardIds) {
             if (attacker.getHand().getCards().stream().noneMatch(c -> c.getId().equals(discardCardId))) {
-                throw new RuntimeException("Attacker does not have card in hand: " + discardCardId);
+                throw new IllegalArgumentException("Attacker does not have card in hand: " + discardCardId);
             }
         }
 
@@ -881,7 +883,7 @@ public class Game {
 
         // 驗證：殺次數限制（無諸葛連弩時一回合一次）
         // 丈八蛇矛的殺視為一般殺，計入回合限制
-        if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard)) {
+        if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)) {
             throw new IllegalStateException("Player already played Kill Card");
         }
 

@@ -4,12 +4,14 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.BountifulHarvestBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.ViperSpearKillBehavior;
 import com.gaas.threeKingdoms.e2e.MockUtil;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.repository.data.BehaviorData;
@@ -229,5 +231,60 @@ public class BehaviorDataTest {
         List<String> drawCards = (List<String>) behavior.getParams().get(BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS);
         List<String> expectedCards = Arrays.asList("BS7020", "BS8021", "BS9022");
         assertEquals(expectedCards, drawCards);
+    }
+
+    @Test
+    public void testViperSpearKillBehaviorRoundTrip_PreservesDiscardedCardIds() {
+        // Arrange
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(PlayCard.BS8008), new Peach(PlayCard.BH3029)
+        );
+
+        Player playerB = createPlayer(
+                "player-b",
+                3,
+                General.張飛,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Peach(PlayCard.BH4030)
+        );
+
+        List<String> reactionPlayers = Arrays.asList("player-b");
+        List<String> discardedCardIds = Arrays.asList("BH3029", "BS8008");
+
+        Game game = MockUtil.initGame("123456", List.of(playerA, playerB), playerA);
+
+        ViperSpearKillBehavior behavior = new ViperSpearKillBehavior(
+                game,
+                playerA,
+                reactionPlayers,
+                playerB,
+                new VirtualKill(),
+                discardedCardIds
+        );
+
+        // Act: fromDomain → toDomain round-trip
+        BehaviorData behaviorData = BehaviorData.fromDomain(behavior);
+        Behavior restored = behaviorData.toDomain(game);
+
+        // Assert: behaviorData 有正確保留 discardedCardIds
+        assertEquals(ViperSpearKillBehavior.class.getSimpleName(), behaviorData.getBehaviorName());
+        assertEquals(VirtualKill.VIRTUAL_CARD_ID, behaviorData.getCardId());
+        assertEquals("player-a", behaviorData.getBehaviorPlayerId());
+        assertEquals("player-b", behaviorData.getCurrentReactionPlayerId());
+
+        // Assert: toDomain 後 discardedCardIds 有被正確還原
+        assertInstanceOf(ViperSpearKillBehavior.class, restored);
+        ViperSpearKillBehavior restoredViperSpear = (ViperSpearKillBehavior) restored;
+        assertEquals(discardedCardIds, restoredViperSpear.getDiscardedCardIds());
+        assertEquals("player-a", restoredViperSpear.getBehaviorPlayer().getId());
+        assertEquals("player-b", restoredViperSpear.getCurrentReactionPlayer().getId());
+        assertEquals(reactionPlayers, restoredViperSpear.getReactionPlayers());
+        assertInstanceOf(VirtualKill.class, restoredViperSpear.getCard());
     }
 }

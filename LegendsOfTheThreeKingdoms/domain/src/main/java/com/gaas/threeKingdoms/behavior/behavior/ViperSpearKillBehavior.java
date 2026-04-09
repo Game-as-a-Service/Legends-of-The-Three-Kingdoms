@@ -39,14 +39,13 @@ public class ViperSpearKillBehavior extends NormalActiveKillBehavior {
     @Override
     public List<DomainEvent> playerAction() {
         // 不呼叫父類的 playerPlayCard（因為虛擬殺不在手牌中）
-        // 棄牌和 round 狀態已在 Game.playerUseViperSpearKill() 處理
+        // 棄牌已在 Game.playerUseViperSpearKill() 處理
         String targetPlayerId = reactionPlayers.get(0);
         Player targetPlayer = game.getPlayer(targetPlayerId);
         Round currentRound = game.getCurrentRound();
 
-        // 更新 activePlayer 為目標玩家（等待出閃/發動防具效果）
-        currentRound.setActivePlayer(targetPlayer);
-        currentRound.setCurrentCard(card);
+        // 更新 activePlayer 為目標玩家並設定 currentCard（等待出閃/發動防具效果）
+        game.updateRoundInformation(targetPlayer, card);
 
         List<DomainEvent> events = new ArrayList<>();
         events.add(new ViperSpearKillTriggerEvent(behaviorPlayer.getId(), targetPlayerId, discardedCardIds));
