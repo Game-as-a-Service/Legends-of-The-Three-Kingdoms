@@ -12,7 +12,7 @@
     "data" : {
       "playerId" : "player-b",
       "targetPlayerId" : "player-a",
-      "cardId" : "BH2028",
+      "cardId" : "BS8008",
       "playType" : "active"
     },
     "message" : "不出牌"
@@ -21,7 +21,7 @@
     "data" : {
       "playerId" : "player-b",
       "from" : 4,
-      "to" : 4
+      "to" : 3
     },
     "message" : "扣血"
   } ],
@@ -41,7 +41,7 @@
       "id" : "player-b",
       "generalId" : "SHU001",
       "roleId" : "Traitor",
-      "hp" : 4,
+      "hp" : 3,
       "hand" : {
         "size" : 0,
         "cardIds" : [ ]

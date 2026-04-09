@@ -127,9 +127,10 @@ public class NormalActiveKillBehavior extends Behavior {
             if (behaviorPlayer.getEquipmentWeaponCard() instanceof GreenDragonCrescentBladeCard) {
                 isOneRound = false;
                 currentRound.setActivePlayer(behaviorPlayer);
+                // 使用 this.cardId/this.card（殺的），不是 parameter cardId（閃的）
                 game.updateTopBehavior(new WaitingGreenDragonCrescentBladeResponseBehavior(
                         game, behaviorPlayer, List.of(playerId),
-                        behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
+                        behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));
                 AskGreenDragonCrescentBladeEffectEvent askEvent = new AskGreenDragonCrescentBladeEffectEvent(
                         behaviorPlayer.getId(), playerId);
                 return List.of(playCardEvent, askEvent, game.getGameStatusEvent("出牌"));
@@ -140,9 +141,10 @@ public class NormalActiveKillBehavior extends Behavior {
                     && getDiscardableCardCount(behaviorPlayer) >= 2) {
                 isOneRound = false;
                 currentRound.setActivePlayer(behaviorPlayer);
+                // 使用 this.cardId/this.card（殺的），不是 parameter cardId（閃的）
                 game.updateTopBehavior(new WaitingStonePiercingAxeResponseBehavior(
                         game, behaviorPlayer, List.of(playerId),
-                        behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
+                        behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));
                 AskStonePiercingAxeEffectEvent askEvent = new AskStonePiercingAxeEffectEvent(
                         behaviorPlayer.getId(), playerId);
                 return List.of(playCardEvent, askEvent, game.getGameStatusEvent("出牌"));
