@@ -150,6 +150,14 @@ public class BehaviorData {
                         discardedCardIds
                 );
             }
+            case "HeavenlyDoubleHalberdKillBehavior" -> new HeavenlyDoubleHalberdKillBehavior(
+                    game,
+                    game.getPlayer(behaviorPlayerId),
+                    reactionPlayers,
+                    game.getPlayer(currentReactionPlayerId),
+                    cardId,
+                    PlayCard.findById(cardId)
+            );
             case "PeachBehavior" -> new PeachBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),

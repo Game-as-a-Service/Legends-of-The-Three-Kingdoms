@@ -15,6 +15,7 @@ import com.gaas.threeKingdoms.handcard.*;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.HeavenlyDoubleHalberdCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
@@ -902,6 +903,92 @@ public class Game {
         reactionPlayers.add(targetPlayerId);
         ViperSpearKillBehavior behavior = new ViperSpearKillBehavior(
                 this, attacker, reactionPlayers, target, virtualKill, discardCardIds);
+        updateTopBehavior(behavior);
+
+        List<DomainEvent> events = behavior.playerAction();
+        removeCompletedBehaviors();
+        return events;
+    }
+
+    public List<DomainEvent> playerUseHeavenlyDoubleHalberdKill(String playerId,
+                                                                 String cardId,
+                                                                 String primaryTargetPlayerId,
+                                                                 List<String> additionalTargetPlayerIds) {
+        Player attacker = getPlayer(playerId);
+
+        // 1. activePlayer 驗證
+        checkIsCurrentRoundValid(playerId);
+
+        // 2. 不得有 pending behavior
+        if (!topBehavior.isEmpty()) {
+            throw new IllegalStateException("Cannot use halberd kill while another behavior is pending");
+        }
+
+        // 3. 裝備方天畫戟
+        if (!(attacker.getEquipmentWeaponCard() instanceof HeavenlyDoubleHalberdCard)) {
+            throw new IllegalStateException("Player is not equipped with HeavenlyDoubleHalberd");
+        }
+
+        // 4. 卡牌在手牌且為 Kill
+        HandCard handCard = attacker.getHand().getCard(cardId)
+                .orElseThrow(() -> new IllegalArgumentException("Card not in hand: " + cardId));
+        if (!(handCard instanceof Kill)) {
+            throw new IllegalArgumentException("Card is not a Kill: " + cardId);
+        }
+
+        // 5. 此殺必須是最後一張手牌
+        if (attacker.getHandSize() != 1) {
+            throw new IllegalStateException("Halberd effect only usable when the Kill is the last hand card");
+        }
+
+        // 6. primary target
+        Player primaryTarget = getPlayer(primaryTargetPlayerId);
+        if (playerId.equals(primaryTargetPlayerId)) {
+            throw new IllegalArgumentException("Cannot target self");
+        }
+
+        // 7. additional targets 驗證
+        List<String> additionalIds = additionalTargetPlayerIds == null ? new ArrayList<>() : additionalTargetPlayerIds;
+        if (additionalIds.size() > 2) {
+            throw new IllegalArgumentException("At most 2 additional targets");
+        }
+
+        // 8. 短路：沒有 additional target → 走正常 playCard 路徑
+        if (additionalIds.isEmpty()) {
+            return playerPlayCard(playerId, cardId, primaryTargetPlayerId, PlayType.ACTIVE.getPlayType());
+        }
+
+        // 9. 組成完整目標列表並檢查重複 / 自己 / 存活 / 攻擊範圍
+        List<String> fullTargets = new ArrayList<>();
+        fullTargets.add(primaryTargetPlayerId);
+        fullTargets.addAll(additionalIds);
+
+        if (new HashSet<>(fullTargets).size() != fullTargets.size()) {
+            throw new IllegalArgumentException("Duplicate targets");
+        }
+        if (fullTargets.contains(playerId)) {
+            throw new IllegalArgumentException("Cannot target self");
+        }
+        for (String targetId : fullTargets) {
+            Player target = getPlayer(targetId);
+            if (!isInAttackRange(attacker, target)) {
+                throw new IllegalStateException(String.format("%s is not in attack range", targetId));
+            }
+        }
+
+        // 10. 回合出殺次數限制（考慮諸葛連弩——實際上不會同時裝兩把武器，但保留邏輯對稱性）
+        if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)) {
+            throw new IllegalStateException("Player already played Kill Card");
+        }
+
+        // 11. 棄殺到墓地，標記本回合已出殺
+        HandCard killCard = attacker.playCard(cardId);
+        graveyard.add(killCard);
+        currentRound.setShowKill(true);
+
+        // 12. push HeavenlyDoubleHalberdKillBehavior
+        HeavenlyDoubleHalberdKillBehavior behavior = new HeavenlyDoubleHalberdKillBehavior(
+                this, attacker, fullTargets, primaryTarget, cardId, killCard);
         updateTopBehavior(behavior);
 
         List<DomainEvent> events = behavior.playerAction();

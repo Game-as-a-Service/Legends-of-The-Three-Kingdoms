@@ -262,6 +262,16 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.ViperSpearKillTriggerViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(HeavenlyDoubleHalberdKillTriggerEvent.class, event -> {
+            HeavenlyDoubleHalberdKillTriggerEvent triggerEvent = (HeavenlyDoubleHalberdKillTriggerEvent) event;
+            UseEquipmentEffectPresenter.HeavenlyDoubleHalberdKillTriggerDataViewModel dataViewModel = new UseEquipmentEffectPresenter.HeavenlyDoubleHalberdKillTriggerDataViewModel(
+                    triggerEvent.getAttackerPlayerId(),
+                    triggerEvent.getCardId(),
+                    triggerEvent.getTargetPlayerIds()
+            );
+            return new UseEquipmentEffectPresenter.HeavenlyDoubleHalberdKillTriggerViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(
