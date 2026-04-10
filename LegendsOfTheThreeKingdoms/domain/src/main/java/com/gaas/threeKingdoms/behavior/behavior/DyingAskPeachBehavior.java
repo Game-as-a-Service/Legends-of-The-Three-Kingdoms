@@ -217,7 +217,8 @@ public class DyingAskPeachBehavior extends Behavior {
     private void addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(List<DomainEvent> events) {
         game.peekTopBehaviorSecondElement().ifPresent(secondBehavior -> {
             if (secondBehavior instanceof HeavenlyDoubleHalberdKillBehavior halberdBehavior) {
-                Player halberdCurrentReactionPlayer = halberdBehavior.getCurrentReactionPlayer();
+                // 最後一個目標已處理完（isOneRound=true），不需要再問下一位
+                if (halberdBehavior.isOneRound()) return;
                 // halberd 在扣血進入瀕死時已將 currentReactionPlayer 推進到下一位
                 List<DomainEvent> dodgeOrEquipmentEvents = new ArrayList<>();
                 halberdBehavior.askCurrentTargetDodgeOrEquipmentEffect(dodgeOrEquipmentEvents);

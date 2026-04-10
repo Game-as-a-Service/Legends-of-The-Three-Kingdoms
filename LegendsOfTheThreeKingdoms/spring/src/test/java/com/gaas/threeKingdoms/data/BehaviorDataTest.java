@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.BountifulHarvestBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.HeavenlyDoubleHalberdKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.ViperSpearKillBehavior;
 import com.gaas.threeKingdoms.e2e.MockUtil;
 import com.gaas.threeKingdoms.generalcard.General;
@@ -286,5 +287,38 @@ public class BehaviorDataTest {
         assertEquals("player-b", restoredViperSpear.getCurrentReactionPlayer().getId());
         assertEquals(reactionPlayers, restoredViperSpear.getReactionPlayers());
         assertInstanceOf(VirtualKill.class, restoredViperSpear.getCard());
+    }
+
+    @Test
+    public void testHeavenlyDoubleHalberdKillBehaviorRoundTrip_PreservesMultiTargetState() {
+        // Arrange
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Kill(PlayCard.BS8008));
+        Player playerB = createPlayer("player-b", 4, General.張飛, HealthStatus.ALIVE, Role.REBEL);
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+
+        List<String> reactionPlayers = Arrays.asList("player-b", "player-c");
+        Game game = MockUtil.initGame("123456", List.of(playerA, playerB, playerC), playerA);
+
+        HeavenlyDoubleHalberdKillBehavior behavior = new HeavenlyDoubleHalberdKillBehavior(
+                game, playerA, reactionPlayers, playerB,
+                "BS8008", new Kill(PlayCard.BS8008));
+
+        // Act: fromDomain → toDomain round-trip
+        BehaviorData behaviorData = BehaviorData.fromDomain(behavior);
+        Behavior restored = behaviorData.toDomain(game);
+
+        // Assert
+        assertEquals("HeavenlyDoubleHalberdKillBehavior", behaviorData.getBehaviorName());
+        assertEquals("BS8008", behaviorData.getCardId());
+        assertEquals(reactionPlayers, behaviorData.getReactionPlayers());
+        assertEquals("player-b", behaviorData.getCurrentReactionPlayerId());
+
+        assertInstanceOf(HeavenlyDoubleHalberdKillBehavior.class, restored);
+        HeavenlyDoubleHalberdKillBehavior restoredHalberd = (HeavenlyDoubleHalberdKillBehavior) restored;
+        assertEquals(reactionPlayers, restoredHalberd.getReactionPlayers());
+        assertEquals("player-b", restoredHalberd.getCurrentReactionPlayer().getId());
+        assertEquals("player-a", restoredHalberd.getBehaviorPlayer().getId());
+        assertInstanceOf(Kill.class, restoredHalberd.getCard());
     }
 }

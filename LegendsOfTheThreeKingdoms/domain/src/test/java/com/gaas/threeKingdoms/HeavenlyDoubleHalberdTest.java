@@ -227,6 +227,40 @@ public class HeavenlyDoubleHalberdTest {
                 && ((AskDodgeEvent) e).getPlayerId().equals("player-d")));
     }
 
+    @DisplayName("最後一個目標 D HP=1 且死亡 → behavior 正確結束，不發 spurious AskDodge")
+    @Test
+    public void testUseHalberdKill_LastTargetDying_BehaviorTerminatesCleanly() {
+        Game game = createGame();
+        Player playerA = game.getPlayer("player-a");
+        Player playerD = game.getPlayer("player-d");
+        playerD.setBloodCard(new BloodCard(1));
+        equipHalberdWithSingleKill(playerA);
+
+        game.playerUseHeavenlyDoubleHalberdKill(
+                "player-a", BS8008.getCardId(), "player-b", List.of("player-d"));
+
+        // B 不出閃
+        game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
+        // D 不出閃 → HP=0 → 瀕死（D 是最後一個目標）
+        game.playerPlayCard("player-d", "", "player-a", PlayType.SKIP.getPlayType());
+
+        assertEquals(0, playerD.getHP());
+
+        // 所有人跳過桃 → D 永久死亡 (peach-ask: D → E → A → B → C)
+        game.playerPlayCard("player-d", "", "player-d", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-e", "", "player-d", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-a", "", "player-d", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-b", "", "player-d", PlayType.SKIP.getPlayType());
+        List<DomainEvent> finalEvents =
+                game.playerPlayCard("player-c", "", "player-d", PlayType.SKIP.getPlayType());
+
+        // behavior stack 應為空（halberd 已結束）
+        assertEquals(0, game.getTopBehavior().size());
+        // 不應有 spurious AskDodgeEvent
+        assertFalse(finalEvents.stream().anyMatch(e -> e instanceof AskDodgeEvent),
+                "Should not emit AskDodgeEvent after last target dies");
+    }
+
     @DisplayName("A 沒裝備方天畫戟 → 拋例外")
     @Test
     public void testNoHalberd_ThrowsException() {
