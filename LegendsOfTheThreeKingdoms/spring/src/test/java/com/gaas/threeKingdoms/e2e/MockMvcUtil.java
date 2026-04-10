@@ -110,6 +110,22 @@ public class MockMvcUtil {
                         }""", playerId, targetPlayerId, cardIdsJson)));
     }
 
+    public ResultActions useHeavenlyDoubleHalberdKill(String gameId, String playerId, String cardId,
+                                                      String primaryTargetPlayerId,
+                                                      java.util.List<String> additionalTargetPlayerIds) throws Exception {
+        String additionalJson = additionalTargetPlayerIds.stream()
+                .map(id -> "\"" + id + "\"")
+                .collect(java.util.stream.Collectors.joining(","));
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useHeavenlyDoubleHalberdKill")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "cardId": "%s",
+                          "primaryTargetPlayerId": "%s",
+                          "additionalTargetPlayerIds": [%s]
+                        }""", playerId, cardId, primaryTargetPlayerId, additionalJson)));
+    }
+
     public ResultActions playCard(String gameId, String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:playCard")
                 .contentType(MediaType.APPLICATION_JSON)

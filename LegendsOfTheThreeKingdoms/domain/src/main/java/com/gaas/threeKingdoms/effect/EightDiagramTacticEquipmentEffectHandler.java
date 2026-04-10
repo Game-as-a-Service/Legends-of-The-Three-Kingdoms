@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.effect;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.HeavenlyDoubleHalberdKillBehavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
@@ -58,6 +59,7 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
         topBehavior.setIsOneRound(isOneRoundBehavior && isEightDiagramTacticEffectSuccess);
         if (isEightDiagramTacticEffectSuccess) {
             addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents);
+            addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(domainEvents, playerId);
         } else {
             domainEvents.add(new AskDodgeEvent(playerId));
         }
@@ -80,6 +82,25 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
                 events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
             }
             game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
+        }
+    }
+
+    /**
+     * 方天畫戟：當前目標用八卦陣成功抵擋後，依「目標列表順序」推進到下一位目標並詢問出閃/防具效果。
+     * 若當前目標已是最後一位，則將 behavior 標記為結束。
+     */
+    private void addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(List<DomainEvent> events, String playerId) {
+        Behavior topBehavior = game.peekTopBehavior();
+        if (topBehavior instanceof HeavenlyDoubleHalberdKillBehavior halberdBehavior) {
+            boolean isLast = halberdBehavior.isLastReactionPlayer(playerId);
+            if (isLast) {
+                halberdBehavior.setIsOneRound(true);
+                game.getCurrentRound().setActivePlayer(game.getCurrentRound().getCurrentRoundPlayer());
+            } else {
+                halberdBehavior.setIsOneRound(false);
+                halberdBehavior.advanceToNextTarget();
+                halberdBehavior.askCurrentTargetDodgeOrEquipmentEffect(events);
+            }
         }
     }
 

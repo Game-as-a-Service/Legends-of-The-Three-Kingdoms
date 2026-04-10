@@ -37,6 +37,7 @@ public class GameController {
     private final UseGreenDragonCrescentBladeEffectUseCase useGreenDragonCrescentBladeEffectUseCase;
     private final UseStonePiercingAxeEffectUseCase useStonePiercingAxeEffectUseCase;
     private final UseViperSpearKillUseCase useViperSpearKillUseCase;
+    private final UseHeavenlyDoubleHalberdKillUseCase useHeavenlyDoubleHalberdKillUseCase;
 
     @Autowired
     private WebSocketBroadCast webSocketBroadCast;
@@ -174,6 +175,14 @@ public class GameController {
         UseViperSpearKillPresenter presenter = new UseViperSpearKillPresenter();
         useViperSpearKillUseCase.execute(gameId, request.toUseViperSpearKillRequest(), presenter);
         webSocketBroadCast.pushUseViperSpearKillEvent(presenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useHeavenlyDoubleHalberdKill")
+    public ResponseEntity<?> playerUseHeavenlyDoubleHalberdKill(@PathVariable String gameId, @RequestBody UseHeavenlyDoubleHalberdKillRequest request) {
+        UseHeavenlyDoubleHalberdKillPresenter presenter = new UseHeavenlyDoubleHalberdKillPresenter();
+        useHeavenlyDoubleHalberdKillUseCase.execute(gameId, request.toUseHeavenlyDoubleHalberdKillRequest(), presenter);
+        webSocketBroadCast.pushUseHeavenlyDoubleHalberdKillEvent(presenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

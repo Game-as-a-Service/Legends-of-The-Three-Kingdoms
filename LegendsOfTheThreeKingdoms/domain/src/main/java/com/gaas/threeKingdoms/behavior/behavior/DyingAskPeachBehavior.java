@@ -81,6 +81,7 @@ public class DyingAskPeachBehavior extends Behavior {
                     events.addAll(List.of(settlementEvent, drawCardEvent));
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 } else if (isMINISTER(dyingPlayer)) {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     events.add(settlementEvent);
@@ -104,11 +105,13 @@ public class DyingAskPeachBehavior extends Behavior {
                     }
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 } else {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     events.add(settlementEvent);
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 }
 
                 //  需要移除的 Behavior，isOneRound 要設為 true
@@ -156,6 +159,7 @@ public class DyingAskPeachBehavior extends Behavior {
                 } else {
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 }
             } else {
                 events.add(createAskPeachEvent(currentPlayer, dyingPlayer));
@@ -173,7 +177,9 @@ public class DyingAskPeachBehavior extends Behavior {
         Stack<Behavior> topBehavior = game.getTopBehavior();
         IntStream.range(0, topBehavior.size())
                 .mapToObj(i -> topBehavior.get(topBehavior.size() - 1 - i))
-                .filter(behavior -> behavior instanceof NormalActiveKillBehavior
+                .filter(behavior -> (behavior instanceof NormalActiveKillBehavior
+                        // 方天畫戟為多目標輪詢，中間目標死亡不應自動 pop
+                        && !(behavior instanceof HeavenlyDoubleHalberdKillBehavior))
                         || behavior instanceof DuelBehavior
                         || behavior instanceof BorrowedSwordBehavior)
                 .findFirst()
@@ -204,6 +210,19 @@ public class DyingAskPeachBehavior extends Behavior {
                     events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
                 }
                 game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
+            }
+        });
+    }
+
+    private void addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(List<DomainEvent> events) {
+        game.peekTopBehaviorSecondElement().ifPresent(secondBehavior -> {
+            if (secondBehavior instanceof HeavenlyDoubleHalberdKillBehavior halberdBehavior) {
+                // 最後一個目標已處理完（isOneRound=true），不需要再問下一位
+                if (halberdBehavior.isOneRound()) return;
+                // halberd 在扣血進入瀕死時已將 currentReactionPlayer 推進到下一位
+                List<DomainEvent> dodgeOrEquipmentEvents = new ArrayList<>();
+                halberdBehavior.askCurrentTargetDodgeOrEquipmentEffect(dodgeOrEquipmentEvents);
+                events.addAll(dodgeOrEquipmentEvents);
             }
         });
     }

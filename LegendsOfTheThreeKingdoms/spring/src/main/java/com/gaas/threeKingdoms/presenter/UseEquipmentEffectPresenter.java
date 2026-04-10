@@ -120,6 +120,12 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         }
     }
 
+    public static class HeavenlyDoubleHalberdKillTriggerViewModel extends ViewModel<HeavenlyDoubleHalberdKillTriggerDataViewModel> {
+        public HeavenlyDoubleHalberdKillTriggerViewModel(HeavenlyDoubleHalberdKillTriggerDataViewModel data) {
+            super("HeavenlyDoubleHalberdKillTriggerEvent", data, "方天畫戟發動");
+        }
+    }
+
     public static class SkipEquipmentEffectViewModel extends ViewModel<SkipEquipmentEffectDataViewModel> {
         public SkipEquipmentEffectViewModel(SkipEquipmentEffectDataViewModel data) {
             super("SkipEquipmentEffectEvent", data, "跳過裝備效果");
@@ -209,6 +215,15 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         private String attackerPlayerId;
         private String targetPlayerId;
         private List<String> discardedCardIds;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class HeavenlyDoubleHalberdKillTriggerDataViewModel {
+        private String attackerPlayerId;
+        private String cardId;
+        private List<String> targetPlayerIds;
     }
 
     @Data
