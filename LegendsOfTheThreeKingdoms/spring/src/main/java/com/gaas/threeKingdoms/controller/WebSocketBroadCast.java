@@ -179,6 +179,19 @@ public class WebSocketBroadCast {
         }
     }
 
+    public void pushActivateYinYangSwordsEvent(ActivateYinYangSwordsPresenter presenter) {
+        List<ActivateYinYangSwordsPresenter.GameViewModel> viewModels = presenter.present();
+        try {
+            for (ActivateYinYangSwordsPresenter.GameViewModel viewModel : viewModels) {
+                String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(viewModel);
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", viewModel.getGameId(), viewModel.getPlayerId()), json);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushActivateYinYangSwordsEvent ");
+            e.printStackTrace();
+        }
+    }
+
     public void pushUseYinYangSwordsEffectEvent(UseYinYangSwordsEffectPresenter presenter) {
         List<UseYinYangSwordsEffectPresenter.GameViewModel> viewModels = presenter.present();
         try {

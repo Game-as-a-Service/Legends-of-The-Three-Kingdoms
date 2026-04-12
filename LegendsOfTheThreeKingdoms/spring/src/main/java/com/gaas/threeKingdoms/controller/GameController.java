@@ -33,6 +33,7 @@ public class GameController {
     private final UseDismantleUseCase useDismantleUseCase;
     private final ChooseCardFromBountifulHarvestUseCase chooseCardFromBountifulHarvestUseCase;
     private final UseSnatchUseCase useSnatchUseCase;
+    private final ActivateYinYangSwordsUseCase activateYinYangSwordsUseCase;
     private final UseYinYangSwordsEffectUseCase useYinYangSwordsEffectUseCase;
     private final UseGreenDragonCrescentBladeEffectUseCase useGreenDragonCrescentBladeEffectUseCase;
     private final UseStonePiercingAxeEffectUseCase useStonePiercingAxeEffectUseCase;
@@ -143,6 +144,14 @@ public class GameController {
         UseSnatchPresenter useSnatchPresenter = new UseSnatchPresenter();
         useSnatchUseCase.execute(gameId, useSnatchRequest.toUseSnatchRequest(), useSnatchPresenter);
         webSocketBroadCast.pushUseSnatchEvent(useSnatchPresenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:activateYinYangSwords")
+    public ResponseEntity<?> playerActivateYinYangSwords(@PathVariable String gameId, @RequestBody ActivateYinYangSwordsRequest request) {
+        ActivateYinYangSwordsPresenter presenter = new ActivateYinYangSwordsPresenter();
+        activateYinYangSwordsUseCase.execute(gameId, request.toActivateYinYangSwordsRequest(), presenter);
+        webSocketBroadCast.pushActivateYinYangSwordsEvent(presenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

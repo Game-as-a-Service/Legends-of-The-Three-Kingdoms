@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.events.AskActivateYinYangSwordsEvent;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskGreenDragonCrescentBladeEffectEvent;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
@@ -9,7 +10,6 @@ import com.gaas.threeKingdoms.events.AskStonePiercingAxeEffectEvent;
 import com.gaas.threeKingdoms.events.BlackPommelEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
-import com.gaas.threeKingdoms.events.AskYinYangSwordsEffectEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
@@ -49,23 +49,14 @@ public class NormalActiveKillBehavior extends Behavior {
         List<DomainEvent> events = new ArrayList<>();
         events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType));
 
-        // 雌雄雙股劍效果：異性出殺時觸發
+        // 雌雄雙股劍效果：異性出殺時，先問攻擊者是否要發動
         if (shouldTriggerYinYangSwords(behaviorPlayer, targetPlayer)) {
-            if (targetPlayer.getHandSize() == 0) {
-                // 目標沒手牌，自動讓攻擊者摸一張牌
-                DomainEvent drawEvent = game.drawCardToPlayer(behaviorPlayer, false, 1);
-                events.add(drawEvent);
-                // 繼續到閃/八卦陣
-                addAskDodgeOrEquipmentEffect(events, targetPlayer, currentRound);
-            } else {
-                // 目標有手牌，詢問棄牌或讓攻擊者摸牌
-                isOneRound = false;
-                currentRound.setActivePlayer(targetPlayer);
-                game.updateTopBehavior(new WaitingYinYangSwordsResponseBehavior(
-                        game, behaviorPlayer, Collections.singletonList(targetPlayerId),
-                        targetPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
-                events.add(new AskYinYangSwordsEffectEvent(behaviorPlayer.getId(), targetPlayerId));
-            }
+            isOneRound = false;
+            currentRound.setActivePlayer(behaviorPlayer);
+            game.updateTopBehavior(new WaitingYinYangSwordsActivationBehavior(
+                    game, behaviorPlayer, Collections.singletonList(targetPlayerId),
+                    behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
+            events.add(new AskActivateYinYangSwordsEvent(behaviorPlayer.getId(), targetPlayerId));
         } else if (isEquipmentHasSpecialEffect(targetPlayer) && !isAttackerHasBlackPommel(behaviorPlayer)) {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
