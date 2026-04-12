@@ -185,6 +185,15 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "WaitingYinYangSwordsActivationBehavior" -> new WaitingYinYangSwordsActivationBehavior(
+                    game,
+                    game.getPlayer(behaviorPlayerId),
+                    reactionPlayers,
+                    game.getPlayer(currentReactionPlayerId),
+                    cardId,
+                    playType,
+                    PlayCard.findById(cardId)
+            );
             case "WaitingYinYangSwordsResponseBehavior" -> new WaitingYinYangSwordsResponseBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),

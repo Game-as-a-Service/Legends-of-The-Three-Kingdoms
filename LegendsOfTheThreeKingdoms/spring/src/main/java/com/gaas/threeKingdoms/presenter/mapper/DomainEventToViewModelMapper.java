@@ -194,6 +194,15 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.BlackPommelEffectViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(AskActivateYinYangSwordsEvent.class, event -> {
+            AskActivateYinYangSwordsEvent askEvent = (AskActivateYinYangSwordsEvent) event;
+            UseEquipmentEffectPresenter.AskActivateYinYangSwordsDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskActivateYinYangSwordsDataViewModel(
+                    askEvent.getAttackerPlayerId(),
+                    askEvent.getTargetPlayerId()
+            );
+            return new UseEquipmentEffectPresenter.AskActivateYinYangSwordsViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskYinYangSwordsEffectEvent.class, event -> {
             AskYinYangSwordsEffectEvent askEvent = (AskYinYangSwordsEffectEvent) event;
             UseEquipmentEffectPresenter.AskYinYangSwordsEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskYinYangSwordsEffectDataViewModel(

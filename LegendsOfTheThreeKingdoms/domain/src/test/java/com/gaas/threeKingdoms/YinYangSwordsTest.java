@@ -79,14 +79,19 @@ public class YinYangSwordsTest {
 
         List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
-        // Should contain AskYinYangSwordsEffectEvent
-        assertTrue(events.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
-        AskYinYangSwordsEffectEvent askEvent = events.stream()
-                .filter(e -> e instanceof AskYinYangSwordsEffectEvent)
-                .map(e -> (AskYinYangSwordsEffectEvent) e)
+        // Should contain AskActivateYinYangSwordsEvent (asking attacker first)
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskActivateYinYangSwordsEvent));
+        AskActivateYinYangSwordsEvent askActivateEvent = events.stream()
+                .filter(e -> e instanceof AskActivateYinYangSwordsEvent)
+                .map(e -> (AskActivateYinYangSwordsEvent) e)
                 .findFirst().orElseThrow();
-        assertEquals("player-b", askEvent.getTargetPlayerId());
-        assertEquals("player-a", askEvent.getAttackerPlayerId());
+        assertEquals("player-a", askActivateEvent.getAttackerPlayerId());
+        assertEquals("player-b", askActivateEvent.getTargetPlayerId());
+
+        // Attacker activates → now ask target
+        List<DomainEvent> activateEvents = game.playerActivateYinYangSwords(
+                playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
+        assertTrue(activateEvents.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
     }
 
     @DisplayName("""
@@ -111,8 +116,10 @@ public class YinYangSwordsTest {
         playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
         playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028), new Peach(BH3029)));
 
-        // A plays Kill on B -> triggers YinYangSwords
+        // A plays Kill on B -> asks attacker to activate YinYangSwords
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        // A activates
+        game.playerActivateYinYangSwords(playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
 
         // B uses YinYangSwords effect API to discard BH3029 (Peach)
         List<DomainEvent> events = game.playerUseYinYangSwordsEffect(
@@ -158,8 +165,10 @@ public class YinYangSwordsTest {
 
         int playerAHandSizeBefore = playerA.getHandSize(); // 1 (Kill) -> 0 after playing Kill
 
-        // A plays Kill on B -> triggers YinYangSwords
+        // A plays Kill on B -> asks attacker to activate YinYangSwords
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        // A activates
+        game.playerActivateYinYangSwords(playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
 
         // B uses YinYangSwords effect API to let A draw
         List<DomainEvent> events = game.playerUseYinYangSwordsEffect(
@@ -203,11 +212,16 @@ public class YinYangSwordsTest {
         playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
         // B has no hand cards
 
-        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        // A plays Kill on B -> asks attacker to activate
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // A activates → B 沒手牌，自動讓 A 摸牌
+        List<DomainEvent> events = game.playerActivateYinYangSwords(
+                playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
 
         // A should have drawn 1 card (was 0 after playing Kill, now 1)
         assertEquals(1, playerA.getHandSize());
-        // Should ask B to dodge (skipping the YinYangSwords choice since B has no cards)
+        // Should ask B to dodge
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
     }
 
@@ -292,10 +306,14 @@ public class YinYangSwordsTest {
         playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
         playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028), new Peach(BH3029)));
 
-        // A plays Kill on B -> triggers YinYangSwords first
-        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        // A plays Kill on B -> asks attacker to activate YinYangSwords first
+        List<DomainEvent> killEvents = game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        assertTrue(killEvents.stream().anyMatch(e -> e instanceof AskActivateYinYangSwordsEvent));
 
-        assertTrue(events.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
+        // A activates → ask target to choose
+        List<DomainEvent> activateEvents = game.playerActivateYinYangSwords(
+                playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
+        assertTrue(activateEvents.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
     }
 
     @DisplayName("""
@@ -331,11 +349,11 @@ public class YinYangSwordsTest {
         game.peekTopBehavior().putParam("BORROWED_SWORD_ATTACK_TARGET_PLAYER_ID", playerC.getId());
         List<DomainEvent> borrowedEvents = game.peekTopBehavior().doBehaviorAction();
 
-        // B plays Kill on C
+        // B plays Kill on C → asks B to activate YinYangSwords
         List<DomainEvent> killEvents = game.playerPlayCard(playerB.getId(), BS8008.getCardId(), playerC.getId(), PlayType.ACTIVE.getPlayType());
 
-        // Should trigger YinYangSwords effect
-        assertTrue(killEvents.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
+        // Should ask attacker (B) to activate
+        assertTrue(killEvents.stream().anyMatch(e -> e instanceof AskActivateYinYangSwordsEvent));
     }
 
     // ============= New Test Scenarios =============
@@ -353,6 +371,7 @@ public class YinYangSwordsTest {
         playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028)));
 
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerActivateYinYangSwords(playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
 
         // Wrong player (C) tries to respond
         assertThrows(IllegalStateException.class, () ->
@@ -372,6 +391,7 @@ public class YinYangSwordsTest {
         playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028)));
 
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerActivateYinYangSwords(playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
 
         // B tries to discard a card not in hand
         assertThrows(RuntimeException.class, () ->
@@ -404,7 +424,7 @@ public class YinYangSwordsTest {
 
         List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
 
-        assertTrue(events.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskActivateYinYangSwordsEvent));
     }
 
     @DisplayName("DISCARD 後 B 出閃 → B 不受傷害")
@@ -419,8 +439,9 @@ public class YinYangSwordsTest {
         playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028), new Peach(BH3029)));
         int playerBHpBefore = playerB.getHP();
 
-        // A plays Kill on B -> YinYangSwords triggers
+        // A plays Kill on B -> asks attacker to activate
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerActivateYinYangSwords(playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
 
         // B discards Peach
         game.playerUseYinYangSwordsEffect(playerB.getId(),
@@ -445,10 +466,11 @@ public class YinYangSwordsTest {
         playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
         int playerBHpBefore = playerB.getHP();
 
-        // A plays Kill on B -> YinYangSwords triggers (B has no cards, auto draws)
-        // Wait — B has no cards so it auto draws. Let me give B cards.
         playerB.getHand().addCardToHand(Arrays.asList(new Peach(BH3029)));
+
+        // A plays Kill on B -> asks attacker to activate
         game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerActivateYinYangSwords(playerA.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE);
 
         // B lets A draw
         game.playerUseYinYangSwordsEffect(playerB.getId(),
@@ -461,6 +483,71 @@ public class YinYangSwordsTest {
         assertEquals(playerBHpBefore - 1, playerB.getHP());
         // A drew 1 card
         assertEquals(1, playerA.getHandSize());
+    }
+
+    @DisplayName("攻擊者選擇 SKIP → 跳過雌雄雙股劍效果，直接進入 AskDodge")
+    @Test
+    public void givenAttackerSkipsActivation_ThenProceedsToDodge() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028), new Peach(BH3029)));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // A skips activation
+        List<DomainEvent> events = game.playerActivateYinYangSwords(
+                playerA.getId(), AskActivateYinYangSwordsEvent.Choice.SKIP);
+
+        // No YinYangSwordsEffectEvent, directly ask dodge
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskYinYangSwordsEffectEvent));
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+        // B's hand unchanged
+        assertEquals(2, playerB.getHandSize());
+    }
+
+    @DisplayName("攻擊者選擇 SKIP + 目標有八卦陣 → 跳過雌雄雙股劍，進入八卦陣流程")
+    @Test
+    public void givenAttackerSkipsActivation_TargetHasArmor_AsksEquipmentEffect() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028)));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // A skips activation
+        List<DomainEvent> events = game.playerActivateYinYangSwords(
+                playerA.getId(), AskActivateYinYangSwordsEvent.Choice.SKIP);
+
+        // Should ask equipment effect (EightDiagramTactic), not dodge
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskPlayEquipmentEffectEvent));
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+    }
+
+    @DisplayName("非攻擊者嘗試呼叫 activate → 拋異常")
+    @Test
+    public void givenWrongPlayerCallsActivate_ThenThrowsException() {
+        Game game = initGameWith4Players(General.劉備, General.甄姬, General.劉備, General.劉備);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getEquipment().setWeapon(new YinYangSwordsCard(ES2002));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        playerB.getHand().addCardToHand(Arrays.asList(new Dodge(BH2028)));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // B (wrong player) tries to activate
+        assertThrows(IllegalStateException.class, () ->
+                game.playerActivateYinYangSwords(playerB.getId(), AskActivateYinYangSwordsEvent.Choice.ACTIVATE));
     }
 
     // Helper method to initialize a 4-player game

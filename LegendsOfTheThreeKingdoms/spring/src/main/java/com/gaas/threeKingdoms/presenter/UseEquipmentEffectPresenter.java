@@ -78,6 +78,12 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
         }
     }
 
+    public static class AskActivateYinYangSwordsViewModel extends ViewModel<AskActivateYinYangSwordsDataViewModel> {
+        public AskActivateYinYangSwordsViewModel(AskActivateYinYangSwordsDataViewModel data) {
+            super("AskActivateYinYangSwordsEvent", data, "雌雄雙股劍效果：是否要發動雌雄雙股劍？");
+        }
+    }
+
     public static class AskYinYangSwordsEffectViewModel extends ViewModel<AskYinYangSwordsEffectDataViewModel> {
         public AskYinYangSwordsEffectViewModel(AskYinYangSwordsEffectDataViewModel data) {
             super("AskYinYangSwordsEffectEvent", data, "雌雄雙股劍效果：請選擇棄一張手牌或讓攻擊者摸牌");
@@ -152,6 +158,14 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
     @AllArgsConstructor
     @NoArgsConstructor
     public static class BlackPommelEffectDataViewModel {
+        private String attackerPlayerId;
+        private String targetPlayerId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskActivateYinYangSwordsDataViewModel {
         private String attackerPlayerId;
         private String targetPlayerId;
     }
