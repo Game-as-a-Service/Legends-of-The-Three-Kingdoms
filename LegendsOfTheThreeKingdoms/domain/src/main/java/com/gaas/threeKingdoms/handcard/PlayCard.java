@@ -51,7 +51,7 @@ public enum PlayCard {
     BS0023("BS0023", "殺", Suit.SPADE, Rank.TEN),
     SSJ024("SSJ024", "順手牽羊", Suit.SPADE, Rank.J),
     ESQ025("ESQ025", "丈八蛇矛", Suit.SPADE, Rank.Q),
-    ESK026("ESK026", "黃爪飛電", Suit.SPADE, Rank.K),
+    ESK026("ESK026", "爪黃飛電", Suit.SPADE, Rank.K),
 
     SHA027("SHA027", "桃園結義", Suit.HEART, Rank.ACE),
     BH2028("BH2028", "閃", Suit.HEART, Rank.TWO),
@@ -310,8 +310,7 @@ public enum PlayCard {
                         || "絕影".equals(c.getCardName())
                         || "的盧".equals(c.getCardName())
                         || "紫騂".equals(c.getCardName())
-                        || "爪黃飛電".equals(c.getCardName())
-                        || "黃爪飛電".equals(c.getCardName()))
+                        || "爪黃飛電".equals(c.getCardName()))
                 .anyMatch(c -> c.getCardId().equals(this.cardId));
     }
 

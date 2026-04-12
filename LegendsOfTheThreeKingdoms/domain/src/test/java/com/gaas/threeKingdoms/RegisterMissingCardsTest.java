@@ -65,7 +65,7 @@ public class RegisterMissingCardsTest {
         assertTrue(EHK052.isMountsCard());
     }
 
-    @DisplayName("ESK026 黃爪飛電 (FerghanaHorse) findById returns MinusMountsCard and isMountsCard")
+    @DisplayName("ESK026 爪黃飛電 (FerghanaHorse) findById returns MinusMountsCard and isMountsCard")
     @Test
     public void testESK026FerghanaHorseFactory() {
         HandCard card = PlayCard.findById("ESK026");
