@@ -111,7 +111,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
     @Test
     public void givenPlayerAHasSomethingForNothingAndPlayerBHasWard_WhenPlayerAPlaysSomethingAndPlayerBPlaysWard_ThenABCDReceive() throws Exception {
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有無中生有
 //        B 有無懈可擊
 //
@@ -159,7 +159,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
     public void givenPlayerAHasSomethingForNothingAndPlayerBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerBPlaysWard_ThenABCDReceive() throws Exception {
 
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有無中生有
 //        B 有無懈可擊
 //        C 有無懈可擊
@@ -223,7 +223,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
     public void givenPlayerAHasSomethingForNothingAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerAAndBAndCSkipPlaysWard_ThenABCDReceive() throws Exception {
 
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有無中生有
 //        A 有無懈可擊
 //        B 有無懈可擊
@@ -279,7 +279,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
     public void givenPlayerAHasSomethingForNothingAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysSomethingAndPlayerAAndBPlayWardCardAndPlayerCSkipPlaysWard_ThenABCDReceive() throws Exception {
 
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有無中生有
 //        A 有無懈可擊
 //        B 有無懈可擊

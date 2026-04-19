@@ -126,7 +126,7 @@ public class WardWithSnatchTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有順手牽羊
             B 有無懈可擊
 
@@ -183,7 +183,7 @@ public class WardWithSnatchTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有順手牽羊
             B 有無懈可擊
             C 有無懈可擊
@@ -257,7 +257,7 @@ public class WardWithSnatchTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有順手牽羊
             B 有無懈可擊
             C 有無懈可擊
@@ -311,7 +311,7 @@ public class WardWithSnatchTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有順手牽羊
             A 有無懈可擊
             B 有無懈可擊

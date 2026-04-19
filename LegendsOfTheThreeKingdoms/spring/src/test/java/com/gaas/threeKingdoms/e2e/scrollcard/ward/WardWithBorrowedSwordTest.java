@@ -37,7 +37,7 @@ public class WardWithBorrowedSwordTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有借刀殺人
             B 有武器、殺、無懈可擊
 
@@ -93,7 +93,7 @@ public class WardWithBorrowedSwordTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有借刀殺人
             B 有武器、殺、無懈可擊
             C 有無懈可擊
@@ -157,7 +157,7 @@ public class WardWithBorrowedSwordTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有借刀殺人
             B 有武器、殺、無懈可擊
             C 有無懈可擊
@@ -210,7 +210,7 @@ public class WardWithBorrowedSwordTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有借刀殺人、無懈可擊
             B 有武器、殺、無懈可擊
             C 有無懈可擊
@@ -290,7 +290,7 @@ public class WardWithBorrowedSwordTest extends AbstractBaseIntegrationTest {
     @Test
     @DisplayName("""
             Given
-            有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+            有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
             A 有借刀殺人、無懈可擊
             B 有武器、殺、無懈可擊
             C 有無懈可擊

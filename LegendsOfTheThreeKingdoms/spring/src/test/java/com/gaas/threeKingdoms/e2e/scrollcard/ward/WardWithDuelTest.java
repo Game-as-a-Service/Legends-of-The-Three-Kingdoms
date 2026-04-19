@@ -112,7 +112,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
     @Test
     public void givenPlayerAHasDuelAndPlayerBHasWard_WhenPlayerAPlaysDuelAndPlayerBPlaysWard_ThenABCDReceive() throws Exception {
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有決鬥
 //        B 有無懈可擊
 //
@@ -160,7 +160,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
     public void givenPlayerAHasDuelAndPlayerBAndCHasWard_WhenPlayerAPlaysDuelAndPlayerBPlaysWard_ThenABCDReceive() throws Exception {
 
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有決鬥
 //        B 有無懈可擊
 //        C 有無懈可擊
@@ -224,7 +224,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
     public void givenPlayerAHasDuelAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysDuelAndPlayerAAndBAndCSkipPlaysWard_ThenABCDReceive() throws Exception {
 
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有決鬥 + 無懈可擊
 //        B 有無懈可擊
 //        C 有無懈可擊
@@ -279,7 +279,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
     public void givenPlayerAHasDuelAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysDuelAndPlayerAAndBPlayWardCardAndPlayerCSkipPlaysWard_ThenABCDReceive() throws Exception {
 
 //        Given
-//        有 玩家 A 劉備 B 張飛 C 關羽 D 呂布
+//        有 玩家 A 劉備 B 張飛 C 關羽 D 張遼
 //        A 有決鬥
 //        A 有無懈可擊
 //        B 有無懈可擊
