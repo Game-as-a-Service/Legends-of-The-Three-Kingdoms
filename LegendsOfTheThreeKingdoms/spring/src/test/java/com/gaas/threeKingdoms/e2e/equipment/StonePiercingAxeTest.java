@@ -119,7 +119,61 @@ public class StonePiercingAxeTest extends AbstractBaseIntegrationTest {
 
     @Test
     public void testEightDiagramTacticSuccess_TriggersStonePiercingAxeAsk() throws Exception {
-        // Given A 裝備貫石斧 + B 裝備八卦陣，deck 頂紅色（八卦陣成功）
+        givenPlayerAEquippedSPAAndPlayerBHasEightDiagramTactic_WithRedDeck();
+
+        // When A 出殺 → B 發動八卦陣成功
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+
+        // Then A 應收到 AskStonePiercingAxeEffectEvent
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/StonePiercingAxe/spa_ask_after_eight_diagram_success_for_%s.json");
+    }
+
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesDiscardTwo_ForceHit() throws Exception {
+        givenPlayerAEquippedSPAAndPlayerBHasEightDiagramTactic_WithRedDeck();
+
+        // A 出殺 → 八卦陣 success → AskSPA
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // When A 選 DISCARD_TWO 棄 BH3029 + BH4030
+        mockMvcUtil.useStonePiercingAxeEffect(gameId, "player-a", "DISCARD_TWO",
+                        List.of("BH3029", "BH4030"))
+                .andExpect(status().isOk()).andReturn();
+
+        // Then B 扣血（HP 4→3）+ StonePiercingAxeTriggerEvent + PlayerDamagedEvent
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/StonePiercingAxe/spa_after_eight_diagram_discard_two_damage_for_%s.json");
+    }
+
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesSkip_KillCancelled() throws Exception {
+        givenPlayerAEquippedSPAAndPlayerBHasEightDiagramTactic_WithRedDeck();
+
+        // A 出殺 → 八卦陣 success → AskSPA
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // When A 選 SKIP
+        mockMvcUtil.useStonePiercingAxeEffect(gameId, "player-a", "SKIP", List.of())
+                .andExpect(status().isOk()).andReturn();
+
+        // Then 殺取消、B HP 不變、activePlayer=A
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/StonePiercingAxe/spa_after_eight_diagram_skip_for_%s.json");
+    }
+
+    private void givenPlayerAEquippedSPAAndPlayerBHasEightDiagramTactic_WithRedDeck() {
         Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Peach(BH4030));
         playerA.getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
@@ -135,16 +189,6 @@ public class StonePiercingAxeTest extends AbstractBaseIntegrationTest {
         deck.add(List.of(new RedRabbitHorse(BH7033)));
         game.setDeck(deck);
         repository.save(game);
-
-        // When A 出殺 → B 發動八卦陣成功
-        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
-                .andExpect(status().isOk()).andReturn();
-        websocketUtil.popAllPlayerMessage();
-        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
-                .andExpect(status().isOk()).andReturn();
-
-        // Then A 應收到 AskStonePiercingAxeEffectEvent
-        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/StonePiercingAxe/spa_ask_after_eight_diagram_success_for_%s.json");
     }
 
     private void givenPlayerAEquippedStonePiercingAxe() {
