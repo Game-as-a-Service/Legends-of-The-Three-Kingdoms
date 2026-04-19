@@ -315,7 +315,7 @@ public class WardWithBarbarianInvasionTest extends AbstractBaseIntegrationTest {
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
         Player playerD = createPlayer(
-                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                "player-d", 4, General.張遼, HealthStatus.ALIVE, Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
 
@@ -342,7 +342,7 @@ public class WardWithBarbarianInvasionTest extends AbstractBaseIntegrationTest {
                 new Ward(SCK078), new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
         );
         Player playerD = createPlayer(
-                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                "player-d", 4, General.張遼, HealthStatus.ALIVE, Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
 
@@ -443,7 +443,7 @@ public class WardWithBarbarianInvasionTest extends AbstractBaseIntegrationTest {
                 new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039), new Kill(BS8008)
         );
         Player playerD = createPlayer(
-                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                "player-d", 4, General.張遼, HealthStatus.ALIVE, Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
 

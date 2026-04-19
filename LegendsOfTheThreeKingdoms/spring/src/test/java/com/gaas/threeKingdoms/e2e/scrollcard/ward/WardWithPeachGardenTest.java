@@ -282,7 +282,7 @@ public class WardWithPeachGardenTest extends AbstractBaseIntegrationTest {
         playerC.damage(1); // hp=3
 
         Player playerD = createPlayer(
-                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                "player-d", 4, General.張遼, HealthStatus.ALIVE, Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
         );
 
@@ -311,7 +311,7 @@ public class WardWithPeachGardenTest extends AbstractBaseIntegrationTest {
         playerC.damage(1); // hp=3
 
         Player playerD = createPlayer(
-                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                "player-d", 4, General.張遼, HealthStatus.ALIVE, Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
         );
 
@@ -340,7 +340,7 @@ public class WardWithPeachGardenTest extends AbstractBaseIntegrationTest {
         playerC.damage(1); // hp=3
 
         Player playerD = createPlayer(
-                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                "player-d", 4, General.張遼, HealthStatus.ALIVE, Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
         );
 

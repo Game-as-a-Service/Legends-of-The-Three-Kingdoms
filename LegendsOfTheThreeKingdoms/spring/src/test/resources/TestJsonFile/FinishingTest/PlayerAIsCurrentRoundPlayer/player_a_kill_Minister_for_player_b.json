@@ -14,14 +14,14 @@
       "playerId" : "player-b",
       "role" : "Minister"
     },
-    "message" : "呂布 死亡，身分是 忠臣"
+    "message" : "張遼 死亡，身分是 忠臣"
   }, {
     "event" : "DiscardEvent",
     "data" : {
       "cardIds" : [ "BH3029", "BH2028", "BHK039" ],
       "discardPlayerId" : "player-a"
     },
-    "message" : "主公 劉備 殺死忠臣 呂布，棄所有的牌"
+    "message" : "主公 劉備 殺死忠臣 張遼，棄所有的牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -37,7 +37,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "QUN002",
+      "generalId" : "WEI004",
       "roleId" : "Minister",
       "hp" : 0,
       "hand" : {

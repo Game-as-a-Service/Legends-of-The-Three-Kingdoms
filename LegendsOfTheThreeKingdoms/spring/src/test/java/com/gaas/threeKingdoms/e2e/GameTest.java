@@ -389,8 +389,8 @@ public class GameTest extends AbstractBaseIntegrationTest {
         Given
         玩家A為主公 ，選擇了武將「劉備」
         B 為忠臣 可選武將牌「馬超」「趙雲」「黃月英」
-        C 為反賊 可選武將牌「諸葛亮」 「黃忠」「魏延」
-        D 為內奸 可選武將牌「司馬懿」「夏侯敦」「許褚」
+        C 為反賊 可選武將牌「諸葛亮」 「關羽」「張飛」
+        D 為內奸 可選武將牌「司馬懿」「夏侯惇」「許褚」
 
           When
         玩家 B 選武將 馬超
