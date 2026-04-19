@@ -6,6 +6,7 @@ import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.HeavenlyDoubleHalberdKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.WaitingGreenDragonCrescentBladeResponseBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.WaitingStonePiercingAxeResponseBehavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
@@ -13,6 +14,7 @@ import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
@@ -65,6 +67,7 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
             addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents);
             addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(domainEvents, playerId);
             addAskGreenDragonCrescentBladeEventIfAttackerHasGDCB(domainEvents);
+            addAskStonePiercingAxeEventIfAttackerHasStonePiercingAxe(domainEvents);
         } else {
             domainEvents.add(new AskDodgeEvent(playerId));
         }
@@ -114,6 +117,36 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
                 killBehavior.getCardId(), PlayType.ACTIVE.getPlayType(), killBehavior.getCard()));
 
         events.add(new AskGreenDragonCrescentBladeEffectEvent(attacker.getId(), targetPlayerId));
+    }
+
+    /**
+     * 貫石斧：八卦陣成功視為出閃。若攻擊者裝備貫石斧且可棄牌 ≥ 2，
+     * 等同「殺被閃擋下」時可棄兩張牌強制命中，需詢問攻擊者是否發動。
+     */
+    private void addAskStonePiercingAxeEventIfAttackerHasStonePiercingAxe(List<DomainEvent> events) {
+        Behavior topBehavior = game.peekTopBehavior();
+        if (!(topBehavior instanceof NormalActiveKillBehavior killBehavior)) {
+            return;
+        }
+        Player attacker = killBehavior.getBehaviorPlayer();
+        if (!(attacker.getEquipmentWeaponCard() instanceof StonePiercingAxeCard)) {
+            return;
+        }
+        int discardable = attacker.getHand().getCards().size()
+                + attacker.getEquipment().getAllEquipmentCards().size();
+        if (discardable < 2) {
+            return;
+        }
+        String targetPlayerId = killBehavior.getReactionPlayers().get(0);
+
+        killBehavior.setIsOneRound(false);
+        game.getCurrentRound().setActivePlayer(attacker);
+
+        game.updateTopBehavior(new WaitingStonePiercingAxeResponseBehavior(
+                game, attacker, List.of(targetPlayerId), attacker,
+                killBehavior.getCardId(), PlayType.ACTIVE.getPlayType(), killBehavior.getCard()));
+
+        events.add(new AskStonePiercingAxeEffectEvent(attacker.getId(), targetPlayerId));
     }
 
     /**
