@@ -6,11 +6,16 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.Deck;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -303,6 +308,118 @@ public class GreenDragonCrescentBladeTest {
         // B 進入瀕死（AskPeachEvent）
         assertTrue(events.stream().anyMatch(e -> e instanceof AskPeachEvent));
         assertEquals(0, playerB.getHP());
+    }
+
+    @DisplayName("A 裝備青龍偃月刀 + B 裝備八卦陣 → A 出殺 → B 發動八卦陣抽到紅色成功 → A 收到 AskGreenDragonCrescentBladeEffectEvent")
+    @Test
+    public void testEightDiagramTacticSuccess_TriggersGreenDragonCrescentBladeAsk() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        // 八卦陣成功判定用：deck 頂放紅色卡
+        game.setDeck(new Deck(List.of(new RedRabbitHorse(BH3029))));
+
+        playerA.getEquipment().setWeapon(new GreenDragonCrescentBladeCard(ES5005));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        // A 出殺
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // B 發動八卦陣（成功 → 視為出閃）
+        List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        // A 應收到 AskGreenDragonCrescentBladeEffectEvent
+        AskGreenDragonCrescentBladeEffectEvent askEvent = events.stream()
+                .filter(e -> e instanceof AskGreenDragonCrescentBladeEffectEvent)
+                .map(e -> (AskGreenDragonCrescentBladeEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("AskGreenDragonCrescentBladeEffectEvent should be emitted when 八卦陣 succeeds"));
+        assertEquals("player-a", askEvent.getAttackerPlayerId());
+        assertEquals("player-b", askEvent.getTargetPlayerId());
+
+        // activePlayer 應為 A（等待選擇）
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("A 裝備青龍偃月刀 + B 裝備八卦陣 → 八卦陣成功 → A 選 KILL → 因 B 仍有八卦陣，要求 B 再發動裝備")
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesKill_TargetAskedEquipmentAgain() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        game.setDeck(new Deck(List.of(new RedRabbitHorse(BH3029))));
+
+        playerA.getEquipment().setWeapon(new GreenDragonCrescentBladeCard(ES5005));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        // A 選 KILL
+        List<DomainEvent> events = game.playerUseGreenDragonCrescentBladeEffect(
+                playerA.getId(),
+                AskGreenDragonCrescentBladeEffectEvent.Choice.KILL,
+                BS9009.getCardId());
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof GreenDragonCrescentBladeTriggerEvent));
+        // B 仍裝備八卦陣 → 應收到 AskPlayEquipmentEffectEvent（而非 AskDodgeEvent）
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskPlayEquipmentEffectEvent));
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("A 裝備青龍偃月刀 + B 裝備八卦陣 → 八卦陣成功 → A 選 SKIP → 殺被抵銷")
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesSkip_KillCancelled() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        game.setDeck(new Deck(List.of(new RedRabbitHorse(BH3029))));
+
+        playerA.getEquipment().setWeapon(new GreenDragonCrescentBladeCard(ES5005));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        int playerBHpBefore = playerB.getHP();
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        game.playerUseGreenDragonCrescentBladeEffect(playerA.getId(),
+                AskGreenDragonCrescentBladeEffectEvent.Choice.SKIP, "");
+
+        assertEquals(playerBHpBefore, playerB.getHP());
+        assertEquals(0, game.getTopBehavior().size());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("A 裝備青龍偃月刀 + B 裝備八卦陣 → 八卦陣抽到黑色失敗 → B 仍用一般閃流程（對照組）")
+    @Test
+    public void testEightDiagramTacticFails_FallsBackToNormalDodgeFlow() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        // 八卦陣失敗判定用：deck 頂放黑色卡
+        game.setDeck(new Deck(List.of(new Dismantle(SS3003))));
+
+        playerA.getEquipment().setWeapon(new GreenDragonCrescentBladeCard(ES5005));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Kill(BS9009)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        playerB.getHand().addCardToHand(new Dodge(BH2028));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+
+        // 八卦陣失敗後應問 B 出閃
+        List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+
+        // B 實際出閃 → 走一般 GDCB 觸發路徑
+        List<DomainEvent> dodgeEvents = game.playerPlayCard(playerB.getId(), BH2028.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        assertTrue(dodgeEvents.stream().anyMatch(e -> e instanceof AskGreenDragonCrescentBladeEffectEvent));
     }
 
     // Helper

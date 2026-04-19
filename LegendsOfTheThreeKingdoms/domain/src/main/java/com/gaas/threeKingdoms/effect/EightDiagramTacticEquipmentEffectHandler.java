@@ -4,11 +4,15 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.HeavenlyDoubleHalberdKillBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.WaitingGreenDragonCrescentBladeResponseBehavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.ArmorCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
@@ -60,6 +64,7 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
         if (isEightDiagramTacticEffectSuccess) {
             addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents);
             addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(domainEvents, playerId);
+            addAskGreenDragonCrescentBladeEventIfAttackerHasGDCB(domainEvents);
         } else {
             domainEvents.add(new AskDodgeEvent(playerId));
         }
@@ -89,6 +94,32 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
      * 方天畫戟：當前目標用八卦陣成功抵擋後，依「目標列表順序」推進到下一位目標並詢問出閃/防具效果。
      * 若當前目標已是最後一位，則將 behavior 標記為結束。
      */
+    /**
+     * 青龍偃月刀：八卦陣成功視為出閃。若攻擊者裝備青龍偃月刀，則等同「殺被閃擋下」，
+     * 需詢問攻擊者是否再出一張殺。
+     */
+    private void addAskGreenDragonCrescentBladeEventIfAttackerHasGDCB(List<DomainEvent> events) {
+        Behavior topBehavior = game.peekTopBehavior();
+        if (!(topBehavior instanceof NormalActiveKillBehavior killBehavior)) {
+            return;
+        }
+        Player attacker = killBehavior.getBehaviorPlayer();
+        if (!(attacker.getEquipmentWeaponCard() instanceof GreenDragonCrescentBladeCard)) {
+            return;
+        }
+        String targetPlayerId = killBehavior.getReactionPlayers().get(0);
+
+        // 保留底下的 NormalActiveKillBehavior（不要被 pop）
+        killBehavior.setIsOneRound(false);
+        game.getCurrentRound().setActivePlayer(attacker);
+
+        game.updateTopBehavior(new WaitingGreenDragonCrescentBladeResponseBehavior(
+                game, attacker, List.of(targetPlayerId), attacker,
+                killBehavior.getCardId(), PlayType.ACTIVE.getPlayType(), killBehavior.getCard()));
+
+        events.add(new AskGreenDragonCrescentBladeEffectEvent(attacker.getId(), targetPlayerId));
+    }
+
     private void addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(List<DomainEvent> events, String playerId) {
         Behavior topBehavior = game.peekTopBehavior();
         if (topBehavior instanceof HeavenlyDoubleHalberdKillBehavior halberdBehavior) {

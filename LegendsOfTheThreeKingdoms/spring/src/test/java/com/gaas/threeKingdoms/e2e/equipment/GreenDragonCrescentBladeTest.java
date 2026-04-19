@@ -6,9 +6,12 @@ import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.Deck;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
@@ -28,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class GreenDragonCrescentBladeTest extends AbstractBaseIntegrationTest {
+
+    // @Override protected boolean shouldRegenerateFixtures() { return true; }
 
     @Test
     public void testEquipGreenDragonCrescentBlade() throws Exception {
@@ -117,6 +122,37 @@ public class GreenDragonCrescentBladeTest extends AbstractBaseIntegrationTest {
             String expectedJson = Files.readString(path);
             assertEquals(expectedJson, testPlayerJson);
         }
+    }
+
+    @Test
+    public void testEightDiagramTacticSuccess_TriggersGreenDragonCrescentBladeAsk() throws Exception {
+        // Given A 裝備青龍偃月刀 + B 裝備八卦陣，deck 頂是紅色卡（八卦陣成功）
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Kill(BS8008), new Kill(BS9009));
+        playerA.getEquipment().setWeapon(new GreenDragonCrescentBladeCard(ES5005));
+
+        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR);
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new RedRabbitHorse(BH3029)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // When A 出殺 → B 發動八卦陣（抽到紅色成功）
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+
+        // Then A 應收到 AskGreenDragonCrescentBladeEffectEvent
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/GreenDragonCrescentBlade/gdcb_ask_after_eight_diagram_success_for_%s.json");
     }
 
     private void givenPlayerAEquippedGreenDragonCrescentBlade() {
