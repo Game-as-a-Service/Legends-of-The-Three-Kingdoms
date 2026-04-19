@@ -375,7 +375,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -416,7 +416,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -457,7 +457,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -498,7 +498,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -539,7 +539,7 @@ public class WardWithSomethingForNothingTest extends AbstractBaseIntegrationTest
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)

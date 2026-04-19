@@ -13,10 +13,8 @@ public enum General {
     趙雲("趙雲",4,"SHU005", Gender.MALE),
     黃月英("黃月英",3,"SHU007", Gender.FEMALE),
     諸葛亮("諸葛亮",3,"SHU004", Gender.MALE),
-    黃忠("黃忠",4,"SHU008", Gender.MALE),
-    魏延("魏延",4,"SHU009", Gender.MALE),
     司馬懿("司馬懿",3, "WEI002", Gender.MALE),
-    夏侯敦("夏侯敦",4, "WEI003", Gender.MALE),
+    夏侯惇("夏侯惇",4, "WEI003", Gender.MALE),
     許褚("許褚",4, "WEI005", Gender.MALE),
     郭嘉("郭嘉",3, "WEI006", Gender.MALE),
     甄姬("甄姬",3, "WEI007", Gender.FEMALE),
@@ -27,10 +25,7 @@ public enum General {
     周瑜("周瑜",3, "WU005", Gender.MALE),
     大喬("大喬",3, "WU006", Gender.FEMALE),
     陸遜("陸遜",3, "WU007", Gender.MALE),
-    孫尚香("孫尚香",3, "WU008", Gender.FEMALE),
-    華佗("華佗",3, "QUN001", Gender.MALE),
-    呂布("呂布",4, "QUN002", Gender.MALE),
-    貂蟬("貂蟬",3, "QUN003", Gender.FEMALE);
+    孫尚香("孫尚香",3, "WU008", Gender.FEMALE);
 
     public final String generalName;
     public final int healthPoint;

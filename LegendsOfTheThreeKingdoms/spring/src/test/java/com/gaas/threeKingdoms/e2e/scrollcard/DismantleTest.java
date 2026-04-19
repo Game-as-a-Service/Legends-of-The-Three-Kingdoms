@@ -174,7 +174,7 @@ public class DismantleTest extends AbstractBaseIntegrationTest {
         Player playerC = createPlayer(
                 "player-c",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.REBEL,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)

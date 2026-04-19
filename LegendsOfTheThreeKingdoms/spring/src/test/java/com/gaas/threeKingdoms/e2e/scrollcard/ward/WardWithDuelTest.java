@@ -487,7 +487,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -528,7 +528,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -569,7 +569,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -610,7 +610,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -651,7 +651,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -692,7 +692,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR
                 // D 沒有無懈可擊
@@ -733,7 +733,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR
         );
@@ -774,7 +774,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR
         );
@@ -886,7 +886,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR
         );
@@ -929,7 +929,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR
         );
@@ -1032,7 +1032,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
                 new Ward(SSJ011), new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028)
         );
         Player playerD = createPlayer(
-                "player-d", 4, General.呂布, HealthStatus.ALIVE, Role.TRAITOR,
+                "player-d", 4, General.張遼, HealthStatus.ALIVE, Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
 

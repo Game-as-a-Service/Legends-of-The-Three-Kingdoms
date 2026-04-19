@@ -388,7 +388,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard(General.呂布))
+                .withGeneralCard(new GeneralCard(General.張遼))
                 .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
@@ -487,7 +487,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard(General.呂布))
+                .withGeneralCard(new GeneralCard(General.張遼))
                 .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
@@ -701,7 +701,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard(General.呂布))
+                .withGeneralCard(new GeneralCard(General.張遼))
                 .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
@@ -806,7 +806,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard(General.呂布))
+                .withGeneralCard(new GeneralCard(General.張遼))
                 .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
@@ -901,7 +901,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
-                .withGeneralCard(new GeneralCard(General.呂布))
+                .withGeneralCard(new GeneralCard(General.張遼))
                 .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
@@ -961,7 +961,7 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)

@@ -12,7 +12,7 @@
       "nextChoosingPlayerId" : "player-c",
       "assignmentCardIds" : [ "BHK039", "BH2028", "BH3029" ]
     },
-    "message" : "輪到 呂布 選牌"
+    "message" : "輪到 張遼 選牌"
   } ],
   "data" : {
     "seats" : [ {
@@ -39,7 +39,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "QUN002",
+      "generalId" : "WEI004",
       "roleId" : "Rebel",
       "hp" : 4,
       "hand" : {

@@ -6,7 +6,7 @@
       "targetPlayerId" : "player-c",
       "cardId" : "SS6006"
     },
-    "message" : "劉備 拆掉了 呂布 判定區的 樂不思蜀"
+    "message" : "劉備 拆掉了 張遼 判定區的 樂不思蜀"
   } ],
   "data" : {
     "seats" : [ {
@@ -33,7 +33,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "QUN002",
+      "generalId" : "WEI004",
       "roleId" : "Rebel",
       "hp" : 4,
       "hand" : {

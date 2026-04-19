@@ -175,7 +175,7 @@ public class FinishingTest extends AbstractBaseIntegrationTest {
 
         Player playerB = createPlayer("player-b",
                 1,
-                General.呂布,
+                General.張遼,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
                 new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Dodge(BH2028)
