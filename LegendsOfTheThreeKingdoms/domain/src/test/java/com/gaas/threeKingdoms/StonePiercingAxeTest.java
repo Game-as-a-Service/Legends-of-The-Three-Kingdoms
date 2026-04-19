@@ -5,12 +5,16 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.Deck;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -289,6 +293,131 @@ public class StonePiercingAxeTest {
         assertEquals(0, playerB.getHP());
         // 瀕死 behavior 在 stack 上
         assertFalse(game.getTopBehavior().isEmpty(), "DyingAskPeachBehavior should be on the stack");
+    }
+
+    @DisplayName("A 裝備貫石斧 + B 裝備八卦陣 → A 出殺 → 八卦陣成功 → A 收到 AskStonePiercingAxeEffectEvent")
+    @Test
+    public void testEightDiagramTacticSuccess_TriggersStonePiercingAxeAsk() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        // 八卦陣成功判定用：deck 頂放紅色卡
+        game.setDeck(new Deck(List.of(new RedRabbitHorse(BH3029))));
+
+        playerA.getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
+        // 出完殺後 A 還有 2 張可棄（Peach + 裝備），滿足 >= 2
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH4030)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        AskStonePiercingAxeEffectEvent askEvent = events.stream()
+                .filter(e -> e instanceof AskStonePiercingAxeEffectEvent)
+                .map(e -> (AskStonePiercingAxeEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("AskStonePiercingAxeEffectEvent should be emitted when 八卦陣 succeeds"));
+        assertEquals("player-a", askEvent.getAttackerPlayerId());
+        assertEquals("player-b", askEvent.getTargetPlayerId());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("A 裝備貫石斧 + B 裝備八卦陣 → 八卦陣成功 → A 選 DISCARD_TWO → B 強制扣血")
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesDiscard_ForceHit() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        game.setDeck(new Deck(List.of(new RedRabbitHorse(BH3029))));
+
+        playerA.getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH4030), new Peach(BH3029)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        int playerBHpBefore = playerB.getHP();
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        List<DomainEvent> events = game.playerUseStonePiercingAxeEffect(playerA.getId(),
+                AskStonePiercingAxeEffectEvent.Choice.DISCARD_TWO,
+                List.of(BH4030.getCardId(), BH3029.getCardId()));
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof StonePiercingAxeTriggerEvent));
+        assertEquals(playerBHpBefore - 1, playerB.getHP());
+    }
+
+    @DisplayName("A 裝備貫石斧 + B 裝備八卦陣 → 八卦陣成功 → A 選 SKIP → 殺被抵銷")
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesSkip_KillCancelled() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        game.setDeck(new Deck(List.of(new RedRabbitHorse(BH3029))));
+
+        playerA.getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH4030)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        int playerBHpBefore = playerB.getHP();
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        game.playerUseStonePiercingAxeEffect(playerA.getId(),
+                AskStonePiercingAxeEffectEvent.Choice.SKIP, List.of());
+
+        assertEquals(playerBHpBefore, playerB.getHP());
+        assertEquals(0, game.getTopBehavior().size());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("A 裝備貫石斧 + B 裝備八卦陣 → 八卦陣成功 + A 可棄牌數 < 2 → 不觸發貫石斧")
+    @Test
+    public void testEightDiagramTacticSuccess_InsufficientDiscardableCards_NotTriggered() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        game.setDeck(new Deck(List.of(new RedRabbitHorse(BH3029))));
+
+        // A 裝備貫石斧，手牌只有 1 張殺。出殺後手牌 0 張 + 裝備 1 張 = 僅 1 張可棄
+        playerA.getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
+        playerA.getHand().addCardToHand(new Kill(BS8008));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        int playerBHpBefore = playerB.getHP();
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> events = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskStonePiercingAxeEffectEvent));
+        assertEquals(playerBHpBefore, playerB.getHP());
+        assertEquals(0, game.getTopBehavior().size());
+    }
+
+    @DisplayName("A 裝備貫石斧 + B 裝備八卦陣 → 八卦陣失敗 → B 仍用一般閃流程（對照組）")
+    @Test
+    public void testEightDiagramTacticFails_FallsBackToNormalDodgeFlow() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        // 八卦陣失敗判定用：deck 頂放黑色卡
+        game.setDeck(new Deck(List.of(new Dismantle(SS3003))));
+
+        playerA.getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH4030)));
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        playerB.getHand().addCardToHand(new Dodge(BH2028));
+
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> askDodgeEvents = game.playerUseEquipment(playerB.getId(), ES2015.getCardId(), playerB.getId(), EquipmentPlayType.ACTIVE);
+        assertTrue(askDodgeEvents.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+
+        // B 出閃 → 走一般 SPA 觸發路徑
+        List<DomainEvent> dodgeEvents = game.playerPlayCard(playerB.getId(), BH2028.getCardId(), playerA.getId(), PlayType.ACTIVE.getPlayType());
+        assertTrue(dodgeEvents.stream().anyMatch(e -> e instanceof AskStonePiercingAxeEffectEvent));
     }
 
     // Helper

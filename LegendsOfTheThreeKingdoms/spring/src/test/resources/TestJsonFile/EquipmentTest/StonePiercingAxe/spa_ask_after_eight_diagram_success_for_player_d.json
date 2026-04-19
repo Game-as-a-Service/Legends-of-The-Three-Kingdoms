@@ -1,0 +1,75 @@
+{
+  "events" : [ {
+    "event" : "UseEquipmentEffectEvent",
+    "data" : {
+      "drawCardId" : "BH7033",
+      "success" : true
+    },
+    "message" : "發動效果 成功"
+  }, {
+    "event" : "AskStonePiercingAxeEffectEvent",
+    "data" : {
+      "attackerPlayerId" : "player-a",
+      "targetPlayerId" : "player-b"
+    },
+    "message" : "貫石斧效果：是否棄兩張牌強制命中"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 2,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "ED5083", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "ES2015", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : true
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "發動八卦陣效果",
+  "gameId" : "my-id",
+  "playerId" : "player-d"
+}
