@@ -1,0 +1,87 @@
+{
+  "events" : [ {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "cardId" : "BS9009",
+      "playType" : "active"
+    },
+    "message" : "出牌"
+  }, {
+    "event" : "GreenDragonCrescentBladeTriggerEvent",
+    "data" : {
+      "attackerPlayerId" : "player-a",
+      "targetPlayerId" : "player-b",
+      "killCardId" : "BS9009"
+    },
+    "message" : "青龍偃月刀發動"
+  }, {
+    "event" : "AskPlayEquipmentEffectEvent",
+    "data" : {
+      "playerId" : "player-b",
+      "equipmentCardId" : "ES2015",
+      "equipmentCardName" : "八卦陣",
+      "targetPlayerIds" : [ "player-b" ]
+    },
+    "message" : "請問要否要發動裝備卡八卦陣的效果"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "ES5005", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "ES2015", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU001",
+      "roleId" : "Rebel",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "SHU001",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-b",
+      "dyingPlayer" : "",
+      "showKill" : true
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "青龍偃月刀發動",
+  "gameId" : "my-id",
+  "playerId" : "player-c"
+}

@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -153,6 +154,99 @@ public class GreenDragonCrescentBladeTest extends AbstractBaseIntegrationTest {
 
         // Then A 應收到 AskGreenDragonCrescentBladeEffectEvent
         assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/GreenDragonCrescentBlade/gdcb_ask_after_eight_diagram_success_for_%s.json");
+    }
+
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesKill_TargetAskedEquipmentAgain() throws Exception {
+        // Given A 裝備青龍偃月刀、B 裝備八卦陣，八卦陣成功
+        givenPlayerAEquippedGDCBAndPlayerBHasEightDiagramTactic_WithRedDeck();
+
+        // A 出殺 → B 發動八卦陣成功 → A 收到 AskGDCB
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // When A 選 KILL 再出 BS9009
+        mockMvcUtil.useGreenDragonCrescentBladeEffect(gameId, "player-a", "KILL", "BS9009")
+                .andExpect(status().isOk()).andReturn();
+
+        // Then B 應被再問八卦陣（AskPlayEquipmentEffectEvent）
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/GreenDragonCrescentBlade/gdcb_after_eight_diagram_kill_retriggered_for_%s.json");
+    }
+
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesSkip_KillCancelled() throws Exception {
+        // Given A 裝備青龍偃月刀、B 裝備八卦陣，八卦陣成功
+        givenPlayerAEquippedGDCBAndPlayerBHasEightDiagramTactic_WithRedDeck();
+
+        // A 出殺 → B 發動八卦陣成功 → A 收到 AskGDCB
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // When A 選 SKIP 不發動
+        mockMvcUtil.useGreenDragonCrescentBladeEffect(gameId, "player-a", "SKIP", "")
+                .andExpect(status().isOk()).andReturn();
+
+        // Then 殺被抵銷，回合換 A（current round player）
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/GreenDragonCrescentBlade/gdcb_after_eight_diagram_skip_for_%s.json");
+    }
+
+    @Test
+    public void testEightDiagramTacticSuccess_AttackerChoosesKill_FullFlowToDamage() throws Exception {
+        // Given A 裝備青龍偃月刀、B 裝備八卦陣
+        // Flow: 1st 八卦陣 成功 → A 選 KILL → B 選 SKIP 八卦陣 → B 沒閃 → B 扣血
+        givenPlayerAEquippedGDCBAndPlayerBHasEightDiagramTactic_WithRedDeck();
+
+        // A 出殺 → 1st 八卦陣 success（抽紅） → A 收到 AskGDCB
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.ACTIVE)
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // A 選 KILL 再出 BS9009 → B 被再問八卦陣
+        mockMvcUtil.useGreenDragonCrescentBladeEffect(gameId, "player-a", "KILL", "BS9009")
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // B 選 SKIP 不發動八卦陣 → 被問出閃
+        mockMvcUtil.useEquipment(gameId, "player-b", "player-b", "ES2015", EquipmentPlayType.SKIP)
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // B 沒閃，SKIP → 應扣血
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+
+        // Then B HP = 3
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/GreenDragonCrescentBlade/gdcb_after_eight_diagram_full_flow_damage_for_%s.json");
+    }
+
+    private void givenPlayerAEquippedGDCBAndPlayerBHasEightDiagramTactic_WithRedDeck() {
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Kill(BS8008), new Kill(BS9009));
+        playerA.getEquipment().setWeapon(new GreenDragonCrescentBladeCard(ES5005));
+
+        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR);
+        playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = initGame(gameId, players, playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new RedRabbitHorse(BH3029), new RedRabbitHorse(BH4030)));
+        game.setDeck(deck);
+        repository.save(game);
     }
 
     private void givenPlayerAEquippedGreenDragonCrescentBlade() {
