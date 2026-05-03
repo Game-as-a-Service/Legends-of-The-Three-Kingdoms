@@ -357,6 +357,11 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "WaitingJianXiongResponseBehavior" -> new WaitingJianXiongResponseBehavior(
+                    game,
+                    game.getPlayer(behaviorPlayerId),
+                    PlayCard.findById(cardId)
+            );
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);

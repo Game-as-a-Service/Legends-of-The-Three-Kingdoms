@@ -43,4 +43,19 @@ public class Graveyard {
     public int size(){
         return graveYardDeck.size();
     }
+
+    public boolean contains(String cardId) {
+        return graveYardDeck.stream().anyMatch(card -> card.getId().equals(cardId));
+    }
+
+    public java.util.Optional<HandCard> removeCard(String cardId) {
+        for (int i = graveYardDeck.size() - 1; i >= 0; i--) {
+            HandCard card = graveYardDeck.get(i);
+            if (card.getId().equals(cardId)) {
+                graveYardDeck.remove(i);
+                return java.util.Optional.of(card);
+            }
+        }
+        return java.util.Optional.empty();
+    }
 }

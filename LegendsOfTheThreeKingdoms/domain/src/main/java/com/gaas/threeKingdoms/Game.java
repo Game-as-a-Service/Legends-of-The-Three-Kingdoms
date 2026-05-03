@@ -30,6 +30,8 @@ import com.gaas.threeKingdoms.rolecard.RoleCard;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.RoundPhase;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.context.DamageContext;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
 import lombok.AllArgsConstructor;
 
@@ -642,6 +644,15 @@ public class Game {
             }
             behavior.ifPresent(b -> b.setIsOneRound(true));
             events.add(playerDamagedEvent);
+
+            // 武將技：受傷後觸發
+            Player attackerPlayer = (attackerPlayerId == null || attackerPlayerId.isEmpty())
+                    ? null
+                    : players.stream().filter(p -> attackerPlayerId.equals(p.getId())).findFirst().orElse(null);
+            int damagePoints = originalHp - damagedPlayer.getHP();
+            DamageContext damageContext = new DamageContext(damagedPlayer, attackerPlayer, card, damagePoints);
+            events.addAll(SkillEngine.onDamaged(this, damageContext));
+
             return events;
         } else {
             PlayerDyingEvent playerDyingEvent = createPlayerDyingEvent(damagedPlayer);
@@ -839,6 +850,20 @@ public class Game {
         }
         WaitingGreenDragonCrescentBladeResponseBehavior gdcbBehavior = (WaitingGreenDragonCrescentBladeResponseBehavior) behavior;
         List<DomainEvent> events = gdcbBehavior.resolveChoice(playerId, choice, killCardId);
+        removeCompletedBehaviors();
+        return events;
+    }
+
+    public List<DomainEvent> playerUseJianXiongEffect(String playerId, AskJianXiongEffectEvent.Choice choice) {
+        if (topBehavior.isEmpty()) {
+            throw new IllegalStateException("No active behavior waiting for JianXiong effect response");
+        }
+        Behavior behavior = topBehavior.peek();
+        if (!(behavior instanceof WaitingJianXiongResponseBehavior)) {
+            throw new IllegalStateException("Current behavior is not WaitingJianXiongResponseBehavior");
+        }
+        WaitingJianXiongResponseBehavior jxBehavior = (WaitingJianXiongResponseBehavior) behavior;
+        List<DomainEvent> events = jxBehavior.resolveChoice(playerId, choice);
         removeCompletedBehaviors();
         return events;
     }
