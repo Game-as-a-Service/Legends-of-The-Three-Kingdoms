@@ -63,4 +63,33 @@ public class UseJianXiongEffectPresenter implements UseJianXiongEffectUseCase.Us
             this.playerId = playerId;
         }
     }
+
+    public static class AskJianXiongEffectViewModel extends ViewModel<AskJianXiongEffectDataViewModel> {
+        public AskJianXiongEffectViewModel(AskJianXiongEffectDataViewModel data) {
+            super("AskJianXiongEffectEvent", data, "奸雄：是否獲得造成傷害的牌");
+        }
+    }
+
+    public static class JianXiongEffectViewModel extends ViewModel<JianXiongEffectDataViewModel> {
+        public JianXiongEffectViewModel(JianXiongEffectDataViewModel data) {
+            super("JianXiongEffectEvent", data, "奸雄發動");
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AskJianXiongEffectDataViewModel {
+        private String playerId;
+        private String sourceCardId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class JianXiongEffectDataViewModel {
+        private String playerId;
+        private String sourceCardId;
+        private boolean taken;
+    }
 }

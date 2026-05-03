@@ -187,4 +187,52 @@ public class JianXiongSkillTest {
         assertFalse(events.stream().anyMatch(e -> e instanceof AskJianXiongEffectEvent));
         assertTrue(game.getTopBehavior().isEmpty());
     }
+
+    @DisplayName("""
+            Given
+            B 為曹操、HP=1
+            A 對 B 出殺
+
+            When
+            B 不出閃 → HP→0 進入 dying
+
+            Then
+            不觸發奸雄 ask（dying flow 跟奸雄不互鎖）
+            """)
+    @Test
+    public void givenCaoCaoDyingFromKill_NoJianXiongTrigger() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        game.getPlayer("player-b").getBloodCard().setHp(1);
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.playerPlayCard("player-b", "", "player-a", "skip");
+
+        assertEquals(0, game.getPlayer("player-b").getBloodCard().getHp());
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskJianXiongEffectEvent),
+                "JianXiong should not trigger during dying");
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操，受到殺造成的傷害 → AskJianXiongEffectEvent
+            sourceCard 在 ACCEPT 之前被其他效果從 graveyard 移走
+
+            When
+            B 選 ACCEPT
+
+            Then
+            throws IllegalStateException（防禦既有 race condition）
+            """)
+    @Test
+    public void givenSourceCardRemovedFromGraveyard_AcceptThrows() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerPlayCard("player-b", "", "player-a", "skip");
+
+        // Simulate another effect taking the source card from graveyard before B responds
+        game.getGraveyard().removeCard(BS8008.getCardId());
+
+        assertThrows(IllegalStateException.class,
+                () -> game.playerUseJianXiongEffect("player-b", AskJianXiongEffectEvent.Choice.ACCEPT));
+    }
 }

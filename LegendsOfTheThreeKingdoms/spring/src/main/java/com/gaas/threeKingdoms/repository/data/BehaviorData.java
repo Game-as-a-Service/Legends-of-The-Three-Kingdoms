@@ -360,7 +360,7 @@ public class BehaviorData {
             case "WaitingJianXiongResponseBehavior" -> new WaitingJianXiongResponseBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
-                    PlayCard.findById(cardId)
+                    cardId
             );
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };

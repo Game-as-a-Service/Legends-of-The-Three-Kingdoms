@@ -1,9 +1,11 @@
 package com.gaas.threeKingdoms.skill.wei;
 
 import com.gaas.threeKingdoms.Game;
+import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.WaitingJianXiongResponseBehavior;
 import com.gaas.threeKingdoms.events.AskJianXiongEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.player.Player;
@@ -30,7 +32,7 @@ import java.util.List;
  */
 public class JianXiongSkill implements OnDamagedSkill {
 
-    public static final String GENERAL_ID = "WEI001";
+    public static final String GENERAL_ID = General.曹操.getGeneralId();
     public static final String SKILL_NAME = "奸雄";
 
     @Override
@@ -61,10 +63,18 @@ public class JianXiongSkill implements OnDamagedSkill {
             return List.of();
         }
 
+        // 守門：v1 只支援 NormalActiveKillBehavior（含子類 ViperSpearKill / HeavenlyDoubleHalberd）
+        // 上的單體 Kill 傷害觸發。對 AOE polling behavior（BarbarianInvasion / ArrowBarrage）
+        // 或 Duel 等 caller，雖然 v1 因 sourceCard 過濾而不會走到這裡，但加守門防止未來
+        // 加新 OnDamagedSkill 時誤把 polling 中的 behavior pop 掉。
+        if (!(game.peekTopBehavior() instanceof NormalActiveKillBehavior)) {
+            return List.of();
+        }
+
         // 把 setIsOneRound(true) 的 kill behavior 先彈出，讓奸雄 behavior 成為 stack 頂端
         game.removeCompletedBehaviors();
 
-        WaitingJianXiongResponseBehavior waiting = new WaitingJianXiongResponseBehavior(game, damaged, sourceCard);
+        WaitingJianXiongResponseBehavior waiting = new WaitingJianXiongResponseBehavior(game, damaged, sourceCard.getId());
         game.updateTopBehavior(waiting);
         game.getCurrentRound().setActivePlayer(damaged);
 

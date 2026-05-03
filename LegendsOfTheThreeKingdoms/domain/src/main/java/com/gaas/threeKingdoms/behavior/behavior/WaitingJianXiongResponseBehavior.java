@@ -16,18 +16,22 @@ import java.util.Optional;
 
 /**
  * 奸雄等待回應 — 受傷者可選擇 ACCEPT（取得造成傷害的牌）或 SKIP。
- * behaviorPlayer = 受傷者；sourceCard 為造成傷害的牌。
+ * behaviorPlayer = 受傷者；sourceCardId 為造成傷害的牌的 ID（牌物件在 ACCEPT 時從 graveyard 取）。
+ *
+ * 注意：故意只儲存 cardId 而不存 HandCard 物件 — 因為 VirtualKill（如丈八蛇矛）
+ * 不在 PlayCard.CARD_FACTORY_MAP 中，reload 時 PlayCard.findById 會回 null。
+ * 所有實際的牌操作（移到手牌）都在 resolveChoice 時透過 graveyard.removeCard(cardId) 完成。
  */
 public class WaitingJianXiongResponseBehavior extends Behavior {
 
-    public WaitingJianXiongResponseBehavior(Game game, Player damagedPlayer, HandCard sourceCard) {
+    public WaitingJianXiongResponseBehavior(Game game, Player damagedPlayer, String sourceCardId) {
         super(game,
                 damagedPlayer,
                 List.of(damagedPlayer.getId()),
                 damagedPlayer,
-                sourceCard.getId(),
+                sourceCardId,
                 PlayType.SYSTEM_INTERNAL.getPlayType(),
-                sourceCard,
+                null,
                 false,
                 false,
                 true);

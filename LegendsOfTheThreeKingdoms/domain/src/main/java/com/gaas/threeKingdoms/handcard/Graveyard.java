@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 
 @Data
@@ -48,14 +49,14 @@ public class Graveyard {
         return graveYardDeck.stream().anyMatch(card -> card.getId().equals(cardId));
     }
 
-    public java.util.Optional<HandCard> removeCard(String cardId) {
+    public Optional<HandCard> removeCard(String cardId) {
         for (int i = graveYardDeck.size() - 1; i >= 0; i--) {
             HandCard card = graveYardDeck.get(i);
             if (card.getId().equals(cardId)) {
                 graveYardDeck.remove(i);
-                return java.util.Optional.of(card);
+                return Optional.of(card);
             }
         }
-        return java.util.Optional.empty();
+        return Optional.empty();
     }
 }

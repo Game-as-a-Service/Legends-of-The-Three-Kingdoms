@@ -283,21 +283,21 @@ public class DomainEventToViewModelMapper {
 
         eventToViewModelMappers.put(AskJianXiongEffectEvent.class, event -> {
             AskJianXiongEffectEvent askEvent = (AskJianXiongEffectEvent) event;
-            UseEquipmentEffectPresenter.AskJianXiongEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskJianXiongEffectDataViewModel(
+            UseJianXiongEffectPresenter.AskJianXiongEffectDataViewModel dataViewModel = new UseJianXiongEffectPresenter.AskJianXiongEffectDataViewModel(
                     askEvent.getPlayerId(),
                     askEvent.getSourceCardId()
             );
-            return new UseEquipmentEffectPresenter.AskJianXiongEffectViewModel(dataViewModel);
+            return new UseJianXiongEffectPresenter.AskJianXiongEffectViewModel(dataViewModel);
         });
 
         eventToViewModelMappers.put(JianXiongEffectEvent.class, event -> {
             JianXiongEffectEvent jxEvent = (JianXiongEffectEvent) event;
-            UseEquipmentEffectPresenter.JianXiongEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.JianXiongEffectDataViewModel(
+            UseJianXiongEffectPresenter.JianXiongEffectDataViewModel dataViewModel = new UseJianXiongEffectPresenter.JianXiongEffectDataViewModel(
                     jxEvent.getPlayerId(),
                     jxEvent.getSourceCardId(),
                     jxEvent.isTaken()
             );
-            return new UseEquipmentEffectPresenter.JianXiongEffectViewModel(dataViewModel);
+            return new UseJianXiongEffectPresenter.JianXiongEffectViewModel(dataViewModel);
         });
 
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
