@@ -1,10 +1,14 @@
 package com.gaas.threeKingdoms;
 
+import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.WaitingJianXiongResponseBehavior;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.AskJianXiongEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.JianXiongEffectEvent;
+import com.gaas.threeKingdoms.skill.context.DamageContext;
+import com.gaas.threeKingdoms.skill.wei.JianXiongSkill;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
@@ -198,6 +202,7 @@ public class JianXiongSkillTest {
 
             Then
             不觸發奸雄 ask（dying flow 跟奸雄不互鎖）
+            stack 頂為 DyingAskPeachBehavior（dying flow 正常進）
             """)
     @Test
     public void givenCaoCaoDyingFromKill_NoJianXiongTrigger() {
@@ -210,6 +215,9 @@ public class JianXiongSkillTest {
         assertEquals(0, game.getPlayer("player-b").getBloodCard().getHp());
         assertFalse(events.stream().anyMatch(e -> e instanceof AskJianXiongEffectEvent),
                 "JianXiong should not trigger during dying");
+        assertFalse(game.getTopBehavior().isEmpty(), "dying flow should keep behavior stack non-empty");
+        assertTrue(game.getTopBehavior().peek() instanceof DyingAskPeachBehavior,
+                "expected DyingAskPeachBehavior on top, JianXiong should not have inserted itself");
     }
 
     @DisplayName("""
@@ -229,10 +237,66 @@ public class JianXiongSkillTest {
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
         game.playerPlayCard("player-b", "", "player-a", "skip");
 
-        // Simulate another effect taking the source card from graveyard before B responds
-        game.getGraveyard().removeCard(BS8008.getCardId());
+        // Setup precondition: source card 應該在 graveyard
+        assertTrue(game.getGraveyard().removeCard(BS8008.getCardId()).isPresent(),
+                "setup precondition: source card should be in graveyard before manual removal");
 
         assertThrows(IllegalStateException.class,
                 () -> game.playerUseJianXiongEffect("player-b", AskJianXiongEffectEvent.Choice.ACCEPT));
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操，受到殺造成的傷害 → 觸發奸雄
+
+            Then
+            事件中只有 1 個 AskJianXiongEffectEvent（鎖定 v1 spec：一次 DamageEvent 只觸發 1 次）
+            """)
+    @Test
+    public void givenSingleDamageEvent_OnlyOneAskJianXiongEffectEventEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.playerPlayCard("player-b", "", "player-a", "skip");
+
+        long count = events.stream().filter(e -> e instanceof AskJianXiongEffectEvent).count();
+        assertEquals(1, count, "JianXiong should trigger exactly once per DamageEvent");
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操（WEI001）
+            stack 頂為非 NormalActiveKillBehavior（用一個 anonymous Behavior 模擬）
+            graveyard 含一張 Kill
+
+            When
+            直接呼叫 JianXiongSkill.onDamaged with Kill source
+
+            Then
+            守門路徑生效：返回空 events，stack 不被改動
+            （這個情境在 v1 不會自然發生 — sourceCard 是 Kill 而 top 不是 NormalActiveKill —
+            但守門是針對未來新加的 OnDamagedSkill 防禦；此 test 鎖定守門行為）
+            """)
+    @Test
+    public void givenJianXiongSkill_NonNormalActiveKillBehaviorOnStack_NoTrigger() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player caoCao = game.getPlayer("player-b");
+        Player attacker = game.getPlayer("player-a");
+
+        // Push a non-NormalActiveKillBehavior to stack
+        Behavior fakeBehavior = new Behavior(game, caoCao, List.of("player-b"), caoCao,
+                "", "active", null, true, false, false);
+        game.updateTopBehavior(fakeBehavior);
+
+        // Add a Kill to graveyard so contains() check passes
+        Kill kill = new Kill(BS8008);
+        game.getGraveyard().add(kill);
+
+        // Direct invoke: stack 頂為 fakeBehavior（非 NormalActiveKillBehavior），sourceCard 是 Kill
+        DamageContext ctx = new DamageContext(caoCao, attacker, kill, 1);
+        List<DomainEvent> events = new JianXiongSkill().onDamaged(game, ctx);
+
+        assertTrue(events.isEmpty(), "JianXiong should not trigger when top behavior is not NormalActiveKillBehavior");
+        assertSame(fakeBehavior, game.getTopBehavior().peek(),
+                "fake behavior should remain on stack untouched (not popped, no WaitingJX pushed)");
     }
 }
