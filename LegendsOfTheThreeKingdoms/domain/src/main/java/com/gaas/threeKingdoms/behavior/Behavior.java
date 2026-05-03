@@ -61,6 +61,19 @@ public class Behavior {
         return null;
     }
 
+    /**
+     * hook: 被動 ViperSpear 虛擬殺回應。
+     * 由 BarbarianInvasion / Duel / BorrowedSword 等 ask-Kill behavior override。
+     * 棄牌已在 Game 層處理；implementation 只需推進 reaction 狀態。
+     * <p>
+     * targetPlayerId 在 BorrowedSword 場景下為玩家指定的攻擊目標；
+     * BarbarianInvasion / Duel 場景下可為 null（target 由 behavior state 決定）。
+     */
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
+        throw new UnsupportedOperationException(
+                getClass().getSimpleName() + " does not accept ViperSpear virtual kill response");
+    }
+
     public List<DomainEvent> responseToPlayerAction(String playerId, String targetPlayerId, String cardId, String playType) {
         throwExceptionWhenPlayerIsNotInReactionPlayers(playerId);
         return doResponseToPlayerAction(playerId, targetPlayerId, cardId, playType);

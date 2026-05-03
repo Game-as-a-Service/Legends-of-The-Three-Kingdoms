@@ -10,6 +10,11 @@ import java.util.List;
 @NoArgsConstructor
 public class UseViperSpearKillRequest {
     private String playerId;
+    /**
+     * 攻擊目標。
+     * - Active（出牌階段）：必填
+     * - Passive 回應：BarbarianInvasion / Duel 不需要；BorrowedSword 必填（指定攻擊目標）
+     */
     private String targetPlayerId;
     private List<String> discardCardIds;
 

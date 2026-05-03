@@ -10,6 +10,9 @@ import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -150,6 +153,103 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk()).andReturn();
 
         assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/EighteenSpanViperSpear/viper_spear_kill_dying_for_%s.json");
+    }
+
+    @Test
+    public void testPassiveViperSpear_RespondingBarbarianInvasion() throws Exception {
+        // A 出南蠻入侵；B 裝丈八蛇矛 + 兩張手牌
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new BarbarianInvasion(SS7007));
+        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR,
+                new Peach(BH3029), new Peach(BH4030));
+        playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL,
+                new Kill(BS8008));
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER,
+                new Kill(BS9009));
+
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Kill(BS0010), new Peach(BH6032), new Dodge(BH7033), new Kill(BS7020)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // A 出南蠻 → B 第一個被詢問
+        mockMvcUtil.playCard(gameId, "player-a", "", SS7007.getCardId(), PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // B 用丈八蛇矛棄兩張當殺回應
+        mockMvcUtil.useViperSpearKill(gameId, "player-b", null,
+                        List.of(BH3029.getCardId(), BH4030.getCardId()))
+                .andExpect(status().isOk()).andReturn();
+
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/EighteenSpanViperSpear/passive_barbarian_for_%s.json");
+    }
+
+    @Test
+    public void testPassiveViperSpear_RespondingDuel() throws Exception {
+        // A 對 B 出決鬥；B 裝丈八蛇矛 + 兩張手牌
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Duel(SSA001), new Kill(BS8008));
+        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR,
+                new Peach(BH3029), new Peach(BH4030));
+        playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Kill(BS0010), new Peach(BH6032), new Dodge(BH7033), new Kill(BS7020)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // A 對 B 出決鬥 → B 第一個被詢問出殺
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", SSA001.getCardId(), PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // B 用丈八蛇矛棄兩張當殺回應 → A 換被詢問出殺
+        mockMvcUtil.useViperSpearKill(gameId, "player-b", null,
+                        List.of(BH3029.getCardId(), BH4030.getCardId()))
+                .andExpect(status().isOk()).andReturn();
+
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/EighteenSpanViperSpear/passive_duel_for_%s.json");
+    }
+
+    @Test
+    public void testPassiveViperSpear_RespondingBorrowedSword() throws Exception {
+        // A 出借刀殺人，借 B 攻擊 C；B 裝丈八蛇矛 + 兩張手牌
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new BorrowedSword(SCK065));
+        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR,
+                new Peach(BH3029), new Peach(BH4030));
+        playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Kill(BS0010), new Peach(BH6032), new Dodge(BH7033), new Kill(BS7020)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // A 出借刀殺人 → 指定 B 借
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", SCK065.getCardId(), PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // A 完成借刀效果 → B 攻擊 C
+        mockMvcUtil.useBorrowedSwordEffect(gameId, "player-a", "player-b", "player-c")
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // B 用丈八蛇矛棄兩張當殺攻擊 C → C 被詢問出閃
+        mockMvcUtil.useViperSpearKill(gameId, "player-b", "player-c",
+                        List.of(BH3029.getCardId(), BH4030.getCardId()))
+                .andExpect(status().isOk()).andReturn();
+
+        assertAllPlayerJson("src/test/resources/TestJsonFile/EquipmentTest/EighteenSpanViperSpear/passive_borrowed_sword_for_%s.json");
     }
 
     @Test

@@ -6,9 +6,11 @@ import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.DuelEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
+import com.gaas.threeKingdoms.events.ViperSpearKillTriggerEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Stage;
 
@@ -82,40 +84,9 @@ public class DuelBehavior extends Behavior {
             damagedEvent.add(game.getGameStatusEvent("扣血"));
             return damagedEvent;
         } else if (isKillCard(cardId)) {
-            List<DomainEvent> events = new ArrayList<>();
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
-
-            // 當前反應者出完殺後，就需要換另外一個人出
-            currentReactionPlayer = game.getPlayer(otherPlayerId);
-
-            game.getCurrentRound().setActivePlayer(currentReactionPlayer);
-            events.add(new PlayCardEvent("出牌", playerId, otherPlayerId, cardId, playType));
-
-            String gameMessage = "";
-            if (!currentReactionPlayer.getHand().hasTypeInHand(Kill.class)) {
-                int originalHp = currentReactionPlayer.getHP();
-                List<DomainEvent> damagedEvents = game.getDamagedEvent(
-                        otherPlayerId,
-                        playerId,
-                        "",
-                        card,
-                        PlayType.SKIP.getPlayType(),
-                        originalHp,
-                        currentReactionPlayer,
-                        game.getCurrentRound(),
-                        Optional.of(this));
-                events.addAll(damagedEvents);
-                isTargetPlayerNeedToResponse = false;
-                isOneRound = true;
-                System.out.println("1 currentReactionPlayer "+currentReactionPlayer.getId());
-                gameMessage = "扣血";
-            } else {
-                AskKillEvent askKillEvent = new AskKillEvent(currentReactionPlayer.getId());
-                events.add(askKillEvent);
-                gameMessage = playerId + "已出殺";
-            }
-            events.add(game.getGameStatusEvent(gameMessage));
-            return events;
+            return swapToOtherDuelist(playerId, otherPlayerId,
+                    new PlayCardEvent("出牌", playerId, otherPlayerId, cardId, playType));
         } else {
             //TODO:怕有其他效果或殺的其他case
         }
@@ -123,12 +94,58 @@ public class DuelBehavior extends Behavior {
     }
 
     @Override
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
+        // 棄牌已在 Game.playerUseViperSpearKill() 處理
+        // Duel 不使用 targetPlayerId — 對手由 reactionPlayers 推導
+        String otherPlayerId = reactionPlayers.stream().filter(id -> !id.equals(playerId)).findFirst().get();
+        return swapToOtherDuelist(playerId, otherPlayerId,
+                new ViperSpearKillTriggerEvent(playerId, otherPlayerId, discardedCardIds));
+    }
+
+    private List<DomainEvent> swapToOtherDuelist(String playerId, String otherPlayerId, DomainEvent killEvent) {
+        List<DomainEvent> events = new ArrayList<>();
+        // 換另一位 duelist 為 currentReactionPlayer
+        currentReactionPlayer = game.getPlayer(otherPlayerId);
+        game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+        events.add(killEvent);
+
+        String gameMessage;
+        if (!canRespondWithKill(currentReactionPlayer)) {
+            int originalHp = currentReactionPlayer.getHP();
+            List<DomainEvent> damagedEvents = game.getDamagedEvent(
+                    otherPlayerId,
+                    playerId,
+                    "",
+                    card,
+                    PlayType.SKIP.getPlayType(),
+                    originalHp,
+                    currentReactionPlayer,
+                    game.getCurrentRound(),
+                    Optional.of(this));
+            events.addAll(damagedEvents);
+            isTargetPlayerNeedToResponse = false;
+            isOneRound = true;
+            gameMessage = "扣血";
+        } else {
+            events.add(new AskKillEvent(currentReactionPlayer.getId()));
+            gameMessage = playerId + "已出殺";
+        }
+        events.add(game.getGameStatusEvent(gameMessage));
+        return events;
+    }
+
+    private boolean canRespondWithKill(Player player) {
+        return player.getHand().hasTypeInHand(Kill.class)
+                || EighteenSpanViperSpearCard.canUseAsKill(player);
+    }
+
+    @Override
     public List<DomainEvent> doBehaviorAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentReactionPlayerId = currentReactionPlayer.getId();
         events.add(new DuelEvent(behaviorPlayer.getId(), currentReactionPlayerId, cardId));
-        // 判斷 currentReactionPlayer 是否有殺
-        if (!currentReactionPlayer.getHand().hasTypeInHand(Kill.class)) {
+        // 判斷 currentReactionPlayer 是否有殺（或可用丈八蛇矛當殺）
+        if (!canRespondWithKill(currentReactionPlayer)) {
             int originalHp = currentReactionPlayer.getHP();
             List<DomainEvent> damagedEvents = game.getDamagedEvent(
                     currentReactionPlayerId,

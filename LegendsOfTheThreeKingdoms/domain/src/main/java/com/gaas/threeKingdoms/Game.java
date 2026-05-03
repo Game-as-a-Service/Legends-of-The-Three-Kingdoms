@@ -859,37 +859,47 @@ public class Game {
 
     public List<DomainEvent> playerUseViperSpearKill(String playerId, String targetPlayerId, List<String> discardCardIds) {
         Player attacker = getPlayer(playerId);
-        Player target = getPlayer(targetPlayerId);
 
-        // 驗證：玩家是當前回合玩家且 activePlayer
+        // 驗證：玩家是當前 activePlayer（active = 自己回合; passive = 被詢問者）
         checkIsCurrentRoundValid(playerId);
-
-        // 驗證：目前沒有等待中的 behavior（Phase 1 只支援主動出殺）
-        if (!topBehavior.isEmpty()) {
-            throw new IllegalStateException("Cannot use ViperSpear kill while another behavior is pending (passive use not supported yet)");
-        }
 
         // 驗證：裝備丈八蛇矛
         if (!(attacker.getEquipmentWeaponCard() instanceof EighteenSpanViperSpearCard)) {
             throw new IllegalStateException("Player is not equipped with EighteenSpanViperSpear");
         }
 
-        // 驗證：exactly 2 cardIds
+        validateViperSpearDiscardCardIds(attacker, discardCardIds);
+
+        // 分流：top behavior 決定是 active 還是 passive
+        if (topBehavior.isEmpty()) {
+            return playerUseViperSpearKillActive(attacker, targetPlayerId, discardCardIds);
+        }
+        Behavior top = topBehavior.peek();
+        if (top instanceof BarbarianInvasionBehavior
+                || top instanceof DuelBehavior
+                || top instanceof BorrowedSwordBehavior) {
+            return playerUseViperSpearKillPassive(attacker, targetPlayerId, discardCardIds, top);
+        }
+        throw new IllegalStateException(
+                "Cannot use ViperSpear kill while behavior=" + top.getClass().getSimpleName() + " is pending");
+    }
+
+    private void validateViperSpearDiscardCardIds(Player attacker, List<String> discardCardIds) {
         if (discardCardIds == null || discardCardIds.size() != 2) {
             throw new IllegalArgumentException("ViperSpear kill requires exactly 2 discard cardIds");
         }
-
-        // 驗證：兩張 cardIds 都在攻擊者手牌
         for (String discardCardId : discardCardIds) {
             if (attacker.getHand().getCards().stream().noneMatch(c -> c.getId().equals(discardCardId))) {
                 throw new IllegalArgumentException("Attacker does not have card in hand: " + discardCardId);
             }
         }
-
-        // 驗證：兩張 cardIds 不重複
         if (discardCardIds.get(0).equals(discardCardIds.get(1))) {
             throw new IllegalArgumentException("Cannot discard the same card twice");
         }
+    }
+
+    private List<DomainEvent> playerUseViperSpearKillActive(Player attacker, String targetPlayerId, List<String> discardCardIds) {
+        Player target = getPlayer(targetPlayerId);
 
         // 驗證：目標在攻擊範圍
         if (!isInAttackRange(attacker, target)) {
@@ -920,6 +930,20 @@ public class Game {
         updateTopBehavior(behavior);
 
         List<DomainEvent> events = behavior.playerAction();
+        removeCompletedBehaviors();
+        return events;
+    }
+
+    private List<DomainEvent> playerUseViperSpearKillPassive(Player attacker, String targetPlayerId, List<String> discardCardIds, Behavior top) {
+        // 棄兩張手牌到墓地（被動使用不計入殺次數限制 — 這不是出牌階段的殺）
+        for (String discardCardId : discardCardIds) {
+            HandCard discardedCard = attacker.playCard(discardCardId);
+            graveyard.add(discardedCard);
+        }
+
+        // 交給對應 behavior 處理：advance reaction state / push ViperSpearKillBehavior（BorrowedSword）
+        VirtualKill virtualKill = new VirtualKill();
+        List<DomainEvent> events = top.acceptVirtualKillResponse(attacker.getId(), targetPlayerId, virtualKill, discardCardIds);
         removeCompletedBehaviors();
         return events;
     }
@@ -1050,8 +1074,10 @@ public class Game {
                 return events;
             }
 
-            //判斷B有沒有殺，若玩家B沒出殺，則玩家A取得玩家B當前的武器
-            if (borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)) {
+            //判斷B有沒有殺（或可用丈八蛇矛當殺）；都沒有 → 玩家A取得玩家B當前的武器
+            boolean noKillInHand = borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill);
+            boolean canUseViperSpear = EighteenSpanViperSpearCard.canUseAsKill(borrowedPlayer);
+            if (noKillInHand && !canUseViperSpear) {
                 List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(borrowedPlayerId, currentPlayerId, "",  PlayType.SKIP.getPlayType());
                 removeCompletedBehaviors();
                 return acceptedEvent;

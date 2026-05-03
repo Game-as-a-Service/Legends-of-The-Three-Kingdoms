@@ -12,6 +12,9 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -237,6 +240,128 @@ public class EighteenSpanViperSpearTest {
         assertEquals(0, playerB.getHP());
         // DyingAskPeachBehavior on stack
         assertFalse(game.getTopBehavior().isEmpty());
+    }
+
+    @DisplayName("被南蠻入侵時，B 裝備丈八蛇矛 → 棄兩張當殺回應 → 推進至下一位被詢問者")
+    @Test
+    public void testPassiveViperSpear_RespondingBarbarianInvasion_NextPlayerAsked() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+
+        playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        playerB.getHand().addCardToHand(asList(new Peach(BH3029), new Dodge(BH2028)));
+
+        // A 出南蠻入侵 — 由 player-a 開始所以 player-b 是第一個被詢問
+        playerA.getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        game.playerPlayCard(playerA.getId(), SS7007.getCardId(), "", PlayType.ACTIVE.getPlayType());
+
+        // B 是第一個被詢問者
+        assertEquals("player-b", game.getActivePlayer().getId());
+
+        // B 用丈八蛇矛棄兩張當殺
+        int bHandSizeBefore = playerB.getHandSize();
+        List<DomainEvent> events = game.playerUseViperSpearKill(
+                playerB.getId(), null,
+                List.of(BH3029.getCardId(), BH2028.getCardId()));
+
+        // ViperSpearKillTriggerEvent 應被觸發
+        ViperSpearKillTriggerEvent triggerEvent = events.stream()
+                .filter(e -> e instanceof ViperSpearKillTriggerEvent)
+                .map(e -> (ViperSpearKillTriggerEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("ViperSpearKillTriggerEvent should be emitted"));
+        assertEquals("player-b", triggerEvent.getAttackerPlayerId());
+        assertEquals(List.of(BH3029.getCardId(), BH2028.getCardId()), triggerEvent.getDiscardedCardIds());
+
+        // B 手牌 -2 / 未受傷
+        assertEquals(bHandSizeBefore - 2, playerB.getHandSize());
+        assertEquals(4, playerB.getHP());
+
+        // 下一個被詢問者 C 收到 AskKillEvent
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskKillEvent
+                && ((AskKillEvent) e).getPlayerId().equals("player-c")));
+        assertEquals("player-c", game.getActivePlayer().getId());
+    }
+
+    @DisplayName("被決鬥時，B 裝備丈八蛇矛 → 棄兩張當殺回應 → 換 A 被詢問出殺")
+    @Test
+    public void testPassiveViperSpear_RespondingDuel_OpponentAsked() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        playerA.getHand().addCardToHand(asList(new Duel(SSA001), new Kill(BS8008)));
+        playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        playerB.getHand().addCardToHand(asList(new Peach(BH3029), new Peach(BH4030)));
+
+        // A 對 B 出決鬥 — B 是第一個被詢問出殺
+        game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        assertEquals("player-b", game.getActivePlayer().getId());
+
+        // B 用丈八蛇矛棄兩張當殺回應
+        List<DomainEvent> events = game.playerUseViperSpearKill(
+                playerB.getId(), null,
+                List.of(BH3029.getCardId(), BH4030.getCardId()));
+
+        ViperSpearKillTriggerEvent triggerEvent = events.stream()
+                .filter(e -> e instanceof ViperSpearKillTriggerEvent)
+                .map(e -> (ViperSpearKillTriggerEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("ViperSpearKillTriggerEvent should be emitted"));
+        assertEquals("player-b", triggerEvent.getAttackerPlayerId());
+        assertEquals("player-a", triggerEvent.getTargetPlayerId());
+
+        // 換 A 被詢問出殺（A 手牌有殺）
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskKillEvent
+                && ((AskKillEvent) e).getPlayerId().equals("player-a")));
+        assertEquals("player-a", game.getActivePlayer().getId());
+        // 雙方都未扣血
+        assertEquals(4, playerA.getHP());
+        assertEquals(4, playerB.getHP());
+    }
+
+    @DisplayName("被借刀殺人時，B 裝備丈八蛇矛 → 棄兩張當殺攻擊 C → C 被詢問出閃")
+    @Test
+    public void testPassiveViperSpear_RespondingBorrowedSword_TargetAskedDodge() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+
+        // B 必須裝備武器才能被借刀（借刀規則）— 這裡用丈八蛇矛
+        playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        playerB.getHand().addCardToHand(asList(new Peach(BH3029), new Peach(BH4030)));
+        playerA.getHand().addCardToHand(new BorrowedSword(SCK065));
+
+        // A 出借刀殺人 → 選 B 借、C 攻擊
+        game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
+
+        assertEquals("player-b", game.getActivePlayer().getId());
+
+        // B 用丈八蛇矛棄兩張當殺攻擊 C
+        int bHandSizeBefore = playerB.getHandSize();
+        List<DomainEvent> events = game.playerUseViperSpearKill(
+                playerB.getId(), playerC.getId(),
+                List.of(BH3029.getCardId(), BH4030.getCardId()));
+
+        ViperSpearKillTriggerEvent triggerEvent = events.stream()
+                .filter(e -> e instanceof ViperSpearKillTriggerEvent)
+                .map(e -> (ViperSpearKillTriggerEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("ViperSpearKillTriggerEvent should be emitted"));
+        assertEquals("player-b", triggerEvent.getAttackerPlayerId());
+        assertEquals("player-c", triggerEvent.getTargetPlayerId());
+
+        // B 手牌 -2、武器仍在 B 身上（沒被奪走）
+        assertEquals(bHandSizeBefore - 2, playerB.getHandSize());
+        assertNotNull(playerB.getEquipmentWeaponCard());
+
+        // C 被詢問出閃
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
+        assertEquals("player-c", game.getActivePlayer().getId());
     }
 
     @DisplayName("VirtualKill 有正確的 id 和 effect")
