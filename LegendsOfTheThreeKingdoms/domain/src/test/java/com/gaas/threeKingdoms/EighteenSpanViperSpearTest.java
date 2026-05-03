@@ -364,6 +364,39 @@ public class EighteenSpanViperSpearTest {
         assertEquals("player-c", game.getActivePlayer().getId());
     }
 
+    @DisplayName("被借刀殺人時，B 用 ViperSpear 但未指定 targetPlayerId → 拋例外且手牌不變")
+    @Test
+    public void testPassiveViperSpear_BorrowedSword_MissingTargetPlayerId_ThrowsAndHandUnchanged() {
+        Game game = createGameWithPlayerAB();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+
+        playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        playerB.getHand().addCardToHand(asList(new Peach(BH3029), new Peach(BH4030)));
+        playerA.getHand().addCardToHand(new BorrowedSword(SCK065));
+
+        // A 出借刀殺人 → 借 B → C
+        game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
+
+        int bHandSizeBefore = playerB.getHandSize();
+
+        // B 漏傳 targetPlayerId（null）→ 應拋例外
+        assertThrows(IllegalArgumentException.class, () ->
+                game.playerUseViperSpearKill(playerB.getId(), null,
+                        List.of(BH3029.getCardId(), BH4030.getCardId())));
+        // 同一個 bug：empty string 也要 throw
+        assertThrows(IllegalArgumentException.class, () ->
+                game.playerUseViperSpearKill(playerB.getId(), "",
+                        List.of(BH3029.getCardId(), BH4030.getCardId())));
+
+        // 關鍵：手牌**沒有**被棄掉（discard 前已 throw）
+        assertEquals(bHandSizeBefore, playerB.getHandSize());
+        assertTrue(playerB.getHand().getCard(BH3029.getCardId()).isPresent());
+        assertTrue(playerB.getHand().getCard(BH4030.getCardId()).isPresent());
+    }
+
     @DisplayName("VirtualKill 有正確的 id 和 effect")
     @Test
     public void testVirtualKill_HasCorrectIdAndEffect() {

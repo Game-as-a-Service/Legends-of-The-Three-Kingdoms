@@ -935,6 +935,12 @@ public class Game {
     }
 
     private List<DomainEvent> playerUseViperSpearKillPassive(Player attacker, String targetPlayerId, List<String> discardCardIds, Behavior top) {
+        // BorrowedSword 場景需 targetPlayerId — 必須在 discard 前驗證，避免 throw 後手牌已遺失
+        if (top instanceof BorrowedSwordBehavior
+                && (targetPlayerId == null || targetPlayerId.isEmpty())) {
+            throw new IllegalArgumentException("BorrowedSword virtual kill response requires targetPlayerId");
+        }
+
         // 棄兩張手牌到墓地（被動使用不計入殺次數限制 — 這不是出牌階段的殺）
         for (String discardCardId : discardCardIds) {
             HandCard discardedCard = attacker.playCard(discardCardId);
