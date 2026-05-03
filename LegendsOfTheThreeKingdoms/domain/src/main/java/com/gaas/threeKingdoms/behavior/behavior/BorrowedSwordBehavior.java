@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.events.WeaponUsurpationEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
@@ -62,6 +63,29 @@ public class BorrowedSwordBehavior extends Behavior {
     }
 
     @Override
+    public void validateBeforeVirtualKillResponse(String playerId, String targetPlayerId) {
+        // BorrowedSword 場景需要 targetPlayerId（攻擊目標 C）— 由請求帶入
+        if (targetPlayerId == null || targetPlayerId.isEmpty()) {
+            throw new IllegalArgumentException("BorrowedSword virtual kill response requires targetPlayerId");
+        }
+    }
+
+    @Override
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
+        // targetPlayerId 已由 validateBeforeVirtualKillResponse 驗證過
+        Player attacker = game.getPlayer(playerId);
+        Player target = game.getPlayer(targetPlayerId);
+
+        // 棄牌已在 Game 處理；改 push ViperSpearKillBehavior，讓 C 進入閃 / 防具流程
+        // 與 active path 一致：BorrowedSword(oneRound=true) 留在底，等 ViperSpearKill 解析完畢一併 pop
+        Behavior behavior = new ViperSpearKillBehavior(
+                game, attacker, List.of(targetPlayerId), target, virtualKill, discardedCardIds);
+        isOneRound = true;
+        game.updateTopBehavior(behavior);
+        return behavior.playerAction();
+    }
+
+    @Override
     public List<DomainEvent> doBehaviorAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentPlayerId = (String) getParam(UserCommand.BORROWED_SWORD_PLAYER_ID.name());
@@ -70,8 +94,10 @@ public class BorrowedSwordBehavior extends Behavior {
 
         Player borrowedPlayer = game.getPlayer(borrowedPlayerId);
 
-        // B has no Kill → weapon usurpation
-        if (borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)) {
+        // B has no Kill (and 不能用丈八蛇矛當殺) → weapon usurpation
+        boolean cannotProduceKill = borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)
+                && !EighteenSpanViperSpearCard.canUseAsKill(borrowedPlayer);
+        if (cannotProduceKill) {
             WeaponCard targetWeaponCard = borrowedPlayer.getEquipmentWeaponCard();
             borrowedPlayer.getEquipment().setWeapon(null);
             behaviorPlayer.getHand().addCardToHand(targetWeaponCard);

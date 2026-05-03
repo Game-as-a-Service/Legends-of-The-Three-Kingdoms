@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
+import com.gaas.threeKingdoms.events.ViperSpearKillTriggerEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
@@ -165,25 +166,40 @@ public class BarbarianInvasionBehavior extends Behavior {
             return events;
         } else if (isKillCard(cardId)) {
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
-            List<DomainEvent> events = new ArrayList<>();
-            currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-            boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
-            if (isLastPlayer) {
-                isOneRound = true;
-                game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
-            } else {
-                game.getCurrentRound().setActivePlayer(currentReactionPlayer);
-            }
-            events.add(game.getGameStatusEvent(playerId + "出殺"));
-            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
-            if (!isLastPlayer) {
-                events.addAll(askNextPlayerOrWard());
-            }
-            return events;
+            return advanceAfterKillResponse(playerId,
+                    playerId + "出殺",
+                    List.of(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType)));
         } else {
             //TODO:怕有其他效果或殺的其他case
         }
         return null;
+    }
+
+    @Override
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
+        // 棄牌已在 Game.playerUseViperSpearKill() 處理；此處僅推進 reaction 狀態
+        // BarbarianInvasion 不使用 targetPlayerId — 回應對象固定為入侵者 (behaviorPlayer)
+        return advanceAfterKillResponse(playerId,
+                playerId + "用丈八蛇矛出殺",
+                List.of(new ViperSpearKillTriggerEvent(playerId, behaviorPlayer.getId(), discardedCardIds)));
+    }
+
+    private List<DomainEvent> advanceAfterKillResponse(String playerId, String statusMessage, List<DomainEvent> insertEvents) {
+        List<DomainEvent> events = new ArrayList<>();
+        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+        boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
+        if (isLastPlayer) {
+            isOneRound = true;
+            game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+        } else {
+            game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+        }
+        events.add(game.getGameStatusEvent(statusMessage));
+        events.addAll(insertEvents);
+        if (!isLastPlayer) {
+            events.addAll(askNextPlayerOrWard());
+        }
+        return events;
     }
 
     public boolean isInReactionPlayers(String playerId) {

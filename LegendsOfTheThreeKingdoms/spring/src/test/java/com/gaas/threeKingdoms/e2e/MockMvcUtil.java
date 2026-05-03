@@ -110,13 +110,14 @@ public class MockMvcUtil {
         String cardIdsJson = discardCardIds.stream()
                 .map(id -> "\"" + id + "\"")
                 .collect(java.util.stream.Collectors.joining(","));
+        String targetJson = targetPlayerId == null ? "null" : "\"" + targetPlayerId + "\"";
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useViperSpearKill")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
                         { "playerId": "%s",
-                          "targetPlayerId": "%s",
+                          "targetPlayerId": %s,
                           "discardCardIds": [%s]
-                        }""", playerId, targetPlayerId, cardIdsJson)));
+                        }""", playerId, targetJson, cardIdsJson)));
     }
 
     public ResultActions useHeavenlyDoubleHalberdKill(String gameId, String playerId, String cardId,

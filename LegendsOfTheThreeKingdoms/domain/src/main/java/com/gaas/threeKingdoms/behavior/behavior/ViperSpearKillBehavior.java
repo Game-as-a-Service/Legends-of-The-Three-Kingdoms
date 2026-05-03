@@ -20,8 +20,6 @@ import java.util.List;
  * 丈八蛇矛虛擬殺 Behavior
  * 玩家棄兩張手牌作為虛擬殺使用。繼承 NormalActiveKillBehavior，
  * override playerAction() 避免從手牌移除「殺卡」（因為丈八蛇矛用的是 VirtualKill，不在手牌中）。
- *
- * TODO: Phase 2 - 支援被動出殺場景（被決鬥、南蠻入侵、借刀殺人要求出殺時可用丈八蛇矛回應）
  */
 @Getter
 public class ViperSpearKillBehavior extends NormalActiveKillBehavior {
