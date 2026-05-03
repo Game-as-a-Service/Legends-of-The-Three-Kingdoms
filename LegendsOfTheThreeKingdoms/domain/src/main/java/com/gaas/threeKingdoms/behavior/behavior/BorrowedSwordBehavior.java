@@ -63,15 +63,21 @@ public class BorrowedSwordBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
+    public void validateBeforeVirtualKillResponse(String playerId, String targetPlayerId) {
         // BorrowedSword 場景需要 targetPlayerId（攻擊目標 C）— 由請求帶入
         if (targetPlayerId == null || targetPlayerId.isEmpty()) {
             throw new IllegalArgumentException("BorrowedSword virtual kill response requires targetPlayerId");
         }
+    }
+
+    @Override
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
+        // targetPlayerId 已由 validateBeforeVirtualKillResponse 驗證過
         Player attacker = game.getPlayer(playerId);
         Player target = game.getPlayer(targetPlayerId);
 
         // 棄牌已在 Game 處理；改 push ViperSpearKillBehavior，讓 C 進入閃 / 防具流程
+        // 與 active path 一致：BorrowedSword(oneRound=true) 留在底，等 ViperSpearKill 解析完畢一併 pop
         Behavior behavior = new ViperSpearKillBehavior(
                 game, attacker, List.of(targetPlayerId), target, virtualKill, discardedCardIds);
         isOneRound = true;

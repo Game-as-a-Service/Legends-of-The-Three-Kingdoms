@@ -62,12 +62,24 @@ public class Behavior {
     }
 
     /**
+     * hook: 在執行 {@link #acceptVirtualKillResponse} 與棄牌之前的前置驗證。
+     * 由 behavior 自行決定該場景需要什麼參數（例如 BorrowedSword 需要 targetPlayerId）。
+     * <p>
+     * 必須在棄牌之前呼叫；任何驗證失敗應直接 throw，避免 state 在 invalid input 下被部分 mutate。
+     * default: no-op。
+     */
+    public void validateBeforeVirtualKillResponse(String playerId, String targetPlayerId) {
+        // default: no-op
+    }
+
+    /**
      * hook: 被動 ViperSpear 虛擬殺回應。
      * 由 BarbarianInvasion / Duel / BorrowedSword 等 ask-Kill behavior override。
      * 棄牌已在 Game 層處理；implementation 只需推進 reaction 狀態。
      * <p>
      * targetPlayerId 在 BorrowedSword 場景下為玩家指定的攻擊目標；
      * BarbarianInvasion / Duel 場景下可為 null（target 由 behavior state 決定）。
+     * 呼叫前 Game 層應已執行 {@link #validateBeforeVirtualKillResponse}。
      */
     public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
         throw new UnsupportedOperationException(
