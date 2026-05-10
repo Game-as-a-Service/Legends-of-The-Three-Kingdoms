@@ -2,6 +2,8 @@ package com.gaas.threeKingdoms.skill.wei;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.behavior.DuelBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.LightningJudgementBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.ViperSpearKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.WaitingJianXiongResponseBehavior;
@@ -23,14 +25,15 @@ import java.util.List;
  * 觸發範圍：
  *   - sourceCard != null（武將技直接傷害如 剛烈 / 離間 / 雷擊 sourceCard 為 null，不觸發）
  *   - 受傷者仍存活（HP > 0；瀕死或死亡不觸發）
- *   - top behavior 為 NormalActiveKillBehavior（含子類 ViperSpearKill / HeavenlyDoubleHalberdKill）
+ *   - top behavior 屬於白名單：NormalActiveKill / Duel / LightningJudgement / 空 stack
  *
  * 取牌規則（FAQ）：
- *   - 一般殺 / 錦囊（閃電 / 南蠻 / 萬箭 / 決鬥）/ 武器觸發殺 → 獲得 sourceCard 本身
+ *   - 一般殺 / 武器觸發殺 / 決鬥 / 閃電判定 → 獲得 sourceCard 本身
  *   - 丈八蛇矛攻擊 → 獲得攻擊者棄掉的兩張手牌（VirtualKill 不算）
  *   - 多點傷害整次只觸發 1 次
  *
  * TODO（不在 v1）：
+ *   - AOE polling（南蠻入侵 / 萬箭齊發） — 需 polling state-machine refactor
  *   - 致命傷被救回後仍可發動（dying flow 重構）
  */
 public class JianXiongSkill implements OnDamagedSkill {
@@ -61,12 +64,20 @@ public class JianXiongSkill implements OnDamagedSkill {
             return List.of();
         }
 
-        // 守門：v1 只支援 NormalActiveKillBehavior（含子類 ViperSpearKill / HeavenlyDoubleHalberd）
-        // 上的單體 Kill 傷害觸發。對 AOE polling behavior（BarbarianInvasion / ArrowBarrage）
-        // 或 Duel 等 caller，因 polling 中不會走到這裡，加守門防止未來
-        // 加新 OnDamagedSkill 時誤把 polling 中的 behavior pop 掉。
-        Behavior top = game.peekTopBehavior();
-        if (!(top instanceof NormalActiveKillBehavior)) {
+        // 守門：白名單 + 空 stack（Lightning 無 Ward 時 stack 空）
+        //   - NormalActiveKillBehavior（含子類 ViperSpearKill / HeavenlyDoubleHalberd）：殺 / 武器觸發殺
+        //   - DuelBehavior：決鬥輸給對手（Path A skip 與 Path B swap 都安全）
+        //   - LightningJudgementBehavior：閃電判定打中（Ward 路徑）
+        //   - 空 stack：閃電判定無 Ward 路徑
+        //
+        // 不支援（會被 polling caller 覆蓋 activePlayer）：
+        //   - BarbarianInvasionBehavior / ArrowBarrageBehavior — 需 polling state-machine refactor，留 follow-up
+        Behavior top = game.isTopBehaviorEmpty() ? null : game.peekTopBehavior();
+        boolean topIsAllowed = top == null
+                || top instanceof NormalActiveKillBehavior
+                || top instanceof DuelBehavior
+                || top instanceof LightningJudgementBehavior;
+        if (!topIsAllowed) {
             return List.of();
         }
 

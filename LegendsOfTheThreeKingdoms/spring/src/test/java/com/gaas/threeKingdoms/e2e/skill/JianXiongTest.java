@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
@@ -59,6 +60,32 @@ public class JianXiongTest extends AbstractBaseIntegrationTest {
 
         // Then 驗證 4 個玩家收到的 JSON
         assertAllPlayerJson("src/test/resources/TestJsonFile/SkillTest/JianXiong/jianxiong_accept_for_%s.json");
+    }
+
+    @Test
+    public void testCaoCaoLosesDuel_AskJianXiongEffectEmitted_AndAccept() throws Exception {
+        // Given B 為曹操，無殺；A 有決鬥
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Duel(SSA001));
+        Player playerB = createPlayer("player-b", 4, General.曹操, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Peach(BH3029)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // When A 對 B 決鬥（B 沒殺 → 立刻扣血 → 觸發奸雄）
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "SSA001", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // When B 選 ACCEPT 發動奸雄
+        mockMvcUtil.useJianXiongEffect(gameId, "player-b", "ACCEPT")
+                .andExpect(status().isOk()).andReturn();
+
+        assertAllPlayerJson("src/test/resources/TestJsonFile/SkillTest/JianXiong/jianxiong_duel_accept_for_%s.json");
     }
 
     @Test

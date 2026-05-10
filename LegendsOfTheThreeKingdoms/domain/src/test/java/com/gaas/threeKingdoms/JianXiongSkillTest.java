@@ -16,6 +16,9 @@ import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
+import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
+import com.gaas.threeKingdoms.behavior.behavior.LightningJudgementBehavior;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -362,6 +365,190 @@ public class JianXiongSkillTest {
         assertTrue(events.stream().anyMatch(e -> e instanceof JianXiongEffectEvent
                 && !((JianXiongEffectEvent) e).isTaken()));
         assertTrue(game.getTopBehavior().isEmpty());
+    }
+
+    @DisplayName("""
+            Given
+            A 對 B (曹操) 出決鬥；B 無殺
+            DuelBehavior on top；A 的決鬥牌進入棄牌堆
+
+            When
+            DuelBehavior.doBehaviorAction 觸發 → B 受到 1 點傷害
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds = [Duel]
+            （FAQ：錦囊牌對曹操造成傷害也可獲得錦囊本身）
+            """)
+    @Test
+    public void givenCaoCaoLosesDuel_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        // A 加一張決鬥；B 維持沒殺（setupGameCaoCaoB 預設 B 手牌空）
+        playerA.getHand().addCardToHand(new Duel(SSA001));
+
+        // A 對 B 出決鬥（B 沒有殺 → DuelBehavior.doBehaviorAction 直接扣血給 B）
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), SSA001.getCardId(),
+                playerB.getId(), "active");
+
+        assertEquals(3, playerB.getBloodCard().getHp());
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent"));
+        assertEquals("player-b", ask.getPlayerId());
+        assertEquals(List.of(SSA001.getCardId()), ask.getSourceCardIds());
+        assertTrue(game.getGraveyard().contains(SSA001.getCardId()));
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
+    }
+
+    @DisplayName("""
+            Given
+            A 對 B (曹操) 出決鬥；B 有 1 張殺；A 之後也有 1 張殺
+            B 出殺 → A 反殺 → B 沒殺 → 受傷
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds = [Duel]
+            """)
+    @Test
+    public void givenCaoCaoLosesDuelAfterSwap_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        // A 已有 BS8008 殺 (預設 setup)；加決鬥
+        playerA.getHand().addCardToHand(new Duel(SSA001));
+        // B 加一張殺 BHJ037（B 第一個出，剩下沒殺）
+        playerB.getHand().addCardToHand(new Kill(BHJ037));
+
+        // A 對 B 出決鬥
+        game.playerPlayCard(playerA.getId(), SSA001.getCardId(), playerB.getId(), "active");
+        // B 先出殺 → 換 A 出殺
+        game.playerPlayCard(playerB.getId(), BHJ037.getCardId(), playerA.getId(), "active");
+        // A 再出殺 → B 沒殺 → 受傷
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(),
+                playerB.getId(), "active");
+
+        assertEquals(3, playerB.getBloodCard().getHp());
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent"));
+        assertEquals(List.of(SSA001.getCardId()), ask.getSourceCardIds(),
+                "曹操決鬥輸應拿到決鬥本身（不是反殺的殺）");
+    }
+
+    @DisplayName("""
+            Given
+            B (曹操) 為發起方對 A 出決鬥；A 出殺 → B 沒殺反擊 → B 受傷
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds = [Duel]
+            """)
+    @Test
+    public void givenCaoCaoIsDuelInitiator_LosesDuel_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        // 改成 B 為當前回合
+        game.setCurrentRound(new com.gaas.threeKingdoms.round.Round(playerB));
+        // B (曹操) 加決鬥
+        playerB.getHand().addCardToHand(new Duel(SSA001));
+        // A 已有 BS8008 殺；B 沒殺
+
+        // B 對 A 出決鬥
+        game.playerPlayCard(playerB.getId(), SSA001.getCardId(), playerA.getId(), "active");
+        // A 出殺 → B 沒殺 → B 受傷
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), BS8008.getCardId(),
+                playerB.getId(), "active");
+
+        assertEquals(3, playerB.getBloodCard().getHp());
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent for Duel initiator"));
+        assertEquals(List.of(SSA001.getCardId()), ask.getSourceCardIds());
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操（WEI001）
+            stack 頂為 LightningJudgementBehavior（直接模擬 Lightning 判定情境）
+            graveyard 含 Lightning scroll（card.effect 結束後 scroll 已進墓地）
+
+            When
+            直接呼叫 JianXiongSkill.onDamaged with Lightning sourceCard
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds = [Lightning]
+            stack 頂被換成 WaitingJianXiongResponseBehavior
+            （FAQ：曹操判定閃電受到傷害，可以將閃電收入手牌）
+            """)
+    @Test
+    public void givenLightningJudgementOnStack_OnDamaged_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player caoCao = game.getPlayer("player-b");
+        Player attacker = game.getPlayer("player-a");
+
+        // 模擬 Lightning Ward 路徑：LJB 在 stack 頂
+        Lightning lightning = new Lightning(SSA014);
+        LightningJudgementBehavior ljb = new LightningJudgementBehavior(
+                game, caoCao, List.of(caoCao.getId()), null,
+                lightning.getId(), "inactive", lightning);
+        ljb.setIsOneRound(true); // 模擬 line 645 已標 待 pop
+        game.updateTopBehavior(ljb);
+        game.getGraveyard().add(lightning);
+
+        DamageContext ctx = new DamageContext(caoCao, attacker, lightning, 1);
+        List<DomainEvent> events = new JianXiongSkill().onDamaged(game, ctx);
+
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent for Lightning"));
+        assertEquals("player-b", ask.getPlayerId());
+        assertEquals(List.of(lightning.getId()), ask.getSourceCardIds());
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操（WEI001）
+            stack 為空（Lightning 無 Ward 路徑）
+            graveyard 含 Lightning scroll
+
+            When
+            直接呼叫 JianXiongSkill.onDamaged with Lightning sourceCard
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds = [Lightning]
+            （白名單允許空 stack 觸發奸雄）
+            """)
+    @Test
+    public void givenEmptyStack_OnDamagedByLightning_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player caoCao = game.getPlayer("player-b");
+        Player attacker = game.getPlayer("player-a");
+
+        Lightning lightning = new Lightning(SSA014);
+        game.getGraveyard().add(lightning);
+
+        // stack 是空的
+        assertTrue(game.getTopBehavior().isEmpty());
+
+        DamageContext ctx = new DamageContext(caoCao, attacker, lightning, 1);
+        List<DomainEvent> events = new JianXiongSkill().onDamaged(game, ctx);
+
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent for empty stack"));
+        assertEquals(List.of(lightning.getId()), ask.getSourceCardIds());
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
     }
 
     @DisplayName("""
