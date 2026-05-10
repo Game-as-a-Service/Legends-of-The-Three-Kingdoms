@@ -18,7 +18,13 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
+import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
 import com.gaas.threeKingdoms.behavior.behavior.LightningJudgementBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
+import com.gaas.threeKingdoms.events.AskKillEvent;
+import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -549,6 +555,168 @@ public class JianXiongSkillTest {
                 .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent for empty stack"));
         assertEquals(List.of(lightning.getId()), ask.getSourceCardIds());
         assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
+    }
+
+    @DisplayName("""
+            Given
+            A 出南蠻入侵；B (曹操) 是第一個被詢問的 reactor、無殺
+            B 不出殺 → 受傷
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds = [BarbarianInvasion]
+            stack 頂為 WaitingJianXiongResponseBehavior（BI 還在底）
+            （AOE polling 整合：JianXiong 介入時先 defer polling-advance）
+            """)
+    @Test
+    public void givenCaoCaoLosesBarbarianInvasion_MidPolling_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        // A 加南蠻入侵；B 維持沒殺
+        playerA.getHand().addCardToHand(new BarbarianInvasion(SS7007));
+
+        // A 出南蠻，B 第一個被詢問
+        game.playerPlayCard(playerA.getId(), SS7007.getCardId(), "", "active");
+        // B 不出殺 → 受傷觸發奸雄
+        List<DomainEvent> events = game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        assertEquals(3, playerB.getBloodCard().getHp());
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent for BI mid-polling"));
+        assertEquals(List.of(SS7007.getCardId()), ask.getSourceCardIds());
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
+        // BI 還在 stack 底（polling 未結束）
+        assertEquals(2, game.getTopBehavior().size());
+        assertTrue(game.getTopBehavior().get(0) instanceof BarbarianInvasionBehavior);
+    }
+
+    @DisplayName("""
+            Given
+            BI 中段觸發奸雄（接續上面情境）
+
+            When
+            B 選 ACCEPT
+
+            Then
+            南蠻牌進入 B 手牌
+            BI polling resume：C 收到 AskKillEvent、activePlayer = C
+            stack 只剩 BI（WaitingJX 已 pop）
+            """)
+    @Test
+    public void givenBIMidPolling_AcceptJianXiong_PollingResumesToNextReactor() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        playerA.getHand().addCardToHand(new BarbarianInvasion(SS7007));
+
+        game.playerPlayCard(playerA.getId(), SS7007.getCardId(), "", "active");
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        List<DomainEvent> events = game.playerUseJianXiongEffect(playerB.getId(), AskJianXiongEffectEvent.Choice.ACCEPT);
+
+        // 南蠻進手牌、graveyard 移除
+        assertFalse(game.getGraveyard().contains(SS7007.getCardId()));
+        assertTrue(playerB.getHand().getCards().stream().anyMatch(c -> c.getId().equals(SS7007.getCardId())));
+        // C 被詢問出殺
+        AskKillEvent ask = events.stream()
+                .filter(e -> e instanceof AskKillEvent)
+                .map(e -> (AskKillEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskKillEvent for next reactor (C)"));
+        assertEquals("player-c", ask.getPlayerId());
+        assertEquals("player-c", game.getActivePlayer().getId());
+        // stack 只剩 BI（WaitingJX 已 pop，BI mid-poll isOneRound=false）
+        assertEquals(1, game.getTopBehavior().size());
+        assertTrue(game.getTopBehavior().peek() instanceof BarbarianInvasionBehavior);
+    }
+
+    @DisplayName("""
+            Given
+            A 出南蠻；B/C 都出殺、D (曹操) 為最後 reactor、無殺
+            D 不出殺 → 受傷觸發奸雄
+
+            When
+            D 選 ACCEPT
+
+            Then
+            南蠻進入 D 手牌、stack 空、activePlayer 回到 A（roundPlayer）
+            """)
+    @Test
+    public void givenCaoCaoIsLastReactor_AcceptJianXiong_PollingEnds() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        // 改成 D 為曹操；B/C/D 順序倒過來才方便讓曹操是 last
+        // 簡化：直接讓 player-d 是曹操即可
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+        Player playerD = game.getPlayer("player-d");
+        // 把 D 設成曹操，B 設回非曹操
+        playerD.setGeneralCard(new GeneralCard(General.曹操));
+        playerB.setGeneralCard(new GeneralCard(General.劉備));
+
+        playerA.getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        playerB.getHand().addCardToHand(new Kill(BHJ037));
+        playerC.getHand().addCardToHand(new Kill(BS9009));
+
+        // A 出南蠻 → B 出殺 → C 出殺 → D 不出殺
+        game.playerPlayCard(playerA.getId(), SS7007.getCardId(), "", "active");
+        game.playerPlayCard(playerB.getId(), BHJ037.getCardId(), playerA.getId(), "active");
+        game.playerPlayCard(playerC.getId(), BS9009.getCardId(), playerA.getId(), "active");
+        game.playerPlayCard(playerD.getId(), "", playerA.getId(), "skip");
+
+        // D 為曹操，受傷觸發奸雄；ACCEPT
+        List<DomainEvent> events = game.playerUseJianXiongEffect(playerD.getId(), AskJianXiongEffectEvent.Choice.ACCEPT);
+
+        assertFalse(game.getGraveyard().contains(SS7007.getCardId()));
+        assertTrue(playerD.getHand().getCards().stream().anyMatch(c -> c.getId().equals(SS7007.getCardId())));
+        assertTrue(game.getTopBehavior().isEmpty(), "stack should be empty after last reactor + JianXiong resolved");
+        assertEquals("player-a", game.getActivePlayer().getId(), "activePlayer back to round player");
+    }
+
+    @DisplayName("""
+            Given
+            A 出萬箭齊發；B (曹操) 第一個被詢問、無閃
+            B 不出閃 → 受傷觸發奸雄
+
+            When
+            B 選 ACCEPT
+
+            Then
+            萬箭進入 B 手牌、polling resume 到 C（C 被詢問出閃）
+            """)
+    @Test
+    public void givenCaoCaoLosesArrowBarrage_MidPolling_AcceptJianXiong_PollingResumes() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        playerA.getHand().addCardToHand(new ArrowBarrage(SHA040));
+
+        // A 出萬箭，B 第一個被詢問
+        game.playerPlayCard(playerA.getId(), SHA040.getCardId(), "", "active");
+        // B 不出閃 → 受傷觸發奸雄
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        // 受傷後 stack 頂應為 WaitingJX（AB 仍在底等 callback resume）
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
+
+        List<DomainEvent> events = game.playerUseJianXiongEffect(playerB.getId(), AskJianXiongEffectEvent.Choice.ACCEPT);
+
+        assertFalse(game.getGraveyard().contains(SHA040.getCardId()));
+        assertTrue(playerB.getHand().getCards().stream().anyMatch(c -> c.getId().equals(SHA040.getCardId())));
+        // C 被詢問出閃
+        AskDodgeEvent askDodge = events.stream()
+                .filter(e -> e instanceof AskDodgeEvent)
+                .map(e -> (AskDodgeEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskDodgeEvent for C"));
+        assertEquals("player-c", askDodge.getPlayerId());
+        assertEquals("player-c", game.getActivePlayer().getId());
+        assertEquals(1, game.getTopBehavior().size());
+        assertTrue(game.getTopBehavior().peek() instanceof ArrowBarrageBehavior);
     }
 
     @DisplayName("""

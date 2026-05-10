@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.Duel;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
@@ -60,6 +61,38 @@ public class JianXiongTest extends AbstractBaseIntegrationTest {
 
         // Then 驗證 4 個玩家收到的 JSON
         assertAllPlayerJson("src/test/resources/TestJsonFile/SkillTest/JianXiong/jianxiong_accept_for_%s.json");
+    }
+
+    @Test
+    public void testCaoCaoLosesBarbarianInvasion_AskJianXiongEffectEmitted_AndAccept() throws Exception {
+        // Given B 為曹操，無殺；A 有南蠻入侵
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new BarbarianInvasion(SS7007));
+        Player playerB = createPlayer("player-b", 4, General.曹操, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL,
+                new Kill(BS9009));
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER,
+                new Kill(BHJ037));
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Peach(BH3029)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // When A 出南蠻 → B (曹操) 不出殺受傷 → 觸發奸雄
+        mockMvcUtil.playCard(gameId, "player-a", "", "SS7007", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // When B 選 ACCEPT → 南蠻進手牌、polling resume 到 C 收 AskKillEvent
+        mockMvcUtil.useJianXiongEffect(gameId, "player-b", "ACCEPT")
+                .andExpect(status().isOk()).andReturn();
+
+        assertAllPlayerJson("src/test/resources/TestJsonFile/SkillTest/JianXiong/jianxiong_barbarian_accept_for_%s.json");
     }
 
     @Test

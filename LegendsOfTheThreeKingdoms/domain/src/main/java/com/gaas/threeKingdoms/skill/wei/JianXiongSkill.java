@@ -2,6 +2,8 @@ package com.gaas.threeKingdoms.skill.wei;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.DuelBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.LightningJudgementBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
@@ -25,15 +27,19 @@ import java.util.List;
  * 觸發範圍：
  *   - sourceCard != null（武將技直接傷害如 剛烈 / 離間 / 雷擊 sourceCard 為 null，不觸發）
  *   - 受傷者仍存活（HP > 0；瀕死或死亡不觸發）
- *   - top behavior 屬於白名單：NormalActiveKill / Duel / LightningJudgement / 空 stack
+ *   - top behavior 屬於白名單：NormalActiveKill / Duel / LightningJudgement /
+ *     BarbarianInvasion / ArrowBarrage / 空 stack
  *
  * 取牌規則（FAQ）：
- *   - 一般殺 / 武器觸發殺 / 決鬥 / 閃電判定 → 獲得 sourceCard 本身
+ *   - 一般殺 / 武器觸發殺 / 決鬥 / 閃電判定 / 南蠻入侵 / 萬箭齊發 → 獲得 sourceCard 本身
  *   - 丈八蛇矛攻擊 → 獲得攻擊者棄掉的兩張手牌（VirtualKill 不算）
  *   - 多點傷害整次只觸發 1 次
  *
+ * AOE polling 整合機制：BarbarianInvasion / ArrowBarrage 在 doResponseToPlayerAction
+ * 會偵測 WaitingJianXiongResponseBehavior 在 stack 頂，並把 polling-advance 註冊為
+ * onResolved callback。等 JianXiong 解決後再 resume，避免 activePlayer 衝突。
+ *
  * TODO（不在 v1）：
- *   - AOE polling（南蠻入侵 / 萬箭齊發） — 需 polling state-machine refactor
  *   - 致命傷被救回後仍可發動（dying flow 重構）
  */
 public class JianXiongSkill implements OnDamagedSkill {
@@ -68,15 +74,16 @@ public class JianXiongSkill implements OnDamagedSkill {
         //   - NormalActiveKillBehavior（含子類 ViperSpearKill / HeavenlyDoubleHalberd）：殺 / 武器觸發殺
         //   - DuelBehavior：決鬥輸給對手（Path A skip 與 Path B swap 都安全）
         //   - LightningJudgementBehavior：閃電判定打中（Ward 路徑）
+        //   - BarbarianInvasionBehavior / ArrowBarrageBehavior：AOE polling
+        //     （caller 偵測 WaitingJX 並把 polling-advance defer 為 callback，避免 activePlayer 衝突）
         //   - 空 stack：閃電判定無 Ward 路徑
-        //
-        // 不支援（會被 polling caller 覆蓋 activePlayer）：
-        //   - BarbarianInvasionBehavior / ArrowBarrageBehavior — 需 polling state-machine refactor，留 follow-up
         Behavior top = game.isTopBehaviorEmpty() ? null : game.peekTopBehavior();
         boolean topIsAllowed = top == null
                 || top instanceof NormalActiveKillBehavior
                 || top instanceof DuelBehavior
-                || top instanceof LightningJudgementBehavior;
+                || top instanceof LightningJudgementBehavior
+                || top instanceof BarbarianInvasionBehavior
+                || top instanceof ArrowBarrageBehavior;
         if (!topIsAllowed) {
             return List.of();
         }
@@ -97,8 +104,14 @@ public class JianXiongSkill implements OnDamagedSkill {
             return List.of();
         }
 
-        // 把 setIsOneRound(true) 的 kill behavior 先彈出，讓奸雄 behavior 成為 stack 頂端
-        game.removeCompletedBehaviors();
+        // 對 polling caller（BI / AB）保留底層 behavior — 等 WaitingJX 解決後 callback 會
+        // resume polling。對其他 caller（Kill / Duel / Lightning）把 line 645 標的 isOneRound=true
+        // 先 pop 掉，讓 WaitingJX 成為 stack 頂端。
+        boolean isPollingCaller = top instanceof BarbarianInvasionBehavior
+                || top instanceof ArrowBarrageBehavior;
+        if (!isPollingCaller) {
+            game.removeCompletedBehaviors();
+        }
 
         WaitingJianXiongResponseBehavior waiting = new WaitingJianXiongResponseBehavior(game, damaged, takeIds);
         game.updateTopBehavior(waiting);

@@ -14,6 +14,7 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * 奸雄等待回應 — 受傷者可選擇 ACCEPT（取得造成傷害的牌）或 SKIP。
@@ -29,6 +30,17 @@ import java.util.Optional;
 public class WaitingJianXiongResponseBehavior extends Behavior {
 
     private final List<String> sourceCardIds;
+
+    /**
+     * polling-aware caller（如 BarbarianInvasion / ArrowBarrage）在偵測 JianXiong 介入時，
+     * 透過此 callback 把 polling-advance 邏輯 defer 到 resolveChoice 內、isOneRound=true 之前執行。
+     * 不需要 polling resume 的 caller（NormalActiveKill / Duel / Lightning）保持 null。
+     */
+    private transient Supplier<List<DomainEvent>> onResolved;
+
+    public void setOnResolved(Supplier<List<DomainEvent>> onResolved) {
+        this.onResolved = onResolved;
+    }
 
     public WaitingJianXiongResponseBehavior(Game game, Player damagedPlayer, List<String> sourceCardIds) {
         super(game,
@@ -69,6 +81,13 @@ public class WaitingJianXiongResponseBehavior extends Behavior {
             events.add(game.getGameStatusEvent("放棄奸雄"));
         } else {
             throw new IllegalArgumentException("Invalid JianXiong choice: " + choice);
+        }
+
+        // 在 isOneRound=true 之前先跑 polling resume callback —
+        // 因為 callback 內可能會把底層 polling behavior 的 isOneRound 改回 false（mid-poll），
+        // 必須先於本 behavior 標記完成、避免 removeCompletedBehaviors 誤 pop polling behavior。
+        if (onResolved != null) {
+            events.addAll(onResolved.get());
         }
 
         isOneRound = true;
