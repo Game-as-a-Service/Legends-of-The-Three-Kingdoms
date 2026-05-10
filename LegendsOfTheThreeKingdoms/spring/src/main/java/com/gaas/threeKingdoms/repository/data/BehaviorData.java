@@ -24,6 +24,7 @@ import java.util.Optional;
 public class BehaviorData {
     private static final String POLLING_STARTED = "POLLING_STARTED";
     private static final String VIPER_SPEAR_DISCARDED_CARD_IDS = "VIPER_SPEAR_DISCARDED_CARD_IDS";
+    private static final String JIANXIONG_SOURCE_CARD_IDS = "JIANXIONG_SOURCE_CARD_IDS";
 
     private String behaviorName;
     private String behaviorPlayerId;
@@ -357,11 +358,17 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
-            case "WaitingJianXiongResponseBehavior" -> new WaitingJianXiongResponseBehavior(
-                    game,
-                    game.getPlayer(behaviorPlayerId),
-                    cardId
-            );
+            case "WaitingJianXiongResponseBehavior" -> {
+                @SuppressWarnings("unchecked")
+                List<String> sourceCardIds = params != null && params.get(JIANXIONG_SOURCE_CARD_IDS) != null
+                        ? (List<String>) params.get(JIANXIONG_SOURCE_CARD_IDS)
+                        : (cardId != null ? List.of(cardId) : List.of());
+                yield new WaitingJianXiongResponseBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        sourceCardIds
+                );
+            }
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);
@@ -380,6 +387,8 @@ public class BehaviorData {
             params.put(POLLING_STARTED, bh.isPollingStarted());
         } else if (behavior instanceof ViperSpearKillBehavior vs) {
             params.put(VIPER_SPEAR_DISCARDED_CARD_IDS, vs.getDiscardedCardIds());
+        } else if (behavior instanceof WaitingJianXiongResponseBehavior jx) {
+            params.put(JIANXIONG_SOURCE_CARD_IDS, jx.getSourceCardIds());
         }
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())

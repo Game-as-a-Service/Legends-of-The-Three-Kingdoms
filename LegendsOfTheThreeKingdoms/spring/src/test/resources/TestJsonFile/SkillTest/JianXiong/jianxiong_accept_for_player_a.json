@@ -3,7 +3,7 @@
     "event" : "JianXiongEffectEvent",
     "data" : {
       "playerId" : "player-b",
-      "sourceCardId" : "BS8008",
+      "sourceCardIds" : [ "BS8008" ],
       "taken" : true
     },
     "message" : "奸雄發動"

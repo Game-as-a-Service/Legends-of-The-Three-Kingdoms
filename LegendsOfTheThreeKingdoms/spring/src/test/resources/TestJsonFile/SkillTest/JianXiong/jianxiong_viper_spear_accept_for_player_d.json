@@ -3,8 +3,8 @@
     "event" : "JianXiongEffectEvent",
     "data" : {
       "playerId" : "player-b",
-      "sourceCardIds" : [ "BS8008" ],
-      "taken" : false
+      "sourceCardIds" : [ "BH3029", "BH4030" ],
+      "taken" : true
     },
     "message" : "奸雄發動"
   } ],
@@ -18,15 +18,15 @@
         "size" : 0,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "", "" ],
+      "equipments" : [ "ESQ025", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
       "generalId" : "WEI001",
-      "roleId" : "Minister",
+      "roleId" : "",
       "hp" : 3,
       "hand" : {
-        "size" : 0,
+        "size" : 2,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
@@ -45,7 +45,7 @@
     }, {
       "id" : "player-d",
       "generalId" : "SHU001",
-      "roleId" : "",
+      "roleId" : "Minister",
       "hp" : 4,
       "hand" : {
         "size" : 0,
@@ -63,7 +63,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "放棄奸雄",
+  "message" : "player-b 發動奸雄",
   "gameId" : "my-id",
-  "playerId" : "player-b"
+  "playerId" : "player-d"
 }

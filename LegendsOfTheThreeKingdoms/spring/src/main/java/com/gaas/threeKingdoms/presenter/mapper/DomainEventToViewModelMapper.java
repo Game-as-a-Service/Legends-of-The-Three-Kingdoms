@@ -285,7 +285,7 @@ public class DomainEventToViewModelMapper {
             AskJianXiongEffectEvent askEvent = (AskJianXiongEffectEvent) event;
             UseJianXiongEffectPresenter.AskJianXiongEffectDataViewModel dataViewModel = new UseJianXiongEffectPresenter.AskJianXiongEffectDataViewModel(
                     askEvent.getPlayerId(),
-                    askEvent.getSourceCardId()
+                    askEvent.getSourceCardIds()
             );
             return new UseJianXiongEffectPresenter.AskJianXiongEffectViewModel(dataViewModel);
         });
@@ -294,7 +294,7 @@ public class DomainEventToViewModelMapper {
             JianXiongEffectEvent jxEvent = (JianXiongEffectEvent) event;
             UseJianXiongEffectPresenter.JianXiongEffectDataViewModel dataViewModel = new UseJianXiongEffectPresenter.JianXiongEffectDataViewModel(
                     jxEvent.getPlayerId(),
-                    jxEvent.getSourceCardId(),
+                    jxEvent.getSourceCardIds(),
                     jxEvent.isTaken()
             );
             return new UseJianXiongEffectPresenter.JianXiongEffectViewModel(dataViewModel);

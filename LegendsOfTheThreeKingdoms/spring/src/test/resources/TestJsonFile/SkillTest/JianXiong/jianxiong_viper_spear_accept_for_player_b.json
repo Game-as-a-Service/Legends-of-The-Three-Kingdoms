@@ -3,8 +3,8 @@
     "event" : "JianXiongEffectEvent",
     "data" : {
       "playerId" : "player-b",
-      "sourceCardIds" : [ "BS8008" ],
-      "taken" : false
+      "sourceCardIds" : [ "BH3029", "BH4030" ],
+      "taken" : true
     },
     "message" : "奸雄發動"
   } ],
@@ -18,7 +18,7 @@
         "size" : 0,
         "cardIds" : [ ]
       },
-      "equipments" : [ "", "", "", "" ],
+      "equipments" : [ "ESQ025", "", "", "" ],
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
@@ -26,8 +26,8 @@
       "roleId" : "Minister",
       "hp" : 3,
       "hand" : {
-        "size" : 0,
-        "cardIds" : [ ]
+        "size" : 2,
+        "cardIds" : [ "BH3029", "BH4030" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -63,7 +63,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "放棄奸雄",
+  "message" : "player-b 發動奸雄",
   "gameId" : "my-id",
   "playerId" : "player-b"
 }

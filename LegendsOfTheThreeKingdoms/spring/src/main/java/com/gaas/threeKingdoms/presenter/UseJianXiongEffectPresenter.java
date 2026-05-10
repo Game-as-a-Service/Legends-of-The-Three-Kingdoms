@@ -81,7 +81,7 @@ public class UseJianXiongEffectPresenter implements UseJianXiongEffectUseCase.Us
     @NoArgsConstructor
     public static class AskJianXiongEffectDataViewModel {
         private String playerId;
-        private String sourceCardId;
+        private java.util.List<String> sourceCardIds;
     }
 
     @Data
@@ -89,7 +89,7 @@ public class UseJianXiongEffectPresenter implements UseJianXiongEffectUseCase.Us
     @NoArgsConstructor
     public static class JianXiongEffectDataViewModel {
         private String playerId;
-        private String sourceCardId;
+        private java.util.List<String> sourceCardIds;
         private boolean taken;
     }
 }

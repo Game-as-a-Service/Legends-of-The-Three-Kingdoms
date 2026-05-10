@@ -15,6 +15,7 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -110,7 +111,7 @@ public class JianXiongSkillTest {
         AskJianXiongEffectEvent ask = (AskJianXiongEffectEvent) events.stream()
                 .filter(e -> e instanceof AskJianXiongEffectEvent).findFirst().orElseThrow();
         assertEquals("player-b", ask.getPlayerId());
-        assertEquals(BS8008.getCardId(), ask.getSourceCardId());
+        assertEquals(List.of(BS8008.getCardId()), ask.getSourceCardIds());
 
         assertFalse(game.getTopBehavior().isEmpty());
         assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
@@ -260,6 +261,107 @@ public class JianXiongSkillTest {
 
         long count = events.stream().filter(e -> e instanceof AskJianXiongEffectEvent).count();
         assertEquals(1, count, "JianXiong should trigger exactly once per DamageEvent");
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操，受到丈八蛇矛攻擊（A 棄兩張當虛擬殺）
+            B 不出閃 → 受傷
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds 為 A 棄的兩張牌
+            （標準版 FAQ：丈八蛇矛攻擊曹操，奸雄獲得攻擊者打出的兩張手牌）
+            """)
+    @Test
+    public void givenViperSpearAttack_AskJianXiongEffectEmittedWithTwoDiscards() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+
+        // A 用丈八蛇矛棄兩張殺攻擊 B
+        game.playerUseViperSpearKill(playerA.getId(), "player-b",
+                List.of(BS8008.getCardId(), BH3029.getCardId()));
+        // B 不出閃
+        List<DomainEvent> events = game.playerPlayCard("player-b", "", playerA.getId(), "skip");
+
+        assertEquals(3, game.getPlayer("player-b").getBloodCard().getHp());
+        AskJianXiongEffectEvent ask = (AskJianXiongEffectEvent) events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent).findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent"));
+        assertEquals("player-b", ask.getPlayerId());
+        assertEquals(List.of(BS8008.getCardId(), BH3029.getCardId()), ask.getSourceCardIds());
+        assertTrue(game.getGraveyard().contains(BS8008.getCardId()));
+        assertTrue(game.getGraveyard().contains(BH3029.getCardId()));
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操，受到丈八蛇矛攻擊 → AskJianXiongEffectEvent
+
+            When
+            B 選 ACCEPT
+
+            Then
+            兩張棄牌都從棄牌堆進入 B 手牌
+            JianXiongEffectEvent(taken=true)
+            """)
+    @Test
+    public void givenViperSpearAsk_AcceptChoice_TwoDiscardsReturnToHand() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+
+        game.playerUseViperSpearKill(playerA.getId(), "player-b",
+                List.of(BS8008.getCardId(), BH3029.getCardId()));
+        game.playerPlayCard("player-b", "", playerA.getId(), "skip");
+
+        int handSizeBefore = game.getPlayer("player-b").getHand().size();
+        List<DomainEvent> events = game.playerUseJianXiongEffect("player-b", AskJianXiongEffectEvent.Choice.ACCEPT);
+
+        assertFalse(game.getGraveyard().contains(BS8008.getCardId()));
+        assertFalse(game.getGraveyard().contains(BH3029.getCardId()));
+        assertEquals(handSizeBefore + 2, game.getPlayer("player-b").getHand().size());
+        assertTrue(game.getPlayer("player-b").getHand().getCards().stream()
+                .anyMatch(c -> c.getId().equals(BS8008.getCardId())));
+        assertTrue(game.getPlayer("player-b").getHand().getCards().stream()
+                .anyMatch(c -> c.getId().equals(BH3029.getCardId())));
+        assertTrue(events.stream().anyMatch(e -> e instanceof JianXiongEffectEvent
+                && ((JianXiongEffectEvent) e).isTaken()
+                && ((JianXiongEffectEvent) e).getSourceCardIds().equals(List.of(BS8008.getCardId(), BH3029.getCardId()))));
+        assertTrue(game.getTopBehavior().isEmpty());
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操，受到丈八蛇矛攻擊 → AskJianXiongEffectEvent
+
+            When
+            B 選 SKIP
+
+            Then
+            兩張棄牌都留在棄牌堆，B 手牌不變
+            JianXiongEffectEvent(taken=false)
+            """)
+    @Test
+    public void givenViperSpearAsk_SkipChoice_NoChange() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+
+        game.playerUseViperSpearKill(playerA.getId(), "player-b",
+                List.of(BS8008.getCardId(), BH3029.getCardId()));
+        game.playerPlayCard("player-b", "", playerA.getId(), "skip");
+
+        int handSizeBefore = game.getPlayer("player-b").getHand().size();
+        List<DomainEvent> events = game.playerUseJianXiongEffect("player-b", AskJianXiongEffectEvent.Choice.SKIP);
+
+        assertTrue(game.getGraveyard().contains(BS8008.getCardId()));
+        assertTrue(game.getGraveyard().contains(BH3029.getCardId()));
+        assertEquals(handSizeBefore, game.getPlayer("player-b").getHand().size());
+        assertTrue(events.stream().anyMatch(e -> e instanceof JianXiongEffectEvent
+                && !((JianXiongEffectEvent) e).isTaken()));
+        assertTrue(game.getTopBehavior().isEmpty());
     }
 
     @DisplayName("""

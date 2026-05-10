@@ -2,17 +2,19 @@ package com.gaas.threeKingdoms.events;
 
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class AskJianXiongEffectEvent extends DomainEvent {
 
     private final String playerId;
-    private final String sourceCardId;
+    private final List<String> sourceCardIds;
 
-    public AskJianXiongEffectEvent(String playerId, String sourceCardId) {
+    public AskJianXiongEffectEvent(String playerId, List<String> sourceCardIds) {
         super("AskJianXiongEffectEvent",
-                String.format("奸雄：%s 是否獲得造成傷害的牌 %s", playerId, sourceCardId));
+                String.format("奸雄：%s 是否獲得造成傷害的牌 %s", playerId, sourceCardIds));
         this.playerId = playerId;
-        this.sourceCardId = sourceCardId;
+        this.sourceCardIds = sourceCardIds;
     }
 
     public enum Choice {
