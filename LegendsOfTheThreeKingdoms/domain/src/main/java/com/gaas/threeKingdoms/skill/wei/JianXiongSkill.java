@@ -93,11 +93,19 @@ public class JianXiongSkill implements OnDamagedSkill {
         }
 
         // 決定要拿哪些牌：
-        //   - 丈八蛇矛 (VirtualKill + ViperSpearKillBehavior) → 兩張棄牌（FAQ 特例）
+        //   - 丈八蛇矛 alive (VirtualKill + ViperSpearKillBehavior) → 兩張棄牌
+        //   - 丈八蛇矛 致命 + revive (VirtualKill + DyingAskPeachBehavior) → 兩張棄牌（從 pending 取）
         //   - 其他（普通殺 / 錦囊 / 一般武器觸發殺）→ sourceCard 本身
         List<String> takeIds;
-        if (sourceCard instanceof VirtualKill && top instanceof ViperSpearKillBehavior viper) {
-            takeIds = viper.getDiscardedCardIds();
+        if (sourceCard instanceof VirtualKill) {
+            if (top instanceof ViperSpearKillBehavior viper) {
+                takeIds = viper.getDiscardedCardIds();
+            } else if (top instanceof DyingAskPeachBehavior dying
+                    && dying.getPendingViperSpearDiscardCardIds() != null) {
+                takeIds = dying.getPendingViperSpearDiscardCardIds();
+            } else {
+                return List.of();
+            }
             // 全有或全無：兩張都要還在墓地（中途被別的效果拿走時整體跳過）
             if (takeIds.isEmpty() || !takeIds.stream().allMatch(id -> game.getGraveyard().contains(id))) {
                 return List.of();

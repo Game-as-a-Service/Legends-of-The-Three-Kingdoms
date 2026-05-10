@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -33,20 +34,28 @@ public class DyingAskPeachBehavior extends Behavior {
     /**
      * 致命傷的 sourceCard.id 與 attackerPlayerId — 在 revival branch 用來 replay
      * SkillEngine.onDamaged（FAQ：曹操瀕死被救回後仍可發動奸雄）。null 表示
-     * 不適合 replay（VirtualKill 不在 PlayCard.factory 或非殺類傷害）。
+     * 不適合 replay（一般情況下 VirtualKill 不在 PlayCard.factory 或非殺類傷害）。
+     * <p>
+     * 若致命傷源自丈八蛇矛（VirtualKill），改用 pendingViperSpearDiscardCardIds
+     * 持有兩張棄牌 id，replay 時 JianXiongSkill 透過 DyingAskPeachBehavior 取得。
      */
     private final String pendingSourceCardId;
     private final String pendingAttackerPlayerId;
+    private final List<String> pendingViperSpearDiscardCardIds;
 
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
-        this(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, null, null);
+        this(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, null, null, null);
     }
 
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card,
-                                  String pendingSourceCardId, String pendingAttackerPlayerId) {
+                                  String pendingSourceCardId, String pendingAttackerPlayerId,
+                                  List<String> pendingViperSpearDiscardCardIds) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
         this.pendingSourceCardId = pendingSourceCardId;
         this.pendingAttackerPlayerId = pendingAttackerPlayerId;
+        this.pendingViperSpearDiscardCardIds = pendingViperSpearDiscardCardIds == null
+                ? null
+                : List.copyOf(pendingViperSpearDiscardCardIds);
         List<Player> players = game.getSeatingChart().getPlayers();
         int damagedPlayerIndex = players.indexOf(behaviorPlayer);
         List<Player> reorderedPlayerList = new ArrayList<>();
@@ -304,22 +313,25 @@ public class DyingAskPeachBehavior extends Behavior {
     }
 
     private void replayOnDamagedAfterRevival(Player dyingPlayer, List<DomainEvent> events) {
-        if (pendingSourceCardId == null) {
-            return;
-        }
-        HandCard sourceCard;
-        try {
-            sourceCard = PlayCard.findById(pendingSourceCardId);
-        } catch (RuntimeException e) {
-            // VirtualKill 等不在 factory 的 sourceCard — 不 replay（v1 不支援）
-            return;
+        Player attacker = (pendingAttackerPlayerId != null && !pendingAttackerPlayerId.isEmpty())
+                ? game.getPlayer(pendingAttackerPlayerId)
+                : null;
+
+        HandCard sourceCard = null;
+        if (pendingViperSpearDiscardCardIds != null && !pendingViperSpearDiscardCardIds.isEmpty()) {
+            // 丈八蛇矛致命攻擊：sourceCard 是 VirtualKill；JianXiongSkill 會透過
+            // DyingAskPeachBehavior 取得 pending 的兩張棄牌 id
+            sourceCard = new VirtualKill();
+        } else if (pendingSourceCardId != null) {
+            try {
+                sourceCard = PlayCard.findById(pendingSourceCardId);
+            } catch (RuntimeException e) {
+                return;
+            }
         }
         if (sourceCard == null) {
             return;
         }
-        Player attacker = (pendingAttackerPlayerId != null && !pendingAttackerPlayerId.isEmpty())
-                ? game.getPlayer(pendingAttackerPlayerId)
-                : null;
         DamageContext ctx = new DamageContext(dyingPlayer, attacker, sourceCard, 1);
         events.addAll(SkillEngine.onDamaged(game, ctx));
     }

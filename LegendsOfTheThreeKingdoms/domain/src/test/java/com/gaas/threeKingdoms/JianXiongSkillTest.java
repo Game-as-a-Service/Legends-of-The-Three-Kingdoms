@@ -805,6 +805,59 @@ public class JianXiongSkillTest {
 
     @DisplayName("""
             Given
+            B (曹操) HP=1，A 裝丈八蛇矛 + 兩張手牌
+            A 用丈八蛇矛攻擊 B → B 不出閃 → HP=0 進瀕死
+            C 出桃救 B → B HP=1
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds = A 棄的兩張牌
+            （FAQ + 丈八蛇矛特例：致命傷被救回後仍可發動，並取兩張棄牌）
+            ACCEPT 後兩張棄牌進 B 手牌
+            """)
+    @Test
+    public void givenCaoCaoLethalDamageFromViperSpearThenRevived_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+        playerB.setBloodCard(new BloodCard(1));
+        playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        playerC.getHand().addCardToHand(new Peach(BH4030));
+
+        // A 用丈八蛇矛棄兩張殺攻擊 B（HP=1）
+        game.playerUseViperSpearKill(playerA.getId(), playerB.getId(),
+                List.of(BS8008.getCardId(), BH3029.getCardId()));
+        // B 不出閃 → HP=0 進瀕死
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        assertEquals(0, playerB.getBloodCard().getHp());
+        assertTrue(game.getTopBehavior().peek() instanceof DyingAskPeachBehavior);
+
+        // B 自己沒桃 → 跳過 → C 被詢問
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), "skip");
+        // C 出桃救 B
+        List<DomainEvent> events = game.playerPlayCard(playerC.getId(), BH4030.getCardId(), playerB.getId(), "active");
+
+        assertEquals(1, playerB.getBloodCard().getHp());
+
+        // 預期：events 含 AskJianXiongEffectEvent，sourceCardIds 為兩張棄牌
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent for ViperSpear lethal revival"));
+        assertEquals(List.of(BS8008.getCardId(), BH3029.getCardId()), ask.getSourceCardIds());
+
+        // ACCEPT → 兩張棄牌進 B 手牌
+        game.playerUseJianXiongEffect(playerB.getId(), AskJianXiongEffectEvent.Choice.ACCEPT);
+        assertFalse(game.getGraveyard().contains(BS8008.getCardId()));
+        assertFalse(game.getGraveyard().contains(BH3029.getCardId()));
+        assertTrue(playerB.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BS8008.getCardId())));
+        assertTrue(playerB.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BH3029.getCardId())));
+    }
+
+    @DisplayName("""
+            Given
             B 為曹操（WEI001）
             stack 頂為非 NormalActiveKillBehavior（用一個 anonymous Behavior 模擬）
             graveyard 含一張 Kill

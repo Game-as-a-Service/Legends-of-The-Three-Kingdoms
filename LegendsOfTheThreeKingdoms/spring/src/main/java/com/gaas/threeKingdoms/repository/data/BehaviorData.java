@@ -27,6 +27,7 @@ public class BehaviorData {
     private static final String JIANXIONG_SOURCE_CARD_IDS = "JIANXIONG_SOURCE_CARD_IDS";
     private static final String DYING_PENDING_SOURCE_CARD_ID = "DYING_PENDING_SOURCE_CARD_ID";
     private static final String DYING_PENDING_ATTACKER_PLAYER_ID = "DYING_PENDING_ATTACKER_PLAYER_ID";
+    private static final String DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS = "DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS";
 
     private String behaviorName;
     private String behaviorPlayerId;
@@ -97,6 +98,10 @@ public class BehaviorData {
             case "DyingAskPeachBehavior" -> {
                 String pendingSrcCardId = params != null ? (String) params.get(DYING_PENDING_SOURCE_CARD_ID) : null;
                 String pendingAttackerId = params != null ? (String) params.get(DYING_PENDING_ATTACKER_PLAYER_ID) : null;
+                @SuppressWarnings("unchecked")
+                List<String> pendingViperSpearIds = params != null
+                        ? (List<String>) params.get(DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS)
+                        : null;
                 yield new DyingAskPeachBehavior(
                         game,
                         game.getPlayer(behaviorPlayerId),
@@ -106,7 +111,8 @@ public class BehaviorData {
                         playType,
                         cardId != null ? PlayCard.findById(cardId) : null,
                         pendingSrcCardId,
-                        pendingAttackerId
+                        pendingAttackerId,
+                        pendingViperSpearIds
                 );
             }
             case "EquipArmorBehavior" -> new EquipArmorBehavior(
@@ -403,6 +409,9 @@ public class BehaviorData {
             }
             if (dying.getPendingAttackerPlayerId() != null) {
                 params.put(DYING_PENDING_ATTACKER_PLAYER_ID, dying.getPendingAttackerPlayerId());
+            }
+            if (dying.getPendingViperSpearDiscardCardIds() != null) {
+                params.put(DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS, dying.getPendingViperSpearDiscardCardIds());
             }
         }
         return BehaviorData.builder()
