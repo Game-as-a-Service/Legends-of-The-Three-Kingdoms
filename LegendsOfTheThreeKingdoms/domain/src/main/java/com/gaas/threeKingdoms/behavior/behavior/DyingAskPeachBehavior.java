@@ -6,6 +6,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GameOver;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
@@ -14,6 +15,9 @@ import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.RoundPhase;
+import com.gaas.threeKingdoms.skill.context.DamageContext;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +27,26 @@ import java.util.stream.IntStream;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 
+@Getter
 public class DyingAskPeachBehavior extends Behavior {
+
+    /**
+     * 致命傷的 sourceCard.id 與 attackerPlayerId — 在 revival branch 用來 replay
+     * SkillEngine.onDamaged（FAQ：曹操瀕死被救回後仍可發動奸雄）。null 表示
+     * 不適合 replay（VirtualKill 不在 PlayCard.factory 或非殺類傷害）。
+     */
+    private final String pendingSourceCardId;
+    private final String pendingAttackerPlayerId;
+
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
+        this(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, null, null);
+    }
+
+    public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card,
+                                  String pendingSourceCardId, String pendingAttackerPlayerId) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
+        this.pendingSourceCardId = pendingSourceCardId;
+        this.pendingAttackerPlayerId = pendingAttackerPlayerId;
         List<Player> players = game.getSeatingChart().getPlayers();
         int damagedPlayerIndex = players.indexOf(behaviorPlayer);
         List<Player> reorderedPlayerList = new ArrayList<>();
@@ -161,6 +182,9 @@ public class DyingAskPeachBehavior extends Behavior {
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 }
+
+                // 致命傷被救回 → replay SkillEngine.onDamaged（FAQ: 曹操可發動奸雄收造成傷害的牌）
+                replayOnDamagedAfterRevival(dyingPlayer, events);
             } else {
                 events.add(createAskPeachEvent(currentPlayer, dyingPlayer));
             }
@@ -277,5 +301,26 @@ public class DyingAskPeachBehavior extends Behavior {
 
     private boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
+    }
+
+    private void replayOnDamagedAfterRevival(Player dyingPlayer, List<DomainEvent> events) {
+        if (pendingSourceCardId == null) {
+            return;
+        }
+        HandCard sourceCard;
+        try {
+            sourceCard = PlayCard.findById(pendingSourceCardId);
+        } catch (RuntimeException e) {
+            // VirtualKill 等不在 factory 的 sourceCard — 不 replay（v1 不支援）
+            return;
+        }
+        if (sourceCard == null) {
+            return;
+        }
+        Player attacker = (pendingAttackerPlayerId != null && !pendingAttackerPlayerId.isEmpty())
+                ? game.getPlayer(pendingAttackerPlayerId)
+                : null;
+        DamageContext ctx = new DamageContext(dyingPlayer, attacker, sourceCard, 1);
+        events.addAll(SkillEngine.onDamaged(game, ctx));
     }
 }

@@ -25,6 +25,8 @@ public class BehaviorData {
     private static final String POLLING_STARTED = "POLLING_STARTED";
     private static final String VIPER_SPEAR_DISCARDED_CARD_IDS = "VIPER_SPEAR_DISCARDED_CARD_IDS";
     private static final String JIANXIONG_SOURCE_CARD_IDS = "JIANXIONG_SOURCE_CARD_IDS";
+    private static final String DYING_PENDING_SOURCE_CARD_ID = "DYING_PENDING_SOURCE_CARD_ID";
+    private static final String DYING_PENDING_ATTACKER_PLAYER_ID = "DYING_PENDING_ATTACKER_PLAYER_ID";
 
     private String behaviorName;
     private String behaviorPlayerId;
@@ -92,15 +94,21 @@ public class BehaviorData {
                 }
                 yield borrowedSwordBehavior;
             }
-            case "DyingAskPeachBehavior" -> new DyingAskPeachBehavior(
-                    game,
-                    game.getPlayer(behaviorPlayerId),
-                    reactionPlayers,
-                    game.getPlayer(currentReactionPlayerId),
-                    cardId,
-                    playType,
-                    PlayCard.findById(cardId)
-            );
+            case "DyingAskPeachBehavior" -> {
+                String pendingSrcCardId = params != null ? (String) params.get(DYING_PENDING_SOURCE_CARD_ID) : null;
+                String pendingAttackerId = params != null ? (String) params.get(DYING_PENDING_ATTACKER_PLAYER_ID) : null;
+                yield new DyingAskPeachBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        cardId != null ? PlayCard.findById(cardId) : null,
+                        pendingSrcCardId,
+                        pendingAttackerId
+                );
+            }
             case "EquipArmorBehavior" -> new EquipArmorBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
@@ -389,6 +397,13 @@ public class BehaviorData {
             params.put(VIPER_SPEAR_DISCARDED_CARD_IDS, vs.getDiscardedCardIds());
         } else if (behavior instanceof WaitingJianXiongResponseBehavior jx) {
             params.put(JIANXIONG_SOURCE_CARD_IDS, jx.getSourceCardIds());
+        } else if (behavior instanceof DyingAskPeachBehavior dying) {
+            if (dying.getPendingSourceCardId() != null) {
+                params.put(DYING_PENDING_SOURCE_CARD_ID, dying.getPendingSourceCardId());
+            }
+            if (dying.getPendingAttackerPlayerId() != null) {
+                params.put(DYING_PENDING_ATTACKER_PLAYER_ID, dying.getPendingAttackerPlayerId());
+            }
         }
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())

@@ -5,6 +5,7 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.DuelBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.DyingAskPeachBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.LightningJudgementBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.ViperSpearKillBehavior;
@@ -76,6 +77,8 @@ public class JianXiongSkill implements OnDamagedSkill {
         //   - LightningJudgementBehavior：閃電判定打中（Ward 路徑）
         //   - BarbarianInvasionBehavior / ArrowBarrageBehavior：AOE polling
         //     （caller 偵測 WaitingJX 並把 polling-advance defer 為 callback，避免 activePlayer 衝突）
+        //   - DyingAskPeachBehavior：致命傷被救回後 replay（FAQ）— DyingBehavior 在 revival
+        //     branch 已 set isOneRound=true 才呼叫 SkillEngine，安全 pop
         //   - 空 stack：閃電判定無 Ward 路徑
         Behavior top = game.isTopBehaviorEmpty() ? null : game.peekTopBehavior();
         boolean topIsAllowed = top == null
@@ -83,7 +86,8 @@ public class JianXiongSkill implements OnDamagedSkill {
                 || top instanceof DuelBehavior
                 || top instanceof LightningJudgementBehavior
                 || top instanceof BarbarianInvasionBehavior
-                || top instanceof ArrowBarrageBehavior;
+                || top instanceof ArrowBarrageBehavior
+                || top instanceof DyingAskPeachBehavior;
         if (!topIsAllowed) {
             return List.of();
         }

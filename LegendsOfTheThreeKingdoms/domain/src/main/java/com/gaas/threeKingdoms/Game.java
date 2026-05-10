@@ -668,8 +668,12 @@ public class Game {
             behavior.ifPresent(b -> b.setIsOneRound(false));
 
             if (getGamePhase() instanceof GeneralDying) {
+                // 為救回後的 SkillEngine replay 帶 pending context（FAQ：曹操救回後可發動奸雄）
+                // VirtualKill (e.g. ViperSpear) 不在 PlayCard factory，無法 reload → 不傳
+                String pendingSourceCardId = (card instanceof VirtualKill) ? null : card.getId();
                 updateTopBehavior(new DyingAskPeachBehavior(this, damagedPlayer, getPlayers().stream().map(Player::getId).toList(),
-                        damagedPlayer, cardId, playType, null));
+                        damagedPlayer, cardId, playType, null,
+                        pendingSourceCardId, attackerPlayerId));
             }
             events.addAll(List.of(playerDamagedEvent, playerDyingEvent, askPeachEvent));
             return events;

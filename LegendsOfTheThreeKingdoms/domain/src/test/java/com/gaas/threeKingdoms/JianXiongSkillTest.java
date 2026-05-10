@@ -721,6 +721,90 @@ public class JianXiongSkillTest {
 
     @DisplayName("""
             Given
+            B (曹操) HP=1，A 出殺打 B → B 不出閃 → HP=0 進瀕死
+            C 出桃救 B → B HP=1
+
+            Then
+            事件中含 AskJianXiongEffectEvent，sourceCardIds=[殺.id]
+            （FAQ：致命傷被救回後仍可發動奸雄）
+            """)
+    @Test
+    public void givenCaoCaoLethalDamageThenRevived_AskJianXiongEffectEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+        playerB.setBloodCard(new BloodCard(1));
+        playerC.getHand().addCardToHand(new Peach(BH3029));
+
+        // A 出殺打 B（HP=1）→ B 不出閃 → 進瀕死
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active");
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        // 確認進入瀕死流程
+        assertEquals(0, playerB.getBloodCard().getHp());
+        assertTrue(game.getTopBehavior().peek() instanceof DyingAskPeachBehavior);
+
+        // B 自己沒桃，跳過 → C 被詢問
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), "skip");
+
+        // C 出桃救 B
+        List<DomainEvent> events = game.playerPlayCard(playerC.getId(), BH3029.getCardId(), playerB.getId(), "active");
+
+        // B 已救回（HP=1）
+        assertEquals(1, playerB.getBloodCard().getHp());
+
+        // 預期：events 含 AskJianXiongEffectEvent
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent after revival"));
+        assertEquals("player-b", ask.getPlayerId());
+        assertEquals(List.of(BS8008.getCardId()), ask.getSourceCardIds());
+        // stack 頂為 WaitingJX
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
+
+        // ACCEPT → 殺進手牌
+        game.playerUseJianXiongEffect(playerB.getId(), AskJianXiongEffectEvent.Choice.ACCEPT);
+        assertFalse(game.getGraveyard().contains(BS8008.getCardId()));
+        assertTrue(playerB.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BS8008.getCardId())));
+    }
+
+    @DisplayName("""
+            Given
+            B (曹操) HP=1，A 出殺打 B → B 不出閃 → HP=0 進瀕死
+            其他玩家都不出桃 → B 死亡
+
+            Then
+            events 不含 AskJianXiongEffectEvent（FAQ：除非曹操被救回）
+            """)
+    @Test
+    public void givenCaoCaoLethalDamageNoRevival_NoJianXiongTrigger() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+        Player playerD = game.getPlayer("player-d");
+        playerB.setBloodCard(new BloodCard(1));
+
+        // A 出殺打 B → B 不出閃 → 進瀕死
+        game.playerPlayCard(playerA.getId(), BS8008.getCardId(), playerB.getId(), "active");
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+
+        // B / C / D 依序不出桃
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), "skip");
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), "skip");
+        List<DomainEvent> events = game.playerPlayCard(playerD.getId(), "", playerB.getId(), "skip");
+
+        // B 死亡 — 不觸發奸雄
+        assertEquals(0, playerB.getBloodCard().getHp());
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskJianXiongEffectEvent),
+                "JianXiong should not trigger when player actually dies");
+    }
+
+    @DisplayName("""
+            Given
             B 為曹操（WEI001）
             stack 頂為非 NormalActiveKillBehavior（用一個 anonymous Behavior 模擬）
             graveyard 含一張 Kill
