@@ -858,6 +858,136 @@ public class JianXiongSkillTest {
 
     @DisplayName("""
             Given
+            B (曹操) HP=1 為 AOE 第一個 reactor
+            A 出南蠻入侵 → B 不出殺 → HP=0 進瀕死
+            D 出桃救 B → B HP=1
+
+            Then
+            JianXiong 觸發（sourceCardIds=[南蠻]）
+            B ACCEPT → 南蠻進手牌
+            polling resume → 下一個 reactor C 收 AskKillEvent
+            activePlayer = C
+            """)
+    @Test
+    public void givenCaoCaoInBarbarianInvasionPolling_LethalDamageThenRevived_AcceptThenPollingResumes() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+        Player playerD = game.getPlayer("player-d");
+        playerB.setBloodCard(new BloodCard(1));
+
+        playerA.getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        playerD.getHand().addCardToHand(new Peach(BH4030));
+
+        // A 出南蠻 → B 第一個被詢問
+        game.playerPlayCard(playerA.getId(), SS7007.getCardId(), "", "active");
+        // B 不出殺 → HP=0 進瀕死
+        game.playerPlayCard(playerB.getId(), "", playerA.getId(), "skip");
+        assertEquals(0, playerB.getBloodCard().getHp());
+        assertTrue(game.getTopBehavior().peek() instanceof DyingAskPeachBehavior);
+
+        // 順序：B 自己沒桃 → C 沒桃 → D 出桃救
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), "skip");
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), "skip");
+        List<DomainEvent> events = game.playerPlayCard(playerD.getId(), BH4030.getCardId(), playerB.getId(), "active");
+
+        // B 被救回 + JianXiong 觸發
+        assertEquals(1, playerB.getBloodCard().getHp());
+        AskJianXiongEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent)
+                .map(e -> (AskJianXiongEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskJianXiongEffectEvent after AOE revival"));
+        assertEquals(List.of(SS7007.getCardId()), ask.getSourceCardIds());
+
+        // B ACCEPT → 南蠻進手牌、polling 應 resume 到 C
+        List<DomainEvent> acceptEvents = game.playerUseJianXiongEffect(playerB.getId(), AskJianXiongEffectEvent.Choice.ACCEPT);
+        assertTrue(playerB.getHand().getCards().stream().anyMatch(c -> c.getId().equals(SS7007.getCardId())));
+
+        // polling resume：C 應收 AskKillEvent
+        AskKillEvent askKill = acceptEvents.stream()
+                .filter(e -> e instanceof AskKillEvent)
+                .map(e -> (AskKillEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskKillEvent for next reactor after revival ACCEPT"));
+        assertEquals("player-c", askKill.getPlayerId(), "polling should resume to next reactor C");
+        assertEquals("player-c", game.getActivePlayer().getId(), "activePlayer should be next reactor");
+    }
+
+    @DisplayName("""
+            Given
+            B (曹操) HP=1，受到 3 點傷害（閃電）→ HP=-2 進瀕死
+            需 3 張桃才救回（C/D/A 各出 1 張）
+
+            Then
+            JianXiong 事件在 events 中恰出現 1 次（FAQ：一次傷害只能觸發 1 次奸雄）
+            ACCEPT 後閃電進 B 手牌
+            """)
+    @Test
+    public void givenCaoCaoLethalFromLightning_MultiPeachRevival_JianXiongFiresOnce() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+        Player playerC = game.getPlayer("player-c");
+        Player playerD = game.getPlayer("player-d");
+        playerB.setBloodCard(new BloodCard(1));
+
+        // 3 個非曹操玩家各持 1 桃
+        playerC.getHand().addCardToHand(new Peach(BH3029));
+        playerD.getHand().addCardToHand(new Peach(BH4030));
+        playerA.getHand().addCardToHand(new Peach(BH6032));
+
+        // 閃電在墓地 — JianXiong 之後 graveyard.contains check 需要
+        Lightning lightning = new Lightning(SSA014);
+        game.getGraveyard().add(lightning);
+
+        // 直接觸發 Lightning damage（HP 1 → -2）
+        game.getDamagedEvent(
+                playerB.getId(),
+                playerA.getId(),
+                lightning.getId(),
+                lightning,
+                "inactive",
+                1,
+                playerB,
+                game.getCurrentRound(),
+                java.util.Optional.empty()
+        );
+
+        assertEquals(-2, playerB.getBloodCard().getHp());
+        assertTrue(game.getTopBehavior().peek() instanceof DyingAskPeachBehavior);
+
+        // B 自己沒桃 → 跳過
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), "skip");
+        // C 出 1 桃（HP -2 → -1，still dying，C 再被詢問）
+        game.playerPlayCard(playerC.getId(), BH3029.getCardId(), playerB.getId(), "active");
+        // C 沒桃 → skip
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), "skip");
+        // D 出 1 桃（HP -1 → 0，still dying）
+        game.playerPlayCard(playerD.getId(), BH4030.getCardId(), playerB.getId(), "active");
+        // D 沒桃 → skip
+        game.playerPlayCard(playerD.getId(), "", playerB.getId(), "skip");
+        // A 出 1 桃 → HP 0 → 1，revival！
+        List<DomainEvent> finalEvents = game.playerPlayCard(playerA.getId(), BH6032.getCardId(), playerB.getId(), "active");
+
+        assertEquals(1, playerB.getBloodCard().getHp());
+
+        // 關鍵：JianXiong 只觸發 1 次
+        long jianXiongCount = finalEvents.stream().filter(e -> e instanceof AskJianXiongEffectEvent).count();
+        assertEquals(1, jianXiongCount, "JianXiong should fire exactly once even after multi-peach revival");
+
+        AskJianXiongEffectEvent ask = (AskJianXiongEffectEvent) finalEvents.stream()
+                .filter(e -> e instanceof AskJianXiongEffectEvent).findFirst().orElseThrow();
+        assertEquals(List.of(lightning.getId()), ask.getSourceCardIds());
+
+        // ACCEPT → 閃電進手牌
+        game.playerUseJianXiongEffect(playerB.getId(), AskJianXiongEffectEvent.Choice.ACCEPT);
+        assertTrue(playerB.getHand().getCards().stream().anyMatch(c -> c.getId().equals(lightning.getId())));
+    }
+
+    @DisplayName("""
+            Given
             B 為曹操（WEI001）
             stack 頂為非 NormalActiveKillBehavior（用一個 anonymous Behavior 模擬）
             graveyard 含一張 Kill

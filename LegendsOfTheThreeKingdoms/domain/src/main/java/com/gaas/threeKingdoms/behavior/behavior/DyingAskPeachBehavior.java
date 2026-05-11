@@ -184,16 +184,33 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                 isOneRound = true;
 
                 if (currentRound.getCurrentCard() instanceof Lightning && currentRound.getRoundPhase().equals(RoundPhase.Judgement)) {
-                    // 如果閃電讓玩家死亡，而且玩家被桃救活，需要回到判該玩家的判定階段
+                    // 閃電讓玩家死亡 → 被桃救回 → 回到該玩家判定階段繼續流程
                     events.addAll(game.playerTakeTurnStartInJudgement(currentRound.getCurrentRoundPlayer()));
+                    // Lightning 路徑下也可能有 JianXiong replay；交由 replay 接續
+                    replayOnDamagedAfterRevival(dyingPlayer, events);
                 } else {
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
-                }
+                    // 致命傷被救回 → replay SkillEngine.onDamaged（FAQ: 曹操可發動奸雄收造成傷害的牌）
+                    // 順序：先 replay，若 JianXiong 觸發（push WaitingJX）則把 polling-resume defer
+                    // 進 WaitingJX.onResolved；否則立即 emit polling-resume 事件。
+                    replayOnDamagedAfterRevival(dyingPlayer, events);
 
-                // 致命傷被救回 → replay SkillEngine.onDamaged（FAQ: 曹操可發動奸雄收造成傷害的牌）
-                replayOnDamagedAfterRevival(dyingPlayer, events);
+                    if (!game.isTopBehaviorEmpty()
+                            && game.peekTopBehavior() instanceof WaitingJianXiongResponseBehavior wjx) {
+                        // JianXiong 介入：polling caller (BI / AB / Halberd) 的 resume 推到 WaitingJX 解決後
+                        wjx.setOnResolved(() -> {
+                            List<DomainEvent> resumeEvents = new ArrayList<>();
+                            addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(resumeEvents);
+                            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(resumeEvents);
+                            addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(resumeEvents);
+                            return resumeEvents;
+                        });
+                    } else {
+                        // 一般情況（非曹操，或 JianXiong 沒觸發）— 立即 emit polling resume
+                        addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+                        addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+                        addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
+                    }
+                }
             } else {
                 events.add(createAskPeachEvent(currentPlayer, dyingPlayer));
             }
