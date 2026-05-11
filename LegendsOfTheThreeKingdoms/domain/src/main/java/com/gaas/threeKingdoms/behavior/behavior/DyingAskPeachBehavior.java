@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 
 @Getter
-public class DyingAskPeachBehavior extends Behavior {
+public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
 
     /**
      * 致命傷的 sourceCard.id 與 attackerPlayerId — 在 revival branch 用來 replay
@@ -323,11 +323,8 @@ public class DyingAskPeachBehavior extends Behavior {
             // DyingAskPeachBehavior 取得 pending 的兩張棄牌 id
             sourceCard = new VirtualKill();
         } else if (pendingSourceCardId != null) {
-            try {
-                sourceCard = PlayCard.findById(pendingSourceCardId);
-            } catch (RuntimeException e) {
-                return;
-            }
+            // PlayCard.findById 找不到時返 null（非 throw），用 null check 處理
+            sourceCard = PlayCard.findById(pendingSourceCardId);
         }
         if (sourceCard == null) {
             return;

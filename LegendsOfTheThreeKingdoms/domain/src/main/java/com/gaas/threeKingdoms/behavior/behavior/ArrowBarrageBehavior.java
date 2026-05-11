@@ -21,7 +21,13 @@ import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TARGET_
 import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER_PLAYER_ID;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
-public class ArrowBarrageBehavior extends Behavior {
+public class ArrowBarrageBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
+
+    @Override
+    public boolean isPollingCaller() {
+        return true;
+    }
+
     private boolean pollingStarted = false;
 
     public ArrowBarrageBehavior(Game game, Player player, List<String> reactivePlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {

@@ -20,7 +20,13 @@ import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER
 import static com.gaas.threeKingdoms.handcard.PlayCard.isKillCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
-public class BarbarianInvasionBehavior extends Behavior {
+public class BarbarianInvasionBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
+
+    @Override
+    public boolean isPollingCaller() {
+        return true;
+    }
+
     private boolean pollingStarted = false;
 
     public BarbarianInvasionBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {

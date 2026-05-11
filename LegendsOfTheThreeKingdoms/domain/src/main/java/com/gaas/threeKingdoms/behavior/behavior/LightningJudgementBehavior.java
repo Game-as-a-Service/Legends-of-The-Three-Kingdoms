@@ -23,7 +23,7 @@ import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER
  * - Ward cancelled (odd): Lightning is NOT discarded, instead transferred to next player
  * - Ward proceeds (even) / all skip: Normal Lightning judgement executes
  */
-public class LightningJudgementBehavior extends Behavior {
+public class LightningJudgementBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
 
     public LightningJudgementBehavior(Game game, Player affectedPlayer, List<String> reactionPlayers,
                                        Player currentReactionPlayer, String cardId, String playType, HandCard card) {

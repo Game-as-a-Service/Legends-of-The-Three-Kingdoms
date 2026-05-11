@@ -64,6 +64,49 @@ public class JianXiongTest extends AbstractBaseIntegrationTest {
     }
 
     @Test
+    public void testCaoCaoLethalDamageFromViperSpearThenRevived_AcceptTakesTwoDiscards() throws Exception {
+        // Given B 為曹操 HP=1；A 裝丈八蛇矛 + 兩張手牌；C 有桃
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new Peach(BH3029), new Peach(BH4030));
+        playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
+        Player playerB = createPlayer("player-b", 1, General.曹操, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL,
+                new Peach(BH6032));
+        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Peach(BH7033)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // When A 用丈八蛇矛攻擊 B（棄兩張桃當虛擬殺）→ B HP=0 進瀕死
+        mockMvcUtil.useViperSpearKill(gameId, "player-a", "player-b",
+                        List.of(BH3029.getCardId(), BH4030.getCardId()))
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // B 自己沒桃 → 跳過
+        mockMvcUtil.playCard(gameId, "player-b", "player-b", "", "skip")
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // C 出桃救 B → 觸發 AskJianXiong（兩張棄牌 = ViperSpear 兩張棄牌）
+        mockMvcUtil.playCard(gameId, "player-c", "player-b", "BH6032", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk()).andReturn();
+        websocketUtil.popAllPlayerMessage();
+
+        // B 選 ACCEPT → 兩張棄牌進手牌
+        mockMvcUtil.useJianXiongEffect(gameId, "player-b", "ACCEPT")
+                .andExpect(status().isOk()).andReturn();
+
+        assertAllPlayerJson("src/test/resources/TestJsonFile/SkillTest/JianXiong/jianxiong_viper_spear_revived_accept_for_%s.json");
+    }
+
+    @Test
     public void testCaoCaoLethalDamageThenRevived_AskJianXiongEffectEmitted_AndAccept() throws Exception {
         // Given B 為曹操，HP=1；A 有殺；C 有桃
         Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
