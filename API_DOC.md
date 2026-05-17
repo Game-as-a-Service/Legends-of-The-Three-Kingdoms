@@ -483,8 +483,7 @@ POST /api/games/{gameId}/player:useHeavenlyDoubleHalberdKill
 |------|------|------|
 | playerId | String | 攻擊者玩家 ID（裝備方天畫戟） |
 | cardId | String | 要打出的殺 cardId（必須為攻擊者**最後一張手牌**） |
-| primaryTargetPlayerId | String | 主要目標玩家 ID |
-| additionalTargetPlayerIds | List\<String\> | 額外目標玩家 ID（0~2 名；須在攻擊範圍內） |
+| targetPlayerIds | List\<String\> | 全部目標玩家 ID（size 1~3；index 0 為主要目標；不重複、不含自己、皆需在攻擊範圍內） |
 
 **觸發時機**：攻擊者裝備方天畫戟、手上**只剩一張殺**時主動呼叫（不透過 `playCard` API）
 
@@ -502,8 +501,8 @@ A (裝備方天畫戟) 呼叫本 API → 棄最後一張殺到墓地
 **特殊情況**：
 - 攻擊者必須裝備方天畫戟
 - 該殺必須是攻擊者最後一張手牌（出牌後手牌為空才會觸發武器效果）
-- 額外目標必須在攻擊者攻擊範圍內、且不能與主要目標重複
-- 額外目標數為 0 時行為等同普通殺
+- 所有目標皆需在攻擊者攻擊範圍內、不重複、不可含攻擊者自己
+- 單目標時（`targetPlayerIds.size() == 1`）短路為一般殺
 - 中間目標進入瀕死：暫停 polling，dying flow 結束後恢復下一目標詢問
 - 可與八卦陣 / 青釭劍 / 各防具並存：目標各自獨立判定
 

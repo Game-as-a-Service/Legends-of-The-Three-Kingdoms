@@ -50,7 +50,7 @@ public class HeavenlyDoubleHalberdTest {
         equipHalberdWithSingleKill(playerA);
 
         List<DomainEvent> events = game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-c", "player-d"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c", "player-d"));
 
         HeavenlyDoubleHalberdKillTriggerEvent trigger = events.stream()
                 .filter(e -> e instanceof HeavenlyDoubleHalberdKillTriggerEvent)
@@ -73,7 +73,7 @@ public class HeavenlyDoubleHalberdTest {
         equipHalberdWithSingleKill(playerA);
 
         List<DomainEvent> events = game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-c"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c"));
 
         HeavenlyDoubleHalberdKillTriggerEvent trigger = events.stream()
                 .filter(e -> e instanceof HeavenlyDoubleHalberdKillTriggerEvent)
@@ -90,7 +90,7 @@ public class HeavenlyDoubleHalberdTest {
         equipHalberdWithSingleKill(playerA);
 
         List<DomainEvent> events = game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of());
+                "player-a", BS8008.getCardId(), List.of("player-b"));
 
         // 走 NormalActiveKillBehavior 路徑
         assertFalse(game.getTopBehavior().isEmpty());
@@ -113,7 +113,7 @@ public class HeavenlyDoubleHalberdTest {
         equipHalberdWithSingleKill(playerA);
 
         game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-c", "player-d"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c", "player-d"));
 
         game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
         game.playerPlayCard("player-c", "", "player-a", PlayType.SKIP.getPlayType());
@@ -139,7 +139,7 @@ public class HeavenlyDoubleHalberdTest {
         playerD.getHand().addCardToHand(new Dodge(BD2080));
 
         game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-c", "player-d"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c", "player-d"));
 
         game.playerPlayCard("player-b", BH2028.getCardId(), "player-a", PlayType.ACTIVE.getPlayType());
         game.playerPlayCard("player-c", BH2041.getCardId(), "player-a", PlayType.ACTIVE.getPlayType());
@@ -164,7 +164,7 @@ public class HeavenlyDoubleHalberdTest {
         playerD.getHand().addCardToHand(new Dodge(BD2080));
 
         game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-c", "player-d"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c", "player-d"));
 
         game.playerPlayCard("player-b", BH2028.getCardId(), "player-a", PlayType.ACTIVE.getPlayType());
         game.playerPlayCard("player-c", "", "player-a", PlayType.SKIP.getPlayType());
@@ -186,7 +186,7 @@ public class HeavenlyDoubleHalberdTest {
         playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
 
         List<DomainEvent> events = game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-c"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c"));
 
         assertTrue(events.stream().anyMatch(e -> e instanceof AskPlayEquipmentEffectEvent));
         assertFalse(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
@@ -204,7 +204,7 @@ public class HeavenlyDoubleHalberdTest {
         playerB.getHand().addCardToHand(new Dodge(BH2028));
 
         game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-c", "player-d"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c", "player-d"));
 
         // B 出閃
         game.playerPlayCard("player-b", BH2028.getCardId(), "player-a", PlayType.ACTIVE.getPlayType());
@@ -237,7 +237,7 @@ public class HeavenlyDoubleHalberdTest {
         equipHalberdWithSingleKill(playerA);
 
         game.playerUseHeavenlyDoubleHalberdKill(
-                "player-a", BS8008.getCardId(), "player-b", List.of("player-d"));
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-d"));
 
         // B 不出閃
         game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
@@ -270,7 +270,7 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalStateException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS8008.getCardId(), "player-b", List.of("player-c")));
+                        "player-a", BS8008.getCardId(), List.of("player-b", "player-c")));
     }
 
     @DisplayName("A 的殺不是最後一張手牌 → 拋例外")
@@ -283,7 +283,7 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalStateException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS8008.getCardId(), "player-b", List.of("player-c")));
+                        "player-a", BS8008.getCardId(), List.of("player-b", "player-c")));
     }
 
     @DisplayName("additionalTargets 超過 2 → 拋例外")
@@ -295,8 +295,8 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS8008.getCardId(), "player-b",
-                        List.of("player-c", "player-d", "player-e")));
+                        "player-a", BS8008.getCardId(),
+                        List.of("player-b", "player-c", "player-d", "player-e")));
     }
 
     @DisplayName("additionalTargets 包含重複玩家 → 拋例外")
@@ -308,8 +308,8 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS8008.getCardId(), "player-b",
-                        List.of("player-b", "player-c")));
+                        "player-a", BS8008.getCardId(),
+                        List.of("player-b", "player-b", "player-c")));
     }
 
     @DisplayName("additionalTargets 包含自己 → 拋例外")
@@ -321,8 +321,8 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS8008.getCardId(), "player-b",
-                        List.of("player-c", "player-a")));
+                        "player-a", BS8008.getCardId(),
+                        List.of("player-b", "player-c", "player-a")));
     }
 
     @DisplayName("primaryTarget 是自己 → 拋例外")
@@ -334,8 +334,8 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS8008.getCardId(), "player-a",
-                        List.of("player-b", "player-c")));
+                        "player-a", BS8008.getCardId(),
+                        List.of("player-a", "player-b", "player-c")));
     }
 
     @DisplayName("cardId 不在手牌 → 拋例外")
@@ -348,7 +348,7 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS9009.getCardId(), "player-b", List.of("player-c")));
+                        "player-a", BS9009.getCardId(), List.of("player-b", "player-c")));
     }
 
     @DisplayName("cardId 指向非殺 → 拋例外")
@@ -361,7 +361,7 @@ public class HeavenlyDoubleHalberdTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BH3029.getCardId(), "player-b", List.of("player-c")));
+                        "player-a", BH3029.getCardId(), List.of("player-b", "player-c")));
     }
 
     @DisplayName("本回合已出過殺 → 拋例外")
@@ -380,7 +380,7 @@ public class HeavenlyDoubleHalberdTest {
         // 再嘗試用方天畫戟出殺 → 應拋例外（此時只剩 BS9009 一張，滿足 last hand card）
         assertThrows(IllegalStateException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
-                        "player-a", BS9009.getCardId(), "player-c", List.of("player-d")));
+                        "player-a", BS9009.getCardId(), List.of("player-c", "player-d")));
     }
 
     // -------- Helpers --------

@@ -52,7 +52,7 @@ public class HeavenlyDoubleHalberdTest extends AbstractBaseIntegrationTest {
         givenPlayerAEquippedHalberdWithSingleKill();
 
         mockMvcUtil.useHeavenlyDoubleHalberdKill(gameId, "player-a", "BS8008",
-                        "player-b", List.of("player-c"))
+                        List.of("player-b", "player-c"))
                 .andExpect(status().isOk()).andReturn();
 
         // 驗證 HeavenlyDoubleHalberdKillTriggerEvent + AskDodgeEvent(B) 有廣播到 4 位玩家
@@ -64,7 +64,7 @@ public class HeavenlyDoubleHalberdTest extends AbstractBaseIntegrationTest {
         givenPlayerAEquippedHalberdWithSingleKill();
 
         mockMvcUtil.useHeavenlyDoubleHalberdKill(gameId, "player-a", "BS8008",
-                        "player-b", List.of("player-c"))
+                        List.of("player-b", "player-c"))
                 .andExpect(status().isOk()).andReturn();
         websocketUtil.popAllPlayerMessage();
 
@@ -96,7 +96,7 @@ public class HeavenlyDoubleHalberdTest extends AbstractBaseIntegrationTest {
         repository.save(game);
 
         mockMvcUtil.useHeavenlyDoubleHalberdKill(gameId, "player-a", "BS8008",
-                        "player-b", List.of("player-c"))
+                        List.of("player-b", "player-c"))
                 .andExpect(status().isOk()).andReturn();
         websocketUtil.popAllPlayerMessage();
 
@@ -116,9 +116,9 @@ public class HeavenlyDoubleHalberdTest extends AbstractBaseIntegrationTest {
     public void testUseHalberdKill_ZeroAdditional_ShortCircuitsToNormalKill() throws Exception {
         givenPlayerAEquippedHalberdWithSingleKill();
 
-        // additional 空陣列 → 短路為一般殺
+        // 單目標 → 短路為一般殺
         mockMvcUtil.useHeavenlyDoubleHalberdKill(gameId, "player-a", "BS8008",
-                        "player-b", List.of())
+                        List.of("player-b"))
                 .andExpect(status().isOk()).andReturn();
 
         // 驗證沒有 HeavenlyDoubleHalberdKillTriggerEvent，只有一般 PlayCardEvent + AskDodgeEvent
@@ -138,7 +138,7 @@ public class HeavenlyDoubleHalberdTest extends AbstractBaseIntegrationTest {
         repository.save(game);
 
         mockMvcUtil.useHeavenlyDoubleHalberdKill(gameId, "player-a", "BS8008",
-                        "player-b", List.of("player-c"))
+                        List.of("player-b", "player-c"))
                 .andExpect(status().is4xxClientError());
     }
 
@@ -158,7 +158,7 @@ public class HeavenlyDoubleHalberdTest extends AbstractBaseIntegrationTest {
 
         // A 有兩張手牌 → halberd 不可觸發
         mockMvcUtil.useHeavenlyDoubleHalberdKill(gameId, "player-a", "BS8008",
-                        "player-b", List.of("player-c"))
+                        List.of("player-b", "player-c"))
                 .andExpect(status().is4xxClientError());
     }
 

@@ -23,8 +23,7 @@ public class UseHeavenlyDoubleHalberdKillUseCase {
         List<DomainEvent> events = game.playerUseHeavenlyDoubleHalberdKill(
                 request.playerId,
                 request.cardId,
-                request.primaryTargetPlayerId,
-                request.additionalTargetPlayerIds);
+                request.targetPlayerIds);
         gameRepository.save(game);
         presenter.renderEvents(events);
     }
@@ -35,8 +34,8 @@ public class UseHeavenlyDoubleHalberdKillUseCase {
     public static class UseHeavenlyDoubleHalberdKillRequest {
         private String playerId;
         private String cardId;
-        private String primaryTargetPlayerId;
-        private List<String> additionalTargetPlayerIds; // size 0..2
+        /** 全部目標 id；size 1~3，index 0 為主要目標 */
+        private List<String> targetPlayerIds;
     }
 
     public interface UseHeavenlyDoubleHalberdKillPresenter<T> {
