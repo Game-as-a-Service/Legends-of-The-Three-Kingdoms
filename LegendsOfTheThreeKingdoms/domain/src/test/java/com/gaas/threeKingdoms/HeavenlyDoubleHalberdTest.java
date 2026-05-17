@@ -82,9 +82,9 @@ public class HeavenlyDoubleHalberdTest {
         assertEquals(List.of("player-b", "player-c"), trigger.getTargetPlayerIds());
     }
 
-    @DisplayName("A 用方天畫戟出殺但 0 個額外目標 → 短路走一般 playCard 流程，不產生 halberd 事件")
+    @DisplayName("A 用方天畫戟出殺但 targetPlayerIds 只有 1 個目標 → 短路走一般 playCard 流程，不產生 halberd 事件")
     @Test
-    public void testUseHalberdKill_ZeroAdditionalTargets_ShortCircuits() {
+    public void testUseHalberdKill_SingleTarget_ShortCircuits() {
         Game game = createGame();
         Player playerA = game.getPlayer("player-a");
         equipHalberdWithSingleKill(playerA);
@@ -286,9 +286,9 @@ public class HeavenlyDoubleHalberdTest {
                         "player-a", BS8008.getCardId(), List.of("player-b", "player-c")));
     }
 
-    @DisplayName("additionalTargets 超過 2 → 拋例外")
+    @DisplayName("targetPlayerIds 超過 3 → 拋例外")
     @Test
-    public void testMoreThanTwoAdditionalTargets_ThrowsException() {
+    public void testMoreThanThreeTargets_ThrowsException() {
         Game game = createGame();
         Player playerA = game.getPlayer("player-a");
         equipHalberdWithSingleKill(playerA);
@@ -299,9 +299,9 @@ public class HeavenlyDoubleHalberdTest {
                         List.of("player-b", "player-c", "player-d", "player-e")));
     }
 
-    @DisplayName("additionalTargets 包含重複玩家 → 拋例外")
+    @DisplayName("targetPlayerIds 包含重複玩家 → 拋例外")
     @Test
-    public void testDuplicateAdditionalTarget_ThrowsException() {
+    public void testDuplicateTarget_ThrowsException() {
         Game game = createGame();
         Player playerA = game.getPlayer("player-a");
         equipHalberdWithSingleKill(playerA);
@@ -312,9 +312,9 @@ public class HeavenlyDoubleHalberdTest {
                         List.of("player-b", "player-b", "player-c")));
     }
 
-    @DisplayName("additionalTargets 包含自己 → 拋例外")
+    @DisplayName("targetPlayerIds 包含自己（非 index 0） → 拋例外")
     @Test
-    public void testSelfAsAdditionalTarget_ThrowsException() {
+    public void testSelfAsNonPrimaryTarget_ThrowsException() {
         Game game = createGame();
         Player playerA = game.getPlayer("player-a");
         equipHalberdWithSingleKill(playerA);
@@ -325,7 +325,7 @@ public class HeavenlyDoubleHalberdTest {
                         List.of("player-b", "player-c", "player-a")));
     }
 
-    @DisplayName("primaryTarget 是自己 → 拋例外")
+    @DisplayName("targetPlayerIds index 0（primary）是自己 → 拋例外")
     @Test
     public void testSelfAsPrimaryTarget_ThrowsException() {
         Game game = createGame();
@@ -381,6 +381,32 @@ public class HeavenlyDoubleHalberdTest {
         assertThrows(IllegalStateException.class, () ->
                 game.playerUseHeavenlyDoubleHalberdKill(
                         "player-a", BS9009.getCardId(), List.of("player-c", "player-d")));
+    }
+
+    @DisplayName("targetPlayerIds 為 null → 拋例外")
+    @Test
+    public void testNullTargetPlayerIds_ThrowsException() {
+        Game game = createGame();
+        Player playerA = game.getPlayer("player-a");
+        equipHalberdWithSingleKill(playerA);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                game.playerUseHeavenlyDoubleHalberdKill(
+                        "player-a", BS8008.getCardId(), null));
+        assertTrue(ex.getMessage().contains("required"),
+                "null 應觸發 'required' message，而非 'size must be 1~3'");
+    }
+
+    @DisplayName("targetPlayerIds 為空 list → 拋例外（不可短路為一般殺）")
+    @Test
+    public void testEmptyTargetPlayerIds_ThrowsException() {
+        Game game = createGame();
+        Player playerA = game.getPlayer("player-a");
+        equipHalberdWithSingleKill(playerA);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                game.playerUseHeavenlyDoubleHalberdKill(
+                        "player-a", BS8008.getCardId(), List.of()));
     }
 
     // -------- Helpers --------

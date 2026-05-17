@@ -981,9 +981,12 @@ public class Game {
             throw new IllegalStateException("Halberd effect only usable when the Kill is the last hand card");
         }
 
-        // 6. 目標列表驗證：size 1~3、不重複、不含自己
-        if (targetPlayerIds == null || targetPlayerIds.isEmpty() || targetPlayerIds.size() > 3) {
-            throw new IllegalArgumentException("targetPlayerIds size must be 1~3");
+        // 6. 目標列表驗證：null / size 1~3 / 不重複 / 不含自己
+        if (targetPlayerIds == null) {
+            throw new IllegalArgumentException("targetPlayerIds is required");
+        }
+        if (targetPlayerIds.isEmpty() || targetPlayerIds.size() > 3) {
+            throw new IllegalArgumentException("targetPlayerIds size must be 1~3, got " + targetPlayerIds.size());
         }
         if (new HashSet<>(targetPlayerIds).size() != targetPlayerIds.size()) {
             throw new IllegalArgumentException("Duplicate targets");
@@ -992,31 +995,32 @@ public class Game {
             throw new IllegalArgumentException("Cannot target self");
         }
 
-        // 7. 短路：只有 1 個目標 → 行為等同普通殺，走正常 playCard 路徑
-        if (targetPlayerIds.size() == 1) {
-            return playerPlayCard(playerId, cardId, targetPlayerIds.get(0), PlayType.ACTIVE.getPlayType());
-        }
-
-        // 8. 多目標 — 驗證攻擊範圍 + 取得 primary
-        Player primaryTarget = getPlayer(targetPlayerIds.get(0));
+        // 7. 攻擊範圍驗證（兩條路徑都套用，避免 short-circuit 隱式依賴下游 handler）
         for (String targetId : targetPlayerIds) {
-            Player target = getPlayer(targetId);
-            if (!isInAttackRange(attacker, target)) {
+            if (!isInAttackRange(attacker, getPlayer(targetId))) {
                 throw new IllegalStateException(String.format("%s is not in attack range", targetId));
             }
         }
 
-        // 9. 回合出殺次數限制（考慮諸葛連弩——實際上不會同時裝兩把武器，但保留邏輯對稱性）
+        // 8. 短路：只有 1 個目標 → 行為等同普通殺，走正常 playCard 路徑
+        if (targetPlayerIds.size() == 1) {
+            return playerPlayCard(playerId, cardId, targetPlayerIds.get(0), PlayType.ACTIVE.getPlayType());
+        }
+
+        // 9. 多目標 — 取得 primary
+        Player primaryTarget = getPlayer(targetPlayerIds.get(0));
+
+        // 10. 回合出殺次數限制（考慮諸葛連弩——實際上不會同時裝兩把武器，但保留邏輯對稱性）
         if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)) {
             throw new IllegalStateException("Player already played Kill Card");
         }
 
-        // 10. 棄殺到墓地，標記本回合已出殺
+        // 11. 棄殺到墓地，標記本回合已出殺
         HandCard killCard = attacker.playCard(cardId);
         graveyard.add(killCard);
         currentRound.setShowKill(true);
 
-        // 11. push HeavenlyDoubleHalberdKillBehavior
+        // 12. push HeavenlyDoubleHalberdKillBehavior
         HeavenlyDoubleHalberdKillBehavior behavior = new HeavenlyDoubleHalberdKillBehavior(
                 this, attacker, targetPlayerIds, primaryTarget, cardId, killCard);
         updateTopBehavior(behavior);
