@@ -23,6 +23,7 @@ import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
 import com.gaas.threeKingdoms.behavior.behavior.LightningJudgementBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.BarbarianInvasionBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.player.*;
@@ -270,6 +271,42 @@ public class JianXiongSkillTest {
 
         long count = events.stream().filter(e -> e instanceof AskJianXiongEffectEvent).count();
         assertEquals(1, count, "JianXiong should trigger exactly once per DamageEvent");
+    }
+
+    @DisplayName("""
+            Given
+            B 為曹操（WEI001）
+            stack 頂為 NormalActiveKillBehavior（模擬出殺中）
+            graveyard 含一張 Kill 作為 sourceCard
+
+            When
+            直接呼叫 JianXiongSkill.onDamaged with points=2（模擬未來雷殺等多點傷害源）
+
+            Then
+            事件中只有 1 個 AskJianXiongEffectEvent（鎖定 v1 spec：多點傷害整次只觸發 1 次）
+            stack 頂被換成 WaitingJianXiongResponseBehavior
+            """)
+    @Test
+    public void givenMultiPointDamage_OnlyOneAskJianXiongEffectEventEmitted() {
+        Game game = setupGameCaoCaoB(General.曹操);
+        Player caoCao = game.getPlayer("player-b");
+        Player attacker = game.getPlayer("player-a");
+
+        Kill kill = new Kill(BS8008);
+        game.getGraveyard().add(kill);
+
+        NormalActiveKillBehavior normalKill = new NormalActiveKillBehavior(
+                game, attacker, List.of(caoCao.getId()), caoCao,
+                kill.getId(), "active", kill);
+        game.updateTopBehavior(normalKill);
+
+        DamageContext ctx = new DamageContext(caoCao, attacker, kill, 2);
+        List<DomainEvent> events = new JianXiongSkill().onDamaged(game, ctx);
+
+        long count = events.stream().filter(e -> e instanceof AskJianXiongEffectEvent).count();
+        assertEquals(1, count,
+                "JianXiong should trigger exactly once regardless of damage points (v1 spec)");
+        assertTrue(game.getTopBehavior().peek() instanceof WaitingJianXiongResponseBehavior);
     }
 
     @DisplayName("""
