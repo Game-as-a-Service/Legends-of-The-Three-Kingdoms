@@ -83,6 +83,15 @@ public class MockMvcUtil {
                         }""", playerId, choice, cardId)));
     }
 
+    public ResultActions useJianXiongEffect(String gameId, String playerId, String choice) throws Exception {
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useJianXiongEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "choice": "%s"
+                        }""", playerId, choice)));
+    }
+
     public ResultActions useGreenDragonCrescentBladeEffect(String gameId, String playerId, String choice, String killCardId) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useGreenDragonCrescentBladeEffect")
                 .contentType(MediaType.APPLICATION_JSON)

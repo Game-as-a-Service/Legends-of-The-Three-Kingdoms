@@ -31,7 +31,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
 
-public class NormalActiveKillBehavior extends Behavior {
+public class NormalActiveKillBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
 
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);

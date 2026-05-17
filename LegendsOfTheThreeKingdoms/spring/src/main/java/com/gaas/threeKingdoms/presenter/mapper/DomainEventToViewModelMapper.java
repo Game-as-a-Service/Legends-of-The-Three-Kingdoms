@@ -281,6 +281,25 @@ public class DomainEventToViewModelMapper {
             return new UseEquipmentEffectPresenter.HeavenlyDoubleHalberdKillTriggerViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(AskJianXiongEffectEvent.class, event -> {
+            AskJianXiongEffectEvent askEvent = (AskJianXiongEffectEvent) event;
+            UseJianXiongEffectPresenter.AskJianXiongEffectDataViewModel dataViewModel = new UseJianXiongEffectPresenter.AskJianXiongEffectDataViewModel(
+                    askEvent.getPlayerId(),
+                    askEvent.getSourceCardIds()
+            );
+            return new UseJianXiongEffectPresenter.AskJianXiongEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(JianXiongEffectEvent.class, event -> {
+            JianXiongEffectEvent jxEvent = (JianXiongEffectEvent) event;
+            UseJianXiongEffectPresenter.JianXiongEffectDataViewModel dataViewModel = new UseJianXiongEffectPresenter.JianXiongEffectDataViewModel(
+                    jxEvent.getPlayerId(),
+                    jxEvent.getSourceCardIds(),
+                    jxEvent.isTaken()
+            );
+            return new UseJianXiongEffectPresenter.JianXiongEffectViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(

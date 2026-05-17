@@ -37,6 +37,7 @@ public class GameController {
     private final UseYinYangSwordsEffectUseCase useYinYangSwordsEffectUseCase;
     private final UseGreenDragonCrescentBladeEffectUseCase useGreenDragonCrescentBladeEffectUseCase;
     private final UseStonePiercingAxeEffectUseCase useStonePiercingAxeEffectUseCase;
+    private final UseJianXiongEffectUseCase useJianXiongEffectUseCase;
     private final UseViperSpearKillUseCase useViperSpearKillUseCase;
     private final UseHeavenlyDoubleHalberdKillUseCase useHeavenlyDoubleHalberdKillUseCase;
 
@@ -176,6 +177,14 @@ public class GameController {
         UseStonePiercingAxeEffectPresenter presenter = new UseStonePiercingAxeEffectPresenter();
         useStonePiercingAxeEffectUseCase.execute(gameId, request.toUseStonePiercingAxeEffectRequest(), presenter);
         webSocketBroadCast.pushUseStonePiercingAxeEffectEvent(presenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useJianXiongEffect")
+    public ResponseEntity<?> playerUseJianXiongEffect(@PathVariable String gameId, @RequestBody UseJianXiongEffectRequest request) {
+        UseJianXiongEffectPresenter presenter = new UseJianXiongEffectPresenter();
+        useJianXiongEffectUseCase.execute(gameId, request.toUseJianXiongEffectRequest(), presenter);
+        webSocketBroadCast.pushUseJianXiongEffectEvent(presenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

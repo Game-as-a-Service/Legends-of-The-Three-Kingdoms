@@ -6,7 +6,9 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.gamephase.GameOver;
 import com.gaas.threeKingdoms.gamephase.Normal;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -14,6 +16,9 @@ import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.RoundPhase;
+import com.gaas.threeKingdoms.skill.context.DamageContext;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +28,34 @@ import java.util.stream.IntStream;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.isPeachCard;
 
-public class DyingAskPeachBehavior extends Behavior {
+@Getter
+public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
+
+    /**
+     * 致命傷的 sourceCard.id 與 attackerPlayerId — 在 revival branch 用來 replay
+     * SkillEngine.onDamaged（FAQ：曹操瀕死被救回後仍可發動奸雄）。null 表示
+     * 不適合 replay（一般情況下 VirtualKill 不在 PlayCard.factory 或非殺類傷害）。
+     * <p>
+     * 若致命傷源自丈八蛇矛（VirtualKill），改用 pendingViperSpearDiscardCardIds
+     * 持有兩張棄牌 id，replay 時 JianXiongSkill 透過 DyingAskPeachBehavior 取得。
+     */
+    private final String pendingSourceCardId;
+    private final String pendingAttackerPlayerId;
+    private final List<String> pendingViperSpearDiscardCardIds;
+
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
+        this(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, null, null, null);
+    }
+
+    public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card,
+                                  String pendingSourceCardId, String pendingAttackerPlayerId,
+                                  List<String> pendingViperSpearDiscardCardIds) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
+        this.pendingSourceCardId = pendingSourceCardId;
+        this.pendingAttackerPlayerId = pendingAttackerPlayerId;
+        this.pendingViperSpearDiscardCardIds = pendingViperSpearDiscardCardIds == null
+                ? null
+                : List.copyOf(pendingViperSpearDiscardCardIds);
         List<Player> players = game.getSeatingChart().getPlayers();
         int damagedPlayerIndex = players.indexOf(behaviorPlayer);
         List<Player> reorderedPlayerList = new ArrayList<>();
@@ -154,12 +184,32 @@ public class DyingAskPeachBehavior extends Behavior {
                 isOneRound = true;
 
                 if (currentRound.getCurrentCard() instanceof Lightning && currentRound.getRoundPhase().equals(RoundPhase.Judgement)) {
-                    // 如果閃電讓玩家死亡，而且玩家被桃救活，需要回到判該玩家的判定階段
+                    // 閃電讓玩家死亡 → 被桃救回 → 回到該玩家判定階段繼續流程
                     events.addAll(game.playerTakeTurnStartInJudgement(currentRound.getCurrentRoundPlayer()));
+                    // Lightning 路徑下也可能有 JianXiong replay；交由 replay 接續
+                    replayOnDamagedAfterRevival(dyingPlayer, events);
                 } else {
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
+                    // 致命傷被救回 → replay SkillEngine.onDamaged（FAQ: 曹操可發動奸雄收造成傷害的牌）
+                    // 順序：先 replay，若 JianXiong 觸發（push WaitingJX）則把 polling-resume defer
+                    // 進 WaitingJX.onResolved；否則立即 emit polling-resume 事件。
+                    replayOnDamagedAfterRevival(dyingPlayer, events);
+
+                    if (!game.isTopBehaviorEmpty()
+                            && game.peekTopBehavior() instanceof WaitingJianXiongResponseBehavior wjx) {
+                        // JianXiong 介入：polling caller (BI / AB / Halberd) 的 resume 推到 WaitingJX 解決後
+                        wjx.setOnResolved(() -> {
+                            List<DomainEvent> resumeEvents = new ArrayList<>();
+                            addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(resumeEvents);
+                            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(resumeEvents);
+                            addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(resumeEvents);
+                            return resumeEvents;
+                        });
+                    } else {
+                        // 一般情況（非曹操，或 JianXiong 沒觸發）— 立即 emit polling resume
+                        addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
+                        addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
+                        addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
+                    }
                 }
             } else {
                 events.add(createAskPeachEvent(currentPlayer, dyingPlayer));
@@ -277,5 +327,26 @@ public class DyingAskPeachBehavior extends Behavior {
 
     private boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
+    }
+
+    private void replayOnDamagedAfterRevival(Player dyingPlayer, List<DomainEvent> events) {
+        Player attacker = (pendingAttackerPlayerId != null && !pendingAttackerPlayerId.isEmpty())
+                ? game.getPlayer(pendingAttackerPlayerId)
+                : null;
+
+        HandCard sourceCard = null;
+        if (pendingViperSpearDiscardCardIds != null && !pendingViperSpearDiscardCardIds.isEmpty()) {
+            // 丈八蛇矛致命攻擊：sourceCard 是 VirtualKill；JianXiongSkill 會透過
+            // DyingAskPeachBehavior 取得 pending 的兩張棄牌 id
+            sourceCard = new VirtualKill();
+        } else if (pendingSourceCardId != null) {
+            // PlayCard.findById 找不到時返 null（非 throw），用 null check 處理
+            sourceCard = PlayCard.findById(pendingSourceCardId);
+        }
+        if (sourceCard == null) {
+            return;
+        }
+        DamageContext ctx = new DamageContext(dyingPlayer, attacker, sourceCard, 1);
+        events.addAll(SkillEngine.onDamaged(game, ctx));
     }
 }

@@ -21,7 +21,13 @@ import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER
 import static com.gaas.threeKingdoms.handcard.PlayCard.isKillCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
-public class BarbarianInvasionBehavior extends Behavior {
+public class BarbarianInvasionBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
+
+    @Override
+    public boolean isPollingCaller() {
+        return true;
+    }
+
     private boolean pollingStarted = false;
 
     public BarbarianInvasionBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
@@ -137,32 +143,22 @@ public class BarbarianInvasionBehavior extends Behavior {
         if (isSkip(playType)) {
             int originalHp = currentReactionPlayer.getHP();
             List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), Optional.of(this));
-            // Remove the current player to next player
-            currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
 
-            List<DomainEvent> events = new ArrayList<>(damagedEvent);
-            if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) { // 如果受到傷害且沒死亡
-                boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
-                if (isLastPlayer) {
-                    isOneRound = true;
-                    game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
-                } else {
-                    isOneRound = false;
-                    game.getCurrentRound().setActivePlayer(currentReactionPlayer);
-                }
-                events.add(game.getGameStatusEvent("扣血但還活著"));
-                if (!isLastPlayer) {
-                    events.addAll(askNextPlayerOrWard());
-                }
-            } else {
-                events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
-
-                // 最後一個人
-                if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
-                    isOneRound = true;
-                }
+            // 偵測 JianXiong 介入：若 WaitingJX 在 stack 頂，把 polling-advance 註冊為
+            // callback，等 JianXiong 解決後再執行（避免覆蓋 activePlayer 與打亂 stack）
+            if (!game.isTopBehaviorEmpty()
+                    && game.peekTopBehavior() instanceof WaitingJianXiongResponseBehavior wjx) {
+                wjx.setOnResolved(() -> advanceAfterDamage(playerId));
+                // 立即補上 GameStatusEvent — PlayCardPresenter 會 require；polling-advance 才 defer
+                List<DomainEvent> events = new ArrayList<>(damagedEvent);
+                String message = game.getGamePhase().getPhaseName().equals("GeneralDying")
+                        ? "扣血已瀕臨死亡" : "扣血但還活著";
+                events.add(game.getGameStatusEvent(message));
+                return events;
             }
 
+            List<DomainEvent> events = new ArrayList<>(damagedEvent);
+            events.addAll(advanceAfterDamage(playerId));
             return events;
         } else if (isKillCard(cardId)) {
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
@@ -204,6 +200,38 @@ public class BarbarianInvasionBehavior extends Behavior {
 
     public boolean isInReactionPlayers(String playerId) {
         return reactionPlayers.contains(playerId);
+    }
+
+    /**
+     * 受傷後的 polling-advance 邏輯（推進到下個 reactor / 結束 polling）。
+     * 抽出以便 JianXiong 介入時 defer 為 callback；正常路徑直接在 doResponseToPlayerAction
+     * 內呼叫。
+     */
+    private List<DomainEvent> advanceAfterDamage(String playerId) {
+        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+
+        List<DomainEvent> events = new ArrayList<>();
+        if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) {
+            boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
+            if (isLastPlayer) {
+                isOneRound = true;
+                game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+            } else {
+                isOneRound = false;
+                game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+            }
+            events.add(game.getGameStatusEvent("扣血但還活著"));
+            if (!isLastPlayer) {
+                events.addAll(askNextPlayerOrWard());
+            }
+        } else {
+            events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
+            // 最後一個人
+            if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+                isOneRound = true;
+            }
+        }
+        return events;
     }
 
 }

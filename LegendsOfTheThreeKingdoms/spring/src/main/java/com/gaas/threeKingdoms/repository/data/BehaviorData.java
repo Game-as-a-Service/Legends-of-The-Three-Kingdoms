@@ -24,6 +24,10 @@ import java.util.Optional;
 public class BehaviorData {
     private static final String POLLING_STARTED = "POLLING_STARTED";
     private static final String VIPER_SPEAR_DISCARDED_CARD_IDS = "VIPER_SPEAR_DISCARDED_CARD_IDS";
+    private static final String JIANXIONG_SOURCE_CARD_IDS = "JIANXIONG_SOURCE_CARD_IDS";
+    private static final String DYING_PENDING_SOURCE_CARD_ID = "DYING_PENDING_SOURCE_CARD_ID";
+    private static final String DYING_PENDING_ATTACKER_PLAYER_ID = "DYING_PENDING_ATTACKER_PLAYER_ID";
+    private static final String DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS = "DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS";
 
     private String behaviorName;
     private String behaviorPlayerId;
@@ -91,15 +95,26 @@ public class BehaviorData {
                 }
                 yield borrowedSwordBehavior;
             }
-            case "DyingAskPeachBehavior" -> new DyingAskPeachBehavior(
-                    game,
-                    game.getPlayer(behaviorPlayerId),
-                    reactionPlayers,
-                    game.getPlayer(currentReactionPlayerId),
-                    cardId,
-                    playType,
-                    PlayCard.findById(cardId)
-            );
+            case "DyingAskPeachBehavior" -> {
+                String pendingSrcCardId = params != null ? (String) params.get(DYING_PENDING_SOURCE_CARD_ID) : null;
+                String pendingAttackerId = params != null ? (String) params.get(DYING_PENDING_ATTACKER_PLAYER_ID) : null;
+                @SuppressWarnings("unchecked")
+                List<String> pendingViperSpearIds = params != null
+                        ? (List<String>) params.get(DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS)
+                        : null;
+                yield new DyingAskPeachBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        cardId != null ? PlayCard.findById(cardId) : null,
+                        pendingSrcCardId,
+                        pendingAttackerId,
+                        pendingViperSpearIds
+                );
+            }
             case "EquipArmorBehavior" -> new EquipArmorBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
@@ -357,6 +372,17 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
+            case "WaitingJianXiongResponseBehavior" -> {
+                @SuppressWarnings("unchecked")
+                List<String> sourceCardIds = params != null && params.get(JIANXIONG_SOURCE_CARD_IDS) != null
+                        ? (List<String>) params.get(JIANXIONG_SOURCE_CARD_IDS)
+                        : (cardId != null ? List.of(cardId) : List.of());
+                yield new WaitingJianXiongResponseBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        sourceCardIds
+                );
+            }
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);
@@ -375,6 +401,18 @@ public class BehaviorData {
             params.put(POLLING_STARTED, bh.isPollingStarted());
         } else if (behavior instanceof ViperSpearKillBehavior vs) {
             params.put(VIPER_SPEAR_DISCARDED_CARD_IDS, vs.getDiscardedCardIds());
+        } else if (behavior instanceof WaitingJianXiongResponseBehavior jx) {
+            params.put(JIANXIONG_SOURCE_CARD_IDS, jx.getSourceCardIds());
+        } else if (behavior instanceof DyingAskPeachBehavior dying) {
+            if (dying.getPendingSourceCardId() != null) {
+                params.put(DYING_PENDING_SOURCE_CARD_ID, dying.getPendingSourceCardId());
+            }
+            if (dying.getPendingAttackerPlayerId() != null) {
+                params.put(DYING_PENDING_ATTACKER_PLAYER_ID, dying.getPendingAttackerPlayerId());
+            }
+            if (dying.getPendingViperSpearDiscardCardIds() != null) {
+                params.put(DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS, dying.getPendingViperSpearDiscardCardIds());
+            }
         }
         return BehaviorData.builder()
                 .behaviorName(behavior.getClass().getSimpleName())
