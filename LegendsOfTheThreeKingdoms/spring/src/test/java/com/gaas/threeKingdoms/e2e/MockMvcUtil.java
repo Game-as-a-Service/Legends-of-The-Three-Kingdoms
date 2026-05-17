@@ -121,9 +121,8 @@ public class MockMvcUtil {
     }
 
     public ResultActions useHeavenlyDoubleHalberdKill(String gameId, String playerId, String cardId,
-                                                      String primaryTargetPlayerId,
-                                                      java.util.List<String> additionalTargetPlayerIds) throws Exception {
-        String additionalJson = additionalTargetPlayerIds.stream()
+                                                      java.util.List<String> targetPlayerIds) throws Exception {
+        String targetsJson = targetPlayerIds.stream()
                 .map(id -> "\"" + id + "\"")
                 .collect(java.util.stream.Collectors.joining(","));
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useHeavenlyDoubleHalberdKill")
@@ -131,9 +130,8 @@ public class MockMvcUtil {
                 .content(String.format("""
                         { "playerId": "%s",
                           "cardId": "%s",
-                          "primaryTargetPlayerId": "%s",
-                          "additionalTargetPlayerIds": [%s]
-                        }""", playerId, cardId, primaryTargetPlayerId, additionalJson)));
+                          "targetPlayerIds": [%s]
+                        }""", playerId, cardId, targetsJson)));
     }
 
     public ResultActions playCard(String gameId, String currentPlayerId, String targetPlayerId, String cardId, String playType) throws Exception {

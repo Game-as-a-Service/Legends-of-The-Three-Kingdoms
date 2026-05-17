@@ -953,8 +953,7 @@ public class Game {
 
     public List<DomainEvent> playerUseHeavenlyDoubleHalberdKill(String playerId,
                                                                  String cardId,
-                                                                 String primaryTargetPlayerId,
-                                                                 List<String> additionalTargetPlayerIds) {
+                                                                 List<String> targetPlayerIds) {
         Player attacker = getPlayer(playerId);
 
         // 1. activePlayer 驗證
@@ -982,40 +981,34 @@ public class Game {
             throw new IllegalStateException("Halberd effect only usable when the Kill is the last hand card");
         }
 
-        // 6. primary target
-        Player primaryTarget = getPlayer(primaryTargetPlayerId);
-        if (playerId.equals(primaryTargetPlayerId)) {
-            throw new IllegalArgumentException("Cannot target self");
+        // 6. 目標列表驗證：null / size 1~3 / 不重複 / 不含自己
+        if (targetPlayerIds == null) {
+            throw new IllegalArgumentException("targetPlayerIds is required");
         }
-
-        // 7. additional targets 驗證
-        List<String> additionalIds = additionalTargetPlayerIds == null ? new ArrayList<>() : additionalTargetPlayerIds;
-        if (additionalIds.size() > 2) {
-            throw new IllegalArgumentException("At most 2 additional targets");
+        if (targetPlayerIds.isEmpty() || targetPlayerIds.size() > 3) {
+            throw new IllegalArgumentException("targetPlayerIds size must be 1~3, got " + targetPlayerIds.size());
         }
-
-        // 8. 短路：沒有 additional target → 走正常 playCard 路徑
-        if (additionalIds.isEmpty()) {
-            return playerPlayCard(playerId, cardId, primaryTargetPlayerId, PlayType.ACTIVE.getPlayType());
-        }
-
-        // 9. 組成完整目標列表並檢查重複 / 自己 / 存活 / 攻擊範圍
-        List<String> fullTargets = new ArrayList<>();
-        fullTargets.add(primaryTargetPlayerId);
-        fullTargets.addAll(additionalIds);
-
-        if (new HashSet<>(fullTargets).size() != fullTargets.size()) {
+        if (new HashSet<>(targetPlayerIds).size() != targetPlayerIds.size()) {
             throw new IllegalArgumentException("Duplicate targets");
         }
-        if (fullTargets.contains(playerId)) {
+        if (targetPlayerIds.contains(playerId)) {
             throw new IllegalArgumentException("Cannot target self");
         }
-        for (String targetId : fullTargets) {
-            Player target = getPlayer(targetId);
-            if (!isInAttackRange(attacker, target)) {
+
+        // 7. 攻擊範圍驗證（兩條路徑都套用，避免 short-circuit 隱式依賴下游 handler）
+        for (String targetId : targetPlayerIds) {
+            if (!isInAttackRange(attacker, getPlayer(targetId))) {
                 throw new IllegalStateException(String.format("%s is not in attack range", targetId));
             }
         }
+
+        // 8. 短路：只有 1 個目標 → 行為等同普通殺，走正常 playCard 路徑
+        if (targetPlayerIds.size() == 1) {
+            return playerPlayCard(playerId, cardId, targetPlayerIds.get(0), PlayType.ACTIVE.getPlayType());
+        }
+
+        // 9. 多目標 — 取得 primary
+        Player primaryTarget = getPlayer(targetPlayerIds.get(0));
 
         // 10. 回合出殺次數限制（考慮諸葛連弩——實際上不會同時裝兩把武器，但保留邏輯對稱性）
         if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)) {
@@ -1029,7 +1022,7 @@ public class Game {
 
         // 12. push HeavenlyDoubleHalberdKillBehavior
         HeavenlyDoubleHalberdKillBehavior behavior = new HeavenlyDoubleHalberdKillBehavior(
-                this, attacker, fullTargets, primaryTarget, cardId, killCard);
+                this, attacker, targetPlayerIds, primaryTarget, cardId, killCard);
         updateTopBehavior(behavior);
 
         List<DomainEvent> events = behavior.playerAction();
