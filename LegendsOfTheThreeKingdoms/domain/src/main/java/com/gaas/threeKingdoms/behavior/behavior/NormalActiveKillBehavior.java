@@ -126,7 +126,9 @@ public class NormalActiveKillBehavior extends Behavior
             isOneRound = true;
             return events;
         } else if (isDodgeCard(cardId)) {
-            damagedPlayer.playCard(cardId);
+            // 用 helper 確保閃進墓地（與 ArrowBarrage / HDH / Duel 等行為一致；
+            // 既有 bare playCard(cardId) 寫法只移出手牌、不進墓地，導致取墓地牌的技能行為分歧）
+            playerPlayCardNotUpdateActivePlayer(damagedPlayer, cardId);
             return handleDodgeChain(playerId, playerId, cardId, playType);
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();
