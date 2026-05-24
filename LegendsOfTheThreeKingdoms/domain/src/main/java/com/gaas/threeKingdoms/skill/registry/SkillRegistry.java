@@ -1,6 +1,7 @@
 package com.gaas.threeKingdoms.skill.registry;
 
 import com.gaas.threeKingdoms.skill.Skill;
+import com.gaas.threeKingdoms.skill.wei.HuJiaSkill;
 import com.gaas.threeKingdoms.skill.wei.JianXiongSkill;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public final class SkillRegistry {
 
     static {
         register(new JianXiongSkill());
+        register(new HuJiaSkill());
     }
 
     private SkillRegistry() {

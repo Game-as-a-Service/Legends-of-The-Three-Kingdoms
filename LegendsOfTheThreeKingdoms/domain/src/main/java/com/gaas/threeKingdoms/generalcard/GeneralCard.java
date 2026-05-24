@@ -14,12 +14,14 @@ public class GeneralCard {
     private String generalName;
     private int healthPoint;
     private Gender gender;
+    private Faction faction;
 
     public GeneralCard(General general) {
         this.generalId = general.getGeneralId();
         this.generalName = general.getGeneralName();
         this.healthPoint = general.getHealthPoint();
         this.gender = general.getGender();
+        this.faction = general.getFaction();
     }
 
     public static final Map<String, GeneralCard> generals = new HashMap<>();

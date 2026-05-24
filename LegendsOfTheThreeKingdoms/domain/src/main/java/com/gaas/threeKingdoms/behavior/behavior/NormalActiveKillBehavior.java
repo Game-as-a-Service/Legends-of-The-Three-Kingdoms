@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.HuJiaCompatibleAskDodgeBehavior;
 import com.gaas.threeKingdoms.events.AskActivateYinYangSwordsEvent;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskGreenDragonCrescentBladeEffectEvent;
@@ -10,6 +11,7 @@ import com.gaas.threeKingdoms.events.AskStonePiercingAxeEffectEvent;
 import com.gaas.threeKingdoms.events.BlackPommelEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
@@ -31,7 +33,9 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
 import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 
 
-public class NormalActiveKillBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
+public class NormalActiveKillBehavior extends Behavior
+        implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior,
+                   HuJiaCompatibleAskDodgeBehavior {
 
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
@@ -66,10 +70,22 @@ public class NormalActiveKillBehavior extends Behavior implements com.gaas.three
             if (isAttackerHasBlackPommel(behaviorPlayer) && isEquipmentHasSpecialEffect(targetPlayer)) {
                 events.add(new BlackPommelEffectEvent(behaviorPlayer.getId(), targetPlayerId));
             }
-            events.add(new AskDodgeEvent(targetPlayerId));
+            emitAskDodgeOrHuJia(events, targetPlayer);
         }
         events.add(game.getGameStatusEvent("出牌"));
         return events;
+    }
+
+    /**
+     * AskDodge 前先讓 SkillEngine 介入（護駕等）。若介入，跳過原本 AskDodgeEvent。
+     */
+    private void emitAskDodgeOrHuJia(List<DomainEvent> events, Player targetPlayer) {
+        Optional<List<DomainEvent>> intercepted = SkillEngine.beforeAskDodge(game, targetPlayer, this);
+        if (intercepted.isPresent()) {
+            events.addAll(intercepted.get());
+        } else {
+            events.add(new AskDodgeEvent(targetPlayer.getId()));
+        }
     }
 
     private boolean shouldTriggerYinYangSwords(Player attacker, Player target) {
@@ -82,7 +98,7 @@ public class NormalActiveKillBehavior extends Behavior implements com.gaas.three
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
         } else {
-            events.add(new AskDodgeEvent(targetPlayer.getId()));
+            emitAskDodgeOrHuJia(events, targetPlayer);
         }
     }
 
@@ -156,6 +172,43 @@ public class NormalActiveKillBehavior extends Behavior implements com.gaas.three
             //TODO:怕有其他效果或殺的其他case
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    public List<DomainEvent> acceptDodgeFromHuJia(String dodgedPlayerId, String weiPlayerId, String dodgeCardId) {
+        Round currentRound = game.getCurrentRound();
+        // 注意：dodge cardId 已在 WaitingHuJiaResponseBehavior 中由 Wei 棄入墓地
+        PlayCardEvent playCardEvent = new PlayCardEvent(
+                "出牌", weiPlayerId, behaviorPlayer.getId(), dodgeCardId, PlayType.ACTIVE.getPlayType());
+
+        // 青龍偃月刀效果：與標準 dodge 路徑一致 — 攻擊者裝備青龍時，可再出一張殺
+        if (behaviorPlayer.getEquipmentWeaponCard() instanceof GreenDragonCrescentBladeCard) {
+            isOneRound = false;
+            currentRound.setActivePlayer(behaviorPlayer);
+            game.updateTopBehavior(new WaitingGreenDragonCrescentBladeResponseBehavior(
+                    game, behaviorPlayer, List.of(dodgedPlayerId),
+                    behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));
+            return List.of(playCardEvent,
+                    new AskGreenDragonCrescentBladeEffectEvent(behaviorPlayer.getId(), dodgedPlayerId),
+                    game.getGameStatusEvent("出牌"));
+        }
+
+        // 貫石斧效果
+        if (behaviorPlayer.getEquipmentWeaponCard() instanceof StonePiercingAxeCard
+                && getDiscardableCardCount(behaviorPlayer) >= 2) {
+            isOneRound = false;
+            currentRound.setActivePlayer(behaviorPlayer);
+            game.updateTopBehavior(new WaitingStonePiercingAxeResponseBehavior(
+                    game, behaviorPlayer, List.of(dodgedPlayerId),
+                    behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));
+            return List.of(playCardEvent,
+                    new AskStonePiercingAxeEffectEvent(behaviorPlayer.getId(), dodgedPlayerId),
+                    game.getGameStatusEvent("出牌"));
+        }
+
+        currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+        isOneRound = true;
+        return List.of(playCardEvent, game.getGameStatusEvent("出牌"));
     }
 
     private boolean isQilinBowSuccess(String playType) {

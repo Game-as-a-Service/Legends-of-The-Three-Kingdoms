@@ -25,6 +25,9 @@ public class BehaviorData {
     private static final String POLLING_STARTED = "POLLING_STARTED";
     private static final String VIPER_SPEAR_DISCARDED_CARD_IDS = "VIPER_SPEAR_DISCARDED_CARD_IDS";
     private static final String JIANXIONG_SOURCE_CARD_IDS = "JIANXIONG_SOURCE_CARD_IDS";
+    private static final String HUJIA_CAOCAO_ID = "HUJIA_CAOCAO_ID";
+    private static final String HUJIA_WEI_ORDER = "HUJIA_WEI_ORDER";
+    private static final String HUJIA_CURRENT_INDEX = "HUJIA_CURRENT_INDEX";
     private static final String DYING_PENDING_SOURCE_CARD_ID = "DYING_PENDING_SOURCE_CARD_ID";
     private static final String DYING_PENDING_ATTACKER_PLAYER_ID = "DYING_PENDING_ATTACKER_PLAYER_ID";
     private static final String DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS = "DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS";
@@ -383,6 +386,24 @@ public class BehaviorData {
                         sourceCardIds
                 );
             }
+            case "WaitingHuJiaResponseBehavior" -> {
+                @SuppressWarnings("unchecked")
+                List<String> weiOrder = params != null && params.get(HUJIA_WEI_ORDER) != null
+                        ? (List<String>) params.get(HUJIA_WEI_ORDER)
+                        : List.of();
+                int currentIndex = params != null && params.get(HUJIA_CURRENT_INDEX) != null
+                        ? ((Number) params.get(HUJIA_CURRENT_INDEX)).intValue()
+                        : 0;
+                String caoCaoId = params != null && params.get(HUJIA_CAOCAO_ID) != null
+                        ? (String) params.get(HUJIA_CAOCAO_ID)
+                        : behaviorPlayerId;
+                yield new com.gaas.threeKingdoms.behavior.behavior.WaitingHuJiaResponseBehavior(
+                        game,
+                        game.getPlayer(caoCaoId),
+                        weiOrder,
+                        currentIndex
+                );
+            }
             default -> throw new RuntimeException("Unknown behavior name: " + behaviorName);
         };
         behavior.setIsOneRound(isOneRound);
@@ -403,6 +424,10 @@ public class BehaviorData {
             params.put(VIPER_SPEAR_DISCARDED_CARD_IDS, vs.getDiscardedCardIds());
         } else if (behavior instanceof WaitingJianXiongResponseBehavior jx) {
             params.put(JIANXIONG_SOURCE_CARD_IDS, jx.getSourceCardIds());
+        } else if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingHuJiaResponseBehavior huJia) {
+            params.put(HUJIA_CAOCAO_ID, huJia.getCaoCaoPlayerId());
+            params.put(HUJIA_WEI_ORDER, huJia.getWeiOrder());
+            params.put(HUJIA_CURRENT_INDEX, huJia.getCurrentIndex());
         } else if (behavior instanceof DyingAskPeachBehavior dying) {
             if (dying.getPendingSourceCardId() != null) {
                 params.put(DYING_PENDING_SOURCE_CARD_ID, dying.getPendingSourceCardId());

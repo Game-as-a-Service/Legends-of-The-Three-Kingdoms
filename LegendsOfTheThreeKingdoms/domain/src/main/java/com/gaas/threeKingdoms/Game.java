@@ -882,6 +882,21 @@ public class Game {
         return events;
     }
 
+    public List<DomainEvent> playerUseHuJiaEffect(String playerId,
+                                                  com.gaas.threeKingdoms.events.AskHuJiaEffectEvent.Choice choice,
+                                                  String cardId) {
+        if (topBehavior.isEmpty()) {
+            throw new IllegalStateException("No active behavior waiting for HuJia effect response");
+        }
+        Behavior behavior = topBehavior.peek();
+        if (!(behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingHuJiaResponseBehavior huJia)) {
+            throw new IllegalStateException("Current behavior is not WaitingHuJiaResponseBehavior");
+        }
+        List<DomainEvent> events = huJia.resolveChoice(playerId, choice, cardId);
+        removeCompletedBehaviors();
+        return events;
+    }
+
     public List<DomainEvent> playerUseStonePiercingAxeEffect(String playerId, AskStonePiercingAxeEffectEvent.Choice choice, List<String> discardCardIds) {
         if (topBehavior.isEmpty()) {
             throw new IllegalStateException("No active behavior waiting for StonePiercingAxe effect response");

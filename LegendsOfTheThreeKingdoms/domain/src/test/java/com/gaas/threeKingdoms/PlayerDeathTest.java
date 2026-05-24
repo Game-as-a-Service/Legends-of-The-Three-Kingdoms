@@ -908,11 +908,11 @@ public class PlayerDeathTest {
         Game game = new Game();
         game.initDeck();
 
-        // A: 反賊
+        // A: 反賊（用非魏武將避免觸發護駕主公技干擾本死亡流程測試）
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard(General.張遼))
+                .withGeneralCard(new GeneralCard(General.馬超))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.REBEL))
                 .withHand(new Hand())
@@ -942,11 +942,11 @@ public class PlayerDeathTest {
                 .withEquipment(new Equipment())
                 .build();
 
-        // D: 內奸
+        // D: 內奸（用非魏武將避免觸發護駕主公技干擾本死亡流程測試）
         Player playerD = PlayerBuilder.construct()
                 .withId("player-d")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard(General.司馬懿))
+                .withGeneralCard(new GeneralCard(General.諸葛亮))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.TRAITOR))
                 .withHand(new Hand())

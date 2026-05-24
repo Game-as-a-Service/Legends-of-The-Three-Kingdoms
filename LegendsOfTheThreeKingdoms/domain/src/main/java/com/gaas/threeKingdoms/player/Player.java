@@ -283,6 +283,10 @@ public class Player {
         return generalCard.getGender();
     }
 
+    public com.gaas.threeKingdoms.generalcard.Faction getFaction() {
+        return generalCard.getFaction();
+    }
+
 
     // 覆寫 equals 方法
     @Override

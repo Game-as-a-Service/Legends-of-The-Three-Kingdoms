@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.HuJiaCompatibleAskDodgeBehavior;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
@@ -10,6 +11,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,9 @@ import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TARGET_
 import static com.gaas.threeKingdoms.behavior.behavior.WardBehavior.WARD_TRIGGER_PLAYER_ID;
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 
-public class ArrowBarrageBehavior extends Behavior implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior {
+public class ArrowBarrageBehavior extends Behavior
+        implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior,
+                   HuJiaCompatibleAskDodgeBehavior {
 
     @Override
     public boolean isPollingCaller() {
@@ -89,7 +93,7 @@ public class ArrowBarrageBehavior extends Behavior implements com.gaas.threeKing
                 game.getCurrentRound().setStage(Stage.Wait_Equipment_Effect);
                 events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
             } else {
-                events.add(new AskDodgeEvent(currentReactionPlayer.getId()));
+                emitAskDodgeOrHuJia(events, targetPlayer);
             }
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
         }
@@ -142,7 +146,7 @@ public class ArrowBarrageBehavior extends Behavior implements com.gaas.threeKing
                 game.getCurrentRound().setStage(Stage.Wait_Equipment_Effect);
                 events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
             } else {
-                events.add(new AskDodgeEvent(currentReactionPlayer.getId()));
+                emitAskDodgeOrHuJia(events, targetPlayer);
             }
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
         }
@@ -197,6 +201,38 @@ public class ArrowBarrageBehavior extends Behavior implements com.gaas.threeKing
 
     public boolean isInReactionPlayers(String playerId) {
         return reactionPlayers.contains(playerId);
+    }
+
+    /**
+     * AskDodge 前先讓 SkillEngine 介入（護駕等）。
+     */
+    private void emitAskDodgeOrHuJia(List<DomainEvent> events, Player targetPlayer) {
+        Optional<List<DomainEvent>> intercepted = SkillEngine.beforeAskDodge(game, targetPlayer, this);
+        if (intercepted.isPresent()) {
+            events.addAll(intercepted.get());
+        } else {
+            events.add(new AskDodgeEvent(targetPlayer.getId()));
+        }
+    }
+
+    @Override
+    public List<DomainEvent> acceptDodgeFromHuJia(String dodgedPlayerId, String weiPlayerId, String dodgeCardId) {
+        // dodge 已在 WaitingHuJia 中由 Wei 棄入墓地；這裡推進 polling
+        List<DomainEvent> events = new ArrayList<>();
+        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+        boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(dodgedPlayerId);
+        if (isLastPlayer) {
+            isOneRound = true;
+            game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+        } else {
+            game.getCurrentRound().setActivePlayer(currentReactionPlayer);
+        }
+        events.add(game.getGameStatusEvent(dodgedPlayerId + "出閃"));
+        events.add(new PlayCardEvent("出牌", weiPlayerId, "", dodgeCardId, PlayType.ACTIVE.getPlayType()));
+        if (!isLastPlayer) {
+            events.addAll(askNextPlayerOrWard());
+        }
+        return events;
     }
 
     /**

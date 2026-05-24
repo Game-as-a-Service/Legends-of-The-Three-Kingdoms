@@ -11,6 +11,7 @@ import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,7 +170,34 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
                     List.of(targetPlayer.getId())));
         } else {
             currentRound.setStage(Stage.Normal);
-            events.add(new AskDodgeEvent(targetPlayer.getId()));
+            // 護駕 hook：若目標為主公曹操且有其他存活 Wei，攔截 AskDodge
+            Optional<List<DomainEvent>> intercepted = SkillEngine.beforeAskDodge(game, targetPlayer, this);
+            if (intercepted.isPresent()) {
+                events.addAll(intercepted.get());
+            } else {
+                events.add(new AskDodgeEvent(targetPlayer.getId()));
+            }
         }
+    }
+
+    @Override
+    public List<DomainEvent> acceptDodgeFromHuJia(String dodgedPlayerId, String weiPlayerId, String dodgeCardId) {
+        // 方天畫戟不會觸發 GDCB / SPA（武器槽已被佔用）— 直接走 polling 推進
+        Round currentRound = game.getCurrentRound();
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(new PlayCardEvent("出牌", weiPlayerId, behaviorPlayer.getId(),
+                dodgeCardId, PlayType.ACTIVE.getPlayType()));
+
+        boolean isLast = isLastReactionPlayer(dodgedPlayerId);
+        if (isLast) {
+            isOneRound = true;
+            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+        } else {
+            isOneRound = false;
+            advanceToNextTarget();
+            askCurrentTargetDodgeOrEquipmentEffect(events);
+        }
+        events.add(game.getGameStatusEvent(dodgedPlayerId + " 出閃"));
+        return events;
     }
 }

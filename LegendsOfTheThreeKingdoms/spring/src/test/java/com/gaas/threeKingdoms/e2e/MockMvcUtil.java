@@ -92,6 +92,17 @@ public class MockMvcUtil {
                         }""", playerId, choice)));
     }
 
+    public ResultActions useHuJiaEffect(String gameId, String playerId, String choice, String cardId) throws Exception {
+        String cardIdJson = cardId == null ? "null" : "\"" + cardId + "\"";
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useHuJiaEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "choice": "%s",
+                          "cardId": %s
+                        }""", playerId, choice, cardIdJson)));
+    }
+
     public ResultActions useGreenDragonCrescentBladeEffect(String gameId, String playerId, String choice, String killCardId) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useGreenDragonCrescentBladeEffect")
                 .contentType(MediaType.APPLICATION_JSON)

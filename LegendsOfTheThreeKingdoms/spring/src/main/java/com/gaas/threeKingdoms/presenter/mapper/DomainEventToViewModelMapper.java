@@ -300,6 +300,27 @@ public class DomainEventToViewModelMapper {
             return new UseJianXiongEffectPresenter.JianXiongEffectViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(AskHuJiaEffectEvent.class, event -> {
+            AskHuJiaEffectEvent askEvent = (AskHuJiaEffectEvent) event;
+            UseHuJiaEffectPresenter.AskHuJiaEffectDataViewModel dataViewModel = new UseHuJiaEffectPresenter.AskHuJiaEffectDataViewModel(
+                    askEvent.getPlayerId(),
+                    askEvent.getCaoCaoPlayerId(),
+                    askEvent.getDodgeCardIdsInHand()
+            );
+            return new UseHuJiaEffectPresenter.AskHuJiaEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(HuJiaEffectEvent.class, event -> {
+            HuJiaEffectEvent huJiaEvent = (HuJiaEffectEvent) event;
+            UseHuJiaEffectPresenter.HuJiaEffectDataViewModel dataViewModel = new UseHuJiaEffectPresenter.HuJiaEffectDataViewModel(
+                    huJiaEvent.getPlayerId(),
+                    huJiaEvent.getCaoCaoPlayerId(),
+                    huJiaEvent.isAccepted(),
+                    huJiaEvent.getDodgeCardId()
+            );
+            return new UseHuJiaEffectPresenter.HuJiaEffectViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskChooseMountCardEvent.class, event -> {
             AskChooseMountCardEvent askChooseMountEvent = (AskChooseMountCardEvent) event;
             UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel dataViewModel = new UseEquipmentEffectPresenter.AskChooseMountCardDataViewModel(
