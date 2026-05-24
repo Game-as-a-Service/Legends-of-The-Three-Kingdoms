@@ -1,0 +1,79 @@
+{
+  "events" : [ {
+    "event" : "HuJiaEffectEvent",
+    "data" : {
+      "playerId" : "player-d",
+      "caoCaoPlayerId" : "player-b",
+      "accepted" : true,
+      "dodgeCardId" : "BH2028"
+    },
+    "message" : "護駕回應"
+  }, {
+    "event" : "PlayCardEvent",
+    "data" : {
+      "playerId" : "player-d",
+      "targetPlayerId" : "player-a",
+      "cardId" : "BH2028",
+      "playType" : "active"
+    },
+    "message" : "出牌"
+  } ],
+  "data" : {
+    "seats" : [ {
+      "id" : "player-a",
+      "generalId" : "SHU006",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-b",
+      "generalId" : "WEI001",
+      "roleId" : "Monarch",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-c",
+      "generalId" : "SHU005",
+      "roleId" : "Minister",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    }, {
+      "id" : "player-d",
+      "generalId" : "WEI003",
+      "roleId" : "",
+      "hp" : 4,
+      "hand" : {
+        "size" : 0,
+        "cardIds" : [ ]
+      },
+      "equipments" : [ "", "", "", "" ],
+      "delayScrolls" : [ ]
+    } ],
+    "round" : {
+      "roundPhase" : "Judgement",
+      "currentRoundPlayer" : "player-a",
+      "activePlayer" : "player-a",
+      "dyingPlayer" : "",
+      "showKill" : true
+    },
+    "gamePhase" : "Normal"
+  },
+  "message" : "出牌",
+  "gameId" : "my-id",
+  "playerId" : "player-c"
+}

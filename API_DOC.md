@@ -560,6 +560,54 @@ B 對曹操出殺（或丈八蛇矛攻擊）→ 曹操不出閃、扣血未死
 
 ---
 
+## 21. 護駕（曹操主公技）效果選擇
+
+```
+POST /api/games/{gameId}/player:useHuJiaEffect
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| playerId | String | 當前被詢問的魏勢力玩家 ID（不是曹操） |
+| choice | String | `ACCEPT`（代替主公出閃）或 `DECLINE`（拒絕） |
+| cardId | String? | `ACCEPT` 必填，為要打出的閃 cardId；`DECLINE` 時可為 null |
+
+**觸發時機**：曹操（`WEI001`）為主公（`MONARCH`）且 stack 頂為 emit `AskDodgeEvent` 的 behavior 時，系統不發 `AskDodgeEvent`，改為依座位順序（曹操下家起）對每位存活魏勢力武將 broadcast `AskHuJiaEffectEvent`。任一人 ACCEPT → 視為曹操打出此閃；全部 DECLINE → fallback emit 原本的 `AskDodgeEvent(曹操)`。
+
+**啟動條件**（同時成立）：
+1. 受詢問玩家武將為曹操（WEI001）
+2. 曹操為主公（`role == MONARCH`）
+3. 至少有一個其他存活魏勢力武將（`faction == WEI` && 非曹操本人）
+4. Top behavior 為以下 emitter 之一（實作 `HuJiaCompatibleAskDodgeBehavior`）：
+   - `NormalActiveKillBehavior`（普通殺）
+   - `ArrowBarrageBehavior`（萬箭齊發）
+   - `HeavenlyDoubleHalberdKillBehavior`（方天畫戟）
+
+**流程**：
+```
+A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
+  → 系統 push WaitingHuJiaResponseBehavior 並 broadcast AskHuJiaEffectEvent(座位次序下一位 Wei)
+  → activePlayer 切到該 Wei 武將
+  → Wei 武將呼叫本 API：
+    - ACCEPT: Wei 棄一張閃到墓地 → HuJiaEffectEvent(accepted=true)
+              → pop WaitingHuJia → parent behavior 接手「視為曹操打出此閃」的後續（青龍/貫石斧/AOE polling 推進）
+    - DECLINE: HuJiaEffectEvent(accepted=false)
+              → 若還有下一位 Wei：activePlayer 換人、AskHuJiaEffectEvent(next)
+              → 若已是最後一位：pop WaitingHuJia、AskDodgeEvent(曹操)、activePlayer 切回曹操
+```
+
+**特殊情況**：
+- Wei 武將沒有閃：`AskHuJiaEffectEvent.dodgeCardIdsInHand` 為空，只能 DECLINE
+- ACCEPT 但 cardId 不在 Wei 手中 → 400 `IllegalArgumentException`
+- ACCEPT 但 cardId 不是閃 → 400 `IllegalArgumentException`
+- 曹操自己無閃 + 所有 Wei 全 DECLINE → fallback AskDodge(曹操) 後 SKIP 受傷（不影響後續流程）
+- 視為曹操出閃，因此攻擊者的青龍偃月刀 / 貫石斧鏈仍正常觸發
+- v1 範圍：護駕僅在三處 AskDodge emitter（普通殺/萬箭齊發/方天畫戟）攔截；其他二次 AskDodge 場景（八卦陣失敗、青龍鏈、雌雄雙股劍、丈八蛇矛被動殺、瀕死 resume）為 follow-up
+
+**備註**：此 API 獨立於 `playCard`。前端在收到 `AskHuJiaEffectEvent` 時應只開啟被詢問玩家的選擇 UI。
+
+---
+
 ## WebSocket 事件類型
 
 前端透過 WebSocket 接收以下事件，根據事件類型決定 UI 行為：
