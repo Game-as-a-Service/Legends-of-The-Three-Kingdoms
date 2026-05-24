@@ -7,7 +7,6 @@ import com.gaas.threeKingdoms.events.AskHuJiaEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.generalcard.Faction;
 import com.gaas.threeKingdoms.generalcard.General;
-import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.skill.trigger.BeforeAskDodgeSkill;
@@ -69,13 +68,15 @@ public class HuJiaSkill implements BeforeAskDodgeSkill {
     }
 
     private List<Player> otherAliveWeiInSeatingOrder(Game game, Player caoCao) {
+        // 用 isAlreadyDeath() 作為「未結算死亡」判準（與 Player API 一致）。
+        // 注意：DYING 狀態仍視為存活，可以代替主公出閃（標準三國殺 dying 期間仍能打閃 / 桃 / 無懈）。
         List<Player> helpers = new ArrayList<>();
         int total = game.getPlayers().size();
         Player cursor = caoCao;
         for (int i = 0; i < total; i++) {
             cursor = game.getNextPlayer(cursor);
             if (cursor.equals(caoCao)) break;
-            if (cursor.getHealthStatus() == HealthStatus.DEATH) continue;
+            if (cursor.isAlreadyDeath()) continue;
             if (cursor.getFaction() == Faction.WEI) {
                 helpers.add(cursor);
             }

@@ -31,6 +31,12 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
  * DECLINE：
  *   - 若還有下一個 Wei → 切 currentWei、emit 下一個 AskHuJiaEffectEvent、activePlayer 換人
  *   - 若已是最後一個 → pop self、emit 原本的 AskDodgeEvent(曹操)、activePlayer 切回曹操
+ *
+ * Stack 隱性假設（ACCEPT 路徑）：本 behavior 是由 {@link com.gaas.threeKingdoms.skill.wei.HuJiaSkill}
+ * 在 {@link com.gaas.threeKingdoms.skill.registry.SkillEngine#beforeAskDodge} 內 push 在原 emit AskDodge 的
+ * host 之上，因此 pop self 後 stack 第二格必定是該 {@link HuJiaCompatibleAskDodgeBehavior}。若未來有
+ * 其他 behavior 在 HuJia push 之後又插入額外行為（堆出 [host, X, WaitingHuJia]），ACCEPT 路徑 peek
+ * 到的 parent 會是 X 而非 host → instanceof 檢查會丟例外（已加守門）。新增此類介入時須一併處理。
  */
 @Getter
 public class WaitingHuJiaResponseBehavior extends Behavior {

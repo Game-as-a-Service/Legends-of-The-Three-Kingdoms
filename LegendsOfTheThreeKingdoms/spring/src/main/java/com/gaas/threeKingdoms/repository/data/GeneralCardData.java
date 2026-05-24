@@ -36,11 +36,19 @@ public class GeneralCardData {
         generalCard.setGeneralName(this.generalName);
         generalCard.setHealthPoint(this.healthPoint);
         generalCard.setGender(this.gender);
-        // 對舊資料（無 faction）做 fallback 推導
-        generalCard.setFaction(this.faction != null
-                ? this.faction
-                : (this.generalId != null ? General.findById(this.generalId).getFaction() : null));
+        generalCard.setFaction(this.faction != null ? this.faction : tryDeriveFaction(this.generalId));
         return generalCard;
+    }
+
+    // 舊存檔可能沒有 faction 欄位；嘗試從 generalId 反推。未知 generalId（例如被移除的
+    // non-standard 武將、測試虛擬值）回 null 而非 throw，避免反序列化整個遊戲 crash。
+    private static Faction tryDeriveFaction(String generalId) {
+        if (generalId == null) return null;
+        try {
+            return General.findById(generalId).getFaction();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     // Convert from domain object

@@ -126,40 +126,8 @@ public class NormalActiveKillBehavior extends Behavior
             isOneRound = true;
             return events;
         } else if (isDodgeCard(cardId)) {
-            Round currentRound = game.getCurrentRound();
             damagedPlayer.playCard(cardId);
-            PlayCardEvent playCardEvent = new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType);
-
-            // 青龍偃月刀效果：攻擊者裝備青龍偃月刀時，可再出一張殺
-            if (behaviorPlayer.getEquipmentWeaponCard() instanceof GreenDragonCrescentBladeCard) {
-                isOneRound = false;
-                currentRound.setActivePlayer(behaviorPlayer);
-                // 使用 this.cardId/this.card（殺的），不是 parameter cardId（閃的）
-                game.updateTopBehavior(new WaitingGreenDragonCrescentBladeResponseBehavior(
-                        game, behaviorPlayer, List.of(playerId),
-                        behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));
-                AskGreenDragonCrescentBladeEffectEvent askEvent = new AskGreenDragonCrescentBladeEffectEvent(
-                        behaviorPlayer.getId(), playerId);
-                return List.of(playCardEvent, askEvent, game.getGameStatusEvent("出牌"));
-            }
-
-            // 貫石斧效果：攻擊者裝備貫石斧且可棄牌 ≥2 張時，可棄兩牌強制命中
-            if (behaviorPlayer.getEquipmentWeaponCard() instanceof StonePiercingAxeCard
-                    && getDiscardableCardCount(behaviorPlayer) >= 2) {
-                isOneRound = false;
-                currentRound.setActivePlayer(behaviorPlayer);
-                // 使用 this.cardId/this.card（殺的），不是 parameter cardId（閃的）
-                game.updateTopBehavior(new WaitingStonePiercingAxeResponseBehavior(
-                        game, behaviorPlayer, List.of(playerId),
-                        behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));
-                AskStonePiercingAxeEffectEvent askEvent = new AskStonePiercingAxeEffectEvent(
-                        behaviorPlayer.getId(), playerId);
-                return List.of(playCardEvent, askEvent, game.getGameStatusEvent("出牌"));
-            }
-
-            currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
-            isOneRound = true;
-            return List.of(playCardEvent, game.getGameStatusEvent("出牌"));
+            return handleDodgeChain(playerId, playerId, cardId, playType);
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();
             List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, Optional.of(this));
@@ -176,15 +144,36 @@ public class NormalActiveKillBehavior extends Behavior
 
     @Override
     public List<DomainEvent> acceptDodgeFromHuJia(String dodgedPlayerId, String weiPlayerId, String dodgeCardId) {
-        Round currentRound = game.getCurrentRound();
         // 注意：dodge cardId 已在 WaitingHuJiaResponseBehavior 中由 Wei 棄入墓地
-        PlayCardEvent playCardEvent = new PlayCardEvent(
-                "出牌", weiPlayerId, behaviorPlayer.getId(), dodgeCardId, PlayType.ACTIVE.getPlayType());
+        return handleDodgeChain(dodgedPlayerId, weiPlayerId, dodgeCardId, PlayType.ACTIVE.getPlayType());
+    }
 
-        // 青龍偃月刀效果：與標準 dodge 路徑一致 — 攻擊者裝備青龍時，可再出一張殺
+    /**
+     * 共用的 dodge 後處理鏈：emit PlayCardEvent + 處理 GDCB / SPA 鏈、否則結束 behavior。
+     * <p>
+     * 由兩條路徑共享：
+     * <ul>
+     *   <li>正常 dodge response（{@code doResponseToPlayerAction} 內，dodgedPlayerId == cardSourcePlayerId）— 出閃者即被詢問者</li>
+     *   <li>護駕代閃（{@code acceptDodgeFromHuJia}，cardSourcePlayerId 為 Wei 武將）— 出閃者非被詢問者</li>
+     * </ul>
+     * 抽出此共用 helper 是為了避免兩條路徑在 GDCB/SPA 鏈邏輯上分歧。
+     *
+     * @param dodgedPlayerId 被詢問出閃的玩家 ID（曹操在 HuJia 路徑下）
+     * @param cardSourcePlayerId 實際打出閃的玩家 ID（HuJia 路徑下為 Wei 武將；正常路徑下與 dodgedPlayerId 相同）
+     * @param dodgeCardId 打出的閃 cardId
+     * @param playType {@link PlayType#ACTIVE} 字串值
+     */
+    private List<DomainEvent> handleDodgeChain(String dodgedPlayerId, String cardSourcePlayerId,
+                                                String dodgeCardId, String playType) {
+        Round currentRound = game.getCurrentRound();
+        PlayCardEvent playCardEvent = new PlayCardEvent(
+                "出牌", cardSourcePlayerId, behaviorPlayer.getId(), dodgeCardId, playType);
+
+        // 青龍偃月刀效果：攻擊者裝備青龍偃月刀時，可再出一張殺
         if (behaviorPlayer.getEquipmentWeaponCard() instanceof GreenDragonCrescentBladeCard) {
             isOneRound = false;
             currentRound.setActivePlayer(behaviorPlayer);
+            // 使用 this.cardId/this.card（殺的），不是 parameter dodgeCardId（閃的）
             game.updateTopBehavior(new WaitingGreenDragonCrescentBladeResponseBehavior(
                     game, behaviorPlayer, List.of(dodgedPlayerId),
                     behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));
@@ -193,11 +182,12 @@ public class NormalActiveKillBehavior extends Behavior
                     game.getGameStatusEvent("出牌"));
         }
 
-        // 貫石斧效果
+        // 貫石斧效果：攻擊者裝備貫石斧且可棄牌 ≥2 張時，可棄兩牌強制命中
         if (behaviorPlayer.getEquipmentWeaponCard() instanceof StonePiercingAxeCard
                 && getDiscardableCardCount(behaviorPlayer) >= 2) {
             isOneRound = false;
             currentRound.setActivePlayer(behaviorPlayer);
+            // 使用 this.cardId/this.card（殺的），不是 parameter dodgeCardId（閃的）
             game.updateTopBehavior(new WaitingStonePiercingAxeResponseBehavior(
                     game, behaviorPlayer, List.of(dodgedPlayerId),
                     behaviorPlayer, this.cardId, PlayType.ACTIVE.getPlayType(), this.card));

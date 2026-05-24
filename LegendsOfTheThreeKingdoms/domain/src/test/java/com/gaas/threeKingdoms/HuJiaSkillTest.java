@@ -321,4 +321,73 @@ public class HuJiaSkillTest {
                 .map(b -> b instanceof HeavenlyDoubleHalberdKillBehavior).orElse(false),
                 "HeavenlyDoubleHalberd should be parent");
     }
+
+    @DisplayName("""
+            Given 萬箭齊發 reactionPlayers=[B(曹操), C(Wei), D(Wei)]，C 手中有閃
+            When  B 被詢問 → HuJia 觸發 → C ACCEPT 代閃
+            Then  WaitingHuJia pop、stack 頂回到 ArrowBarrage
+                  currentReactionPlayer 推進到 C
+                  emit AskDodgeEvent(C)（C 非主公，不再觸發 HuJia）
+                  C 失去那張閃
+            """)
+    @Test
+    public void givenArrowBarrageOnMonarchCaoCao_WeiAccept_PollingResumesToNextReactor() {
+        Game game = setupMonarchCaoCaoWithTwoWei();
+        Player playerA = game.getPlayer("player-a");
+        Player playerC = game.getPlayer("player-c");
+        playerA.getHand().addCardToHand(new ArrowBarrage(SS7007));
+        giveDodge(playerC, BH2028);
+
+        game.playerPlayCard("player-a", SS7007.getCardId(), "player-b", "active");
+        // ACCEPT 代替曹操出閃
+        List<DomainEvent> events = game.playerUseHuJiaEffect(
+                "player-c", AskHuJiaEffectEvent.Choice.ACCEPT, BH2028.getCardId());
+
+        // 推進到 polling 下一位 C，由 C 自己被問 dodge（C 非主公不觸發 HuJia 再次）
+        assertTrue(game.peekTopBehavior() instanceof ArrowBarrageBehavior,
+                "WaitingHuJia should be popped; ArrowBarrage back to top");
+        assertEquals("player-c", ((ArrowBarrageBehavior) game.peekTopBehavior())
+                .getCurrentReactionPlayer().getId());
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent
+                        && ((AskDodgeEvent) e).getPlayerId().equals("player-c")),
+                "should ask dodge to next reactor C");
+        assertTrue(playerC.getHand().getCards().stream().noneMatch(c -> c.getId().equals(BH2028.getCardId())),
+                "C should have lost the dodge used for HuJia");
+        // 曹操 HP 未受影響
+        assertEquals(4, game.getPlayer("player-b").getHP());
+    }
+
+    @DisplayName("""
+            Given 方天畫戟多目標 [B(曹操), C(Wei)]，C 與 D 皆 Wei，D 手中有閃
+            When  B 被詢問 → HuJia 觸發 → 因 B 下家 C 也是 target reactor，
+                  但 HuJia 順序按座位（C 為 caoCao 下家），C ACCEPT 出閃代替
+            Then  WaitingHuJia pop、stack 頂回到 HDH
+                  currentReactionPlayer 推進到下一 target（reactionPlayers 順序）= C
+                  emit AskDodgeEvent(C)
+            """)
+    @Test
+    public void givenHDHOnMonarchCaoCao_WeiAccept_PollingAdvancesToNextHDHTarget() {
+        Game game = setupMonarchCaoCaoWithTwoWei();
+        Player playerA = game.getPlayer("player-a");
+        Player playerC = game.getPlayer("player-c");
+        playerA.getEquipment().setWeapon(new HeavenlyDoubleHalberdCard(EDQ103));
+        // C 額外多兩張閃（一張用於 HuJia 代閃曹操，一張為 C 自己 dodge）
+        giveDodge(playerC, BH2028);
+        giveDodge(playerC, BHK039);
+
+        game.playerUseHeavenlyDoubleHalberdKill(
+                "player-a", BS8008.getCardId(), List.of("player-b", "player-c"));
+
+        List<DomainEvent> events = game.playerUseHuJiaEffect(
+                "player-c", AskHuJiaEffectEvent.Choice.ACCEPT, BH2028.getCardId());
+
+        assertTrue(game.peekTopBehavior() instanceof HeavenlyDoubleHalberdKillBehavior,
+                "WaitingHuJia should be popped; HDH back to top");
+        HeavenlyDoubleHalberdKillBehavior hdh = (HeavenlyDoubleHalberdKillBehavior) game.peekTopBehavior();
+        assertEquals("player-c", hdh.getCurrentReactionPlayer().getId(),
+                "HDH polling should advance from B to next target C");
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent
+                        && ((AskDodgeEvent) e).getPlayerId().equals("player-c")));
+        assertEquals(4, game.getPlayer("player-b").getHP(), "曹操 not damaged");
+    }
 }
