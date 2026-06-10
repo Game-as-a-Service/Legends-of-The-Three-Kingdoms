@@ -30,7 +30,9 @@ public class Round {
         if (handCardOptional.isEmpty()) throw new IllegalStateException("Player " + currentRoundPlayer.getId() + " have no this card: " + cardId);
 
         HandCard handCard = handCardOptional.get();
-        if (handCard instanceof Kill && currentRoundPlayer.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard) {
+        if (handCard instanceof Kill && (currentRoundPlayer.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard
+                || com.gaas.threeKingdoms.skill.registry.SkillEngine.isKillCountUnlimited(currentRoundPlayer))) {
+            // 諸葛連弩 / 咆哮：使用殺無次數限制
             isShowKill = false;
         } else if (handCard instanceof Kill && isShowKill) {
             throw new IllegalStateException("Player already played Kill Card");

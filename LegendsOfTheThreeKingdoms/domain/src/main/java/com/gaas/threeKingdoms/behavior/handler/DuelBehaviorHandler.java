@@ -37,6 +37,12 @@ public class DuelBehaviorHandler extends PlayCardBehaviorHandler {
             throw new IllegalArgumentException("不能對自己使用決鬥");
         }
 
+        // 空城等：目標不能被決鬥指定
+        if (com.gaas.threeKingdoms.skill.registry.SkillEngine.isImmuneToCard(currentReactionPlayer, card)) {
+            throw new IllegalStateException(
+                    String.format("%s cannot be targeted by Duel (target immunity skill)", currentReactionPlayer.getId()));
+        }
+
         targetPlayerId.add(playerId); // 自己也是需要反應者
 
         return new DuelBehavior(game, player, targetPlayerId, currentReactionPlayer, cardId, playType, card);

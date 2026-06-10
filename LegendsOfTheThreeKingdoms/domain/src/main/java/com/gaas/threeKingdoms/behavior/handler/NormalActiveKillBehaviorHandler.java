@@ -34,7 +34,14 @@ public class NormalActiveKillBehaviorHandler extends PlayCardBehaviorHandler {
     @Override
     protected Behavior doHandle(String playerId, String cardId, List<String> reactionPlayers, String playType) {
         Player player = game.getPlayer(playerId);
-        return new NormalActiveKillBehavior(game, player, reactionPlayers, player, cardId, playType, player.getHand().getCard(cardId).get());
+        HandCard killCard = player.getHand().getCard(cardId).get();
+        // 空城等：目標不能被殺指定
+        Player target = game.getPlayer(reactionPlayers.get(0));
+        if (com.gaas.threeKingdoms.skill.registry.SkillEngine.isImmuneToCard(target, killCard)) {
+            throw new IllegalStateException(
+                    String.format("%s cannot be targeted by Kill (target immunity skill)", target.getId()));
+        }
+        return new NormalActiveKillBehavior(game, player, reactionPlayers, player, cardId, playType, killCard);
     }
 
 

@@ -37,7 +37,9 @@ public class SnatchBehaviorHandler extends PlayCardBehaviorHandler {
             throw new IllegalArgumentException(errorMessage);
         }
 
-        if (!game.isInSnatchEffectRange(player, currentReactionPlayer)) {
+        // 奇才：使用錦囊無距離限制
+        if (!com.gaas.threeKingdoms.skill.registry.SkillEngine.isScrollRangeUnlimited(player)
+                && !game.isInSnatchEffectRange(player, currentReactionPlayer)) {
             throw new DistanceErrorException("Players are not within range.");
         }
 
