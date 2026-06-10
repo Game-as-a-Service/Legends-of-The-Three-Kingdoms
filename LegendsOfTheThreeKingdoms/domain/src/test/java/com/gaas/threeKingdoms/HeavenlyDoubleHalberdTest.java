@@ -65,6 +65,38 @@ public class HeavenlyDoubleHalberdTest {
         assertEquals(0, playerA.getHandSize());
     }
 
+    @DisplayName("targetPlayerIds 傳入順序與座位順序相反 → 結算照座位順序（issue #202）")
+    @Test
+    public void testUseHalberdKill_TargetsGivenInReverseOrder_ResolvedInSeatingOrder() {
+        Game game = createGame();
+        Player playerA = game.getPlayer("player-a");
+        equipHalberdWithSingleKill(playerA);
+
+        // 座位 a → b → c → d；request 故意傳 [d, c, b]
+        List<DomainEvent> events = game.playerUseHeavenlyDoubleHalberdKill(
+                "player-a", BS8008.getCardId(), List.of("player-d", "player-c", "player-b"));
+
+        HeavenlyDoubleHalberdKillTriggerEvent trigger = events.stream()
+                .filter(e -> e instanceof HeavenlyDoubleHalberdKillTriggerEvent)
+                .map(e -> (HeavenlyDoubleHalberdKillTriggerEvent) e)
+                .findFirst().orElseThrow(() -> new AssertionError("trigger event missing"));
+        assertEquals(List.of("player-b", "player-c", "player-d"), trigger.getTargetPlayerIds(),
+                "targets should be re-ordered to seating order from attacker's next player");
+
+        // 第一個被問的應是座位順序最先的 b，而不是 request 第一個 d
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent
+                && ((AskDodgeEvent) e).getPlayerId().equals("player-b")));
+
+        // 走完整輪詢：b → c → d 依序 skip，全部扣血
+        game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-c", "", "player-a", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-d", "", "player-a", PlayType.SKIP.getPlayType());
+        assertEquals(3, game.getPlayer("player-b").getHP());
+        assertEquals(3, game.getPlayer("player-c").getHP());
+        assertEquals(3, game.getPlayer("player-d").getHP());
+        assertTrue(game.getTopBehavior().isEmpty());
+    }
+
     @DisplayName("A 用方天畫戟出殺 + 1 個額外目標 → 問 B 出閃（只有 2 個目標）")
     @Test
     public void testUseHalberdKill_OneAdditionalTarget_EmitsAsksFirstTarget() {
