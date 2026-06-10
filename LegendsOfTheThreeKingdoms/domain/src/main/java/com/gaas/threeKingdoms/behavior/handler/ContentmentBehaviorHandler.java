@@ -34,6 +34,12 @@ public class ContentmentBehaviorHandler extends PlayCardBehaviorHandler {
         String errorMessage1 = "不可以對自己出牌者出樂不思蜀";
         String errorMessage2 = String.format("%s 已經有樂不思蜀", currentReactionPlayer.getId());
 
+        // 謙遜等：目標不能成為樂不思蜀的目標
+        if (com.gaas.threeKingdoms.skill.registry.SkillEngine.isImmuneToCard(currentReactionPlayer, card)) {
+            throw new IllegalStateException(
+                    String.format("%s cannot be targeted by Contentment (target immunity skill)", currentReactionPlayer.getId()));
+        }
+
         if (Objects.equals(player.getId(), currentReactionPlayer.getId())) {
             throw new IllegalArgumentException(errorMessage1);
         }

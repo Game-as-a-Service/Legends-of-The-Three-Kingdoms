@@ -1,8 +1,17 @@
 package com.gaas.threeKingdoms.skill.registry;
 
 import com.gaas.threeKingdoms.skill.Skill;
+import com.gaas.threeKingdoms.skill.shu.JiZhiSkill;
+import com.gaas.threeKingdoms.skill.shu.KongChengSkill;
+import com.gaas.threeKingdoms.skill.shu.MaShuSkill;
+import com.gaas.threeKingdoms.skill.shu.PaoXiaoSkill;
+import com.gaas.threeKingdoms.skill.shu.QiCaiSkill;
 import com.gaas.threeKingdoms.skill.wei.HuJiaSkill;
 import com.gaas.threeKingdoms.skill.wei.JianXiongSkill;
+import com.gaas.threeKingdoms.skill.wei.LuoYiSkill;
+import com.gaas.threeKingdoms.skill.wu.LianYingSkill;
+import com.gaas.threeKingdoms.skill.wu.QianXunSkill;
+import com.gaas.threeKingdoms.skill.wu.YingZiSkill;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,8 +22,20 @@ public final class SkillRegistry {
     private static final Map<String, List<Skill>> BY_GENERAL = new HashMap<>();
 
     static {
+        // 魏
         register(new JianXiongSkill());
         register(new HuJiaSkill());
+        register(new LuoYiSkill());
+        // 蜀
+        register(new PaoXiaoSkill());
+        register(new KongChengSkill());
+        register(new MaShuSkill());
+        register(new JiZhiSkill());
+        register(new QiCaiSkill());
+        // 吳
+        register(new YingZiSkill());
+        register(new QianXunSkill());
+        register(new LianYingSkill());
     }
 
     private SkillRegistry() {

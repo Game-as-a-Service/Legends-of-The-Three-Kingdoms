@@ -291,11 +291,12 @@ public class Game {
     }
 
     public DomainEvent drawCardToPlayer(Player player, boolean isChangeRoundPhase) {
-        return drawCardToPlayer(player, isChangeRoundPhase, 2);
+        return drawCardToPlayer(player, isChangeRoundPhase, calculatePlayerCanDrawCardSize(player));
     }
 
     private int calculatePlayerCanDrawCardSize(Player player) {
-        return 2;
+        // 基礎 2 張 + 技能修正（英姿 +1 / 裸衣 -1），下限 0
+        return Math.max(0, 2 + SkillEngine.drawPhaseDelta(player));
     }
 
     private void refreshDeckWhenCardsNumLessThen(int requiredCardNumber) {
@@ -319,14 +320,26 @@ public class Game {
     public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
         PlayType.checkPlayTypeIsValid(playType);
         checkIsCurrentRoundValid(playerId);
+        Player actingPlayer = getPlayer(playerId);
+        int handSizeBefore = actingPlayer.getHandSize();
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
             List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType);
             //  確認topBehavior是否有需要pop掉的behavior
             removeCompletedBehaviors();
+            // 連營：response 出牌（出閃/出殺）失去最後一張手牌 → 摸牌
+            if (acceptedEvent != null && handSizeBefore > 0 && actingPlayer.getHandSize() == 0
+                    && SkillEngine.drawCountAfterLoseLastHandCard(actingPlayer) > 0) {
+                acceptedEvent = new ArrayList<>(acceptedEvent);
+                appendDrawIfLostLastHandCard(actingPlayer, acceptedEvent);
+            }
             return acceptedEvent;
         }
+        // 集智判定要在 handler 之前取牌型（出牌後牌已離手）
+        boolean isScrollPlay = actingPlayer.getHand().getCard(cardId)
+                .map(c -> c instanceof ScrollCard)
+                .orElse(false);
         List<String> reActionPlayer = new ArrayList<>();
         reActionPlayer.add(targetPlayerId);
         Behavior behavior = playCardHandler.handle(playerId, cardId, reActionPlayer, playType);
@@ -335,7 +348,31 @@ public class Game {
         }
         List<DomainEvent> events = behavior.playerAction();
         removeCompletedBehaviors();
+        // 集智：使用錦囊 → 摸牌（在連營檢查之前摸，補回的牌會讓連營不觸發 — 符合時序：摸牌先發生）
+        if (isScrollPlay) {
+            int jiZhiDraw = SkillEngine.drawCountAfterScrollUsed(actingPlayer);
+            if (jiZhiDraw > 0) {
+                events = new ArrayList<>(events);
+                events.add(drawCardToPlayer(actingPlayer, false, jiZhiDraw));
+            }
+        }
+        // 連營：出牌用掉最後一張手牌 → 摸牌
+        if (handSizeBefore > 0) {
+            events = new ArrayList<>(events);
+            appendDrawIfLostLastHandCard(actingPlayer, events);
+        }
         return events;
+    }
+
+    /** 連營 hook：player 手牌歸零時補摸（量由技能決定，無技能則 no-op）。 */
+    private void appendDrawIfLostLastHandCard(Player player, List<DomainEvent> events) {
+        if (player.getHandSize() != 0) {
+            return;
+        }
+        int drawCount = SkillEngine.drawCountAfterLoseLastHandCard(player);
+        if (drawCount > 0) {
+            events.add(drawCardToPlayer(player, false, drawCount));
+        }
     }
 
     public void removeCompletedBehaviors() {
@@ -406,20 +443,21 @@ public class Game {
     }
 
     public boolean isInAttackRange(Player player, Player targetPlayer) {
-        // 攻擊距離 >= 基礎距離(座位表) + 逃走距離
+        // 攻擊距離 >= 基礎距離(座位表) + 逃走距離 + 技能距離修正（馬術 -1；下限 1）
         int dist = seatingChart.calculateDistance(player, targetPlayer);
         int escapeDist = targetPlayer.judgeEscapeDistance();
         int attackDist = player.judgeAttackDistance();
-        return attackDist >= dist + escapeDist;
+        int effectiveDist = Math.max(1, dist + escapeDist + SkillEngine.distanceDeltaToOthers(player));
+        return attackDist >= effectiveDist;
     }
 
     public boolean isInSnatchEffectRange(Player player, Player targetPlayer) {
         // 攻擊距離 不用考慮
-        // 基礎距離(座位表) + 使用 順手牽羊 玩家的 -1 馬  + 被使用 順手牽羊 玩家的 +1 馬  <= 1
+        // 基礎距離(座位表) + 使用 順手牽羊 玩家的 -1 馬  + 被使用 順手牽羊 玩家的 +1 馬 + 技能修正（馬術 -1） <= 1
         int dist = seatingChart.calculateDistance(player, targetPlayer);
         int attackDist = player.getMinusOneDistance();
         int escapeDist = targetPlayer.judgeEscapeDistance();
-        return dist - attackDist + escapeDist <= 1;
+        return Math.max(1, dist - attackDist + escapeDist + SkillEngine.distanceDeltaToOthers(player)) <= 1;
     }
 
     public List<DomainEvent> finishAction(String playerId) {
@@ -543,7 +581,13 @@ public class Game {
             );
             domainEvents.addAll(damageEvents);
         } else {
+            // 謙遜等：跳過不能成為閃電目標的玩家（最壞情況繞回原判定者自己）
             Player nextPlayer = seatingChart.getNextPlayer(player);
+            int hops = seatingChart.getPlayers().size();
+            while (hops-- > 0 && !nextPlayer.equals(player)
+                    && SkillEngine.isImmuneToCard(nextPlayer, card)) {
+                nextPlayer = seatingChart.getNextPlayer(nextPlayer);
+            }
             domainEvents.add(new LightningTransferredEvent(
                     player.getId(),
                     nextPlayer.getId(),
@@ -574,12 +618,13 @@ public class Game {
         if (!currentRound.getRoundPhase().equals(RoundPhase.Discard)) {
             throw new RuntimeException();
         }
-        return player.getDiscardCount();
+        // 手牌上限預設 = HP；技能可覆寫（英姿 = max(HP, 4)）
+        return Math.max(0, player.getHandSize() - SkillEngine.handCardLimit(player));
     }
 
     public List<DomainEvent> playerDiscardCard(List<String> cardIds) {
         Player player = currentRound.getCurrentRoundPlayer();
-        int needToDiscardSize = player.getHandSize() - player.getHP();
+        int needToDiscardSize = player.getHandSize() - SkillEngine.handCardLimit(player);
         if (cardIds.size() < needToDiscardSize) throw new RuntimeException();
         // todo 判斷這個玩家是否有這些牌
         List<HandCard> discardCards = player.discardCards(cardIds);
@@ -588,6 +633,8 @@ public class Game {
         DomainEvent discardEvent = new DiscardEvent(discardCards, message, player.getId());
         List<DomainEvent> nextRoundEvent = new ArrayList<>();
         nextRoundEvent.add(discardEvent);
+        // 連營：棄牌階段棄光最後手牌 → 摸牌
+        appendDrawIfLostLastHandCard(player, nextRoundEvent);
         nextRoundEvent.add(new RoundEndEvent());
         nextRoundEvent.addAll(goNextRound(player));
         String drawCardMessage = String.format("玩家 %s 抽了 %d 張牌", currentRound.getCurrentRoundPlayer().getId(), calculatePlayerCanDrawCardSize(currentRound.getCurrentRoundPlayer()));
@@ -633,6 +680,14 @@ public class Game {
                                              Round currentRound,
                                              Optional<Behavior> behavior) {
         card.effect(damagedPlayer);
+        // 裸衣等傷害加成：attacker 在自己回合用殺/決鬥造成傷害時 +N
+        Player boostAttacker = (attackerPlayerId == null || attackerPlayerId.isEmpty())
+                ? null
+                : players.stream().filter(p -> attackerPlayerId.equals(p.getId())).findFirst().orElse(null);
+        int extraDamage = SkillEngine.extraDamage(this, boostAttacker, card);
+        if (extraDamage > 0) {
+            damagedPlayer.damage(extraDamage);
+        }
         PlayerDamagedEvent playerDamagedEvent = createPlayerDamagedEvent(originalHp, damagedPlayer);
         List<DomainEvent> events = new ArrayList<>();
         if (damagedPlayer.isHPGreaterThanZero()) {
@@ -962,7 +1017,8 @@ public class Game {
 
         // 驗證：殺次數限制（無諸葛連弩時一回合一次）
         // 丈八蛇矛的殺視為一般殺，計入回合限制
-        if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)) {
+        if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)
+                && !SkillEngine.isKillCountUnlimited(attacker)) {
             throw new IllegalStateException("Player already played Kill Card");
         }
 
@@ -1049,10 +1105,15 @@ public class Game {
             throw new IllegalArgumentException("Cannot target self");
         }
 
-        // 7. 攻擊範圍驗證（兩條路徑都套用，避免 short-circuit 隱式依賴下游 handler）
+        // 7. 攻擊範圍 + 目標免疫（空城等）驗證（兩條路徑都套用，避免 short-circuit 隱式依賴下游 handler）
         for (String targetId : targetPlayerIds) {
-            if (!isInAttackRange(attacker, getPlayer(targetId))) {
+            Player hdhTarget = getPlayer(targetId);
+            if (!isInAttackRange(attacker, hdhTarget)) {
                 throw new IllegalStateException(String.format("%s is not in attack range", targetId));
+            }
+            if (SkillEngine.isImmuneToCard(hdhTarget, handCard)) {
+                throw new IllegalStateException(
+                        String.format("%s cannot be targeted by Kill (target immunity skill)", targetId));
             }
         }
 
@@ -1066,7 +1127,8 @@ public class Game {
         Player primaryTarget = getPlayer(seatingOrderedTargets.get(0));
 
         // 10. 回合出殺次數限制（考慮諸葛連弩——實際上不會同時裝兩把武器，但保留邏輯對稱性）
-        if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)) {
+        if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)
+                && !SkillEngine.isKillCountUnlimited(attacker)) {
             throw new IllegalStateException("Player already played Kill Card");
         }
 

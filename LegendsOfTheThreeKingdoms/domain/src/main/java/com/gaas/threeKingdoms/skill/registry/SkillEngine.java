@@ -59,4 +59,98 @@ public final class SkillEngine {
         }
         return Optional.empty();
     }
+
+    // ===== Batch 1 被動/鎖定技 helper =====
+
+    private static List<Skill> skillsOf(Player player) {
+        if (player == null || player.getGeneralCard() == null) {
+            return List.of();
+        }
+        return SkillRegistry.of(player.getGeneralCard().getGeneralId());
+    }
+
+    /** 馬術等：自己與其他角色的距離修正（負值 = 縮短），下限保護由 caller 處理。 */
+    public static int distanceDeltaToOthers(Player player) {
+        int delta = 0;
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.DistanceDeltaSkill d) {
+                delta += d.distanceDeltaToOthers();
+            }
+        }
+        return delta;
+    }
+
+    /** 咆哮等：出牌階段使用殺是否無次數限制。 */
+    public static boolean isKillCountUnlimited(Player player) {
+        return skillsOf(player).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.trigger.KillCountUnlimitedSkill);
+    }
+
+    /** 英姿(+1) / 裸衣(-1)：摸牌階段抽牌數修正。 */
+    public static int drawPhaseDelta(Player player) {
+        int delta = 0;
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.DrawPhaseDeltaSkill d) {
+                delta += d.drawCardDelta();
+            }
+        }
+        return delta;
+    }
+
+    /** 英姿等：手牌上限（預設 = HP）。 */
+    public static int handCardLimit(Player player) {
+        int limit = player.getHP();
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.HandLimitSkill h) {
+                limit = Math.max(limit, h.handLimit(player));
+            }
+        }
+        return limit;
+    }
+
+    /** 謙遜 / 空城等：target 是否不能成為 card 的目標。 */
+    public static boolean isImmuneToCard(Player target, com.gaas.threeKingdoms.handcard.HandCard card) {
+        return skillsOf(target).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.trigger.TargetImmunitySkill t
+                        && t.isImmune(target, card));
+    }
+
+    /** 集智等：使用錦囊後額外摸牌數（0 = 不觸發）。 */
+    public static int drawCountAfterScrollUsed(Player player) {
+        int count = 0;
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.AfterScrollUsedSkill a) {
+                count += a.drawCountAfterScrollUsed();
+            }
+        }
+        return count;
+    }
+
+    /** 奇才等：使用錦囊是否無距離限制。 */
+    public static boolean isScrollRangeUnlimited(Player player) {
+        return skillsOf(player).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.trigger.ScrollRangeUnlimitedSkill);
+    }
+
+    /** 連營等：失去最後一張手牌後摸牌數（0 = 不觸發）。 */
+    public static int drawCountAfterLoseLastHandCard(Player player) {
+        int count = 0;
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.AfterLoseLastHandCardSkill a) {
+                count += a.drawCountAfterLoseLastHandCard();
+            }
+        }
+        return count;
+    }
+
+    /** 裸衣等：attacker 對 sourceCard 造成傷害的加成點數。 */
+    public static int extraDamage(Game game, Player attacker, com.gaas.threeKingdoms.handcard.HandCard sourceCard) {
+        int extra = 0;
+        for (Skill skill : skillsOf(attacker)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.DamageBoostSkill d) {
+                extra += d.extraDamage(game, attacker, sourceCard);
+            }
+        }
+        return extra;
+    }
 }
