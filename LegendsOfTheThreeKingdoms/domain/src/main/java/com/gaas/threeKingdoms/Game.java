@@ -1061,8 +1061,9 @@ public class Game {
             return playerPlayCard(playerId, cardId, targetPlayerIds.get(0), PlayType.ACTIVE.getPlayType());
         }
 
-        // 9. 多目標 — 取得 primary
-        Player primaryTarget = getPlayer(targetPlayerIds.get(0));
+        // 9. 多目標 — 結算依座位（行動）順序而非 request 傳入順序（issue #202）
+        List<String> seatingOrderedTargets = sortBySeatingOrderFrom(attacker, targetPlayerIds);
+        Player primaryTarget = getPlayer(seatingOrderedTargets.get(0));
 
         // 10. 回合出殺次數限制（考慮諸葛連弩——實際上不會同時裝兩把武器，但保留邏輯對稱性）
         if (currentRound.isShowKill() && !(attacker.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)) {
@@ -1076,12 +1077,30 @@ public class Game {
 
         // 12. push HeavenlyDoubleHalberdKillBehavior
         HeavenlyDoubleHalberdKillBehavior behavior = new HeavenlyDoubleHalberdKillBehavior(
-                this, attacker, targetPlayerIds, primaryTarget, cardId, killCard);
+                this, attacker, seatingOrderedTargets, primaryTarget, cardId, killCard);
         updateTopBehavior(behavior);
 
         List<DomainEvent> events = behavior.playerAction();
         removeCompletedBehaviors();
         return events;
+    }
+
+    /**
+     * 把 targetIds 重排為座位（行動）順序：以 anchor 的下家為起點沿座位鏈走，
+     * 依序收集出現在 targetIds 中的玩家。
+     */
+    private List<String> sortBySeatingOrderFrom(Player anchor, List<String> targetIds) {
+        List<String> ordered = new ArrayList<>();
+        Set<String> remaining = new HashSet<>(targetIds);
+        Player cursor = anchor;
+        int total = seatingChart.getPlayers().size();
+        for (int i = 0; i < total && !remaining.isEmpty(); i++) {
+            cursor = getNextPlayer(cursor);
+            if (remaining.remove(cursor.getId())) {
+                ordered.add(cursor.getId());
+            }
+        }
+        return ordered;
     }
 
     public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {

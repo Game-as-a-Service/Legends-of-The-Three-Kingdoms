@@ -483,7 +483,7 @@ POST /api/games/{gameId}/player:useHeavenlyDoubleHalberdKill
 |------|------|------|
 | playerId | String | 攻擊者玩家 ID（裝備方天畫戟） |
 | cardId | String | 要打出的殺 cardId（必須為攻擊者**最後一張手牌**） |
-| targetPlayerIds | List\<String\> | 全部目標玩家 ID（size 1~3；index 0 為主要目標；不重複、不含自己、皆需在攻擊範圍內） |
+| targetPlayerIds | List\<String\> | 全部目標玩家 ID（size 1~3；不重複、不含自己、皆需在攻擊範圍內）。傳入順序不影響結算 — 系統會以攻擊者下家起的**座位順序**依次詢問各目標 |
 
 **觸發時機**：攻擊者裝備方天畫戟、手上**只剩一張殺**時主動呼叫（不透過 `playCard` API）
 
