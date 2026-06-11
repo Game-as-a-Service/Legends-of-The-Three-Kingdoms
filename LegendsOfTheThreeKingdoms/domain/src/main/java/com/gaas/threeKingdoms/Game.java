@@ -947,11 +947,18 @@ public class Game {
     public List<DomainEvent> playerUseSkillEffect(String playerId, String skillName, String choice,
                                                   List<String> cardIds, String targetPlayerId) {
         if (topBehavior.isEmpty()) {
-            // proactive 分支：出牌階段主動發動技能（制衡 / 苦肉 / 仁德 / 觀星...）
+            // proactive 分支：出牌階段主動發動（轉化技 / 制衡 / 苦肉 / 仁德 / 觀星...）
+            if (findConversionSkill(playerId, skillName) != null) {
+                return applyConversionActive(playerId, skillName, choice, cardIds, targetPlayerId);
+            }
             return activatePhaseSkill(playerId, skillName, choice, cardIds, targetPlayerId);
         }
         Behavior behavior = topBehavior.peek();
         if (!(behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior waiting)) {
+            // 轉化技 response 分支：被殺問閃時當閃打出 / 南蠻決鬥需殺時當殺打出
+            if (findConversionSkill(playerId, skillName) != null) {
+                return applyConversionResponse(playerId, skillName, choice, cardIds, targetPlayerId);
+            }
             throw new IllegalStateException("Current behavior is not WaitingSkillEffectBehavior");
         }
         if (!waiting.getSkillName().equals(skillName)) {
@@ -961,6 +968,159 @@ public class Game {
         List<DomainEvent> events = waiting.resolveChoice(playerId, choice, cardIds, targetPlayerId);
         removeCompletedBehaviors();
         return events;
+    }
+
+    private com.gaas.threeKingdoms.skill.trigger.CardConversionSkill findConversionSkill(String playerId, String skillName) {
+        Player self = getPlayer(playerId);
+        return com.gaas.threeKingdoms.skill.registry.SkillRegistry.of(self.getGeneralCard().getGeneralId()).stream()
+                .filter(sk -> sk instanceof com.gaas.threeKingdoms.skill.trigger.CardConversionSkill
+                        && sk.getSkillName().equals(skillName))
+                .map(sk -> (com.gaas.threeKingdoms.skill.trigger.CardConversionSkill) sk)
+                .findFirst().orElse(null);
+    }
+
+    /** 轉化技主動使用（KILL / DISMANTLE / CONTENTMENT）— choice = 轉化目標型別。 */
+    private List<DomainEvent> applyConversionActive(String playerId, String skillName, String as,
+                                                    List<String> cardIds, String targetPlayerId) {
+        checkIsCurrentRoundValid(playerId);
+        Player self = getPlayer(playerId);
+        com.gaas.threeKingdoms.skill.trigger.CardConversionSkill skill = findConversionSkill(playerId, skillName);
+        if (cardIds == null || cardIds.size() != 1) {
+            throw new IllegalArgumentException("Conversion requires exactly 1 source card");
+        }
+        String sourceId = cardIds.get(0);
+        HandCard source = self.getHand().getCard(sourceId)
+                .orElseThrow(() -> new IllegalArgumentException("Source card not in hand: " + sourceId));
+        if (!skill.canConvert(source, as)) {
+            throw new IllegalArgumentException(String.format("%s 不能把 %s 當 %s", skillName, sourceId, as));
+        }
+        if (targetPlayerId == null) {
+            throw new IllegalArgumentException("Conversion active play requires targetPlayerId");
+        }
+        Player target = getPlayer(targetPlayerId);
+
+        switch (as) {
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_KILL -> {
+                if (playerId.equals(targetPlayerId)) {
+                    throw new IllegalArgumentException("Cannot target self");
+                }
+                if (!isInAttackRange(self, target)) {
+                    throw new IllegalStateException("target is not in attack range");
+                }
+                if (SkillEngine.isImmuneToCard(target, new VirtualKill())) {
+                    throw new IllegalStateException("target cannot be targeted by Kill (immunity skill)");
+                }
+                if (currentRound.isShowKill() && !(self.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard)
+                        && !SkillEngine.isKillCountUnlimited(self)) {
+                    throw new IllegalStateException("Player already played Kill Card");
+                }
+                currentRound.setShowKill(true);
+                // card = VirtualKill（傷害結算用），cardId = 來源牌（事件顯示真實牌、手牌→墓地）
+                NormalActiveKillBehavior killBehavior = new NormalActiveKillBehavior(
+                        this, self, new ArrayList<>(List.of(targetPlayerId)), self,
+                        sourceId, PlayType.ACTIVE.getPlayType(), new VirtualKill());
+                updateTopBehavior(killBehavior);
+                List<DomainEvent> events = new ArrayList<>();
+                events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                        skillName, playerId, true, List.of(sourceId), targetPlayerId));
+                events.addAll(killBehavior.playerAction());
+                removeCompletedBehaviors();
+                return events;
+            }
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_DISMANTLE -> {
+                if (playerId.equals(targetPlayerId)) {
+                    throw new IllegalArgumentException("不可以對自己出過河拆橋");
+                }
+                if (target.getHandSize() == 0 && !target.getEquipment().hasAnyEquipment()
+                        && !target.hasAnyDelayScrollCard()) {
+                    throw new IllegalArgumentException("對象沒手牌、裝備或者判定區的牌");
+                }
+                List<String> reaction = new ArrayList<>(List.of(playerId, targetPlayerId));
+                HandCard converted = new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(PlayCard.valueOf(sourceId));
+                Behavior dismantle = new com.gaas.threeKingdoms.behavior.behavior.DismantleBehavior(
+                        this, self, reaction, target, sourceId, PlayType.ACTIVE.getPlayType(), converted);
+                updateTopBehavior(dismantle);
+                List<DomainEvent> events = new ArrayList<>();
+                events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                        skillName, playerId, true, List.of(sourceId), targetPlayerId));
+                events.addAll(dismantle.playerAction());
+                removeCompletedBehaviors();
+                return events;
+            }
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_CONTENTMENT -> {
+                if (playerId.equals(targetPlayerId)) {
+                    throw new IllegalArgumentException("不可以對自己出樂不思蜀");
+                }
+                HandCard converted = new Contentment(PlayCard.valueOf(sourceId));
+                if (SkillEngine.isImmuneToCard(target, converted)) {
+                    throw new IllegalStateException("target cannot be targeted by Contentment (immunity skill)");
+                }
+                if (target.hasAnyContentmentCard()) {
+                    throw new IllegalArgumentException(target.getId() + " 已經有樂不思蜀");
+                }
+                Behavior contentment = new com.gaas.threeKingdoms.behavior.behavior.ContentmentBehavior(
+                        this, self, new ArrayList<>(List.of(targetPlayerId)), target,
+                        sourceId, PlayType.ACTIVE.getPlayType(), converted);
+                updateTopBehavior(contentment);
+                List<DomainEvent> events = new ArrayList<>();
+                events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                        skillName, playerId, true, List.of(sourceId), targetPlayerId));
+                events.addAll(contentment.playerAction());
+                removeCompletedBehaviors();
+                return events;
+            }
+            default -> throw new IllegalArgumentException("Unsupported active conversion: " + as);
+        }
+    }
+
+    /** 轉化技 response 使用（DODGE 回應問閃 / KILL 回應南蠻、決鬥）。 */
+    private List<DomainEvent> applyConversionResponse(String playerId, String skillName, String as,
+                                                      List<String> cardIds, String targetPlayerId) {
+        Player self = getPlayer(playerId);
+        com.gaas.threeKingdoms.skill.trigger.CardConversionSkill skill = findConversionSkill(playerId, skillName);
+        if (cardIds == null || cardIds.size() != 1) {
+            throw new IllegalArgumentException("Conversion requires exactly 1 source card");
+        }
+        String sourceId = cardIds.get(0);
+        HandCard source = self.getHand().getCard(sourceId)
+                .orElseThrow(() -> new IllegalArgumentException("Source card not in hand: " + sourceId));
+        if (!skill.canConvert(source, as)) {
+            throw new IllegalArgumentException(String.format("%s 不能把 %s 當 %s", skillName, sourceId, as));
+        }
+        Behavior top = topBehavior.peek();
+
+        switch (as) {
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_DODGE -> {
+                if (!(top instanceof com.gaas.threeKingdoms.behavior.HuJiaCompatibleAskDodgeBehavior dodgeHost)) {
+                    throw new IllegalStateException("Current behavior does not accept dodge response: "
+                            + top.getClass().getSimpleName());
+                }
+                if (!top.getReactionPlayers().contains(playerId)) {
+                    throw new IllegalStateException(playerId + " is not asked to dodge");
+                }
+                // 來源牌棄到墓地，視為打出閃（與護駕代閃同一個 host hook）
+                HandCard discarded = self.playCard(sourceId);
+                graveyard.add(discarded);
+                List<DomainEvent> events = new ArrayList<>();
+                events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                        skillName, playerId, true, List.of(sourceId), null));
+                events.addAll(dodgeHost.acceptDodgeFromHuJia(playerId, playerId, sourceId));
+                removeCompletedBehaviors();
+                return events;
+            }
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_KILL -> {
+                // 南蠻入侵 / 決鬥需要殺 — 走 ViperSpear 的 virtual kill response 通道
+                HandCard discarded = self.playCard(sourceId);
+                graveyard.add(discarded);
+                List<DomainEvent> events = new ArrayList<>();
+                events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                        skillName, playerId, true, List.of(sourceId), null));
+                events.addAll(top.acceptVirtualKillResponse(playerId, targetPlayerId, new VirtualKill(), List.of(sourceId)));
+                removeCompletedBehaviors();
+                return events;
+            }
+            default -> throw new IllegalArgumentException("Unsupported response conversion: " + as);
+        }
     }
 
     private List<DomainEvent> activatePhaseSkill(String playerId, String skillName, String choice,
