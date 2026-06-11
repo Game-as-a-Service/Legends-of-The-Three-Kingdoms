@@ -22,6 +22,9 @@ public class RoundData {
     private String currentCard;
     private boolean isShowKill;
     private String stage;
+    private java.util.Set<String> usedOncePerTurnSkills;
+    private int renDeGivenCount;
+    private boolean renDeHealed;
 
     public static RoundData fromDomain(Round round) {
         if (round == null) {
@@ -36,6 +39,9 @@ public class RoundData {
                 .currentCard(round.getCurrentCard() != null ? round.getCurrentCard().getId() : null)
                 .isShowKill(round.isShowKill())
                 .stage(round.getStage().name())
+                .usedOncePerTurnSkills(round.getUsedOncePerTurnSkills())
+                .renDeGivenCount(round.getRenDeGivenCount())
+                .renDeHealed(round.isRenDeHealed())
                 .build();
     }
 
@@ -47,6 +53,11 @@ public class RoundData {
         round.setCurrentCard(PlayCard.findById(currentCard));
         round.setShowKill(isShowKill);
         round.setStage(Stage.valueOf(this.stage));
+        if (this.usedOncePerTurnSkills != null) {
+            round.setUsedOncePerTurnSkills(new java.util.HashSet<>(this.usedOncePerTurnSkills));
+        }
+        round.setRenDeGivenCount(this.renDeGivenCount);
+        round.setRenDeHealed(this.renDeHealed);
         return round;
     }
 }

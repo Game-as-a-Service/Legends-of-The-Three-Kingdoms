@@ -49,4 +49,22 @@ public class Deck {
     public void add(List<HandCard> handCards) {
         cardDeck.addAll(handCards);
     }
+
+    public int size() {
+        return cardDeck.size();
+    }
+
+    /** 觀星：把牌放回牌堆頂（list 第一張 = 下一張被抽的牌）。 */
+    public void putBackOnTop(List<HandCard> cards) {
+        for (int i = cards.size() - 1; i >= 0; i--) {
+            cardDeck.push(cards.get(i));
+        }
+    }
+
+    /** 觀星：把牌放到牌堆底。 */
+    public void putAtBottom(List<HandCard> cards) {
+        for (HandCard card : cards) {
+            cardDeck.insertElementAt(card, 0);
+        }
+    }
 }

@@ -947,7 +947,8 @@ public class Game {
     public List<DomainEvent> playerUseSkillEffect(String playerId, String skillName, String choice,
                                                   List<String> cardIds, String targetPlayerId) {
         if (topBehavior.isEmpty()) {
-            throw new IllegalStateException("No active behavior waiting for skill effect response");
+            // proactive 分支：出牌階段主動發動技能（制衡 / 苦肉 / 仁德 / 觀星...）
+            return activatePhaseSkill(playerId, skillName, choice, cardIds, targetPlayerId);
         }
         Behavior behavior = topBehavior.peek();
         if (!(behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior waiting)) {
@@ -958,6 +959,23 @@ public class Game {
                     "Waiting skill is %s, not %s", waiting.getSkillName(), skillName));
         }
         List<DomainEvent> events = waiting.resolveChoice(playerId, choice, cardIds, targetPlayerId);
+        removeCompletedBehaviors();
+        return events;
+    }
+
+    private List<DomainEvent> activatePhaseSkill(String playerId, String skillName, String choice,
+                                                 List<String> cardIds, String targetPlayerId) {
+        checkIsCurrentRoundValid(playerId);
+        Player self = getPlayer(playerId);
+        com.gaas.threeKingdoms.skill.trigger.ActivePhaseSkill skill =
+                com.gaas.threeKingdoms.skill.registry.SkillRegistry.of(self.getGeneralCard().getGeneralId()).stream()
+                        .filter(sk -> sk instanceof com.gaas.threeKingdoms.skill.trigger.ActivePhaseSkill
+                                && sk.getSkillName().equals(skillName))
+                        .map(sk -> (com.gaas.threeKingdoms.skill.trigger.ActivePhaseSkill) sk)
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException(
+                                String.format("%s has no active skill named %s", playerId, skillName)));
+        List<DomainEvent> events = skill.activate(this, self, choice, cardIds, targetPlayerId);
         removeCompletedBehaviors();
         return events;
     }
