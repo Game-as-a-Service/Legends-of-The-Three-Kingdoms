@@ -2,14 +2,21 @@ package com.gaas.threeKingdoms.skill.registry;
 
 import com.gaas.threeKingdoms.skill.Skill;
 import com.gaas.threeKingdoms.skill.shu.JiZhiSkill;
+import com.gaas.threeKingdoms.skill.shu.TieQiSkill;
 import com.gaas.threeKingdoms.skill.shu.KongChengSkill;
 import com.gaas.threeKingdoms.skill.shu.MaShuSkill;
 import com.gaas.threeKingdoms.skill.shu.PaoXiaoSkill;
 import com.gaas.threeKingdoms.skill.shu.QiCaiSkill;
 import com.gaas.threeKingdoms.skill.wei.HuJiaSkill;
 import com.gaas.threeKingdoms.skill.wei.JianXiongSkill;
+import com.gaas.threeKingdoms.skill.wei.FanKuiSkill;
+import com.gaas.threeKingdoms.skill.wei.GangLieSkill;
+import com.gaas.threeKingdoms.skill.wei.LuoShenSkill;
 import com.gaas.threeKingdoms.skill.wei.LuoYiSkill;
+import com.gaas.threeKingdoms.skill.wei.TianDuSkill;
+import com.gaas.threeKingdoms.skill.wei.YiJiSkill;
 import com.gaas.threeKingdoms.skill.wu.LianYingSkill;
+import com.gaas.threeKingdoms.skill.wu.XiaoJiSkill;
 import com.gaas.threeKingdoms.skill.wu.QianXunSkill;
 import com.gaas.threeKingdoms.skill.wu.YingZiSkill;
 
@@ -26,16 +33,23 @@ public final class SkillRegistry {
         register(new JianXiongSkill());
         register(new HuJiaSkill());
         register(new LuoYiSkill());
+        register(new FanKuiSkill());
+        register(new GangLieSkill());
+        register(new TianDuSkill());
+        register(new YiJiSkill());
+        register(new LuoShenSkill());
         // 蜀
         register(new PaoXiaoSkill());
         register(new KongChengSkill());
         register(new MaShuSkill());
         register(new JiZhiSkill());
         register(new QiCaiSkill());
+        register(new TieQiSkill());
         // 吳
         register(new YingZiSkill());
         register(new QianXunSkill());
         register(new LianYingSkill());
+        register(new XiaoJiSkill());
     }
 
     private SkillRegistry() {
@@ -43,6 +57,11 @@ public final class SkillRegistry {
 
     public static List<Skill> of(String generalId) {
         return BY_GENERAL.getOrDefault(generalId, List.of());
+    }
+
+    /** 全部已註冊技能（WaitingSkillEffectBehavior 依 skillName dispatch 用）。 */
+    public static List<Skill> all() {
+        return BY_GENERAL.values().stream().flatMap(List::stream).toList();
     }
 
     private static void register(Skill skill) {

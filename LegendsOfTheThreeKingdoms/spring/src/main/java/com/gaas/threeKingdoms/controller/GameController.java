@@ -39,6 +39,7 @@ public class GameController {
     private final UseStonePiercingAxeEffectUseCase useStonePiercingAxeEffectUseCase;
     private final UseJianXiongEffectUseCase useJianXiongEffectUseCase;
     private final UseHuJiaEffectUseCase useHuJiaEffectUseCase;
+    private final UseSkillEffectUseCase useSkillEffectUseCase;
     private final UseViperSpearKillUseCase useViperSpearKillUseCase;
     private final UseHeavenlyDoubleHalberdKillUseCase useHeavenlyDoubleHalberdKillUseCase;
 
@@ -186,6 +187,14 @@ public class GameController {
         UseJianXiongEffectPresenter presenter = new UseJianXiongEffectPresenter();
         useJianXiongEffectUseCase.execute(gameId, request.toUseJianXiongEffectRequest(), presenter);
         webSocketBroadCast.pushUseJianXiongEffectEvent(presenter);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/games/{gameId}/player:useSkillEffect")
+    public ResponseEntity<?> playerUseSkillEffect(@PathVariable String gameId, @RequestBody UseSkillEffectRequest request) {
+        UseSkillEffectPresenter presenter = new UseSkillEffectPresenter();
+        useSkillEffectUseCase.execute(gameId, request.toUseSkillEffectRequest(), presenter);
+        webSocketBroadCast.pushUseSkillEffectEvent(presenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

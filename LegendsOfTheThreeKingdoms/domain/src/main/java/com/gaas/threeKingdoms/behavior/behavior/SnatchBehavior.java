@@ -102,6 +102,11 @@ public class SnatchBehavior extends Behavior {
             targetPlayer.getEquipment().removeEquipment(cardId);
             behaviorPlayer.getHand().addCardToHand(card);
             events.add(new SnatchEvent(playerId, targetPlayerId, cardId, String.format("%s 偷走了 %s 的裝備 %s", playerGeneralName, targetPlayerGeneralName, PlayCard.getCardName(cardId))));
+            // 梟姬：失去裝備 → 摸牌
+            int xiaoJiDraw = com.gaas.threeKingdoms.skill.registry.SkillEngine.drawCountAfterLoseEquipment(targetPlayer);
+            if (xiaoJiDraw > 0) {
+                events.add(game.drawCardToPlayer(targetPlayer, false, xiaoJiDraw));
+            }
             events.add(game.getGameStatusEvent("順手牽羊效果"));
         }
         isOneRound = true;

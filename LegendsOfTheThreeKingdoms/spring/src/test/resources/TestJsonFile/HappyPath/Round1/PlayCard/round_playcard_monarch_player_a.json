@@ -29,7 +29,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU006",
+      "generalId" : "SHU005",
       "roleId" : "",
       "hp" : 4,
       "hand" : {

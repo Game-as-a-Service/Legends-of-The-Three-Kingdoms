@@ -47,7 +47,7 @@ public class HuJiaSkillTest {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard(General.馬超))
+                .withGeneralCard(new GeneralCard(General.甘寧))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.REBEL))
                 .withHand(new Hand())

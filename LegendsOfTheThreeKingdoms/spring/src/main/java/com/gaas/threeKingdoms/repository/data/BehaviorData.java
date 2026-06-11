@@ -26,6 +26,7 @@ public class BehaviorData {
     private static final String VIPER_SPEAR_DISCARDED_CARD_IDS = "VIPER_SPEAR_DISCARDED_CARD_IDS";
     private static final String JIANXIONG_SOURCE_CARD_IDS = "JIANXIONG_SOURCE_CARD_IDS";
     private static final String HUJIA_CAOCAO_ID = "HUJIA_CAOCAO_ID";
+    private static final String SKILL_EFFECT_NAME = "SKILL_EFFECT_NAME";
     private static final String HUJIA_WEI_ORDER = "HUJIA_WEI_ORDER";
     private static final String HUJIA_CURRENT_INDEX = "HUJIA_CURRENT_INDEX";
     private static final String DYING_PENDING_SOURCE_CARD_ID = "DYING_PENDING_SOURCE_CARD_ID";
@@ -386,6 +387,20 @@ public class BehaviorData {
                         sourceCardIds
                 );
             }
+            case "WaitingSkillEffectBehavior" -> {
+                String skillName = params != null ? (String) params.get(SKILL_EFFECT_NAME) : null;
+                com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior wse =
+                        new com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior(
+                                game, game.getPlayer(behaviorPlayerId), skillName);
+                if (params != null) {
+                    params.forEach((k, v) -> {
+                        if (!SKILL_EFFECT_NAME.equals(k)) {
+                            wse.putParam(k, v);
+                        }
+                    });
+                }
+                yield wse;
+            }
             case "WaitingHuJiaResponseBehavior" -> {
                 @SuppressWarnings("unchecked")
                 List<String> weiOrder = params != null && params.get(HUJIA_WEI_ORDER) != null
@@ -424,6 +439,8 @@ public class BehaviorData {
             params.put(VIPER_SPEAR_DISCARDED_CARD_IDS, vs.getDiscardedCardIds());
         } else if (behavior instanceof WaitingJianXiongResponseBehavior jx) {
             params.put(JIANXIONG_SOURCE_CARD_IDS, jx.getSourceCardIds());
+        } else if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior wse) {
+            params.put(SKILL_EFFECT_NAME, wse.getSkillName());
         } else if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingHuJiaResponseBehavior huJia) {
             params.put(HUJIA_CAOCAO_ID, huJia.getCaoCaoPlayerId());
             params.put(HUJIA_WEI_ORDER, huJia.getWeiOrder());
