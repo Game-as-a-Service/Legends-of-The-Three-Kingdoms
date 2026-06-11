@@ -6,7 +6,9 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbo
 import com.gaas.threeKingdoms.player.Player;
 import lombok.Data;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Data
@@ -18,6 +20,10 @@ public class Round {
     private HandCard currentCard;
     private boolean isShowKill;
     private Stage stage;
+    // 每回合限一次的技能使用紀錄（反間 / 結姻 / 突襲）+ 仁德本回合已給牌數
+    private Set<String> usedOncePerTurnSkills = new HashSet<>();
+    private int renDeGivenCount = 0;
+    private boolean renDeHealed = false;
 
     public Round (Player currentRoundPlayer) {
         this.roundPhase = RoundPhase.Judgement;

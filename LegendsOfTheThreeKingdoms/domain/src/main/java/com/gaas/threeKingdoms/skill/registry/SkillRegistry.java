@@ -1,7 +1,9 @@
 package com.gaas.threeKingdoms.skill.registry;
 
 import com.gaas.threeKingdoms.skill.Skill;
+import com.gaas.threeKingdoms.skill.shu.GuanXingSkill;
 import com.gaas.threeKingdoms.skill.shu.JiZhiSkill;
+import com.gaas.threeKingdoms.skill.shu.RenDeSkill;
 import com.gaas.threeKingdoms.skill.shu.TieQiSkill;
 import com.gaas.threeKingdoms.skill.shu.KongChengSkill;
 import com.gaas.threeKingdoms.skill.shu.MaShuSkill;
@@ -14,8 +16,13 @@ import com.gaas.threeKingdoms.skill.wei.GangLieSkill;
 import com.gaas.threeKingdoms.skill.wei.LuoShenSkill;
 import com.gaas.threeKingdoms.skill.wei.LuoYiSkill;
 import com.gaas.threeKingdoms.skill.wei.TianDuSkill;
+import com.gaas.threeKingdoms.skill.wei.TuXiSkill;
 import com.gaas.threeKingdoms.skill.wei.YiJiSkill;
+import com.gaas.threeKingdoms.skill.wu.FanJianSkill;
+import com.gaas.threeKingdoms.skill.wu.JieYinSkill;
+import com.gaas.threeKingdoms.skill.wu.KuRouSkill;
 import com.gaas.threeKingdoms.skill.wu.LianYingSkill;
+import com.gaas.threeKingdoms.skill.wu.ZhiHengSkill;
 import com.gaas.threeKingdoms.skill.wu.XiaoJiSkill;
 import com.gaas.threeKingdoms.skill.wu.QianXunSkill;
 import com.gaas.threeKingdoms.skill.wu.YingZiSkill;
@@ -38,6 +45,7 @@ public final class SkillRegistry {
         register(new TianDuSkill());
         register(new YiJiSkill());
         register(new LuoShenSkill());
+        register(new TuXiSkill());
         // 蜀
         register(new PaoXiaoSkill());
         register(new KongChengSkill());
@@ -45,11 +53,17 @@ public final class SkillRegistry {
         register(new JiZhiSkill());
         register(new QiCaiSkill());
         register(new TieQiSkill());
+        register(new RenDeSkill());
+        register(new GuanXingSkill());
         // 吳
         register(new YingZiSkill());
         register(new QianXunSkill());
         register(new LianYingSkill());
         register(new XiaoJiSkill());
+        register(new ZhiHengSkill());
+        register(new KuRouSkill());
+        register(new FanJianSkill());
+        register(new JieYinSkill());
     }
 
     private SkillRegistry() {
