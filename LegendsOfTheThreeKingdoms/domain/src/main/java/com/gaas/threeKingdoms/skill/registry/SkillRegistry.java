@@ -2,6 +2,8 @@ package com.gaas.threeKingdoms.skill.registry;
 
 import com.gaas.threeKingdoms.skill.Skill;
 import com.gaas.threeKingdoms.skill.shu.GuanXingSkill;
+import com.gaas.threeKingdoms.skill.shu.LongDanSkill;
+import com.gaas.threeKingdoms.skill.shu.WuShengSkill;
 import com.gaas.threeKingdoms.skill.shu.JiZhiSkill;
 import com.gaas.threeKingdoms.skill.shu.RenDeSkill;
 import com.gaas.threeKingdoms.skill.shu.TieQiSkill;
@@ -16,9 +18,12 @@ import com.gaas.threeKingdoms.skill.wei.GangLieSkill;
 import com.gaas.threeKingdoms.skill.wei.LuoShenSkill;
 import com.gaas.threeKingdoms.skill.wei.LuoYiSkill;
 import com.gaas.threeKingdoms.skill.wei.TianDuSkill;
+import com.gaas.threeKingdoms.skill.wei.QingGuoSkill;
 import com.gaas.threeKingdoms.skill.wei.TuXiSkill;
 import com.gaas.threeKingdoms.skill.wei.YiJiSkill;
 import com.gaas.threeKingdoms.skill.wu.FanJianSkill;
+import com.gaas.threeKingdoms.skill.wu.GuoSeSkill;
+import com.gaas.threeKingdoms.skill.wu.QiXiSkill;
 import com.gaas.threeKingdoms.skill.wu.JieYinSkill;
 import com.gaas.threeKingdoms.skill.wu.KuRouSkill;
 import com.gaas.threeKingdoms.skill.wu.LianYingSkill;
@@ -46,6 +51,7 @@ public final class SkillRegistry {
         register(new YiJiSkill());
         register(new LuoShenSkill());
         register(new TuXiSkill());
+        register(new QingGuoSkill());
         // 蜀
         register(new PaoXiaoSkill());
         register(new KongChengSkill());
@@ -55,6 +61,8 @@ public final class SkillRegistry {
         register(new TieQiSkill());
         register(new RenDeSkill());
         register(new GuanXingSkill());
+        register(new WuShengSkill());
+        register(new LongDanSkill());
         // 吳
         register(new YingZiSkill());
         register(new QianXunSkill());
@@ -64,6 +72,8 @@ public final class SkillRegistry {
         register(new KuRouSkill());
         register(new FanJianSkill());
         register(new JieYinSkill());
+        register(new QiXiSkill());
+        register(new GuoSeSkill());
     }
 
     private SkillRegistry() {

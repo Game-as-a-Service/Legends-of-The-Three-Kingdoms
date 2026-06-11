@@ -681,6 +681,18 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 觀星（諸葛亮）第一段 | 每回合 1 次 | `ACCEPT` | — | — |
 | 觀星 第二段 | — | `ARRANGE` | 回堆頂的順序（未列出 → 置堆底） | — |
 
+### 轉化牌技（choice = 轉化目標型別）
+
+| 技能 | choice | cardIds | targetPlayerId | 使用情境 |
+|---|---|---|---|---|
+| 武聖（關羽） | `KILL` | [紅色手牌 id] | 主動殺必填 | 主動出殺（topBehavior 空）或回應南蠻/決鬥（KILL response） |
+| 龍膽（趙雲） | `KILL` / `DODGE` | [閃 id] / [殺 id] | 主動殺必填 | 殺↔閃雙向；回應問閃用 DODGE、回應需殺用 KILL |
+| 傾國（甄姬） | `DODGE` | [黑色手牌 id] | — | 被問閃時（被殺/萬箭/方天畫戟） |
+| 奇襲（甘寧） | `DISMANTLE` | [黑色手牌 id] | 必填 | 主動；後續走 useDismantleEffect |
+| 國色（大喬） | `CONTENTMENT` | [方塊手牌 id] | 必填 | 主動；牌以樂不思蜀身份進判定區 |
+
+轉化殺計入出殺次數限制（咆哮/諸葛連弩豁免照常）；轉化殺對空城/謙遜的目標限制照常套用。
+
 **v1 範圍備註**：
 - 反饋 / 遺計 / 剛烈在 AOE polling（南蠻 / 萬箭）中不觸發（defer-resume 整合 follow-up）；瀕死不觸發
 - 剛烈 DAMAGE 反傷不進瀕死流程整合（follow-up）
@@ -689,6 +701,8 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 苦肉 v1 需 HP ≥ 2（瀕死整合 follow-up）；反間目標受傷不進瀕死流程（follow-up）
 - 觀星 issue 時機為回合開始；v1 以出牌階段主動發動實作（時機整合 follow-up）
 - 突襲 issue 時機為出牌階段開始；v1 出牌階段任意時點可發動（每回合一次）
+- 武聖/奇襲 v1 限手牌（裝備區紅/黑牌轉化 follow-up）；轉化殺的奸雄取牌為 follow-up
+- 轉化殺的傷害結算以 VirtualKill 進行；事件中 cardId 為來源真實牌
 
 ---
 
