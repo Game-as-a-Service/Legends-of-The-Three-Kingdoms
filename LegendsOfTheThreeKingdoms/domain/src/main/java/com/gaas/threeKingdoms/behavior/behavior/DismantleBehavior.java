@@ -100,6 +100,11 @@ public class DismantleBehavior extends Behavior {
             if (targetPlayer.getEquipment().hasThisEquipment(cardId)) {
                 targetPlayer.getEquipment().removeEquipment(cardId);
                 events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 的裝備 %s", playerGeneralName, targetPlayerGeneralName, PlayCard.getCardName(cardId))));
+                // 梟姬：失去裝備 → 摸牌
+                int xiaoJiDraw = com.gaas.threeKingdoms.skill.registry.SkillEngine.drawCountAfterLoseEquipment(targetPlayer);
+                if (xiaoJiDraw > 0) {
+                    events.add(game.drawCardToPlayer(targetPlayer, false, xiaoJiDraw));
+                }
             } else {
                 targetPlayer.removeDelayScrollCard(cardId);
                 events.add(new DismantleEvent(playerId, targetPlayerId, cardId, String.format("%s 拆掉了 %s 判定區的 %s", playerGeneralName, targetPlayerGeneralName, PlayCard.getCardName(cardId))));

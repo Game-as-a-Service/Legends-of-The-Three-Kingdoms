@@ -27,7 +27,7 @@
   "data" : {
     "seats" : [ {
       "id" : "player-a",
-      "generalId" : "SHU006",
+      "generalId" : "WU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {

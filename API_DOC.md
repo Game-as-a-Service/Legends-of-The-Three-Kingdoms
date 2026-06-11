@@ -632,6 +632,49 @@ A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
 
 ---
 
+## 23. 通用武將技效果回應（useSkillEffect）
+
+```
+POST /api/games/{gameId}/player:useSkillEffect
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| playerId | String | 回應的玩家 ID |
+| skillName | String | 技能名（見下表） |
+| choice | String | 選擇值，依技能而定 |
+| cardIds | List\<String\>? | 選擇的牌（依技能） |
+| targetPlayerId | String? | 選擇的目標（依技能） |
+
+**觸發時機**：收到 `AskSkillEffectEvent`（內含 skillName / playerId / dataCardIds / dataPlayerId）後呼叫。
+回應後廣播 `SkillEffectEvent`（accepted + data）。
+
+### 各技能 payload
+
+| 技能 | 觸發 | choice | cardIds | targetPlayerId |
+|---|---|---|---|---|
+| 反饋（司馬懿） | 受傷後 | `ACCEPT` / `SKIP` | 可選：指定來源裝備 id（不給 = 抽來源第一張手牌） | — |
+| 遺計（郭嘉） | 受傷後 | `ACCEPT`（自摸 2）/ `GIVE`（令他人獲得 1）/ `SKIP` | — | GIVE 必填 |
+| 剛烈（夏侯惇）第一段 | 受傷後 | `ACCEPT`（判定）/ `SKIP` | — | — |
+| 剛烈 第二段（問傷害來源） | 判定非紅桃後 | `DISCARD` / `DAMAGE` | DISCARD 必填 2 張手牌 | — |
+
+### 自動觸發技（無需呼叫本 API，僅廣播 `SkillEffectEvent`）
+
+| 武將 | 技能 | 行為 |
+|---|---|---|
+| 郭嘉 | 天妒 | 自己判定牌生效後自動收入手牌（閃電 / 樂不思蜀 / 剛烈判定） |
+| 甄姬 | 洛神 | 回合開始自動判定：黑色收入手牌續判、紅色停 |
+| 馬超 | 鐵騎 | 出殺指定目標後自動判定：非紅桃 → 目標不能出閃直接結算 |
+| 孫尚香 | 梟姬 | 失去裝備（被拆 / 被順 / 被反饋取走）自動摸 2 |
+
+**v1 範圍備註**：
+- 反饋 / 遺計 / 剛烈在 AOE polling（南蠻 / 萬箭）中不觸發（defer-resume 整合 follow-up）；瀕死不觸發
+- 剛烈 DAMAGE 反傷不進瀕死流程整合（follow-up）
+- 鐵騎 v1 自動判定（不問）；目標有八卦陣時走防具路徑不受鐵騎影響（follow-up）
+- 梟姬不覆蓋「主動換裝蓋掉舊裝備」路徑（follow-up）
+
+---
+
 ## WebSocket 事件類型
 
 前端透過 WebSocket 接收以下事件，根據事件類型決定 UI 行為：

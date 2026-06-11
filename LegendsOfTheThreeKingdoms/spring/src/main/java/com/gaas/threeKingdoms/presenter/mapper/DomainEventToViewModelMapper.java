@@ -300,6 +300,22 @@ public class DomainEventToViewModelMapper {
             return new UseJianXiongEffectPresenter.JianXiongEffectViewModel(dataViewModel);
         });
 
+        eventToViewModelMappers.put(AskSkillEffectEvent.class, event -> {
+            AskSkillEffectEvent askEvent = (AskSkillEffectEvent) event;
+            UseSkillEffectPresenter.AskSkillEffectDataViewModel dataViewModel = new UseSkillEffectPresenter.AskSkillEffectDataViewModel(
+                    askEvent.getSkillName(), askEvent.getPlayerId(),
+                    askEvent.getDataCardIds(), askEvent.getDataPlayerId());
+            return new UseSkillEffectPresenter.AskSkillEffectViewModel(dataViewModel);
+        });
+
+        eventToViewModelMappers.put(SkillEffectEvent.class, event -> {
+            SkillEffectEvent skillEvent = (SkillEffectEvent) event;
+            UseSkillEffectPresenter.SkillEffectDataViewModel dataViewModel = new UseSkillEffectPresenter.SkillEffectDataViewModel(
+                    skillEvent.getSkillName(), skillEvent.getPlayerId(), skillEvent.isAccepted(),
+                    skillEvent.getDataCardIds(), skillEvent.getDataPlayerId());
+            return new UseSkillEffectPresenter.SkillEffectViewModel(dataViewModel);
+        });
+
         eventToViewModelMappers.put(AskHuJiaEffectEvent.class, event -> {
             AskHuJiaEffectEvent askEvent = (AskHuJiaEffectEvent) event;
             UseHuJiaEffectPresenter.AskHuJiaEffectDataViewModel dataViewModel = new UseHuJiaEffectPresenter.AskHuJiaEffectDataViewModel(

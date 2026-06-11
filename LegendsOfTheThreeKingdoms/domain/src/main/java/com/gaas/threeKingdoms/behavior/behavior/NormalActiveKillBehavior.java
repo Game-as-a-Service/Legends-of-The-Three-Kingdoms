@@ -77,9 +77,20 @@ public class NormalActiveKillBehavior extends Behavior
     }
 
     /**
-     * AskDodge 前先讓 SkillEngine 介入（護駕等）。若介入，跳過原本 AskDodgeEvent。
+     * AskDodge 前先讓 SkillEngine 介入：
+     * 1. 鐵騎（攻擊者側）：判定生效 → 目標不能出閃，直接結算傷害
+     * 2. 護駕（目標側）：主公曹操 → 改問 Wei 武將代閃
      */
     private void emitAskDodgeOrHuJia(List<DomainEvent> events, Player targetPlayer) {
+        boolean[] tieQiSuccess = new boolean[1];
+        events.addAll(SkillEngine.tieQiJudgementEvents(game, behaviorPlayer, targetPlayer, tieQiSuccess));
+        if (tieQiSuccess[0]) {
+            int originalHp = targetPlayer.getHP();
+            events.addAll(game.getDamagedEvent(targetPlayer.getId(), behaviorPlayer.getId(),
+                    this.cardId, this.card, PlayType.SYSTEM_INTERNAL.getPlayType(),
+                    originalHp, targetPlayer, game.getCurrentRound(), Optional.of(this)));
+            return;
+        }
         Optional<List<DomainEvent>> intercepted = SkillEngine.beforeAskDodge(game, targetPlayer, this);
         if (intercepted.isPresent()) {
             events.addAll(intercepted.get());

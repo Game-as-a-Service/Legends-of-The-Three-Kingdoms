@@ -393,7 +393,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         D 為內奸 可選武將牌「司馬懿」「夏侯惇」「許褚」
 
           When
-        玩家 B 選武將 馬超
+        玩家 B 選武將 趙雲（馬超的鐵騎自動判定會位移牌堆，改選無自動技的趙雲）
         玩家 C 選武將 諸葛亮
         玩家 D 選武將 司馬懿
           Then
@@ -406,7 +406,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                         .content("""
                                 {
                                  "playerId": "player-b",
-                                 "generalId": "SHU006"
+                                 "generalId": "SHU005"
                                  }
                                 """))
                 .andExpect(status().isOk())
@@ -415,10 +415,10 @@ public class GameTest extends AbstractBaseIntegrationTest {
         // Then 玩家B武將為馬超 ((玩家B general是 general1 is true)
         Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
-        assertEquals("SHU006", game.getPlayer("player-b").getGeneralCard().getGeneralId());
+        assertEquals("SHU005", game.getPlayer("player-b").getGeneralCard().getGeneralId());
         // 牌堆不能有 general1
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
-                .stream().filter(x -> x.getGeneralId().equals("SHU006"))
+                .stream().filter(x -> x.getGeneralId().equals("SHU005"))
                 .count());
 
         // 玩家C選諸葛亮
@@ -470,7 +470,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
     private void shouldGetInitialEndGameStatus() throws InterruptedException, JsonProcessingException {
         List<List<String>> allRolesList = getDumpRoleLists();
         List<Integer> hps = List.of(5, 4, 3, 3);
-        List<String> generals = List.of("SHU001", "SHU006", "SHU004", "WEI002");
+        List<String> generals = List.of("SHU001", "SHU005", "SHU004", "WEI002");
 
         Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));

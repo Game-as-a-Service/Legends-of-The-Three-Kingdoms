@@ -34,7 +34,7 @@ public class HuJiaTest extends AbstractBaseIntegrationTest {
     @Test
     public void testCaoCaoMonarchAskedDodge_WeiHelperAcceptsAndSubstitutes() throws Exception {
         // Given
-        Player playerA = createPlayer("player-a", 4, General.馬超, HealthStatus.ALIVE, Role.REBEL,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL,
                 new Kill(BS8008));
         Player playerB = createPlayer("player-b", 4, General.曹操, HealthStatus.ALIVE, Role.MONARCH);
         Player playerC = createPlayer("player-c", 4, General.趙雲, HealthStatus.ALIVE, Role.MINISTER);
@@ -67,7 +67,7 @@ public class HuJiaTest extends AbstractBaseIntegrationTest {
     @Test
     public void testCaoCaoMonarchAskedDodge_AllWeiDeclined_FallbackToCaoCaoDodge() throws Exception {
         // Given
-        Player playerA = createPlayer("player-a", 4, General.馬超, HealthStatus.ALIVE, Role.REBEL,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL,
                 new Kill(BS8008));
         Player playerB = createPlayer("player-b", 4, General.曹操, HealthStatus.ALIVE, Role.MONARCH);
         Player playerC = createPlayer("player-c", 4, General.趙雲, HealthStatus.ALIVE, Role.MINISTER);

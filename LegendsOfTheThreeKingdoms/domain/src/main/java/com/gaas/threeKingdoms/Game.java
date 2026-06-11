@@ -171,6 +171,8 @@ public class Game {
     public List<DomainEvent> playerTakeTurnStartInJudgement(Player currentRoundPlayer) {
         List<DomainEvent> events = new ArrayList<>();
         if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
+            // 洛神：回合開始（延遲錦囊判定之前）黑色判定牌全收
+            events.addAll(SkillEngine.luoShenJudgementLoop(this, currentRoundPlayer));
             List<DomainEvent> judgeEvents = judgePlayerShouldDelay();
             events.addAll(judgeEvents);
             boolean contentmentEventSuccess = judgeEvents.stream()
@@ -526,8 +528,11 @@ public class Game {
                         topBehavior.push(cjb);
                         judgementEvents.addAll(cjb.playerAction());
                     } else {
-                        DomainEvent contentmentEvent = handleContentmentJudgement(player);
+                        ContentmentEvent contentmentEvent = handleContentmentJudgement(player);
                         judgementEvents.add(contentmentEvent);
+                        // 天妒等：判定牌生效後技能
+                        judgementEvents.addAll(SkillEngine.afterJudgement(this, player,
+                                PlayCard.findById(contentmentEvent.getDrawCardId())));
                     }
                 } else if (card instanceof Lightning) {
                     if (doesAnyPlayerHaveWard(null)) {
@@ -566,6 +571,8 @@ public class Game {
 
         List<DomainEvent> domainEvents = new ArrayList<>();
         domainEvents.add(new LightningEvent(isLightningSuccess, player.getId(), drawnCard.getId()));
+        // 天妒等：判定牌生效後技能
+        domainEvents.addAll(SkillEngine.afterJudgement(this, player, drawnCard));
 
         if (isLightningSuccess) {
             List<DomainEvent> damageEvents = getDamagedEvent(
@@ -933,6 +940,24 @@ public class Game {
         }
         WaitingJianXiongResponseBehavior jxBehavior = (WaitingJianXiongResponseBehavior) behavior;
         List<DomainEvent> events = jxBehavior.resolveChoice(playerId, choice);
+        removeCompletedBehaviors();
+        return events;
+    }
+
+    public List<DomainEvent> playerUseSkillEffect(String playerId, String skillName, String choice,
+                                                  List<String> cardIds, String targetPlayerId) {
+        if (topBehavior.isEmpty()) {
+            throw new IllegalStateException("No active behavior waiting for skill effect response");
+        }
+        Behavior behavior = topBehavior.peek();
+        if (!(behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior waiting)) {
+            throw new IllegalStateException("Current behavior is not WaitingSkillEffectBehavior");
+        }
+        if (!waiting.getSkillName().equals(skillName)) {
+            throw new IllegalStateException(String.format(
+                    "Waiting skill is %s, not %s", waiting.getSkillName(), skillName));
+        }
+        List<DomainEvent> events = waiting.resolveChoice(playerId, choice, cardIds, targetPlayerId);
         removeCompletedBehaviors();
         return events;
     }

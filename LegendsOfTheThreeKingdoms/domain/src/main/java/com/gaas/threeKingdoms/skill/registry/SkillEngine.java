@@ -153,4 +153,80 @@ public final class SkillEngine {
         }
         return extra;
     }
+
+    // ===== Batch 2 受傷/判定觸發技 helper =====
+
+    /** 天妒等：判定牌生效後的處理（取牌等）。 */
+    public static List<DomainEvent> afterJudgement(Game game, Player judgementOwner,
+                                                   com.gaas.threeKingdoms.handcard.HandCard judgementCard) {
+        List<DomainEvent> events = new ArrayList<>();
+        for (Skill skill : skillsOf(judgementOwner)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.AfterJudgementSkill a) {
+                events.addAll(a.afterJudgement(game, judgementOwner, judgementCard));
+            }
+        }
+        return events;
+    }
+
+    /** 梟姬等：失去裝備後補摸的張數（0 = 不觸發）。 */
+    public static int drawCountAfterLoseEquipment(Player player) {
+        int count = 0;
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.AfterLoseEquipmentSkill a) {
+                count += a.drawCountAfterLoseEquipment();
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 洛神：回合開始判定 loop — 黑色（黑桃/梅花）收入手牌續判，紅色停。
+     * 非甄姬回 empty list；v1 自動觸發。
+     */
+    public static List<DomainEvent> luoShenJudgementLoop(Game game, Player roundPlayer) {
+        boolean hasLuoShen = skillsOf(roundPlayer).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.wei.LuoShenSkill);
+        if (!hasLuoShen) {
+            return List.of();
+        }
+        List<DomainEvent> events = new ArrayList<>();
+        while (true) {
+            com.gaas.threeKingdoms.handcard.HandCard judgement = game.drawCardForCardEffect(1).get(0);
+            boolean black = judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.SPADE
+                    || judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.CLUB;
+            events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                    com.gaas.threeKingdoms.skill.wei.LuoShenSkill.SKILL_NAME,
+                    roundPlayer.getId(), black, List.of(judgement.getId()), null));
+            if (!black) {
+                break;
+            }
+            game.getGraveyard().removeCard(judgement.getId())
+                    .ifPresent(card -> roundPlayer.getHand().addCardToHand(card));
+        }
+        return events;
+    }
+
+    /**
+     * 鐵騎：馬超指定殺目標後自動判定（v1 自動，非紅桃 = 目標不能出閃）。
+     * 判定事件一律回傳（成功或失敗都要廣播）；successOut[0] 告知 caller 是否生效
+     * （生效 → 跳過 AskDodge 直接結算傷害）。非馬超 → 回 empty list 且 successOut[0]=false。
+     */
+    public static List<DomainEvent> tieQiJudgementEvents(Game game, Player attacker, Player target,
+                                                         boolean[] successOut) {
+        boolean hasTieQi = skillsOf(attacker).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.shu.TieQiSkill);
+        if (!hasTieQi) {
+            successOut[0] = false;
+            return List.of();
+        }
+        com.gaas.threeKingdoms.handcard.HandCard judgement = game.drawCardForCardEffect(1).get(0);
+        boolean success = judgement.getSuit() != com.gaas.threeKingdoms.handcard.Suit.HEART;
+        successOut[0] = success;
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                com.gaas.threeKingdoms.skill.shu.TieQiSkill.SKILL_NAME,
+                attacker.getId(), success, List.of(judgement.getId()), target.getId()));
+        events.addAll(afterJudgement(game, attacker, judgement));
+        return events;
+    }
 }
