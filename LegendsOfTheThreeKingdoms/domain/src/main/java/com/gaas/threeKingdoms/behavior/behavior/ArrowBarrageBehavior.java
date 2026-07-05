@@ -240,6 +240,12 @@ public class ArrowBarrageBehavior extends Behavior
      * 抽出以便 JianXiong 介入時 defer 為 callback；正常路徑直接在 doResponseToPlayerAction
      * 內呼叫。
      */
+    @Override
+    public List<DomainEvent> resumeJianXiongPolling(String damagedPlayerId) {
+        // issue #209：reload 後 onResolved 遺失時的 resume 路徑
+        return advanceAfterDamage(damagedPlayerId);
+    }
+
     private List<DomainEvent> advanceAfterDamage(String playerId) {
         currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
 

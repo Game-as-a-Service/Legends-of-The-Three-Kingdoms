@@ -187,6 +187,13 @@ public final class SkillEngine {
         return 1;
     }
 
+    /** 克己：呂蒙本回合未使用過殺 → 略過棄牌階段。 */
+    public static boolean canSkipDiscardPhase(Game game, Player player) {
+        boolean hasKeJi = skillsOf(player).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.wu.KeJiSkill);
+        return hasKeJi && !game.getCurrentRound().isKillPlayedThisTurn();
+    }
+
     // ===== Batch 2 受傷/判定觸發技 helper =====
 
     /** 天妒等：判定牌生效後的處理（取牌等）。 */

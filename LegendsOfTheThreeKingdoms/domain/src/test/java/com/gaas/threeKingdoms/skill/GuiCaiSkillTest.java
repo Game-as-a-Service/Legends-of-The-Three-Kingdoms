@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * 司馬懿 鬼才（#164）— v1：閃電判定路徑。
+ * 注意：handleLightningJudgement 以參數收閃電卡（產品 caller judgePlayerShouldDelay
+ * 判定前已從判定區 pop）；測試不可把卡放進判定區，否則 resolve 後
+ * continueJudgementAndDraw 會對判定區殘留的閃電再判一次（隨機牌 → 不確定性）。
  */
 public class GuiCaiSkillTest extends PassiveSkillTestBase {
 
@@ -30,7 +33,6 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         Player a = game.getPlayer("player-a");
         game.getPlayer("player-b").getHand().addCardToHand(new Peach(BH3029));
         Lightning lightning = new Lightning(SSA014);
-        a.addDelayScrollCard(lightning);
 
         // 判定牌：黑桃 8（原本會命中）
         game.getDeck().add(List.of(new Kill(BS8008)));
@@ -54,7 +56,6 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         Player b = game.getPlayer("player-b");
         b.getHand().addCardToHand(new Peach(BH3029)); // 紅心 — 替換用
         Lightning lightning = new Lightning(SSA014);
-        a.addDelayScrollCard(lightning);
 
         game.getDeck().add(List.of(new Kill(BS8008))); // 黑桃 8 原判定：命中
         game.handleLightningJudgement(lightning, a);
@@ -75,7 +76,6 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         Player a = game.getPlayer("player-a");
         game.getPlayer("player-b").getHand().addCardToHand(new Peach(BH3029));
         Lightning lightning = new Lightning(SSA014);
-        a.addDelayScrollCard(lightning);
 
         game.getDeck().add(List.of(new Kill(BS8008)));
         game.handleLightningJudgement(lightning, a);
@@ -91,7 +91,6 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         Game game = createGame(General.甘寧, General.司馬懿, General.孫權, General.孫權);
         Player a = game.getPlayer("player-a");
         Lightning lightning = new Lightning(SSA014);
-        a.addDelayScrollCard(lightning);
 
         game.getDeck().add(List.of(new Kill(BS8008)));
         List<DomainEvent> events = game.handleLightningJudgement(lightning, a);
@@ -107,7 +106,6 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         Game game = createGame(General.甘寧, General.孫權, General.孫權, General.孫權);
         Player a = game.getPlayer("player-a");
         Lightning lightning = new Lightning(SSA014);
-        a.addDelayScrollCard(lightning);
 
         game.getDeck().add(List.of(new Peach(BH3029))); // 紅心：不中
         List<DomainEvent> events = game.handleLightningJudgement(lightning, a);

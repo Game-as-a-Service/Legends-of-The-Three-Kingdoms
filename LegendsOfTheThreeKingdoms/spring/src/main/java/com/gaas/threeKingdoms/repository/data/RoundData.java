@@ -25,6 +25,7 @@ public class RoundData {
     private java.util.Set<String> usedOncePerTurnSkills;
     private int renDeGivenCount;
     private boolean renDeHealed;
+    private boolean killPlayedThisTurn;
 
     public static RoundData fromDomain(Round round) {
         if (round == null) {
@@ -42,6 +43,7 @@ public class RoundData {
                 .usedOncePerTurnSkills(round.getUsedOncePerTurnSkills())
                 .renDeGivenCount(round.getRenDeGivenCount())
                 .renDeHealed(round.isRenDeHealed())
+                .killPlayedThisTurn(round.isKillPlayedThisTurn())
                 .build();
     }
 
@@ -58,6 +60,7 @@ public class RoundData {
         }
         round.setRenDeGivenCount(this.renDeGivenCount);
         round.setRenDeHealed(this.renDeHealed);
+        round.setKillPlayedThisTurn(this.killPlayedThisTurn);
         return round;
     }
 }

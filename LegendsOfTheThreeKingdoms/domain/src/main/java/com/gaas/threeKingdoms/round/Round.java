@@ -24,6 +24,8 @@ public class Round {
     private Set<String> usedOncePerTurnSkills = new HashSet<>();
     private int renDeGivenCount = 0;
     private boolean renDeHealed = false;
+    // 克己：本回合是否使用過殺（isShowKill 會被諸葛連弩/咆哮重設，不能拿來判斷）
+    private boolean killPlayedThisTurn = false;
 
     public Round (Player currentRoundPlayer) {
         this.roundPhase = RoundPhase.Judgement;
@@ -36,6 +38,9 @@ public class Round {
         if (handCardOptional.isEmpty()) throw new IllegalStateException("Player " + currentRoundPlayer.getId() + " have no this card: " + cardId);
 
         HandCard handCard = handCardOptional.get();
+        if (handCard instanceof Kill) {
+            killPlayedThisTurn = true;
+        }
         if (handCard instanceof Kill && (currentRoundPlayer.getEquipmentWeaponCard() instanceof RepeatingCrossbowCard
                 || com.gaas.threeKingdoms.skill.registry.SkillEngine.isKillCountUnlimited(currentRoundPlayer))) {
             // 諸葛連弩 / 咆哮：使用殺無次數限制

@@ -344,10 +344,20 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
         // WebSocket 推播給前端資訊
         // 主公選擇的腳色全部人都可以知道
+        // 注意：STOMP 廣播順序不保證（CI flake：偶爾先收到其他事件的 array JSON），
+        // 逐一 poll 直到收到 MonarchGeneralChosenEvent 為止
         for (Player player : game.getPlayers()) {
-            String monarchChooseGeneralCardMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
+            String monarchChooseGeneralCardMessage = null;
+            for (int attempt = 0; attempt < 3; attempt++) {
+                String candidate = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
+                if (candidate != null && candidate.contains("MonarchGeneralChosenEvent")) {
+                    monarchChooseGeneralCardMessage = candidate;
+                    break;
+                }
+            }
+            assertNotNull(monarchChooseGeneralCardMessage,
+                    player.getId() + " 未收到 MonarchGeneralChosenEvent");
             MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel monarchChooseGeneralCardViewModel = objectMapper.readValue(monarchChooseGeneralCardMessage, MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel.class);
-            assertNotNull(monarchChooseGeneralCardMessage);
             assertEquals("主公已選擇 劉備", monarchChooseGeneralCardViewModel.getMessage());
             assertEquals("SHU001", monarchChooseGeneralCardViewModel.getData().getMonarchGeneralCard());
             assertEquals("MonarchGeneralChosenEvent", monarchChooseGeneralCardViewModel.getEvent());
