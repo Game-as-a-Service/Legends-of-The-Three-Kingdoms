@@ -623,7 +623,8 @@ public class Game {
     public int getCurrentRoundPlayerDiscardCount() {
         Player player = currentRound.getCurrentRoundPlayer();
         if (!currentRound.getRoundPhase().equals(RoundPhase.Discard)) {
-            throw new RuntimeException();
+            throw new IllegalStateException(
+                    "棄牌數查詢僅能在棄牌階段呼叫（目前階段：" + currentRound.getRoundPhase() + "）");
         }
         // 手牌上限預設 = HP；技能可覆寫（英姿 = max(HP, 4)）
         return Math.max(0, player.getHandSize() - SkillEngine.handCardLimit(player));
@@ -632,7 +633,10 @@ public class Game {
     public List<DomainEvent> playerDiscardCard(List<String> cardIds) {
         Player player = currentRound.getCurrentRoundPlayer();
         int needToDiscardSize = player.getHandSize() - SkillEngine.handCardLimit(player);
-        if (cardIds.size() < needToDiscardSize) throw new RuntimeException();
+        if (cardIds.size() < needToDiscardSize) {
+            throw new IllegalArgumentException(
+                    String.format("需棄 %d 張，只給了 %d 張", needToDiscardSize, cardIds.size()));
+        }
         // todo 判斷這個玩家是否有這些牌
         List<HandCard> discardCards = player.discardCards(cardIds);
         graveyard.add(discardCards);

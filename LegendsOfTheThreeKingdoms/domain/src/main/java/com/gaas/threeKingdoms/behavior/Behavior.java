@@ -93,7 +93,8 @@ public class Behavior {
 
     private void throwExceptionWhenPlayerIsNotInReactionPlayers(String playerId) {
         if (!reactionPlayers.contains(playerId)) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(
+                    String.format("%s 不是當前需要回應的玩家", playerId));
         }
     }
 

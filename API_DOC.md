@@ -706,6 +706,33 @@ POST /api/games/{gameId}/player:useSkillEffect
 
 ---
 
+## 錯誤回應格式
+
+所有 API 的錯誤回應（400 / 404 / 500）統一為精簡 JSON（issue #200 起，不再回傳 stack trace）：
+
+```json
+{ "error": "DistanceErrorException", "message": "Players are not within range." }
+```
+
+| 欄位 | 說明 |
+|------|------|
+| error | 例外類型（exception simple name），前端可據此 switch 處理 |
+| message | 人類可讀的錯誤原因 |
+
+### 常見 error 類型
+
+| error | HTTP | 常見情境 |
+|-------|------|----------|
+| `DistanceErrorException` | 400 | 殺 / 順手牽羊超出距離 |
+| `IllegalStateException` | 400 | 非法遊戲狀態：不是你的回合、不是當前需回應的玩家、殺次數已用完、技能每回合限一次等 |
+| `IllegalArgumentException` | 400 | 非法參數：卡牌不在手中、目標不合法、棄牌數不足等 |
+| `ValidationError` | 400 | Request body 欄位驗證失敗 |
+| `NotFoundException` | 404 | gameId 不存在 |
+
+Stack trace 僅記錄於 server log。
+
+---
+
 ## WebSocket 事件類型
 
 前端透過 WebSocket 接收以下事件，根據事件類型決定 UI 行為：
