@@ -564,6 +564,32 @@ public class Game {
         List<HandCard> cards = drawCardForCardEffect(1);
         HandCard drawnCard = cards.get(0);
 
+        // 鬼才：判定牌生效前，場上存活且有手牌的司馬懿可打手牌替換（v1 只覆蓋閃電判定）
+        Player guiCaiHolder = players.stream()
+                .filter(p -> !p.isAlreadyDeath()
+                        && com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.GENERAL_ID
+                                .equals(p.getGeneralCard().getGeneralId())
+                        && p.getHandSize() > 0)
+                .findFirst().orElse(null);
+        if (guiCaiHolder != null) {
+            com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior waiting =
+                    new com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior(
+                            this, guiCaiHolder, com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.SKILL_NAME);
+            waiting.putParam(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_LIGHTNING_CARD_ID, card.getId());
+            waiting.putParam(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_OWNER_ID, player.getId());
+            waiting.putParam(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_DRAWN_CARD_ID, drawnCard.getId());
+            updateTopBehavior(waiting);
+            currentRound.setActivePlayer(guiCaiHolder);
+            return List.of(new com.gaas.threeKingdoms.events.AskSkillEffectEvent(
+                            com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.SKILL_NAME,
+                            guiCaiHolder.getId(), List.of(drawnCard.getId()), player.getId()),
+                    getGameStatusEvent("鬼才：" + guiCaiHolder.getId() + " 可替換 " + player.getId() + " 的閃電判定牌"));
+        }
+        return resolveLightningJudgement(card, player, drawnCard);
+    }
+
+    /** 以指定判定牌結算閃電（鬼才替換後 / 無鬼才直接）。 */
+    public List<DomainEvent> resolveLightningJudgement(ScrollCard card, Player player, HandCard drawnCard) {
         // 判定牌是否為黑桃2~9
         boolean isLightningSuccess = Suit.SPADE == drawnCard.getSuit() &&
                 drawnCard.getRank().getValue() >= Rank.TWO.getValue() &&
