@@ -659,6 +659,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 剛烈 第二段（問傷害來源） | 判定非紅桃後 | `DISCARD` / `DAMAGE` | DISCARD 必填 2 張手牌 | — |
 | 激將（劉備主公技） | 主公劉備被南蠻/決鬥要求出殺時，依座位順序詢問蜀將 | `ACCEPT` / `DECLINE` | ACCEPT 必填 [殺 id]（蜀將手中） | — |
 | 流離（大喬） | 大喬成為殺目標、被問閃之前 | `ACCEPT` / `SKIP` | ACCEPT 必填 [要棄的手牌 id] | ACCEPT 必填：轉移目標（距離 1 內、非攻擊者） |
+| 鬼才（司馬懿） | 任意角色閃電判定牌抽出後、生效前（dataCardIds = [原判定牌]） | `ACCEPT` / `SKIP` | ACCEPT 必填 [替換用手牌 id] | — |
 
 ### 自動觸發技（無需呼叫本 API，僅廣播 `SkillEffectEvent`）
 
@@ -707,6 +708,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
 - 流離 v1 只攔普通殺（方天畫戟/AOE 轉移 follow-up）；棄牌限手牌
 - 救援採官方標準版語意（桃效果 +1）；issue 原文描述的「可出桃給其」即既有瀕死求桃流程
+- 鬼才 v1 覆蓋閃電判定（含 Ward 路徑）；樂不思蜀/八卦陣/洛神/鐵騎/剛烈判定替換 follow-up
 - 武聖/奇襲 v1 限手牌（裝備區紅/黑牌轉化 follow-up）；轉化殺的奸雄取牌為 follow-up
 - 轉化殺的傷害結算以 VirtualKill 進行；事件中 cardId 為來源真實牌
 

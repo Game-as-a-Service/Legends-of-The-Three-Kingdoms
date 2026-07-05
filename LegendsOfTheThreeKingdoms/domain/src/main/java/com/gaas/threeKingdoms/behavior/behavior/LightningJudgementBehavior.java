@@ -60,6 +60,12 @@ public class LightningJudgementBehavior extends Behavior implements com.gaas.thr
         List<DomainEvent> lightningEvents = game.handleLightningJudgement((ScrollCard) card, behaviorPlayer);
         events.addAll(lightningEvents);
 
+        // 鬼才介入：判定暫停等司馬懿選擇；GuiCaiSkill.resolveChoice 會 pop 本 behavior 並 resume
+        if (!game.isTopBehaviorEmpty()
+                && game.peekTopBehavior() instanceof WaitingSkillEffectBehavior) {
+            return events;
+        }
+
         // Remove self from stack before resuming judgement flow
         isOneRound = true;
         game.removeCompletedBehaviors();
