@@ -652,6 +652,10 @@ public class Game {
             throw new IllegalStateException(
                     "棄牌數查詢僅能在棄牌階段呼叫（目前階段：" + currentRound.getRoundPhase() + "）");
         }
+        // 克己：本回合未使用過殺 → 略過棄牌階段
+        if (SkillEngine.canSkipDiscardPhase(this, player)) {
+            return 0;
+        }
         // 手牌上限預設 = HP；技能可覆寫（英姿 = max(HP, 4)）
         return Math.max(0, player.getHandSize() - SkillEngine.handCardLimit(player));
     }
@@ -1050,6 +1054,7 @@ public class Game {
                     throw new IllegalStateException("Player already played Kill Card");
                 }
                 currentRound.setShowKill(true);
+        currentRound.setKillPlayedThisTurn(true);
                 // card = VirtualKill（傷害結算用），cardId = 來源牌（事件顯示真實牌、手牌→墓地）
                 NormalActiveKillBehavior killBehavior = new NormalActiveKillBehavior(
                         this, self, new ArrayList<>(List.of(targetPlayerId)), self,
@@ -1268,6 +1273,7 @@ public class Game {
 
         // 標記本回合已出殺
         currentRound.setShowKill(true);
+        currentRound.setKillPlayedThisTurn(true);
 
         // 建立虛擬殺，push ViperSpearKillBehavior 到 stack
         VirtualKill virtualKill = new VirtualKill();
@@ -1374,6 +1380,7 @@ public class Game {
         HandCard killCard = attacker.playCard(cardId);
         graveyard.add(killCard);
         currentRound.setShowKill(true);
+        currentRound.setKillPlayedThisTurn(true);
 
         // 12. push HeavenlyDoubleHalberdKillBehavior
         HeavenlyDoubleHalberdKillBehavior behavior = new HeavenlyDoubleHalberdKillBehavior(

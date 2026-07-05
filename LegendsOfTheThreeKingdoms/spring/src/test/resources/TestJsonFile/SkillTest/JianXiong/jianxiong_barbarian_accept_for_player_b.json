@@ -7,6 +7,12 @@
       "taken" : true
     },
     "message" : "奸雄發動"
+  }, {
+    "event" : "AskKillEvent",
+    "data" : {
+      "playerId" : "player-c"
+    },
+    "message" : "請問 player-c 要否要出殺"
   } ],
   "data" : {
     "seats" : [ {

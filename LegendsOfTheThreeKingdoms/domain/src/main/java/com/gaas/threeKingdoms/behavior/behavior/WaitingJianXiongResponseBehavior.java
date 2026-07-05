@@ -88,6 +88,15 @@ public class WaitingJianXiongResponseBehavior extends Behavior {
         // 必須先於本 behavior 標記完成、避免 removeCompletedBehaviors 誤 pop polling behavior。
         if (onResolved != null) {
             events.addAll(onResolved.get());
+        } else {
+            // issue #209：onResolved 是 transient，HTTP 請求間經 MongoDB reload 後遺失。
+            // fallback：底下若是 polling caller（南蠻/萬箭），直接呼叫 resume hook 推進輪詢。
+            game.peekTopBehaviorSecondElement().ifPresent(under -> {
+                if (under instanceof com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior compatible
+                        && compatible.isPollingCaller()) {
+                    events.addAll(compatible.resumeJianXiongPolling(behaviorPlayer.getId()));
+                }
+            });
         }
 
         isOneRound = true;

@@ -29,6 +29,7 @@ import com.gaas.threeKingdoms.skill.wu.QiXiSkill;
 import com.gaas.threeKingdoms.skill.wu.JieYinSkill;
 import com.gaas.threeKingdoms.skill.wu.JiuYuanSkill;
 import com.gaas.threeKingdoms.skill.wu.LiuLiSkill;
+import com.gaas.threeKingdoms.skill.wu.KeJiSkill;
 import com.gaas.threeKingdoms.skill.wu.KuRouSkill;
 import com.gaas.threeKingdoms.skill.wu.LianYingSkill;
 import com.gaas.threeKingdoms.skill.wu.ZhiHengSkill;
@@ -76,6 +77,7 @@ public final class SkillRegistry {
         register(new XiaoJiSkill());
         register(new ZhiHengSkill());
         register(new KuRouSkill());
+        register(new KeJiSkill());
         register(new FanJianSkill());
         register(new JieYinSkill());
         register(new QiXiSkill());

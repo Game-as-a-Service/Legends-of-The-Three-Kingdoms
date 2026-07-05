@@ -24,4 +24,15 @@ public interface JianXiongCompatibleTopBehavior {
     default boolean isPollingCaller() {
         return false;
     }
+
+    /**
+     * Reload 防護（issue #209）：onResolved callback 是 transient，HTTP 請求間經
+     * MongoDB 存取後遺失。WaitingJianXiongResponseBehavior.resolveChoice 發現
+     * callback 為 null 時，改呼叫本 hook 讓 polling caller 直接 resume。
+     *
+     * @param damagedPlayerId 受傷（觸發奸雄）的玩家 id — 即 damage 當下的 reactor
+     */
+    default java.util.List<com.gaas.threeKingdoms.events.DomainEvent> resumeJianXiongPolling(String damagedPlayerId) {
+        return java.util.List.of();
+    }
 }
