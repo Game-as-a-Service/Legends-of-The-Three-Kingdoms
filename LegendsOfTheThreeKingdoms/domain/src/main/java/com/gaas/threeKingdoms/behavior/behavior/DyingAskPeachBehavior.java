@@ -167,6 +167,12 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
             // Player use peach card
             HandCard card = currentPlayer.playCard(cardId);
             card.effect(dyingPlayer);
+            // 救援（孫權主公技）：主公孫權瀕死時其他吳勢力的桃效果 +1
+            int jiuYuanExtra = com.gaas.threeKingdoms.skill.registry.SkillEngine
+                    .jiuYuanExtraHeal(dyingPlayer, currentPlayer);
+            for (int i = 0; i < jiuYuanExtra; i++) {
+                card.effect(dyingPlayer);
+            }
             game.getGraveyard().add(card);
             Round currentRound = game.getCurrentRound();
             boolean dyingPlayerIsAlive = dyingPlayer.getHealthStatus().equals(HealthStatus.ALIVE);

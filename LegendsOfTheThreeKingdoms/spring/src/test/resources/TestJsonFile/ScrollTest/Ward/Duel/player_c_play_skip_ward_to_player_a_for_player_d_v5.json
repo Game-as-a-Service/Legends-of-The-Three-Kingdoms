@@ -6,7 +6,7 @@
       "cardId" : "SSJ011",
       "wardCardId" : "SSJ011"
     },
-    "message" : "劉備 的無懈可擊抵銷了 張飛 的 無懈可擊"
+    "message" : "甘寧 的無懈可擊抵銷了 張飛 的 無懈可擊"
   }, {
     "event" : "AskKillEvent",
     "data" : {
@@ -17,7 +17,7 @@
   "data" : {
     "seats" : [ {
       "id" : "player-a",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {

@@ -214,6 +214,27 @@ public class NormalActiveKillBehavior extends Behavior
         return List.of(playCardEvent, game.getGameStatusEvent("出牌"));
     }
 
+    /**
+     * 流離：把這張殺的目標改為 newTarget，並對新目標重新走「防具詢問或問閃」流程
+     * （新目標的護駕/鐵騎/流離等 hook 照常套用 — 流離可被連鎖轉移）。
+     */
+    public List<DomainEvent> redirectTo(Player newTarget) {
+        reactionPlayers.clear();
+        reactionPlayers.add(newTarget.getId());
+        currentReactionPlayer = newTarget;
+        game.getCurrentRound().setActivePlayer(newTarget);
+
+        List<DomainEvent> events = new ArrayList<>();
+        if (isEquipmentHasSpecialEffect(newTarget) && !isAttackerHasBlackPommel(behaviorPlayer)) {
+            game.getCurrentRound().setStage(Stage.Wait_Equipment_Effect);
+            events.add(new AskPlayEquipmentEffectEvent(newTarget.getId(),
+                    newTarget.getEquipment().getArmor(), List.of(newTarget.getId())));
+        } else {
+            emitAskDodgeOrHuJia(events, newTarget);
+        }
+        return events;
+    }
+
     private boolean isQilinBowSuccess(String playType) {
         return  PlayType.SYSTEM_INTERNAL.getPlayType().equals(playType);
     }

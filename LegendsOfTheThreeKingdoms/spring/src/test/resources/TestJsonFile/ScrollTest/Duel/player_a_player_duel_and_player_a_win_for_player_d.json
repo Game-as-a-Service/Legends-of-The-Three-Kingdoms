@@ -14,7 +14,7 @@
       "playerId" : "player-b",
       "role" : "Rebel"
     },
-    "message" : "劉備 死亡，身分是 反賊"
+    "message" : "甘寧 死亡，身分是 反賊"
   }, {
     "event" : "DrawCardEvent",
     "data" : {
@@ -27,7 +27,7 @@
   "data" : {
     "seats" : [ {
       "id" : "player-a",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
@@ -38,7 +38,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "",
       "hp" : 0,
       "hand" : {
@@ -49,7 +49,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -60,7 +60,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "Traitor",
       "hp" : 4,
       "hand" : {

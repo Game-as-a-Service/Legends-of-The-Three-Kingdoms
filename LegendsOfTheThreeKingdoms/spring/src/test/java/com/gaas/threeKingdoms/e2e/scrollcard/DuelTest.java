@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.e2e.scrollcard;
 
+import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
@@ -27,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class DuelTest extends AbstractBaseIntegrationTest {
+
+    // @Override protected boolean shouldRegenerateFixtures() { return true; }
 
     public DuelTest() {
         this.gameId = "my-id";
@@ -223,14 +226,14 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Peach(BH3029), new Kill(BS8008), new Dodge(BH2028), new Dodge(BHK039), new Duel(SDA079)
         );
         Player playerB = createPlayer("player-b",
                 1,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.REBEL,
                 new Kill(BS8008), new Kill(BS8008), new Dodge(BHK039), new Duel(SSA001)
@@ -238,7 +241,7 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerC = createPlayer(
                 "player-c",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -246,7 +249,7 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -264,14 +267,14 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Duel(SDA079)
         );
         Player playerB = createPlayer("player-b",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
                 new Kill(BS8008), new Kill(BS8008), new Peach(BH4030), new Dodge(BH2028)
@@ -279,7 +282,7 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerC = createPlayer(
                 "player-c",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.REBEL,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -287,7 +290,7 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -303,14 +306,14 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Duel(SDA079)
         );
         Player playerB = createPlayer("player-b",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MINISTER,
                 new Peach(BH4030), new Dodge(BH2028)
@@ -318,7 +321,7 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerC = createPlayer(
                 "player-c",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.REBEL,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
@@ -326,7 +329,7 @@ public class DuelTest extends AbstractBaseIntegrationTest {
         Player playerD = createPlayer(
                 "player-d",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.TRAITOR,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)

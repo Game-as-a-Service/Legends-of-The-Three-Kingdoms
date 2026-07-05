@@ -958,6 +958,11 @@ public class Game {
             return activatePhaseSkill(playerId, skillName, choice, cardIds, targetPlayerId);
         }
         Behavior behavior = topBehavior.peek();
+        if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingJiJiangResponseBehavior jiJiang) {
+            List<DomainEvent> events = jiJiang.resolveChoice(playerId, choice, cardIds);
+            removeCompletedBehaviors();
+            return events;
+        }
         if (!(behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior waiting)) {
             // 轉化技 response 分支：被殺問閃時當閃打出 / 南蠻決鬥需殺時當殺打出
             if (findConversionSkill(playerId, skillName) != null) {

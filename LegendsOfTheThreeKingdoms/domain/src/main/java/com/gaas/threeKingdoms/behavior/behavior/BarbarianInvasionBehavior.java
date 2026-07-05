@@ -84,7 +84,7 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
             events.addAll(askNextPlayerOrWard());
         } else {
             // Phase 2 Ward even → 直接問當前玩家出殺
-            events.add(new AskKillEvent(currentReactionPlayer.getId()));
+            com.gaas.threeKingdoms.skill.registry.SkillEngine.beforeAskKill(game, game.getPlayer(currentReactionPlayer.getId()), this).ifPresentOrElse(events::addAll, () -> events.add(new AskKillEvent(currentReactionPlayer.getId())));
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
         }
         return events;
@@ -131,7 +131,7 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
             events.addAll(wardBehavior.playerAction());
         } else {
             game.getCurrentRound().setStage(Stage.Normal);
-            events.add(new AskKillEvent(currentReactionPlayer.getId()));
+            com.gaas.threeKingdoms.skill.registry.SkillEngine.beforeAskKill(game, game.getPlayer(currentReactionPlayer.getId()), this).ifPresentOrElse(events::addAll, () -> events.add(new AskKillEvent(currentReactionPlayer.getId())));
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
         }
         return events;

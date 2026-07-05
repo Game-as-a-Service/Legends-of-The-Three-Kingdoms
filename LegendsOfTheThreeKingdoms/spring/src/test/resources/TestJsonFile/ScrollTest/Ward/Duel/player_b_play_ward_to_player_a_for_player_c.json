@@ -15,7 +15,7 @@
       "cardId" : "SSJ011",
       "wardCardId" : "SSJ011"
     },
-    "message" : "張飛 的無懈可擊抵銷了 劉備 的 無懈可擊"
+    "message" : "張飛 的無懈可擊抵銷了 甘寧 的 無懈可擊"
   }, {
     "event" : "PlayWardCardEvent",
     "data" : {
@@ -23,12 +23,12 @@
       "cardId" : "SSA001",
       "wardCardId" : "SSJ011"
     },
-    "message" : "關羽 的無懈可擊抵銷了 劉備 的 決鬥"
+    "message" : "關羽 的無懈可擊抵銷了 甘寧 的 決鬥"
   } ],
   "data" : {
     "seats" : [ {
       "id" : "player-a",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {

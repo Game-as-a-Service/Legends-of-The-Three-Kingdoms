@@ -10,7 +10,7 @@
   "data" : {
     "seats" : [ {
       "id" : "player-a",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
