@@ -657,6 +657,8 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 遺計（郭嘉） | 受傷後 | `ACCEPT`（自摸 2）/ `GIVE`（令他人獲得 1）/ `SKIP` | — | GIVE 必填 |
 | 剛烈（夏侯惇）第一段 | 受傷後 | `ACCEPT`（判定）/ `SKIP` | — | — |
 | 剛烈 第二段（問傷害來源） | 判定非紅桃後 | `DISCARD` / `DAMAGE` | DISCARD 必填 2 張手牌 | — |
+| 激將（劉備主公技） | 主公劉備被南蠻/決鬥要求出殺時，依座位順序詢問蜀將 | `ACCEPT` / `DECLINE` | ACCEPT 必填 [殺 id]（蜀將手中） | — |
+| 流離（大喬） | 大喬成為殺目標、被問閃之前 | `ACCEPT` / `SKIP` | ACCEPT 必填 [要棄的手牌 id] | ACCEPT 必填：轉移目標（距離 1 內、非攻擊者） |
 
 ### 自動觸發技（無需呼叫本 API，僅廣播 `SkillEffectEvent`）
 
@@ -666,6 +668,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 甄姬 | 洛神 | 回合開始自動判定：黑色收入手牌續判、紅色停 |
 | 馬超 | 鐵騎 | 出殺指定目標後自動判定：非紅桃 → 目標不能出閃直接結算 |
 | 孫尚香 | 梟姬 | 失去裝備（被拆 / 被順 / 被反饋取走）自動摸 2 |
+| 孫權 | 救援 | 主公技。主公孫權瀕死時，其他吳勢力對其使用的桃回復效果 +1（自動加成，出桃仍走 playCard） |
 
 ### 出牌階段主動技（topBehavior 為空時直接呼叫本 API 發動）
 
@@ -701,6 +704,9 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 苦肉 v1 需 HP ≥ 2（瀕死整合 follow-up）；反間目標受傷不進瀕死流程（follow-up）
 - 觀星 issue 時機為回合開始；v1 以出牌階段主動發動實作（時機整合 follow-up）
 - 突襲 issue 時機為出牌階段開始；v1 出牌階段任意時點可發動（每回合一次）
+- 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
+- 流離 v1 只攔普通殺（方天畫戟/AOE 轉移 follow-up）；棄牌限手牌
+- 救援採官方標準版語意（桃效果 +1）；issue 原文描述的「可出桃給其」即既有瀕死求桃流程
 - 武聖/奇襲 v1 限手牌（裝備區紅/黑牌轉化 follow-up）；轉化殺的奸雄取牌為 follow-up
 - 轉化殺的傷害結算以 VirtualKill 進行；事件中 cardId 為來源真實牌
 
@@ -763,6 +769,8 @@ Stack trace 僅記錄於 server log。
 | `AskStonePiercingAxeEffectEvent` | 貫石斧效果：攻擊者選擇是否棄兩張牌強制命中 | useStonePiercingAxeEffect |
 | `ViperSpearKillTriggerEvent` | 丈八蛇矛發動：攻擊者棄兩張牌作為虛擬殺使用（通知事件，無需回應） | useViperSpearKill |
 | `AskJianXiongEffectEvent` | 奸雄發動：曹操選擇是否獲得造成傷害的牌（含 `playerId`、`sourceCardIds : List<String>`） | useJianXiongEffect |
+| `AskHuJiaEffectEvent` | 護駕：詢問魏將是否代主公曹操出閃（含 `playerId`、`caoCaoPlayerId`、`dodgeCardIdsInHand`） | useHuJiaEffect |
+| `AskSkillEffectEvent` | 通用武將技詢問（含 `skillName`、`playerId`、`dataCardIds`、`dataPlayerId`）— 反饋/遺計/剛烈/反間/觀星/激將/流離等 | useSkillEffect |
 
 ### 效果事件
 
@@ -788,6 +796,8 @@ Stack trace 僅記錄於 server log。
 | `ViperSpearKillTriggerEvent` | 丈八蛇矛發動，棄兩張牌當殺使用（含 attackerPlayerId、targetPlayerId、discardedCardIds） |
 | `HeavenlyDoubleHalberdKillTriggerEvent` | 方天畫戟發動，多目標殺（含 attackerPlayerId、cardId、targetPlayerIds） |
 | `JianXiongEffectEvent` | 奸雄結算結果（含 `playerId`、`sourceCardIds : List<String>`、`taken`） |
+| `HuJiaEffectEvent` | 護駕回應結果（含 `playerId`、`caoCaoPlayerId`、`accepted`、`dodgeCardId`） |
+| `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/洛神/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察） |
 
 ---
 

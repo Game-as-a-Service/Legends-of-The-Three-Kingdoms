@@ -78,7 +78,7 @@ public class WardWithBarbarianInvasionTest {
     public void test1_givenPlayerBHasWard_WhenPlayerAPlaysBarbarianInvasion_ThenWaitForWardEvent() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -118,7 +118,7 @@ public class WardWithBarbarianInvasionTest {
     public void test2_givenABCHaveWard_WhenAPlaysBarbarianInvasion_ThenWaitForWardExcludesA() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007), new Ward(SCQ077)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -163,7 +163,7 @@ public class WardWithBarbarianInvasionTest {
     public void test3_givenBHasWard_WhenBPlaysWard_ThenBarbarianInvasionCancelled() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -208,7 +208,7 @@ public class WardWithBarbarianInvasionTest {
     public void test4_givenBCHaveWard_WhenBPlaysWard_ThenWaitForCWard() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -256,7 +256,7 @@ public class WardWithBarbarianInvasionTest {
     public void test5_givenBCPlayWard_WhenEvenWards_ThenBarbarianInvasionProceeds() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -303,7 +303,7 @@ public class WardWithBarbarianInvasionTest {
     public void test6_givenAllSkipWard_ThenBarbarianInvasionProceeds() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -354,7 +354,7 @@ public class WardWithBarbarianInvasionTest {
     public void test7_givenBPlaysWardAPlaysWardCSkips_ThenBarbarianInvasionProceeds() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007), new Ward(SCQ077)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -409,7 +409,7 @@ public class WardWithBarbarianInvasionTest {
     public void test8_givenNoOneHasWard_WhenAPlaysBarbarianInvasion_ThenNormalPolling() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -447,7 +447,7 @@ public class WardWithBarbarianInvasionTest {
     public void test9_givenPhase2Ward_WhenWardProtectsC_ThenSkipToD() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -509,7 +509,7 @@ public class WardWithBarbarianInvasionTest {
     public void test10_givenBProtectedByWard_WhenCSkipsKill_ThenCTakesDamageAndDAskKill() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -567,7 +567,7 @@ public class WardWithBarbarianInvasionTest {
     public void test11_givenLastPlayerProtectedByWard_ThenBarbarianInvasionEnds() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -627,7 +627,7 @@ public class WardWithBarbarianInvasionTest {
     public void test12_givenPhase2EvenWards_ThenPlayerStillNeedsKill() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -679,7 +679,7 @@ public class WardWithBarbarianInvasionTest {
     public void test13_givenPhase1EvenThenPhase2NoWard_ThenNormalPolling() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new BarbarianInvasion(SS7007)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -734,7 +734,7 @@ public class WardWithBarbarianInvasionTest {
     public void test14_givenWardCounterChainInPhase2_WhenBCountersAWard_ThenAShouldBeAskedToCounterAndGameNotStuck() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -809,7 +809,7 @@ public class WardWithBarbarianInvasionTest {
     public void test15_givenWardCounterChain_WhenAllOthersSkip_ThenGameShouldNotGetStuck() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -886,7 +886,7 @@ public class WardWithBarbarianInvasionTest {
     public void test16_givenTripleWardChainInPhase2_WhenOddWards_ThenPlayerProtected() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -954,7 +954,7 @@ public class WardWithBarbarianInvasionTest {
     public void test17_givenTripleWardThenContinueToLastPlayer_WhenDProtected_ThenAStillNeedsKill() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
@@ -1016,7 +1016,7 @@ public class WardWithBarbarianInvasionTest {
     public void test18_givenTripleWardNoOneHasWardLeft_ThenDirectlyResolve() {
         Game game = createGame();
 
-        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        Player playerA = createPlayer("player-a", General.甘寧, Role.MONARCH);
         playerA.getHand().addCardToHand(Arrays.asList(new Ward(SSJ011), new Ward(SCQ077)));
 
         Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);

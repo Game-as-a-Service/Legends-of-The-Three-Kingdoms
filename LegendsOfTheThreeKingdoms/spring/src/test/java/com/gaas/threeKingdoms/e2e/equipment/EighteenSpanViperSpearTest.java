@@ -35,11 +35,11 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
 
     @Test
     public void testEquipEighteenSpanViperSpear() throws Exception {
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new EighteenSpanViperSpearCard(ESQ025));
-        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR);
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerB = createPlayer("player-b", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR);
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER);
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         Deck deck = new Deck();
         deck.add(List.of(new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Kill(BS9009)));
@@ -101,15 +101,15 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
 
     @Test
     public void testUseViperSpearKill_TargetHasEightDiagram_AsksEquipmentEffect() throws Exception {
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new Peach(BH3029), new Peach(BH4030));
         playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
 
-        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR);
+        Player playerB = createPlayer("player-b", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR);
         playerB.getEquipment().setArmor(new EightDiagramTactic(ES2015));
 
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER);
 
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         Deck deck = new Deck();
@@ -128,13 +128,13 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
 
     @Test
     public void testUseViperSpearKill_TargetDying_AsksPeach() throws Exception {
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new Peach(BH3029), new Peach(BH4030));
         playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
 
-        Player playerB = createPlayer("player-b", 1, General.劉備, HealthStatus.ALIVE, Role.TRAITOR);
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerB = createPlayer("player-b", 1, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR);
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER);
 
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         Deck deck = new Deck();
@@ -158,14 +158,14 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
     @Test
     public void testPassiveViperSpear_RespondingBarbarianInvasion() throws Exception {
         // A 出南蠻入侵；B 裝丈八蛇矛 + 兩張手牌
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new BarbarianInvasion(SS7007));
-        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR,
+        Player playerB = createPlayer("player-b", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR,
                 new Peach(BH3029), new Peach(BH4030));
         playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL,
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL,
                 new Kill(BS8008));
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER,
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER,
                 new Kill(BS9009));
 
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
@@ -190,13 +190,13 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
     @Test
     public void testPassiveViperSpear_RespondingDuel() throws Exception {
         // A 對 B 出決鬥；B 裝丈八蛇矛 + 兩張手牌
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new Duel(SSA001), new Kill(BS8008));
-        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR,
+        Player playerB = createPlayer("player-b", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR,
                 new Peach(BH3029), new Peach(BH4030));
         playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER);
 
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         Deck deck = new Deck();
@@ -220,13 +220,13 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
     @Test
     public void testPassiveViperSpear_RespondingBorrowedSword() throws Exception {
         // A 出借刀殺人，借 B 攻擊 C；B 裝丈八蛇矛 + 兩張手牌
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new BorrowedSword(SCK065));
-        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR,
+        Player playerB = createPlayer("player-b", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR,
                 new Peach(BH3029), new Peach(BH4030));
         playerB.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER);
 
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         Deck deck = new Deck();
@@ -255,11 +255,11 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
     @Test
     public void testUseViperSpearKill_NotEquipped_Returns4xx() throws Exception {
         // A 沒裝備丈八蛇矛
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new Peach(BH3029), new Peach(BH4030));
-        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR);
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerB = createPlayer("player-b", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR);
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER);
 
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         game.setDeck(new Deck());
@@ -291,14 +291,14 @@ public class EighteenSpanViperSpearTest extends AbstractBaseIntegrationTest {
     }
 
     private void givenPlayerAEquippedViperSpear() {
-        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new Peach(BH3029), new Peach(BH4030));
         playerA.getEquipment().setWeapon(new EighteenSpanViperSpearCard(ESQ025));
 
-        Player playerB = createPlayer("player-b", 4, General.劉備, HealthStatus.ALIVE, Role.TRAITOR,
+        Player playerB = createPlayer("player-b", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR,
                 new Dodge(BH2028));
-        Player playerC = createPlayer("player-c", 4, General.劉備, HealthStatus.ALIVE, Role.REBEL);
-        Player playerD = createPlayer("player-d", 4, General.劉備, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.MINISTER);
 
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         Deck deck = new Deck();

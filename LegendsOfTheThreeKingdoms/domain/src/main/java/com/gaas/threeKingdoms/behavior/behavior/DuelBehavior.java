@@ -127,7 +127,7 @@ public class DuelBehavior extends Behavior implements com.gaas.threeKingdoms.beh
             isOneRound = true;
             gameMessage = "扣血";
         } else {
-            events.add(new AskKillEvent(currentReactionPlayer.getId()));
+            com.gaas.threeKingdoms.skill.registry.SkillEngine.beforeAskKill(game, game.getPlayer(currentReactionPlayer.getId()), this).ifPresentOrElse(events::addAll, () -> events.add(new AskKillEvent(currentReactionPlayer.getId())));
             gameMessage = playerId + "已出殺";
         }
         events.add(game.getGameStatusEvent(gameMessage));
@@ -164,7 +164,7 @@ public class DuelBehavior extends Behavior implements com.gaas.threeKingdoms.beh
         } else {
             System.out.println("2 AskKillEvent currentReactionPlayer"+currentReactionPlayer.getId());
 
-            events.add(new AskKillEvent(currentReactionPlayerId));
+            com.gaas.threeKingdoms.skill.registry.SkillEngine.beforeAskKill(game, game.getPlayer(currentReactionPlayerId), this).ifPresentOrElse(events::addAll, () -> events.add(new AskKillEvent(currentReactionPlayerId)));
         }
 
         return events;

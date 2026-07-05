@@ -20,7 +20,7 @@
   "data" : {
     "seats" : [ {
       "id" : "player-a",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "Monarch",
       "hp" : 4,
       "hand" : {
@@ -31,7 +31,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-b",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {
@@ -42,7 +42,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-c",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "Rebel",
       "hp" : 4,
       "hand" : {
@@ -53,7 +53,7 @@
       "delayScrolls" : [ ]
     }, {
       "id" : "player-d",
-      "generalId" : "SHU001",
+      "generalId" : "WU002",
       "roleId" : "",
       "hp" : 4,
       "hand" : {

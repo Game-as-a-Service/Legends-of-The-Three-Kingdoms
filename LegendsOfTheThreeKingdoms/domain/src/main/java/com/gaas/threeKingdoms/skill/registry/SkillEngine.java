@@ -154,6 +154,39 @@ public final class SkillEngine {
         return extra;
     }
 
+    /** 激將等：AskKill 前介入鉤點（mirror beforeAskDodge）。 */
+    public static Optional<List<DomainEvent>> beforeAskKill(Game game, Player asked, Behavior parentBehavior) {
+        for (Skill skill : skillsOf(asked)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.BeforeAskKillSkill beforeAsk) {
+                Optional<List<DomainEvent>> result = beforeAsk.beforeAskKill(game, asked, parentBehavior);
+                if (result.isPresent()) {
+                    return result;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** 救援：主公孫權瀕死、其他吳勢力出桃 → 額外回復量（0 = 不加成）。 */
+    public static int jiuYuanExtraHeal(Player dyingPlayer, Player peachGiver) {
+        if (peachGiver == null || peachGiver.equals(dyingPlayer)) {
+            return 0;
+        }
+        boolean hasJiuYuan = skillsOf(dyingPlayer).stream()
+                .anyMatch(sk -> sk instanceof com.gaas.threeKingdoms.skill.wu.JiuYuanSkill);
+        if (!hasJiuYuan) {
+            return 0;
+        }
+        if (dyingPlayer.getRoleCard() == null
+                || dyingPlayer.getRoleCard().getRole() != com.gaas.threeKingdoms.rolecard.Role.MONARCH) {
+            return 0;
+        }
+        if (peachGiver.getFaction() != com.gaas.threeKingdoms.generalcard.Faction.WU) {
+            return 0;
+        }
+        return 1;
+    }
+
     // ===== Batch 2 受傷/判定觸發技 helper =====
 
     /** 天妒等：判定牌生效後的處理（取牌等）。 */

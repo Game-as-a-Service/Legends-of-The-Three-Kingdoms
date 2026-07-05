@@ -26,6 +26,9 @@ public class BehaviorData {
     private static final String VIPER_SPEAR_DISCARDED_CARD_IDS = "VIPER_SPEAR_DISCARDED_CARD_IDS";
     private static final String JIANXIONG_SOURCE_CARD_IDS = "JIANXIONG_SOURCE_CARD_IDS";
     private static final String HUJIA_CAOCAO_ID = "HUJIA_CAOCAO_ID";
+    private static final String JIJIANG_LIUBEI_ID = "JIJIANG_LIUBEI_ID";
+    private static final String JIJIANG_SHU_ORDER = "JIJIANG_SHU_ORDER";
+    private static final String JIJIANG_CURRENT_INDEX = "JIJIANG_CURRENT_INDEX";
     private static final String SKILL_EFFECT_NAME = "SKILL_EFFECT_NAME";
     private static final String HUJIA_WEI_ORDER = "HUJIA_WEI_ORDER";
     private static final String HUJIA_CURRENT_INDEX = "HUJIA_CURRENT_INDEX";
@@ -401,6 +404,17 @@ public class BehaviorData {
                 }
                 yield wse;
             }
+            case "WaitingJiJiangResponseBehavior" -> {
+                @SuppressWarnings("unchecked")
+                List<String> shuOrder = params != null && params.get(JIJIANG_SHU_ORDER) != null
+                        ? (List<String>) params.get(JIJIANG_SHU_ORDER) : List.of();
+                int jjIndex = params != null && params.get(JIJIANG_CURRENT_INDEX) != null
+                        ? ((Number) params.get(JIJIANG_CURRENT_INDEX)).intValue() : 0;
+                String liuBeiId = params != null && params.get(JIJIANG_LIUBEI_ID) != null
+                        ? (String) params.get(JIJIANG_LIUBEI_ID) : behaviorPlayerId;
+                yield new com.gaas.threeKingdoms.behavior.behavior.WaitingJiJiangResponseBehavior(
+                        game, game.getPlayer(liuBeiId), shuOrder, jjIndex);
+            }
             case "WaitingHuJiaResponseBehavior" -> {
                 @SuppressWarnings("unchecked")
                 List<String> weiOrder = params != null && params.get(HUJIA_WEI_ORDER) != null
@@ -441,6 +455,10 @@ public class BehaviorData {
             params.put(JIANXIONG_SOURCE_CARD_IDS, jx.getSourceCardIds());
         } else if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior wse) {
             params.put(SKILL_EFFECT_NAME, wse.getSkillName());
+        } else if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingJiJiangResponseBehavior jiJiang) {
+            params.put(JIJIANG_LIUBEI_ID, jiJiang.getLiuBeiPlayerId());
+            params.put(JIJIANG_SHU_ORDER, jiJiang.getShuOrder());
+            params.put(JIJIANG_CURRENT_INDEX, jiJiang.getCurrentIndex());
         } else if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingHuJiaResponseBehavior huJia) {
             params.put(HUJIA_CAOCAO_ID, huJia.getCaoCaoPlayerId());
             params.put(HUJIA_WEI_ORDER, huJia.getWeiOrder());

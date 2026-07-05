@@ -32,6 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class WardWithDuelTest extends AbstractBaseIntegrationTest {
 
+    // @Override protected boolean shouldRegenerateFixtures() { return true; }
+
     @Test
     public void givenPlayerAHasDuelAndPlayerAAndBAndCHasWard_WhenPlayerAPlaysDuelAndPlayerAAndBAndCPlaysWard_ThenABCDReceive() throws Exception {
 //        Given
@@ -338,8 +340,8 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Duel/player_c_play_skip_ward_to_player_a_for_%s_v5.json";
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);
@@ -433,8 +435,8 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
 
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);
@@ -450,8 +452,8 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
 
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);
@@ -464,7 +466,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dismantle(SS3003), new Ward(SSJ011), new Duel(SSA001)
@@ -505,7 +507,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dismantle(SS3003), new Duel(SSA001)
@@ -546,7 +548,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dismantle(SS3003), new Duel(SSA001)
@@ -587,7 +589,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dismantle(SS3003), new Duel(SSA001), new Ward(SSJ011)
@@ -628,7 +630,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dismantle(SS3003), new Duel(SSA001), new Ward(SSJ011)
@@ -669,7 +671,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Duel(SSA001) // A 有決鬥
@@ -710,7 +712,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Duel(SSA001) // A 有決鬥
@@ -750,7 +752,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Duel(SSA001), // A has Duel
@@ -864,7 +866,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Duel(SSA001),  // A 有決鬥
@@ -904,7 +906,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
         Player playerA = createPlayer(
                 "player-a",
                 4,
-                General.劉備,
+                General.甘寧,
                 HealthStatus.ALIVE,
                 Role.MONARCH,
                 new Duel(SSA001),  // A 有決鬥
@@ -1020,7 +1022,7 @@ public class WardWithDuelTest extends AbstractBaseIntegrationTest {
     // Counter-chain setup: B's turn, B has Duel + Ward, C has Ward
     private void givenDuelCounterChain() {
         Player playerA = createPlayer(
-                "player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                "player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
                 new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
         );
         Player playerB = createPlayer(

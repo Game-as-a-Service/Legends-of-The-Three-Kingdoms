@@ -49,7 +49,7 @@ public class JianXiongSkillTest {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withBloodCard(new BloodCard(4))
-                .withGeneralCard(new GeneralCard(General.劉備))
+                .withGeneralCard(new GeneralCard(General.甘寧))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withRoleCard(new RoleCard(Role.MONARCH))
                 .withHand(new Hand())
@@ -73,7 +73,7 @@ public class JianXiongSkillTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard(General.劉備))
+                .withGeneralCard(new GeneralCard(General.甘寧))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
@@ -83,7 +83,7 @@ public class JianXiongSkillTest {
                 .withBloodCard(new BloodCard(4))
                 .withHand(new Hand())
                 .withRoleCard(new RoleCard(Role.MINISTER))
-                .withGeneralCard(new GeneralCard(General.劉備))
+                .withGeneralCard(new GeneralCard(General.甘寧))
                 .withHealthStatus(HealthStatus.ALIVE)
                 .withEquipment(new Equipment())
                 .build();
@@ -194,7 +194,7 @@ public class JianXiongSkillTest {
             """)
     @Test
     public void givenNonCaoCao_NoJianXiongTrigger() {
-        Game game = setupGameCaoCaoB(General.劉備);
+        Game game = setupGameCaoCaoB(General.甘寧);
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
         List<DomainEvent> events = game.playerPlayCard("player-b", "", "player-a", "skip");
 
@@ -693,7 +693,7 @@ public class JianXiongSkillTest {
         Player playerD = game.getPlayer("player-d");
         // 把 D 設成曹操，B 設回非曹操
         playerD.setGeneralCard(new GeneralCard(General.曹操));
-        playerB.setGeneralCard(new GeneralCard(General.劉備));
+        playerB.setGeneralCard(new GeneralCard(General.甘寧));
 
         playerA.getHand().addCardToHand(new BarbarianInvasion(SS7007));
         playerB.getHand().addCardToHand(new Kill(BHJ037));
