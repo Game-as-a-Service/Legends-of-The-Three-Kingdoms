@@ -97,17 +97,16 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
         }
         // Phase 2: 跳過這個玩家，繼續輪詢
         List<DomainEvent> events = new ArrayList<>();
-        String currentId = currentReactionPlayer.getId();
-        boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(currentId);
+        Player next = nextAliveReactorAfter(currentReactionPlayer.getId());
 
-        if (isLastPlayer) {
+        if (next == null) {
             isOneRound = true;
             game.getCurrentRound().setStage(Stage.Normal);
             game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
             return events;
         }
 
-        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+        currentReactionPlayer = next;
         events.addAll(askNextPlayerOrWard());
         return events;
     }

@@ -78,6 +78,22 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
         }
     }
 
+    /**
+     * issue #214：任何可能推進到無懈可擊詢問的 presenter 都須做 per-player 個人化 —
+     * 持有無懈可擊的玩家收 AskPlayWardEvent，其他人維持 WaitForWardEvent。
+     */
+    public static List<ViewModel<?>> personalizeWardViewModels(List<ViewModel<?>> viewModels, List<DomainEvent> events, String playerId) {
+        return viewModels.stream().map(viewModel -> {
+            if (viewModel instanceof WaitForWardViewModel waitForWardViewModel) {
+                WaitForWardEvent waitForWardEvent = getEvent(events, WaitForWardEvent.class).orElseThrow(RuntimeException::new);
+                if (waitForWardEvent.getPlayerIds().contains(playerId)) {
+                    return (ViewModel<?>) new AskPlayWardViewModel(waitForWardViewModel.getData());
+                }
+            }
+            return viewModel;
+        }).collect(Collectors.toList());
+    }
+
     public static GameOverViewModel getGameOverViewModel(List<DomainEvent> events) {
         return getEvent(events, GameOverEvent.class)
                 .map(gameOverEvent -> {

@@ -36,8 +36,9 @@ public class UseSkillEffectPresenter implements UseSkillEffectUseCase.UseSkillEf
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            // issue #214：技能結算可能推進到無懈可擊詢問（如奸雄/激將 ACCEPT 後南蠻輪詢下一家）
             viewModels.add(new GameViewModel(
-                    new ArrayList<>(effectViewModels),
+                    PlayCardPresenter.personalizeWardViewModels(effectViewModels, events, viewModel.getId()),
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),

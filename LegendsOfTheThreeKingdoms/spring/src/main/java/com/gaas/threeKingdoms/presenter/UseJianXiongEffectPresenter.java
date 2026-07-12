@@ -36,8 +36,9 @@ public class UseJianXiongEffectPresenter implements UseJianXiongEffectUseCase.Us
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            // issue #214：奸雄解決後南蠻/萬箭輪詢推進，可能產生對下一家的無懈可擊詢問
             viewModels.add(new GameViewModel(
-                    new ArrayList<>(effectViewModels),
+                    PlayCardPresenter.personalizeWardViewModels(effectViewModels, events, viewModel.getId()),
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),
