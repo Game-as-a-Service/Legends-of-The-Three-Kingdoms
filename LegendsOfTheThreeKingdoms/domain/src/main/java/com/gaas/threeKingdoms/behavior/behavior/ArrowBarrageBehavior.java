@@ -107,17 +107,16 @@ public class ArrowBarrageBehavior extends Behavior
         }
         // Phase 2: 跳過這個玩家，繼續輪詢
         List<DomainEvent> events = new ArrayList<>();
-        String currentId = currentReactionPlayer.getId();
-        boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(currentId);
+        Player next = nextAliveReactorAfter(currentReactionPlayer.getId());
 
-        if (isLastPlayer) {
+        if (next == null) {
             isOneRound = true;
             game.getCurrentRound().setStage(Stage.Normal);
             game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
             return events;
         }
 
-        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+        currentReactionPlayer = next;
         events.addAll(askNextPlayerOrWard());
         return events;
     }
@@ -179,12 +178,13 @@ public class ArrowBarrageBehavior extends Behavior
         } else if (isDodgeCard(cardId)) {
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
             List<DomainEvent> events = new ArrayList<>();
-            currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-            boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
+            Player next = nextAliveReactorAfter(playerId);
+            boolean isLastPlayer = next == null;
             if (isLastPlayer) {
                 isOneRound = true;
                 game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
             } else {
+                currentReactionPlayer = next;
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
             }
             events.add(game.getGameStatusEvent(playerId + "出閃"));
@@ -204,6 +204,21 @@ public class ArrowBarrageBehavior extends Behavior
     }
 
     /**
+     * 依 reactionPlayers 列表順序找 playerId 之後第一個存活 reactor；null = 沒有了。
+     * 不可用座位 getNextPlayer：謙遜等免疫技會把玩家從列表排除（同南蠻的跳人/亂序修正）。
+     */
+    private Player nextAliveReactorAfter(String playerId) {
+        int idx = reactionPlayers.indexOf(playerId);
+        for (int i = idx + 1; i < reactionPlayers.size(); i++) {
+            Player candidate = game.getPlayer(reactionPlayers.get(i));
+            if (!candidate.isAlreadyDeath()) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
      * AskDodge 前先讓 SkillEngine 介入（護駕等）。
      */
     private void emitAskDodgeOrHuJia(List<DomainEvent> events, Player targetPlayer) {
@@ -219,12 +234,13 @@ public class ArrowBarrageBehavior extends Behavior
     public List<DomainEvent> acceptDodgeFromHuJia(String dodgedPlayerId, String weiPlayerId, String dodgeCardId) {
         // dodge 已在 WaitingHuJia 中由 Wei 棄入墓地；這裡推進 polling
         List<DomainEvent> events = new ArrayList<>();
-        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-        boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(dodgedPlayerId);
+        Player next = nextAliveReactorAfter(dodgedPlayerId);
+        boolean isLastPlayer = next == null;
         if (isLastPlayer) {
             isOneRound = true;
             game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
         } else {
+            currentReactionPlayer = next;
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
         }
         events.add(game.getGameStatusEvent(dodgedPlayerId + "出閃"));
@@ -247,27 +263,29 @@ public class ArrowBarrageBehavior extends Behavior
     }
 
     private List<DomainEvent> advanceAfterDamage(String playerId) {
-        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+        Player next = nextAliveReactorAfter(playerId);
 
         List<DomainEvent> events = new ArrayList<>();
         if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) {
-            boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
-            if (isLastPlayer) {
+            if (next == null) {
                 isOneRound = true;
                 game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
             } else {
                 isOneRound = false;
+                currentReactionPlayer = next;
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
             }
             events.add(game.getGameStatusEvent("扣血但還活著"));
-            if (!isLastPlayer) {
+            if (next != null) {
                 events.addAll(askNextPlayerOrWard());
             }
         } else {
             events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
-            // 最後一個人
-            if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+            if (next == null) {
                 isOneRound = true;
+            } else {
+                // 瀕死 resume hook 讀取 currentReactionPlayer；先推進到下一位
+                currentReactionPlayer = next;
             }
         }
         return events;

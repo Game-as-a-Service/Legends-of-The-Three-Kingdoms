@@ -15,6 +15,12 @@
       "role" : "Minister"
     },
     "message" : "劉備 死亡，身分是 忠臣"
+  }, {
+    "event" : "AskDodgeEvent",
+    "data" : {
+      "playerId" : "player-d"
+    },
+    "message" : "請問 player-d 要否要出閃"
   } ],
   "data" : {
     "seats" : [ {
@@ -65,7 +71,7 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-a",
+      "activePlayer" : "player-d",
       "dyingPlayer" : "player-d",
       "showKill" : false
     },
