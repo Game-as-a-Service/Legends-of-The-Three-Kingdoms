@@ -9,8 +9,10 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.events.AskJianXiongEffectEvent;
 import com.gaas.threeKingdoms.handcard.PlayType;
+import com.gaas.threeKingdoms.events.WaitForWardEvent;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
+import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.*;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
@@ -182,6 +185,70 @@ public class BarbarianInvasionPollingOrderTest {
         assertTrue(game.getTopBehavior().isEmpty(), "d 回應後南蠻應結束");
         assertEquals(4, game.getPlayer("player-c").getHP(), "陸遜不受傷");
         assertEquals(3, game.getPlayer("player-d").getHP());
+    }
+
+    @DisplayName("issue #214：b=曹操（有無懈可擊）奸雄 ACCEPT 後 → 無懈詢問只發給曹操，且目標為 c")
+    @Test
+    public void jianXiongAcceptWithWardHolder_wardAskOnlyToCaoCao() {
+        Game game = createGame(General.甘寧, General.曹操, General.孫權, General.孫權);
+        game.getPlayer("player-a").getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        game.getPlayer("player-b").getHand().addCardToHand(new Ward(SSJ011));
+
+        // Phase 1（可取消整個南蠻）：只問持有無懈的 b
+        List<DomainEvent> e1 = game.playerPlayCard("player-a", SS7007.getCardId(), "player-a", "active");
+        WaitForWardEvent w1 = findWaitForWard(e1);
+        assertEquals(Set.of("player-b"), w1.getPlayerIds());
+
+        // b 放棄 phase 1 → phase 2 對第一個 reactor（b 自己）的無懈詢問
+        List<DomainEvent> e2 = game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        WaitForWardEvent w2 = findWaitForWard(e2);
+        assertEquals(List.of("player-b"), w2.getTargetPlayerIds());
+
+        // b 放棄 → 被問殺 → skip 扣血 → 奸雄詢問
+        List<DomainEvent> e3 = game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        assertEquals(List.of("player-b"), askKillTargets(e3));
+        List<DomainEvent> e4 = game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
+        assertTrue(e4.stream().anyMatch(e -> e instanceof AskJianXiongEffectEvent));
+
+        // 奸雄 ACCEPT → 輪詢推進到 c，b 仍持有無懈 → 無懈詢問只發給 b、目標是 c
+        List<DomainEvent> e5 = game.playerUseJianXiongEffect("player-b", AskJianXiongEffectEvent.Choice.ACCEPT);
+        WaitForWardEvent w5 = findWaitForWard(e5);
+        assertEquals(Set.of("player-b"), w5.getPlayerIds(), "issue #214：只有曹操該被問無懈可擊");
+        assertEquals(List.of("player-c"), w5.getTargetPlayerIds(), "此次無懈保護的目標是 c");
+        assertTrue(askKillTargets(e5).isEmpty(), "無懈詢問未解決前不可先問殺");
+
+        // b 放棄 → 問 c 殺，輪詢正常繼續
+        List<DomainEvent> e6 = game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        assertEquals(List.of("player-c"), askKillTargets(e6));
+    }
+
+    @DisplayName("phase 2 無懈保護 b 成功 + c=陸遜免疫 → 下一個被問的必須是 d（不可問陸遜）")
+    @Test
+    public void wardCancelOnB_withImmuneLuXunNext_asksD() {
+        Game game = createGame(General.甘寧, General.甘寧, General.陸遜, General.孫權);
+        game.getPlayer("player-a").getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        game.getPlayer("player-b").getHand().addCardToHand(new Ward(SSJ011));
+
+        game.playerPlayCard("player-a", SS7007.getCardId(), "player-a", "active");
+        // b 放棄 phase 1 → phase 2 詢問（目標 b 自己）
+        game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        // b 出無懈保護自己 → 南蠻對 b 無效，輪詢推進：陸遜免疫必須跳過，直接問 d
+        List<DomainEvent> e3 = game.playWardCard("player-b", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        assertEquals(List.of("player-d"), askKillTargets(e3),
+                "無懈取消後座位推進會誤問免疫的陸遜 — 必須依 reactionPlayers 列表推進");
+        assertEquals("player-d", game.getCurrentRound().getActivePlayer().getId());
+
+        game.playerPlayCard("player-d", "", "player-a", PlayType.SKIP.getPlayType());
+        assertTrue(game.getTopBehavior().isEmpty());
+        assertEquals(4, game.getPlayer("player-b").getHP(), "b 被無懈保護不扣血");
+        assertEquals(4, game.getPlayer("player-c").getHP(), "陸遜免疫不扣血");
+        assertEquals(3, game.getPlayer("player-d").getHP());
+    }
+
+    private WaitForWardEvent findWaitForWard(List<DomainEvent> events) {
+        return events.stream().filter(e -> e instanceof WaitForWardEvent)
+                .map(e -> (WaitForWardEvent) e).findFirst()
+                .orElseThrow(() -> new AssertionError("expected WaitForWardEvent but none found"));
     }
 
     @DisplayName("b=劉備主公（激將）關羽代殺 → 下一個被問的必須是 c")
