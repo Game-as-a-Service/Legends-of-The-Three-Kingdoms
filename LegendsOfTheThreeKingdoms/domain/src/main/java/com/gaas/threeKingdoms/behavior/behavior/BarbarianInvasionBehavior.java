@@ -182,12 +182,13 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
 
     private List<DomainEvent> advanceAfterKillResponse(String playerId, String statusMessage, List<DomainEvent> insertEvents) {
         List<DomainEvent> events = new ArrayList<>();
-        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
-        boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
+        Player next = nextAliveReactorAfter(playerId);
+        boolean isLastPlayer = next == null;
         if (isLastPlayer) {
             isOneRound = true;
             game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
         } else {
+            currentReactionPlayer = next;
             game.getCurrentRound().setActivePlayer(currentReactionPlayer);
         }
         events.add(game.getGameStatusEvent(statusMessage));
@@ -213,28 +214,46 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
         return advanceAfterDamage(damagedPlayerId);
     }
 
+    /**
+     * 依 reactionPlayers 列表順序找 playerId 之後第一個存活 reactor；null = 沒有了。
+     * 不可用座位 getNextPlayer：謙遜等免疫技會把玩家從列表排除（座位上仍存在），
+     * 座位推進會誤問免疫者、且免疫者在列表尾時 isLast 判斷失效（issue：南蠻跳人/亂序）。
+     */
+    private Player nextAliveReactorAfter(String playerId) {
+        int idx = reactionPlayers.indexOf(playerId);
+        for (int i = idx + 1; i < reactionPlayers.size(); i++) {
+            Player candidate = game.getPlayer(reactionPlayers.get(i));
+            if (!candidate.isAlreadyDeath()) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
     private List<DomainEvent> advanceAfterDamage(String playerId) {
-        currentReactionPlayer = game.getNextPlayer(currentReactionPlayer);
+        Player next = nextAliveReactorAfter(playerId);
 
         List<DomainEvent> events = new ArrayList<>();
         if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) {
-            boolean isLastPlayer = reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId);
-            if (isLastPlayer) {
+            if (next == null) {
                 isOneRound = true;
                 game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
             } else {
                 isOneRound = false;
+                currentReactionPlayer = next;
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
             }
             events.add(game.getGameStatusEvent("扣血但還活著"));
-            if (!isLastPlayer) {
+            if (next != null) {
                 events.addAll(askNextPlayerOrWard());
             }
         } else {
             events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
-            // 最後一個人
-            if (reactionPlayers.get(reactionPlayers.size() - 1).equals(playerId)) {
+            if (next == null) {
                 isOneRound = true;
+            } else {
+                // 瀕死 resume hook 讀取 currentReactionPlayer；先推進到下一位
+                currentReactionPlayer = next;
             }
         }
         return events;
