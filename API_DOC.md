@@ -572,7 +572,17 @@ POST /api/games/{gameId}/player:useHuJiaEffect
 | choice | String | `ACCEPT`（代替主公出閃）或 `DECLINE`（拒絕） |
 | cardId | String? | `ACCEPT` 必填，為要打出的閃 cardId；`DECLINE` 時可為 null |
 
-**觸發時機**：曹操（`WEI001`）為主公（`MONARCH`）且 stack 頂為 emit `AskDodgeEvent` 的 behavior 時，系統不發 `AskDodgeEvent`，改為依座位順序（曹操下家起）對每位存活魏勢力武將 broadcast `AskHuJiaEffectEvent`。任一人 ACCEPT → 視為曹操打出此閃；全部 DECLINE → fallback emit 原本的 `AskDodgeEvent(曹操)`。
+**觸發時機**（issue #217 起為主動觸發）：曹操（`WEI001`）為主公（`MONARCH`）且 stack 頂為 emit `AskDodgeEvent` 的 behavior 時，系統不發 `AskDodgeEvent`，改為**先對曹操本人** broadcast `AskSkillEffectEvent`（`skillName="護駕"`）詢問是否發動：
+
+- 曹操 **ACCEPT** → 依座位順序（曹操下家起）對每位存活魏勢力武將 broadcast `AskHuJiaEffectEvent`。任一人 ACCEPT → 視為曹操打出此閃；全部 DECLINE → fallback emit 原本的 `AskDodgeEvent(曹操)`
+- 曹操 **SKIP** → 直接 emit `AskDodgeEvent(曹操)` 自己出閃，不詢問魏將
+
+曹操回應「是否發動」走通用 endpoint（見 §23 useSkillEffect）：
+
+```
+POST /api/games/{gameId}/player:useSkillEffect
+{ "playerId": "<曹操>", "skillName": "護駕", "choice": "ACCEPT" | "SKIP" }
+```
 
 **啟動條件**（同時成立）：
 1. 受詢問玩家武將為曹操（WEI001）
@@ -586,7 +596,10 @@ POST /api/games/{gameId}/player:useHuJiaEffect
 **流程**：
 ```
 A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
-  → 系統 push WaitingHuJiaResponseBehavior 並 broadcast AskHuJiaEffectEvent(座位次序下一位 Wei)
+  → 系統 broadcast AskSkillEffectEvent(skillName=護駕, playerId=曹操)、activePlayer = 曹操
+  → 曹操呼叫 player:useSkillEffect：
+    - SKIP:   AskDodgeEvent(曹操) 自己出閃（不詢問魏將）
+    - ACCEPT: 系統 push WaitingHuJiaResponseBehavior 並 broadcast AskHuJiaEffectEvent(座位次序下一位 Wei)
   → activePlayer 切到該 Wei 武將
   → Wei 武將呼叫本 API：
     - ACCEPT: Wei 棄一張閃到墓地 → HuJiaEffectEvent(accepted=true)
@@ -662,6 +675,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 激將（劉備主公技） | 主公劉備被南蠻/決鬥要求出殺時，依座位順序詢問蜀將 | `ACCEPT` / `DECLINE` | ACCEPT 必填 [殺 id]（蜀將手中） | — |
 | 流離（大喬） | 大喬成為殺目標、被問閃之前 | `ACCEPT` / `SKIP` | ACCEPT 必填 [要棄的手牌 id] | ACCEPT 必填：轉移目標（距離 1 內、非攻擊者） |
 | 鬼才（司馬懿） | 任意角色閃電判定牌抽出後、生效前（dataCardIds = [原判定牌]） | `ACCEPT` / `SKIP` | ACCEPT 必填 [替換用手牌 id] | — |
+| 護駕（曹操主公技）發動詢問 | 主公曹操被要求出閃、且有其他存活魏將時（issue #217） | `ACCEPT`（開始魏將輪詢，見 §21）/ `SKIP`（自己出閃） | — | — |
 
 ### 自動觸發技（無需呼叫本 API，僅廣播 `SkillEffectEvent`）
 
