@@ -102,4 +102,50 @@ public class BarbarianJianXiongWardTest extends AbstractBaseIntegrationTest {
         assertEquals(4, saved.getPlayer("player-c").getHP());
         assertEquals(4, saved.getPlayer("player-d").getHP());
     }
+
+    /**
+     * 奸雄 resolve 後 WaitingJianXiongResponseBehavior（card=null）會被新的無懈詢問
+     * 壓在 stack 中間、來不及移除；此時 B「確定發動」無懈可擊曾觸發
+     * NPE：getCard() is null（WardBehavior 組抵銷訊息時撞到殘留 behavior）。
+     */
+    @Test
+    public void testJianXiongAcceptThenPlayWardActive_NoNPE() throws Exception {
+        Player playerA = createPlayer("player-a", 4, General.甘寧, HealthStatus.ALIVE, Role.MONARCH,
+                new BarbarianInvasion(SS7007));
+        Player playerB = createPlayer("player-b", 4, General.曹操, HealthStatus.ALIVE, Role.MINISTER,
+                new Ward(SSJ011));
+        Player playerC = createPlayer("player-c", 4, General.甘寧, HealthStatus.ALIVE, Role.REBEL,
+                new Kill(BS8008));
+        Player playerD = createPlayer("player-d", 4, General.甘寧, HealthStatus.ALIVE, Role.TRAITOR,
+                new Kill(BS9009));
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        repository.save(game);
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-a", SS7007.getCardId(), PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk());
+        mockMvcUtil.playWardCard(gameId, "player-b", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk());
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", PlayType.SKIP.getPlayType())
+                .andExpect(status().isOk());
+        mockMvcUtil.useJianXiongEffect(gameId, "player-b", "ACCEPT")
+                .andExpect(status().isOk());
+
+        // B 確定發動無懈可擊保護 C —— 修復前此步 500（NPE）
+        mockMvcUtil.playWardCard(gameId, "player-b", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+
+        Game saved = repository.findById(gameId).orElseThrow();
+        assertEquals("player-d", saved.getCurrentRound().getActivePlayer().getId(), "C 被無懈保護後輪詢推進到 D");
+
+        mockMvcUtil.playCard(gameId, "player-d", "player-a", BS9009.getCardId(), PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+
+        saved = repository.findById(gameId).orElseThrow();
+        assertTrue(saved.getTopBehavior().isEmpty(), "南蠻流程應完整結束");
+        assertEquals(3, saved.getPlayer("player-b").getHP());
+        assertEquals(4, saved.getPlayer("player-c").getHP(), "C 被無懈保護不扣血");
+        assertEquals(4, saved.getPlayer("player-d").getHP(), "D 出殺不扣血");
+    }
 }

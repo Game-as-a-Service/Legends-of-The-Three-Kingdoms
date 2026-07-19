@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.generalcard.GeneralCard;
 import com.gaas.threeKingdoms.events.AskJianXiongEffectEvent;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.events.WaitForWardEvent;
+import com.gaas.threeKingdoms.events.WardEvent;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
@@ -220,6 +221,52 @@ public class BarbarianInvasionPollingOrderTest {
         // b 放棄 → 問 c 殺，輪詢正常繼續
         List<DomainEvent> e6 = game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
         assertEquals(List.of("player-c"), askKillTargets(e6));
+    }
+
+    @DisplayName("奸雄 ACCEPT 後 b 出無懈保護 c → 不 NPE、抵銷訊息指向南蠻、輪詢推進到 d")
+    @Test
+    public void jianXiongAcceptThenActiveWard_noNPE() {
+        Game game = createGame(General.甘寧, General.曹操, General.孫權, General.孫權);
+        game.getPlayer("player-a").getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        game.getPlayer("player-b").getHand().addCardToHand(new Ward(SSJ011));
+
+        game.playerPlayCard("player-a", SS7007.getCardId(), "player-a", "active");
+        game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
+        game.playerUseJianXiongEffect("player-b", AskJianXiongEffectEvent.Choice.ACCEPT);
+
+        // b 確定發動無懈可擊保護 c —— 奸雄 behavior（card=null）殘留在 stack 中間，曾在此 NPE
+        List<DomainEvent> e6 = game.playWardCard("player-b", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        WardEvent wardEvent = e6.stream().filter(e -> e instanceof WardEvent)
+                .map(e -> (WardEvent) e).findFirst()
+                .orElseThrow(() -> new AssertionError("expected WardEvent but none found"));
+        assertTrue(wardEvent.getMessage().contains("南蠻入侵"),
+                "抵銷訊息須指向真正的效果來源南蠻，而非 stack 中殘留的奸雄 behavior：" + wardEvent.getMessage());
+        assertEquals(List.of("player-d"), askKillTargets(e6), "c 被無懈保護後輪詢推進到 d");
+
+        game.playerPlayCard("player-d", "", "player-a", PlayType.SKIP.getPlayType());
+        assertTrue(game.getTopBehavior().isEmpty(), "南蠻流程完整結束");
+        assertEquals(4, game.getPlayer("player-c").getHP(), "c 被無懈保護不扣血");
+        assertEquals(3, game.getPlayer("player-d").getHP());
+    }
+
+    @DisplayName("奸雄 SKIP 後 b 出無懈保護 c → 不 NPE、輪詢推進到 d")
+    @Test
+    public void jianXiongSkipThenActiveWard_noNPE() {
+        Game game = createGame(General.甘寧, General.曹操, General.孫權, General.孫權);
+        game.getPlayer("player-a").getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        game.getPlayer("player-b").getHand().addCardToHand(new Ward(SSJ011));
+
+        game.playerPlayCard("player-a", SS7007.getCardId(), "player-a", "active");
+        game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
+        game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
+        game.playerUseJianXiongEffect("player-b", AskJianXiongEffectEvent.Choice.SKIP);
+
+        List<DomainEvent> e6 = game.playWardCard("player-b", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        assertEquals(List.of("player-d"), askKillTargets(e6), "c 被無懈保護後輪詢推進到 d");
+        assertEquals(4, game.getPlayer("player-c").getHP(), "c 被無懈保護不扣血");
     }
 
     @DisplayName("phase 2 無懈保護 b 成功 + c=陸遜免疫 → 下一個被問的必須是 d（不可問陸遜）")

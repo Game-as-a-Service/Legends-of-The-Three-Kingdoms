@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.Player;
@@ -115,6 +116,19 @@ public class WardBehavior extends Behavior {
     }
 
 
+    private String getBehaviorSourceName(Behavior behavior) {
+        return behavior.getBehaviorPlayer() != null ? behavior.getBehaviorPlayer().getGeneralName() : "";
+    }
+
+    // card 可能為 null（系統 behavior，或 VirtualKill 經 MongoDB reload 後 findById 查無）— 以 cardId 反查兜底
+    private String getBehaviorCardName(Behavior behavior) {
+        if (behavior.getCard() != null) {
+            return behavior.getCard().getName();
+        }
+        HandCard card = behavior.getCardId() != null ? PlayCard.findById(behavior.getCardId()) : null;
+        return card != null ? card.getName() : "";
+    }
+
     @Override
     public List<DomainEvent> doBehaviorAction() {
         List<DomainEvent> domainEvents = new ArrayList<>();
@@ -127,9 +141,15 @@ public class WardBehavior extends Behavior {
         for (int i = topBehaviors.size() - 1; i >= 0; i--) {
             Behavior behavior = topBehaviors.get(i);
             if (!(behavior instanceof WardBehavior)) {
+                // 已完成待移除的殘留（如奸雄 resolve 後被新 WardBehavior 壓住、
+                // 來不及被 removeCompletedBehaviors 清掉的 WaitingJianXiongResponseBehavior，
+                // card 為 null）— 跳過，繼續往下找真正的效果來源
+                if (behavior.isOneRound()) {
+                    continue;
+                }
                 if (wardEvent != null) {
                     domainEvents.add(new WardEvent(wardEvent.getPlayerId(), behavior.getCardId(), wardEvent.getWardCardId(), wardEvent.getMessage()
-                            + String.format("%s 的 %s", behavior.getBehaviorPlayer().getGeneralName(), behavior.getCard().getName())));
+                            + String.format("%s 的 %s", getBehaviorSourceName(behavior), getBehaviorCardName(behavior))));
                 }
                 break;
             }
@@ -145,7 +165,7 @@ public class WardBehavior extends Behavior {
                     wardEvent = new WardEvent(wardPlayer.getId(), null, behavior.getCardId(), unDoneMessage);
                 } else if (StringUtils.isBlank(wardEvent.getCardId())) {
                     domainEvents.add(new WardEvent(wardEvent.getPlayerId(), behavior.getCardId(), wardEvent.getWardCardId(), wardEvent.getMessage()
-                            + String.format("%s 的 %s", behavior.getBehaviorPlayer().getGeneralName(), behavior.getCard().getName())));
+                            + String.format("%s 的 %s", getBehaviorSourceName(behavior), getBehaviorCardName(behavior))));
                     wardEvent = null;
                 }
 
