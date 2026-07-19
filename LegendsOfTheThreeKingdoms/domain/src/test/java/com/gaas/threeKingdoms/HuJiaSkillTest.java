@@ -4,9 +4,11 @@ import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.HeavenlyDoubleHalberdKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.WaitingHuJiaResponseBehavior;
+import com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior;
 import com.gaas.threeKingdoms.builders.PlayerBuilder;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskHuJiaEffectEvent;
+import com.gaas.threeKingdoms.events.AskSkillEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.HuJiaEffectEvent;
 import com.gaas.threeKingdoms.gamephase.Normal;
@@ -108,15 +110,45 @@ public class HuJiaSkillTest {
     @DisplayName("""
             Given 曹操為主公，C 為 Wei（夏侯惇）、D 為非 Wei
             When  A 對曹操 (B) 出殺
-            Then  emit AskHuJiaEffectEvent 給 C；不 emit AskDodgeEvent；stack 頂為 WaitingHuJiaResponseBehavior；activePlayer = C
+            Then  先 emit AskSkillEffectEvent(護駕) 詢問曹操本人（issue #217：主動觸發）；
+                  不 emit AskHuJiaEffectEvent / AskDodgeEvent；stack 頂為 WaitingSkillEffectBehavior；activePlayer = 曹操
             """)
     @Test
-    public void givenMonarchCaoCaoAndOneWei_WhenKilled_ThenAskHuJiaToWei() {
+    public void givenMonarchCaoCaoAndOneWei_WhenKilled_ThenAskCaoCaoFirst() {
         Game game = setupMonarchCaoCaoWithOneWei();
         Player playerC = game.getPlayer("player-c");
         giveDodge(playerC, BH2028);
 
         List<DomainEvent> events = game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+
+        AskSkillEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskSkillEffectEvent)
+                .map(e -> (AskSkillEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected AskSkillEffectEvent"));
+        assertEquals("護駕", ask.getSkillName());
+        assertEquals("player-b", ask.getPlayerId(), "先詢問曹操本人是否發動護駕");
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskHuJiaEffectEvent),
+                "曹操未 ACCEPT 前不可先詢問魏將");
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskDodgeEvent),
+                "AskDodgeEvent should be replaced by HuJia ask");
+        assertTrue(game.peekTopBehavior() instanceof WaitingSkillEffectBehavior);
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+            Given 曹操為主公，C 為 Wei、有閃
+            When  曹操 ACCEPT 發動護駕
+            Then  emit AskHuJiaEffectEvent 給 C；stack 為 [殺, WaitingHuJia]；activePlayer = C
+            """)
+    @Test
+    public void givenCaoCaoAcceptHuJia_ThenAskWei() {
+        Game game = setupMonarchCaoCaoWithOneWei();
+        Player playerC = game.getPlayer("player-c");
+        giveDodge(playerC, BH2028);
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
 
         AskHuJiaEffectEvent ask = events.stream()
                 .filter(e -> e instanceof AskHuJiaEffectEvent)
@@ -126,10 +158,42 @@ public class HuJiaSkillTest {
         assertEquals("player-c", ask.getPlayerId());
         assertEquals("player-b", ask.getCaoCaoPlayerId());
         assertEquals(List.of(BH2028.getCardId()), ask.getDodgeCardIdsInHand());
-        assertFalse(events.stream().anyMatch(e -> e instanceof AskDodgeEvent),
-                "AskDodgeEvent should be replaced by HuJia ask");
         assertTrue(game.peekTopBehavior() instanceof WaitingHuJiaResponseBehavior);
+        assertTrue(game.peekTopBehaviorSecondElement()
+                        .map(b -> b instanceof NormalActiveKillBehavior).orElse(false),
+                "詢問層必須已 pop，維持 [host, WaitingHuJia] 假設");
         assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("""
+            Given 曹操為主公，C 為 Wei、有閃
+            When  曹操 SKIP 放棄護駕
+            Then  emit AskDodgeEvent(曹操) 自己出閃；不詢問魏將；stack 頂回到殺；activePlayer = 曹操
+            """)
+    @Test
+    public void givenCaoCaoSkipHuJia_ThenAskCaoCaoDodgeDirectly() {
+        Game game = setupMonarchCaoCaoWithOneWei();
+        Player playerB = game.getPlayer("player-b");
+        giveDodge(playerB, BHK039);
+        giveDodge(game.getPlayer("player-c"), BH2028);
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.playerUseSkillEffect("player-b", "護駕", "SKIP", null, null);
+
+        AskDodgeEvent ask = events.stream()
+                .filter(e -> e instanceof AskDodgeEvent)
+                .map(e -> (AskDodgeEvent) e)
+                .findFirst().orElseThrow(() -> new AssertionError("expected AskDodgeEvent"));
+        assertEquals("player-b", ask.getPlayerId());
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskHuJiaEffectEvent),
+                "SKIP 後不可再詢問魏將");
+        assertTrue(game.peekTopBehavior() instanceof NormalActiveKillBehavior);
+        assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
+
+        // 曹操自己出閃 → 結算完成、不扣血
+        game.playerPlayCard("player-b", BHK039.getCardId(), "player-a", "active");
+        assertEquals(4, playerB.getHP());
+        assertTrue(game.isTopBehaviorEmpty());
     }
 
     @DisplayName("""
@@ -145,6 +209,7 @@ public class HuJiaSkillTest {
         giveDodge(playerC, BH2028);
 
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
         List<DomainEvent> events = game.playerUseHuJiaEffect(
                 "player-c", AskHuJiaEffectEvent.Choice.ACCEPT, BH2028.getCardId());
 
@@ -169,6 +234,7 @@ public class HuJiaSkillTest {
     public void givenFirstWeiDecline_ThenAskNextWei() {
         Game game = setupMonarchCaoCaoWithTwoWei();
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
 
         List<DomainEvent> events = game.playerUseHuJiaEffect(
                 "player-c", AskHuJiaEffectEvent.Choice.DECLINE, null);
@@ -191,6 +257,7 @@ public class HuJiaSkillTest {
     public void givenAllWeiDecline_ThenFallbackToAskCaoCaoDodge() {
         Game game = setupMonarchCaoCaoWithOneWei();
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
 
         List<DomainEvent> events = game.playerUseHuJiaEffect(
                 "player-c", AskHuJiaEffectEvent.Choice.DECLINE, null);
@@ -217,6 +284,8 @@ public class HuJiaSkillTest {
 
         List<DomainEvent> events = game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
 
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskSkillEffectEvent),
+                "不應詢問曹操發動護駕");
         assertFalse(events.stream().anyMatch(e -> e instanceof AskHuJiaEffectEvent));
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
     }
@@ -232,6 +301,8 @@ public class HuJiaSkillTest {
 
         List<DomainEvent> events = game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
 
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskSkillEffectEvent),
+                "不應詢問曹操發動護駕");
         assertFalse(events.stream().anyMatch(e -> e instanceof AskHuJiaEffectEvent));
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
     }
@@ -247,6 +318,8 @@ public class HuJiaSkillTest {
 
         List<DomainEvent> events = game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
 
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskSkillEffectEvent),
+                "不應詢問曹操發動護駕");
         assertFalse(events.stream().anyMatch(e -> e instanceof AskHuJiaEffectEvent));
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
     }
@@ -259,6 +332,7 @@ public class HuJiaSkillTest {
     public void givenAcceptWithCardNotInHand_Throws() {
         Game game = setupMonarchCaoCaoWithOneWei();
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHuJiaEffect("player-c", AskHuJiaEffectEvent.Choice.ACCEPT, BH2028.getCardId()));
@@ -273,6 +347,7 @@ public class HuJiaSkillTest {
         Game game = setupMonarchCaoCaoWithOneWei();
         game.getPlayer("player-c").getHand().addCardToHand(new Kill(BS9009));
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
 
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseHuJiaEffect("player-c", AskHuJiaEffectEvent.Choice.ACCEPT, BS9009.getCardId()));
@@ -280,8 +355,8 @@ public class HuJiaSkillTest {
 
     @DisplayName("""
             Given 萬箭齊發瞄到曹操主公 + 其他 Wei 存活
-            When  輪詢到曹操這 reactor
-            Then  emit AskHuJiaEffectEvent（不 emit AskDodge），stack 頂為 WaitingHuJia 在 ArrowBarrage 上
+            When  輪詢到曹操這 reactor、曹操 ACCEPT 護駕
+            Then  詢問時 stack 頂為 WaitingSkillEffect；ACCEPT 後為 WaitingHuJia 在 ArrowBarrage 上
             """)
     @Test
     public void givenArrowBarrageWithMonarchCaoCao_HuJiaFiresOnCaoCaoTurn() {
@@ -289,10 +364,12 @@ public class HuJiaSkillTest {
         Player playerA = game.getPlayer("player-a");
         playerA.getHand().addCardToHand(new ArrowBarrage(SS7007));
 
-        // A 出萬箭，假設 B 第一個被詢問（座位順序）
+        // A 出萬箭，假設 B 第一個被詢問（座位順序）→ 先問曹操是否發動護駕
         game.playerPlayCard("player-a", SS7007.getCardId(), "player-b", "active");
+        assertTrue(game.peekTopBehavior() instanceof WaitingSkillEffectBehavior,
+                "issue #217：先詢問曹操本人");
 
-        // ArrowBarrage 應已 push；驗證 stack 頂是 WaitingHuJia，next-second 是 ArrowBarrage
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
         assertTrue(game.peekTopBehavior() instanceof WaitingHuJiaResponseBehavior,
                 "WaitingHuJia should be top while polling Cao Cao");
         assertTrue(game.peekTopBehaviorSecondElement()
@@ -315,7 +392,10 @@ public class HuJiaSkillTest {
 
         game.playerUseHeavenlyDoubleHalberdKill(
                 "player-a", BS8008.getCardId(), List.of("player-b", "player-c"));
+        assertTrue(game.peekTopBehavior() instanceof WaitingSkillEffectBehavior,
+                "issue #217：先詢問曹操本人");
 
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
         assertTrue(game.peekTopBehavior() instanceof WaitingHuJiaResponseBehavior);
         assertTrue(game.peekTopBehaviorSecondElement()
                 .map(b -> b instanceof HeavenlyDoubleHalberdKillBehavior).orElse(false),
@@ -339,6 +419,7 @@ public class HuJiaSkillTest {
         giveDodge(playerC, BH2028);
 
         game.playerPlayCard("player-a", SS7007.getCardId(), "player-b", "active");
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
         // ACCEPT 代替曹操出閃
         List<DomainEvent> events = game.playerUseHuJiaEffect(
                 "player-c", AskHuJiaEffectEvent.Choice.ACCEPT, BH2028.getCardId());
@@ -377,6 +458,7 @@ public class HuJiaSkillTest {
 
         game.playerUseHeavenlyDoubleHalberdKill(
                 "player-a", BS8008.getCardId(), List.of("player-b", "player-c"));
+        game.playerUseSkillEffect("player-b", "護駕", "ACCEPT", null, null);
 
         List<DomainEvent> events = game.playerUseHuJiaEffect(
                 "player-c", AskHuJiaEffectEvent.Choice.ACCEPT, BH2028.getCardId());
