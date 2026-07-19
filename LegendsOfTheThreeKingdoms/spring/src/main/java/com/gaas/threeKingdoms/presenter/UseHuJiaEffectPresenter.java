@@ -36,8 +36,9 @@ public class UseHuJiaEffectPresenter implements UseHuJiaEffectUseCase.UseHuJiaEf
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            // 同 #214 類問題：護駕 resolve 後 AoE 輪詢推進可能觸發無懈可擊詢問 — 持有者需個人化
             viewModels.add(new GameViewModel(
-                    new ArrayList<>(effectViewModels),
+                    PlayCardPresenter.personalizeWardViewModels(effectViewModels, events, viewModel.getId()),
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),

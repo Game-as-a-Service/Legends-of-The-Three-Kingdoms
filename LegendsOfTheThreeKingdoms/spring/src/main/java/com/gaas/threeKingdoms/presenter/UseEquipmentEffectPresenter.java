@@ -39,8 +39,9 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
                     PlayerDataViewModel.hiddenOtherPlayerRoleInformation(
                             playerDataViewModels, viewModel.getId()), roundDataViewModel, gameStatusEvent.getGamePhase());
 
+            // 同 #214 類問題：裝備效果結算（如八卦陣）後續流程可能觸發無懈可擊詢問 — 持有者需個人化
             viewModels.add(new GameViewModel(
-                    eventToViewModels,
+                    PlayCardPresenter.personalizeWardViewModels(eventToViewModels, events, viewModel.getId()),
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
                     gameStatusEvent.getGameId(),

@@ -237,6 +237,99 @@ public class WardWithContentmentTest extends AbstractBaseIntegrationTest {
         }
     }
 
+    @Test
+    public void givenPlayerCHasContentmentAndBHasWard_WhenBEndsTurnByDiscard_ThenBReceivesAskPlayWardEvent() throws Exception {
+//        使用者回報 bug：
+//        C 判定區有樂不思蜀，B 手牌有無懈可擊
+//        B 以「棄牌」結束回合（而非 finishAction 直接結束）→ C 回合開始判定前的無懈詢問
+//        走 DiscardPresenter — 修復前 B 只收到 WaitForWardEvent（未個人化成 AskPlayWardEvent）
+        givenPlayerCHasContentmentAndBHasWard();
+
+        // A 結束回合 → B 回合開始摸 2（手牌 6 > HP 4）
+        mockMvcUtil.finishAction(gameId, "player-a")
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // B 結束出牌 → 進入棄牌階段
+        mockMvcUtil.finishAction(gameId, "player-b")
+                .andExpect(status().isOk()).andReturn();
+        popAllPlayerMessage();
+
+        // B 棄 2 張（保留無懈可擊）→ B 回合結束 → C 回合開始 → 樂不思蜀判定前的無懈詢問
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/api/games/" + gameId + "/player:discardCards")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                ["BD2093", "BD3094"]
+                                """))
+                .andExpect(status().isOk());
+
+        String messageA = websocketUtil.getValue("player-a");
+        String messageB = websocketUtil.getValue("player-b");
+        String messageC = websocketUtil.getValue("player-c");
+        String messageD = websocketUtil.getValue("player-d");
+
+        org.junit.jupiter.api.Assertions.assertTrue(messageB.contains("AskPlayWardEvent"),
+                "持有無懈可擊的 B 應收到 AskPlayWardEvent（棄牌路徑）");
+        for (String message : List.of(messageA, messageC, messageD)) {
+            org.junit.jupiter.api.Assertions.assertFalse(message.contains("AskPlayWardEvent"),
+                    "沒有無懈可擊的玩家不應被詢問");
+            org.junit.jupiter.api.Assertions.assertTrue(message.contains("WaitForWardEvent"),
+                    "其他玩家應收到等待無懈可擊 event");
+        }
+    }
+
+    private void givenPlayerCHasContentmentAndBHasWard() {
+        Player playerA = createPlayer(
+                "player-a",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MONARCH,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Kill(BS8008)
+        );
+        Player playerB = createPlayer(
+                "player-b",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.MINISTER,
+                new Kill(BS8008), new Peach(BH3029), new Peach(BH4030), new Ward(SSJ011)
+        );
+        Player playerC = createPlayer(
+                "player-c",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.REBEL,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+        playerC.addDelayScrollCard(new Contentment(SC6071));
+
+        Player playerD = createPlayer(
+                "player-d",
+                4,
+                General.劉備,
+                HealthStatus.ALIVE,
+                Role.TRAITOR,
+                new Kill(BS8008), new Peach(BH3029), new Dodge(BH2028), new Dodge(BHK039)
+        );
+
+        List<Player> players = Arrays.asList(playerA, playerB, playerC, playerD);
+        Game game = new Game(gameId, players);
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+        Deck deck = new Deck();
+        // LIFO：最後 add 的先被抽 — B 回合開始摸 BD2093、BD3094（之後棄掉這兩張）
+        deck.add(List.of(
+                new Peach(BH3029), new Peach(BH3029), new Peach(BH3029),
+                new Peach(BH3029), new Peach(BH3029),
+                new Dodge(BD3094), new Dodge(BD2093)
+        ));
+        game.setDeck(deck);
+        repository.save(game);
+    }
+
     private void givenPlayerBHasContentmentAndBHasWard() {
         Player playerA = createPlayer(
                 "player-a",

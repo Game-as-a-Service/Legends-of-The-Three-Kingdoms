@@ -48,6 +48,11 @@ public class DiscardPresenter implements DiscardCardUseCase.DiscardPresenter<Lis
                 return personalViewModel;
             }).collect(Collectors.toList());
 
+            // 使用者回報 bug：棄牌結束回合 → 下一家回合開始判定（樂不思蜀/閃電）可能觸發無懈可擊詢問，
+            // 持有者必須收 AskPlayWardEvent 而非 WaitForWardEvent
+            personalEventToViewModels = PlayCardPresenter.personalizeWardViewModels(
+                    personalEventToViewModels, events, viewModel.getId());
+
             viewModels.add(new GameViewModel(personalEventToViewModels,
                     gameDataViewModel,
                     gameStatusEvent.getMessage(),
