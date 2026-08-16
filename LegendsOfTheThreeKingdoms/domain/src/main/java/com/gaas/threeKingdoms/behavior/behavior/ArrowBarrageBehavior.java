@@ -172,6 +172,18 @@ public class ArrowBarrageBehavior extends Behavior
                 return events;
             }
 
+            // 偵測反饋等 OnDamagedSkill 介入（WaitingSkillEffectBehavior + resume flag）：
+            // polling-advance defer 到 WaitingSkillEffectBehavior.resolveChoice 的 resume hook
+            if (!game.isTopBehaviorEmpty()
+                    && game.peekTopBehavior() instanceof WaitingSkillEffectBehavior wse
+                    && "true".equals(wse.getParam(WaitingSkillEffectBehavior.PARAM_RESUME_POLLING))) {
+                List<DomainEvent> events = new ArrayList<>(damagedEvent);
+                String message = game.getGamePhase().getPhaseName().equals("GeneralDying")
+                        ? "扣血已瀕臨死亡" : "扣血但還活著";
+                events.add(game.getGameStatusEvent(message));
+                return events;
+            }
+
             List<DomainEvent> events = new ArrayList<>(damagedEvent);
             events.addAll(advanceAfterDamage(playerId));
             return events;

@@ -24,6 +24,14 @@ import java.util.List;
 @Getter
 public class WaitingSkillEffectBehavior extends Behavior {
 
+    /**
+     * 值 "true" 時：本 waiting 是插在 AOE polling caller（南蠻/萬箭）之上的
+     * OnDamagedSkill 詢問（如反饋），resolve 後需呼叫底層的
+     * {@code resumeJianXiongPolling} 推進輪詢（mirror 奸雄 issue #209 的 reload-safe 樣板；
+     * 本 behavior 無 transient callback，一律走 param + resume hook）。
+     */
+    public static final String PARAM_RESUME_POLLING = "WSE_RESUME_POLLING";
+
     private final String skillName;
 
     public WaitingSkillEffectBehavior(Game game, Player respondingPlayer, String skillName) {
@@ -47,7 +55,21 @@ public class WaitingSkillEffectBehavior extends Behavior {
                     "player %s is not the one who should respond to skill %s", respondingPlayerId, skillName));
         }
         ChoiceResolvableSkill skill = findSkill();
-        List<DomainEvent> events = skill.resolveChoice(game, this, choice, cardIds, targetPlayerId);
+        List<DomainEvent> events = new java.util.ArrayList<>(
+                skill.resolveChoice(game, this, choice, cardIds, targetPlayerId));
+
+        // AOE polling resume：必須在 isOneRound=true 之前跑 —
+        // resume 可能把底層 polling behavior 的 isOneRound 改回 false（mid-poll），
+        // 需先於本 behavior 標記完成、避免 removeCompletedBehaviors 誤 pop polling behavior。
+        if ("true".equals(getParam(PARAM_RESUME_POLLING))) {
+            game.peekTopBehaviorSecondElement().ifPresent(under -> {
+                if (under instanceof com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior compatible
+                        && compatible.isPollingCaller()) {
+                    events.addAll(compatible.resumeJianXiongPolling(behaviorPlayer.getId()));
+                }
+            });
+        }
+
         isOneRound = true;
         return events;
     }
