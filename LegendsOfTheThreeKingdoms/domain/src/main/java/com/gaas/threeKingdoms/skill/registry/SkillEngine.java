@@ -221,7 +221,7 @@ public final class SkillEngine {
 
     /**
      * 洛神：回合開始判定 loop — 黑色（黑桃/梅花）收入手牌續判，紅色停。
-     * 非甄姬回 empty list；v1 自動觸發。
+     * 非甄姬回 empty list；含鬼才暫停點（暫停時 caller 應檢查 topBehavior 並中止回合開始流程）。
      */
     public static List<DomainEvent> luoShenJudgementLoop(Game game, Player roundPlayer) {
         boolean hasLuoShen = skillsOf(roundPlayer).stream()
@@ -229,37 +229,57 @@ public final class SkillEngine {
         if (!hasLuoShen) {
             return List.of();
         }
+        return luoShenContinueLoop(game, roundPlayer);
+    }
+
+    /** 洛神判定 loop 本體（鬼才 resume 後續判亦由此進入）；每張判定牌抽出後先過鬼才暫停點。 */
+    public static List<DomainEvent> luoShenContinueLoop(Game game, Player roundPlayer) {
         List<DomainEvent> events = new ArrayList<>();
         while (true) {
             com.gaas.threeKingdoms.handcard.HandCard judgement = game.drawCardForCardEffect(1).get(0);
-            boolean black = judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.SPADE
-                    || judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.CLUB;
-            events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
-                    com.gaas.threeKingdoms.skill.wei.LuoShenSkill.SKILL_NAME,
-                    roundPlayer.getId(), black, List.of(judgement.getId()), null));
-            if (!black) {
-                break;
+            java.util.Optional<List<DomainEvent>> paused = com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.tryPause(
+                    game, roundPlayer, judgement,
+                    com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.TYPE_LUO_SHEN, "洛神", java.util.Map.of());
+            if (paused.isPresent()) {
+                events.addAll(paused.get());
+                return events;
             }
+            if (!luoShenResolveOne(game, roundPlayer, judgement, events)) {
+                return events;
+            }
+        }
+    }
+
+    /** 以指定判定牌結算一次洛神判定；黑色 → 收入手牌並回 true（續判），紅色 → 回 false（停）。 */
+    public static boolean luoShenResolveOne(Game game, Player roundPlayer,
+                                            com.gaas.threeKingdoms.handcard.HandCard judgement,
+                                            List<DomainEvent> events) {
+        boolean black = judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.SPADE
+                || judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.CLUB;
+        events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                com.gaas.threeKingdoms.skill.wei.LuoShenSkill.SKILL_NAME,
+                roundPlayer.getId(), black, List.of(judgement.getId()), null));
+        if (black) {
             game.getGraveyard().removeCard(judgement.getId())
                     .ifPresent(card -> roundPlayer.getHand().addCardToHand(card));
         }
-        return events;
+        return black;
+    }
+
+    /** 鐵騎：攻擊者是否持有鐵騎（馬超）。 */
+    public static boolean hasTieQi(Player attacker) {
+        return skillsOf(attacker).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.shu.TieQiSkill);
     }
 
     /**
-     * 鐵騎：馬超指定殺目標後自動判定（v1 自動，非紅桃 = 目標不能出閃）。
+     * 鐵騎：以指定判定牌結算（判定牌已抽出、已過鬼才暫停點）。
      * 判定事件一律回傳（成功或失敗都要廣播）；successOut[0] 告知 caller 是否生效
-     * （生效 → 跳過 AskDodge 直接結算傷害）。非馬超 → 回 empty list 且 successOut[0]=false。
+     * （生效 → 跳過 AskDodge 直接結算傷害）。
      */
-    public static List<DomainEvent> tieQiJudgementEvents(Game game, Player attacker, Player target,
-                                                         boolean[] successOut) {
-        boolean hasTieQi = skillsOf(attacker).stream()
-                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.shu.TieQiSkill);
-        if (!hasTieQi) {
-            successOut[0] = false;
-            return List.of();
-        }
-        com.gaas.threeKingdoms.handcard.HandCard judgement = game.drawCardForCardEffect(1).get(0);
+    public static List<DomainEvent> tieQiResolvedEvents(Game game, Player attacker, Player target,
+                                                        com.gaas.threeKingdoms.handcard.HandCard judgement,
+                                                        boolean[] successOut) {
         boolean success = judgement.getSuit() != com.gaas.threeKingdoms.handcard.Suit.HEART;
         successOut[0] = success;
         List<DomainEvent> events = new ArrayList<>();

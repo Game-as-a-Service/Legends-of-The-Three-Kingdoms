@@ -20,7 +20,11 @@ public class EightDiagramTactic extends ArmorCard {
     @Override
     public List<DomainEvent> equipmentEffect(Game game) {
         List<HandCard> cards = game.drawCardForCardEffect(1);
-        HandCard card = cards.get(0);
+        return resolveEquipmentEffect(game, cards.get(0));
+    }
+
+    /** 以指定判定牌結算八卦陣（鬼才替換後 / 無鬼才直接）。 */
+    public List<DomainEvent> resolveEquipmentEffect(Game game, HandCard card) {
         boolean isEffectSuccess = isEffectSuccess(card);
         List<DomainEvent> events = new ArrayList<>();
         Round currentRound = game.getCurrentRound();

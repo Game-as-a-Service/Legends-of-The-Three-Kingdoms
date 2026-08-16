@@ -97,8 +97,23 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             throw new IllegalArgumentException("Invalid GangLie choice: " + choice);
         }
 
-        // 判定
+        // 判定（判定牌抽出後過鬼才暫停點；司馬懿介入時暫停，resume 走 resolveJudgementOutcome）
         HandCard judgement = game.drawCardForCardEffect(1).get(0);
+        java.util.Optional<List<DomainEvent>> paused = GuiCaiSkill.tryPause(
+                game, xiaHou, judgement, GuiCaiSkill.TYPE_GANG_LIE, "剛烈",
+                java.util.Map.of(GuiCaiSkill.PARAM_GANGLIE_SOURCE_ID, sourceId));
+        if (paused.isPresent()) {
+            events.addAll(paused.get());
+            return events;
+        }
+        events.addAll(resolveJudgementOutcome(game, xiaHou, sourceId, judgement));
+        return events;
+    }
+
+    /** 以指定判定牌結算剛烈（鬼才 resume 亦由此進入）：非紅桃 → 問來源棄兩張或受 1 傷。 */
+    public static List<DomainEvent> resolveJudgementOutcome(Game game, Player xiaHou, String sourceId,
+                                                            HandCard judgement) {
+        List<DomainEvent> events = new ArrayList<>();
         boolean success = judgement.getSuit() != Suit.HEART;
         events.add(new SkillEffectEvent(SKILL_NAME, xiaHou.getId(), success,
                 List.of(judgement.getId()), sourceId));

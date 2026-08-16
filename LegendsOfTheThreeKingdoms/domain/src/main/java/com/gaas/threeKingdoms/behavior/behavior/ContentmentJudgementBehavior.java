@@ -47,9 +47,18 @@ public class ContentmentJudgementBehavior extends Behavior {
     @Override
     public List<DomainEvent> doBehaviorAction() {
         // Ward count is EVEN -> effect proceeds -> execute judgement
-        List<DomainEvent> events = new ArrayList<>();
-        ContentmentEvent contentmentEvent = game.handleContentmentJudgement(behaviorPlayer);
-        events.add(contentmentEvent);
+        List<DomainEvent> events = new ArrayList<>(game.handleContentmentJudgement(behaviorPlayer));
+
+        // 鬼才介入：判定暫停等司馬懿選擇；GuiCaiSkill.resolveChoice 會 pop 本 behavior 並 resume
+        if (!game.isTopBehaviorEmpty()
+                && game.peekTopBehavior() instanceof WaitingSkillEffectBehavior) {
+            return events;
+        }
+
+        boolean contentmentSuccess = events.stream()
+                .filter(e -> e instanceof ContentmentEvent)
+                .map(ContentmentEvent.class::cast)
+                .anyMatch(ContentmentEvent::isSuccess);
 
         // Remove self from stack before resuming judgement flow
         isOneRound = true;
@@ -58,7 +67,7 @@ public class ContentmentJudgementBehavior extends Behavior {
         game.getCurrentRound().setStage(Stage.Normal);
         game.getCurrentRound().setActivePlayer(behaviorPlayer);
 
-        events.addAll(game.continueJudgementAndDraw(behaviorPlayer, contentmentEvent.isSuccess()));
+        events.addAll(game.continueJudgementAndDraw(behaviorPlayer, contentmentSuccess));
 
         return events;
     }

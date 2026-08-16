@@ -173,6 +173,10 @@ public class Game {
         if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
             // 洛神：回合開始（延遲錦囊判定之前）黑色判定牌全收
             events.addAll(SkillEngine.luoShenJudgementLoop(this, currentRoundPlayer));
+            if (!topBehavior.isEmpty()
+                    && topBehavior.peek() instanceof WaitingSkillEffectBehavior) { // 鬼才介入洛神判定 → 暫停
+                return events;
+            }
             List<DomainEvent> judgeEvents = judgePlayerShouldDelay();
             events.addAll(judgeEvents);
             boolean contentmentEventSuccess = judgeEvents.stream()
@@ -528,11 +532,8 @@ public class Game {
                         topBehavior.push(cjb);
                         judgementEvents.addAll(cjb.playerAction());
                     } else {
-                        ContentmentEvent contentmentEvent = handleContentmentJudgement(player);
-                        judgementEvents.add(contentmentEvent);
-                        // 天妒等：判定牌生效後技能
-                        judgementEvents.addAll(SkillEngine.afterJudgement(this, player,
-                                PlayCard.findById(contentmentEvent.getDrawCardId())));
+                        // 判定（含鬼才暫停點與天妒等判定後技能）
+                        judgementEvents.addAll(handleContentmentJudgement(player));
                     }
                 } else if (card instanceof Lightning) {
                     if (doesAnyPlayerHaveWard(null)) {
@@ -564,26 +565,13 @@ public class Game {
         List<HandCard> cards = drawCardForCardEffect(1);
         HandCard drawnCard = cards.get(0);
 
-        // 鬼才：判定牌生效前，場上存活且有手牌的司馬懿可打手牌替換（v1 只覆蓋閃電判定）
-        Player guiCaiHolder = players.stream()
-                .filter(p -> !p.isAlreadyDeath()
-                        && com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.GENERAL_ID
-                                .equals(p.getGeneralCard().getGeneralId())
-                        && p.getHandSize() > 0)
-                .findFirst().orElse(null);
-        if (guiCaiHolder != null) {
-            com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior waiting =
-                    new com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior(
-                            this, guiCaiHolder, com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.SKILL_NAME);
-            waiting.putParam(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_LIGHTNING_CARD_ID, card.getId());
-            waiting.putParam(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_OWNER_ID, player.getId());
-            waiting.putParam(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_DRAWN_CARD_ID, drawnCard.getId());
-            updateTopBehavior(waiting);
-            currentRound.setActivePlayer(guiCaiHolder);
-            return List.of(new com.gaas.threeKingdoms.events.AskSkillEffectEvent(
-                            com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.SKILL_NAME,
-                            guiCaiHolder.getId(), List.of(drawnCard.getId()), player.getId()),
-                    getGameStatusEvent("鬼才：" + guiCaiHolder.getId() + " 可替換 " + player.getId() + " 的閃電判定牌"));
+        // 鬼才：判定牌生效前，場上存活且有手牌的司馬懿可打手牌替換
+        Optional<List<DomainEvent>> paused = com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.tryPause(
+                this, player, drawnCard,
+                com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.TYPE_LIGHTNING, "閃電",
+                Map.of(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_LIGHTNING_CARD_ID, card.getId()));
+        if (paused.isPresent()) {
+            return paused.get();
         }
         return resolveLightningJudgement(card, player, drawnCard);
     }
@@ -634,16 +622,31 @@ public class Game {
         return domainEvents;
     }
 
-    public ContentmentEvent handleContentmentJudgement(Player player) {
+    public List<DomainEvent> handleContentmentJudgement(Player player) {
         // 抽一張卡判定
         List<HandCard> cards = drawCardForCardEffect(1);
         HandCard drawnCard = cards.get(0);
 
-        // 判定牌的花色
+        // 鬼才：判定牌生效前，場上存活且有手牌的司馬懿可打手牌替換
+        Optional<List<DomainEvent>> paused = com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.tryPause(
+                this, player, drawnCard,
+                com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.TYPE_CONTENTMENT, "樂不思蜀", Map.of());
+        if (paused.isPresent()) {
+            return paused.get();
+        }
+        return resolveContentmentJudgement(player, drawnCard);
+    }
+
+    /** 以指定判定牌結算樂不思蜀（鬼才替換後 / 無鬼才直接）；含天妒等判定後技能。 */
+    public List<DomainEvent> resolveContentmentJudgement(Player player, HandCard drawnCard) {
+        // 判定牌的花色（非紅桃 = 生效 → 跳過出牌階段）
         boolean contentmentSuccess = Suit.HEART != drawnCard.getSuit();
 
-        // 回傳 Contentment 事件
-        return new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard.getId(), drawnCard.getSuit());
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard.getId(), drawnCard.getSuit()));
+        // 天妒等：判定牌生效後技能
+        events.addAll(SkillEngine.afterJudgement(this, player, drawnCard));
+        return events;
     }
 
     public int getCurrentRoundPlayerDiscardCount() {
