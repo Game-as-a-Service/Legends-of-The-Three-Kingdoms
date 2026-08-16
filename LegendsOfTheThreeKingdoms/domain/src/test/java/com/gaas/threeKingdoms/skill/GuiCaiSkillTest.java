@@ -418,8 +418,10 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         Player b = game.getPlayer("player-b");
         b.getHand().addCardToHand(new Peach(BH3029));
 
-        // 抽序 = BS8008(黑，原本收牌續判) → BH4030
-        game.getDeck().add(List.of(new Peach(BH4030), new Kill(BS8008)));
+        // 抽序 = BS8008(黑，原本收牌續判) → 洛神停止後摸 2 = BH4030 + BD2093。
+        // 摸牌也必須疊牌控制：initDeck 牌堆裡有同 id 的 BS8008，隨機摸到會誤觸
+        // 「原判定牌不收」斷言（CI flake）
+        game.getDeck().add(List.of(new Dodge(BD2093), new Peach(BH4030), new Kill(BS8008)));
         List<DomainEvent> events = game.playerTakeTurnStartInJudgement(a);
 
         AskSkillEffectEvent ask = events.stream()
@@ -451,8 +453,8 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         Player b = game.getPlayer("player-b");
         b.getHand().addCardToHand(new Peach(BH3029));
 
-        // 抽序 = BS8008(黑) → BH4030(紅停)
-        game.getDeck().add(List.of(new Peach(BH4030), new Kill(BS8008)));
+        // 抽序 = BS8008(黑) → BH4030(紅停) → 摸 2 = BD2093 + BD3094（摸牌疊牌控制，避免隨機）
+        game.getDeck().add(List.of(new Dodge(BD3094), new Dodge(BD2093), new Peach(BH4030), new Kill(BS8008)));
         game.playerTakeTurnStartInJudgement(a);
 
         List<DomainEvent> firstResume = game.playerUseSkillEffect("player-b", "鬼才", "SKIP", null, null);
