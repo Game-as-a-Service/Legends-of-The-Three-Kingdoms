@@ -18,9 +18,11 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxe
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.wei.GuiCaiSkill;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHandler {
@@ -51,9 +53,24 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
             return new ArrayList<>(List.of(gameStatusEvent, skipEquipmentEffectEvent, new AskDodgeEvent(playerId)));
         }
         Player player = getPlayer(playerId);
+
+        // 抽判定牌（鬼才：判定牌生效前，司馬懿可打手牌替換）
+        HandCard judgementCard = game.drawCardForCardEffect(1).get(0);
+        Optional<List<DomainEvent>> paused = GuiCaiSkill.tryPause(
+                game, player, judgementCard, GuiCaiSkill.TYPE_EIGHT_DIAGRAM, "八卦陣", Map.of());
+        if (paused.isPresent()) {
+            return paused.get();
+        }
+        return resolveJudgementOutcome(playerId, judgementCard);
+    }
+
+    /** 以指定判定牌結算八卦陣並分派後續（鬼才 resume 亦由此進入）。 */
+    public List<DomainEvent> resolveJudgementOutcome(String playerId, HandCard judgementCard) {
+        Player player = getPlayer(playerId);
         ArmorCard armorCard = player.getEquipment().getArmor();
 
-        List<DomainEvent> domainEvents = armorCard.equipmentEffect(game);
+        List<DomainEvent> domainEvents = ((EightDiagramTactic) armorCard)
+                .resolveEquipmentEffect(game, judgementCard);
 
         boolean isEightDiagramTacticEffectSuccess = domainEvents.stream()
                 .filter(event -> event instanceof EffectEvent)

@@ -68,4 +68,50 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
         assertEquals(3, saved.getPlayer("player-b").getHP());
         assertTrue(saved.getTopBehavior().isEmpty());
     }
+
+    @Test
+    public void testGuiCaiReplaceTieQiJudgementAcrossRequests() throws Exception {
+        // Given：A（馬超）殺 B（司馬懿）；鐵騎判定牌疊黑桃（原本生效 B 不能閃）
+        Player playerA = createPlayer("player-a", 4, General.馬超, HealthStatus.ALIVE, Role.MONARCH,
+                new Kill(BS8008));
+        Player playerB = createPlayer("player-b", 4, General.司馬懿, HealthStatus.ALIVE, Role.MINISTER,
+                new Peach(BH3029), new com.gaas.threeKingdoms.handcard.basiccard.Dodge(BH2028));
+        Player playerC = createPlayer("player-c", 4, General.孫權, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.孫權, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Kill(BS9009))); // 鐵騎判定牌：黑桃 → 原本生效
+        game.setDeck(deck);
+        repository.save(game);
+
+        // When：A 殺 B → 鐵騎判定抽牌後暫停，詢問鬼才（WaitingSkillEffectBehavior 經 MongoDB 存取）
+        mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+
+        Game paused = repository.findById(gameId).orElseThrow();
+        assertFalse(paused.getTopBehavior().isEmpty(), "鬼才詢問中，判定暫停");
+        assertEquals(4, paused.getPlayer("player-b").getHP(), "尚未結算");
+
+        // B 發動鬼才：以紅心桃替換判定牌 → 鐵騎不生效 → 照常問閃
+        mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-b",
+                                  "skillName": "鬼才",
+                                  "choice": "ACCEPT",
+                                  "cardIds": ["BH3029"]
+                                }"""))
+                .andExpect(status().isOk());
+
+        // B 出閃擋下
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "BH2028", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+
+        // Then：鐵騎被鬼才化解，B 無傷
+        Game saved = repository.findById(gameId).orElseThrow();
+        assertEquals(4, saved.getPlayer("player-b").getHP(), "替換成紅心 → 鐵騎不生效，閃擋下殺");
+        assertEquals(0, saved.getPlayer("player-b").getHandSize(), "替換牌與閃都已打出");
+        assertTrue(saved.getGraveyard().contains(BH3029.getCardId()), "替換牌進墓地");
+        assertTrue(saved.getTopBehavior().isEmpty());
+    }
 }

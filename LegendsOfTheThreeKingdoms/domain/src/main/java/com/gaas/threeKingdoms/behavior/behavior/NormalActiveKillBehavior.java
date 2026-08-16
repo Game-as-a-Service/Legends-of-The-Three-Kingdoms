@@ -79,18 +79,44 @@ public class NormalActiveKillBehavior extends Behavior
     /**
      * AskDodge 前先讓 SkillEngine 介入：
      * 1. 鐵騎（攻擊者側）：判定生效 → 目標不能出閃，直接結算傷害
+     *    （判定牌抽出後過鬼才暫停點；司馬懿介入時暫停，resume 走 {@link #resumeTieQiJudgement}）
      * 2. 護駕（目標側）：主公曹操 → 改問 Wei 武將代閃
      */
     private void emitAskDodgeOrHuJia(List<DomainEvent> events, Player targetPlayer) {
+        if (SkillEngine.hasTieQi(behaviorPlayer)) {
+            HandCard judgement = game.drawCardForCardEffect(1).get(0);
+            Optional<List<DomainEvent>> paused = com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.tryPause(
+                    game, behaviorPlayer, judgement,
+                    com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.TYPE_TIE_QI, "鐵騎",
+                    java.util.Map.of(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_TIEQI_TARGET_ID,
+                            targetPlayer.getId()));
+            if (paused.isPresent()) {
+                events.addAll(paused.get());
+                return;
+            }
+            events.addAll(resumeTieQiJudgement(judgement, targetPlayer));
+            return;
+        }
+        emitAskDodgeAfterTieQi(events, targetPlayer);
+    }
+
+    /** 以指定判定牌結算鐵騎並接續問閃流程（鬼才 resume 亦由此進入）。 */
+    public List<DomainEvent> resumeTieQiJudgement(HandCard judgement, Player targetPlayer) {
+        List<DomainEvent> events = new ArrayList<>();
         boolean[] tieQiSuccess = new boolean[1];
-        events.addAll(SkillEngine.tieQiJudgementEvents(game, behaviorPlayer, targetPlayer, tieQiSuccess));
+        events.addAll(SkillEngine.tieQiResolvedEvents(game, behaviorPlayer, targetPlayer, judgement, tieQiSuccess));
         if (tieQiSuccess[0]) {
             int originalHp = targetPlayer.getHP();
             events.addAll(game.getDamagedEvent(targetPlayer.getId(), behaviorPlayer.getId(),
                     this.cardId, this.card, PlayType.SYSTEM_INTERNAL.getPlayType(),
                     originalHp, targetPlayer, game.getCurrentRound(), Optional.of(this)));
-            return;
+            return events;
         }
+        emitAskDodgeAfterTieQi(events, targetPlayer);
+        return events;
+    }
+
+    private void emitAskDodgeAfterTieQi(List<DomainEvent> events, Player targetPlayer) {
         Optional<List<DomainEvent>> intercepted = SkillEngine.beforeAskDodge(game, targetPlayer, this);
         if (intercepted.isPresent()) {
             events.addAll(intercepted.get());
