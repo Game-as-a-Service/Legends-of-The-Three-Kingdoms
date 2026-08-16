@@ -714,7 +714,8 @@ POST /api/games/{gameId}/player:useSkillEffect
 轉化殺計入出殺次數限制（咆哮/諸葛連弩豁免照常）；轉化殺對空城/謙遜的目標限制照常套用。
 
 **v1 範圍備註**：
-- 反饋 / 遺計 / 剛烈在 AOE polling（南蠻 / 萬箭）中不觸發（defer-resume 整合 follow-up）；瀕死不觸發
+- 反饋在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221：受傷 → 反饋詢問 → resolve 後 resume 輪詢）；
+  遺計 / 剛烈在 AOE polling 中仍不觸發（可循同一 resume flag 開啟，follow-up）；三者瀕死皆不觸發
 - 剛烈 DAMAGE 反傷不進瀕死流程整合（follow-up）
 - 鐵騎 v1 自動判定（不問）；目標有八卦陣時走防具路徑不受鐵騎影響（follow-up）
 - 梟姬不覆蓋「主動換裝蓋掉舊裝備」路徑（follow-up）
