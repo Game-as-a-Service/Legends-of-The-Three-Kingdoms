@@ -58,14 +58,20 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             return List.of(); // 來源無牌可拿
         }
         Behavior top = game.isTopBehaviorEmpty() ? null : game.peekTopBehavior();
-        if (top != null && !(top instanceof JianXiongCompatibleTopBehavior compatible
-                && !compatible.isPollingCaller())) {
-            return List.of(); // AOE polling 整合 follow-up
+        if (top != null && !(top instanceof JianXiongCompatibleTopBehavior)) {
+            return List.of(); // 非相容 host 不觸發
         }
-
-        game.removeCompletedBehaviors();
+        // polling caller（南蠻/萬箭）需保留底層 behavior，resolve 後 resume 輪詢（mirror 奸雄 #209 樣板）
+        boolean isPollingCaller = top instanceof JianXiongCompatibleTopBehavior compatible
+                && compatible.isPollingCaller();
+        if (!isPollingCaller) {
+            game.removeCompletedBehaviors();
+        }
         WaitingSkillEffectBehavior waiting = new WaitingSkillEffectBehavior(game, damaged, SKILL_NAME);
         waiting.putParam(PARAM_ATTACKER_ID, attacker.getId());
+        if (isPollingCaller) {
+            waiting.putParam(WaitingSkillEffectBehavior.PARAM_RESUME_POLLING, "true");
+        }
         game.updateTopBehavior(waiting);
         game.getCurrentRound().setActivePlayer(damaged);
 

@@ -114,4 +114,55 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
         assertTrue(saved.getGraveyard().contains(BH3029.getCardId()), "替換牌進墓地");
         assertTrue(saved.getTopBehavior().isEmpty());
     }
+
+    @Test
+    public void testFanKuiInBarbarianInvasionPollingAcrossRequests() throws Exception {
+        // Given：A 出南蠻，B（司馬懿）無殺 skip 受傷 → 反饋詢問（polling defer 經 MongoDB 存取）
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion(SS7007), new Peach(BH3029));
+        Player playerB = createPlayer("player-b", 4, General.司馬懿, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.孫權, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.孫權, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        game.setDeck(new Deck());
+        repository.save(game);
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-a", "SS7007", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", "skip")
+                .andExpect(status().isOk());
+
+        // 反饋詢問中：輪詢暫停（activePlayer = B），底層南蠻 behavior 保留
+        Game paused = repository.findById(gameId).orElseThrow();
+        assertEquals("player-b", paused.getCurrentRound().getActivePlayer().getId());
+        assertEquals(2, paused.getTopBehavior().size(), "南蠻 behavior + 反饋 waiting");
+
+        // B ACCEPT 反饋（拿 A 手牌）→ resume 輪詢問 C
+        mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-b",
+                                  "skillName": "反饋",
+                                  "choice": "ACCEPT"
+                                }"""))
+                .andExpect(status().isOk());
+
+        Game resumed = repository.findById(gameId).orElseThrow();
+        assertTrue(resumed.getPlayer("player-b").getHand().getCards().stream()
+                .anyMatch(c -> c.getId().equals(BH3029.getCardId())), "司馬懿拿走攻擊者手牌");
+        assertEquals("player-c", resumed.getCurrentRound().getActivePlayer().getId(),
+                "反饋解決後 resume 輪詢問 C");
+
+        // C、D skip → 輪詢正常結束
+        mockMvcUtil.playCard(gameId, "player-c", "player-a", "", "skip")
+                .andExpect(status().isOk());
+        mockMvcUtil.playCard(gameId, "player-d", "player-a", "", "skip")
+                .andExpect(status().isOk());
+
+        Game finalState = repository.findById(gameId).orElseThrow();
+        assertTrue(finalState.getTopBehavior().isEmpty());
+        assertEquals(3, finalState.getPlayer("player-b").getHP());
+        assertEquals(3, finalState.getPlayer("player-c").getHP());
+        assertEquals(3, finalState.getPlayer("player-d").getHP());
+    }
 }
