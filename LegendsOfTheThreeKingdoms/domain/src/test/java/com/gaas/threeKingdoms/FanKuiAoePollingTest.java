@@ -100,6 +100,21 @@ public class FanKuiAoePollingTest {
         assertTrue(game.getTopBehavior().isEmpty());
     }
 
+    @DisplayName("南蠻：前端 skip 時 targetPlayerId 為空字串 → 來源仍為出南蠻者，反饋照常詢問（使用者回報）")
+    @Test
+    public void fanKuiAskedInBarbarianInvasion_whenSkipHasEmptyTargetPlayerId() {
+        Game game = createGame(General.甘寧, General.司馬懿, General.孫權, General.孫權);
+        game.getPlayer("player-a").getHand()
+                .addCardToHand(List.of(new BarbarianInvasion(SS7007), new Peach(BH3029)));
+
+        game.playerPlayCard("player-a", SS7007.getCardId(), "player-a", "active");
+        List<DomainEvent> e2 = game.playerPlayCard("player-b", "", "", PlayType.SKIP.getPlayType());
+
+        assertTrue(hasFanKuiAsk(e2), "targetPlayerId 空字串也應詢問反饋");
+        List<DomainEvent> e3 = game.playerUseSkillEffect("player-b", "反饋", "ACCEPT", null, null);
+        assertEquals(List.of("player-c"), askKillTargets(e3), "resume 輪詢問 c");
+    }
+
     @DisplayName("南蠻：反饋 SKIP → 一樣 resume 輪詢問 c")
     @Test
     public void fanKuiSkipInBarbarianInvasion_thenNextAskedIsC() {

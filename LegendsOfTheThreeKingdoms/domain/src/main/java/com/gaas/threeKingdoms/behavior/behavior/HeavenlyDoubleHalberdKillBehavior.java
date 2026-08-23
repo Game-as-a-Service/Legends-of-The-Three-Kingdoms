@@ -72,7 +72,7 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
         if (isSkip(playType)) {
             int originalHp = currentReactionPlayer.getHP();
             List<DomainEvent> events = new ArrayList<>(
-                    game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType,
+                    game.getDamagedEvent(playerId, behaviorPlayer.getId(), cardId, card, playType,
                             originalHp, currentReactionPlayer, currentRound, Optional.of(this)));
 
             boolean isLast = isLastReactionPlayer(playerId);

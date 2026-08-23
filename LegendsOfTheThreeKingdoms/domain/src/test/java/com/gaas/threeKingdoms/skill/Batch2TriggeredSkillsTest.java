@@ -168,6 +168,22 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         assertFalse(a.getEquipment().hasAnyEquipment());
     }
 
+    @DisplayName("使用者回報：前端 skip 時 targetPlayerId 為空字串 → 傷害來源仍應為出殺者，反饋照常詢問")
+    @Test
+    public void fanKuiAskedWhenSkipHasEmptyTargetPlayerId() {
+        Game game = createGame(General.劉備, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029)));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.playerPlayCard("player-b", "", "", "skip"); // targetPlayerId = ""
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskSkillEffectEvent
+                && ((AskSkillEffectEvent) e).getSkillName().equals("反饋")
+                && "player-a".equals(((AskSkillEffectEvent) e).getDataPlayerId())),
+                "來源應由 behavior 記錄的出殺者決定，不依賴 request 的 targetPlayerId");
+    }
+
     // ===== 遺計 =====
 
     @DisplayName("郭嘉受傷 → 遺計 ACCEPT 摸兩張")

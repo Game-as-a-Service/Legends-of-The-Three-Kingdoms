@@ -157,7 +157,7 @@ public class ArrowBarrageBehavior extends Behavior
 
         if (isSkip(playType)) {
             int originalHp = currentReactionPlayer.getHP();
-            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), Optional.of(this));
+            List<DomainEvent> damagedEvent = game.getDamagedEvent(playerId, behaviorPlayer.getId(), cardId, card, playType, originalHp, currentReactionPlayer, game.getCurrentRound(), Optional.of(this));
 
             // 偵測 JianXiong 介入：若 WaitingJX 在 stack 頂，把 polling-advance 註冊為
             // callback，等 JianXiong 解決後再執行（避免覆蓋 activePlayer 與打亂 stack）

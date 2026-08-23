@@ -64,8 +64,8 @@ public class FanKuiFullFlowTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, "player-a", "player-b", "BS8008", "active").andExpect(status().isOk());
         websocketUtil.popAllPlayerMessage();
 
-        // B 不出閃
-        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", "skip").andExpect(status().isOk());
+        // B 不出閃 — 照前端實際 payload：targetPlayerId 為空字串（使用者回報的 JSON）
+        mockMvcUtil.playCard(gameId, "player-b", "", "", "skip").andExpect(status().isOk());
 
         JsonNode pushB = objectMapper.readTree(websocketUtil.getValue("player-b"));
         System.out.println("=== PUSH TO B (full flow) ===\n" + pushB.toPrettyString());
