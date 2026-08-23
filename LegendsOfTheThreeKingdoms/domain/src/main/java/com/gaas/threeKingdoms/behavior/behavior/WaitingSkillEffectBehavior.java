@@ -70,8 +70,23 @@ public class WaitingSkillEffectBehavior extends Behavior {
             });
         }
 
+        // 最終狀態快照：技能 resolve 可能先發 GameStatusEvent 再推進（鬼才 resume 判定、
+        // 反饋 AOE resume 輪詢），presenter 取最後一個 GameStatusEvent 才能拿到正確的
+        // activePlayer / HP（使用者回報：鬼才換牌後 activePlayer 停在司馬懿）
+        events.add(game.getGameStatusEvent(firstStatusMessage(events, skillName + " 結算")));
+
         isOneRound = true;
         return events;
+    }
+
+    /** 沿用技能自己的訊息（第一則 status），只刷新 round / seats 快照。 */
+    private static String firstStatusMessage(List<DomainEvent> events, String fallback) {
+        for (DomainEvent e : events) {
+            if (e instanceof com.gaas.threeKingdoms.events.GameStatusEvent status) {
+                return status.getMessage();
+            }
+        }
+        return fallback;
     }
 
     private ChoiceResolvableSkill findSkill() {

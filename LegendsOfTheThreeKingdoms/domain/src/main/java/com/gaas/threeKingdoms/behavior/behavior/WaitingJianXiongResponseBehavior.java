@@ -99,6 +99,16 @@ public class WaitingJianXiongResponseBehavior extends Behavior {
             });
         }
 
+        // 最終狀態快照（polling resume 會改 activePlayer；presenter 取最後一個 GameStatusEvent）
+        String skillMessage = "奸雄結算";
+        for (DomainEvent e : events) { // 沿用奸雄自己的訊息（第一則 status），只刷新 round / seats 快照
+            if (e instanceof com.gaas.threeKingdoms.events.GameStatusEvent status) {
+                skillMessage = status.getMessage();
+                break;
+            }
+        }
+        events.add(game.getGameStatusEvent(skillMessage));
+
         isOneRound = true;
         return events;
     }

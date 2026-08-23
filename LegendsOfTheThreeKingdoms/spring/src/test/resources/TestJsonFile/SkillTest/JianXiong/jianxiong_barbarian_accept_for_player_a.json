@@ -63,7 +63,7 @@
     "round" : {
       "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-a",
-      "activePlayer" : "player-a",
+      "activePlayer" : "player-c",
       "dyingPlayer" : "",
       "showKill" : false
     },
