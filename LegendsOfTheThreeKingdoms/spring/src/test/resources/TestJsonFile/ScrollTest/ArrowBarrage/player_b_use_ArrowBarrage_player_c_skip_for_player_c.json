@@ -3,7 +3,7 @@
     "event" : "PlayCardEvent",
     "data" : {
       "playerId" : "player-c",
-      "targetPlayerId" : "",
+      "targetPlayerId" : "player-b",
       "cardId" : "",
       "playType" : "skip"
     },

@@ -76,9 +76,9 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
         game.updateTopBehavior(waiting);
         game.getCurrentRound().setActivePlayer(damaged);
 
-        // 展示可取的裝備（手牌隱藏不展示內容）
+        // 展示可取的裝備（只列實際存在的裝備 id；手牌隱藏不展示內容）
         return List.of(new AskSkillEffectEvent(SKILL_NAME, damaged.getId(),
-                attacker.getEquipment().getAllEquipmentCardIds(), attacker.getId()));
+                equipmentIds(attacker), attacker.getId()));
     }
 
     @Override
@@ -93,7 +93,7 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
         if ("ACCEPT".equals(choice)) {
             String takenCardId;
             String pick = (cardIds != null && !cardIds.isEmpty()) ? cardIds.get(0) : null;
-            if (pick != null && attacker.getEquipment().getAllEquipmentCardIds().contains(pick)) {
+            if (pick != null && equipmentIds(attacker).contains(pick)) {
                 takenCardId = takeEquipment(attacker, simaYi, pick);
             } else if (pick != null && pick.matches("\\d+")) {
                 // 手牌 index（0-based，同順手牽羊 targetCardIndex）
@@ -108,8 +108,7 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             } else if (attacker.getHandSize() > 0) {
                 takenCardId = takeHandCard(attacker, simaYi, 0);
             } else if (attacker.getEquipment().hasAnyEquipment()) {
-                takenCardId = takeEquipment(attacker, simaYi,
-                        attacker.getEquipment().getAllEquipmentCardIds().get(0));
+                takenCardId = takeEquipment(attacker, simaYi, equipmentIds(attacker).get(0));
             } else {
                 throw new IllegalStateException("attacker has no card to take");
             }
@@ -123,6 +122,13 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             throw new IllegalArgumentException("Invalid FanKui choice: " + choice);
         }
         return events;
+    }
+
+    /** 來源實際存在的裝備 id（getAllEquipmentCardIds 會以 "" 佔位空欄，不可直接拿來選/取）。 */
+    private static List<String> equipmentIds(Player player) {
+        return player.getEquipment().getAllEquipmentCards().stream()
+                .map(HandCard::getId)
+                .toList();
     }
 
     private String takeHandCard(Player from, Player to, int index) {

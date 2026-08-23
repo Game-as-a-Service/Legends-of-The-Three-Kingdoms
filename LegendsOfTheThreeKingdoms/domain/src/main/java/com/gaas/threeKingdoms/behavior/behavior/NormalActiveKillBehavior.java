@@ -157,7 +157,7 @@ public class NormalActiveKillBehavior extends Behavior
                 return List.of(playCardEvent, askPlayEquipmentEffectEvent, game.getGameStatusEvent("出牌"));
             }
 
-            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, Optional.of(this));
+            List<DomainEvent> events = game.getDamagedEvent(playerId, behaviorPlayer.getId(), cardId, card, playType, originalHp, damagedPlayer, currentRound, Optional.of(this));
             String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
             events.add(game.getGameStatusEvent(message));
             isOneRound = true;
@@ -169,7 +169,7 @@ public class NormalActiveKillBehavior extends Behavior
             return handleDodgeChain(playerId, playerId, cardId, playType);
         } else if (isQilinBowSuccess(playType)) {
             Round currentRound = game.getCurrentRound();
-            List<DomainEvent> events = game.getDamagedEvent(playerId, targetPlayerId, cardId, card, playType, originalHp, damagedPlayer, currentRound, Optional.of(this));
+            List<DomainEvent> events = game.getDamagedEvent(playerId, behaviorPlayer.getId(), cardId, card, playType, originalHp, damagedPlayer, currentRound, Optional.of(this));
             //playerDyingEvent
             String message = game.getGamePhase().getPhaseName().equals("GeneralDying") ? "扣血已瀕臨死亡" : "扣血但還活著";
             events.add(game.getGameStatusEvent(message));
