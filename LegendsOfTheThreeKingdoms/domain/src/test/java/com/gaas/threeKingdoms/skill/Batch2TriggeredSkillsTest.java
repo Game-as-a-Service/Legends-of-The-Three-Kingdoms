@@ -135,6 +135,39 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         assertEquals(1, a.getHandSize());
     }
 
+    @DisplayName("反饋詢問的 dataCardIds 只列實際存在的裝備 id（不含空欄位 \"\"）")
+    @Test
+    public void fanKuiAskListsOnlyExistingEquipmentIds() {
+        Game game = createGame(General.劉備, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(new Kill(BS8008));
+        a.getEquipment().setArmor(new com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic(EC2067));
+
+        List<DomainEvent> events = killAndSkip(game, "player-a", "player-b");
+
+        AskSkillEffectEvent ask = events.stream()
+                .filter(e -> e instanceof AskSkillEffectEvent).map(e -> (AskSkillEffectEvent) e)
+                .findFirst().orElseThrow();
+        assertEquals(List.of(EC2067.getCardId()), ask.getDataCardIds(), "只有防具一件，不該有 \"\" 佔位");
+    }
+
+    @DisplayName("來源無手牌、只有防具（武器欄空）→ 反饋 ACCEPT 不指定也能取到防具（修 fallback 取到 \"\" 噴錯）")
+    @Test
+    public void fanKuiFallbackTakesFirstExistingEquipment() {
+        Game game = createGame(General.劉備, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008)); // 出殺後無手牌
+        a.getEquipment().setArmor(new com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic(EC2067));
+
+        killAndSkip(game, "player-a", "player-b");
+        game.playerUseSkillEffect("player-b", "反饋", "ACCEPT", null, null);
+
+        assertTrue(b.getHand().getCards().stream().anyMatch(c -> c.getId().equals(EC2067.getCardId())),
+                "取走唯一的裝備（防具）");
+        assertFalse(a.getEquipment().hasAnyEquipment());
+    }
+
     // ===== 遺計 =====
 
     @DisplayName("郭嘉受傷 → 遺計 ACCEPT 摸兩張")

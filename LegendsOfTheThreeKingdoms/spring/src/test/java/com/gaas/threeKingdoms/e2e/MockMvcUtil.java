@@ -194,6 +194,23 @@ public class MockMvcUtil {
                         }""", currentPlayerId, targetPlayerId, cardId, playType.getPlayType())));
     }
 
+    /** 通用武將技回應 endpoint；cardIds / targetPlayerId 可為 null。 */
+    public ResultActions useSkillEffect(String gameId, String playerId, String skillName, String choice,
+                                        java.util.List<String> cardIds, String targetPlayerId) throws Exception {
+        String cardIdsJson = cardIds == null ? "null"
+                : "[" + cardIds.stream().map(id -> "\"" + id + "\"").collect(java.util.stream.Collectors.joining(",")) + "]";
+        String targetJson = targetPlayerId == null ? "null" : "\"" + targetPlayerId + "\"";
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "skillName": "%s",
+                          "choice": "%s",
+                          "cardIds": %s,
+                          "targetPlayerId": %s
+                        }""", playerId, skillName, choice, cardIdsJson, targetJson)));
+    }
+
     public ResultActions chooseHorse(String gameId, String currentPlayerId, String cardId) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:chooseHorseCard")
                 .contentType(MediaType.APPLICATION_JSON)
