@@ -881,3 +881,54 @@ curl -X PUT http://localhost:8080/api/debug/games/my-id/deck \
 # 驗證牌堆已更新
 curl http://localhost:8080/api/debug/games/my-id/deck
 ```
+
+---
+
+### 20.1 查看武將牌堆
+
+```
+GET /api/debug/games/{gameId}/generalCardDeck
+```
+
+**回傳**：
+```json
+{
+  "gameId": "my-id",
+  "deckSize": 25,
+  "generalIds": ["SHU001", "WEI001", "WU001", "..."]
+}
+```
+
+- `generalIds[0]` = 下一張被抽的武將
+- 注意：主公的 5 張候選在**建立遊戲（POST /api/games）時已抽走**；建立後查到的是剩餘牌堆，供主公選將後其他玩家依座位順序各抽 3 張
+
+---
+
+### 20.2 設定武將牌堆
+
+```
+PUT /api/debug/games/{gameId}/generalCardDeck
+```
+
+| 欄位 | 型別 | 說明 |
+|------|------|------|
+| generalIds | List\<String\> | 武將牌堆內容（index 0 = 下一張被抽的武將；id 如 `SHU001` 劉備、`WEI002` 司馬懿） |
+
+**回傳**：同查看武將牌堆格式
+
+**特殊情況**：
+- 全量替換，原本武將牌堆會被完全覆蓋
+- 無效 generalId → 400 `{"message": "Invalid general ID: XYZ"}`
+- 允許重複 generalId（測試可能需要）
+- 任何遊戲階段都可以呼叫；實務時機 = 建立遊戲後、主公 `monarchChooseGeneral` **之前**（主公的 5 張候選已在建立時抽走，本 API 影響的是主公選完後其他三位玩家各抽的 3 張，座位順序：主公下家起）
+
+**使用範例**：
+```bash
+# 主公選將後：下家 3 張候選 = 司馬懿/曹操/張遼，再下家 = 關羽/張飛/趙雲，最後 = 孫權/甘寧/呂蒙
+curl -X PUT http://localhost:8080/api/debug/games/my-id/generalCardDeck \
+  -H 'Content-Type: application/json' \
+  -d '{"generalIds": ["WEI002", "WEI001", "WEI004", "SHU002", "SHU003", "SHU005", "WU001", "WU002", "WU003"]}'
+
+# 驗證
+curl http://localhost:8080/api/debug/games/my-id/generalCardDeck
+```
