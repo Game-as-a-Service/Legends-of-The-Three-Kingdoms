@@ -668,7 +668,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 
 | 技能 | 觸發 | choice | cardIds | targetPlayerId |
 |---|---|---|---|---|
-| 反饋（司馬懿） | 受傷後 | `ACCEPT` / `SKIP` | 可選：指定來源裝備 id（不給 = 抽來源第一張手牌） | — |
+| 反饋（司馬懿） | 受傷後（含南蠻/萬箭） | `ACCEPT` / `SKIP` | 可選 1 個值：來源**手牌 index**（數字字串，0-based，同順手牽羊 `targetCardIndex`；張數見 seats）或來源**裝備 id**（`dataCardIds` 列出）；不給 = 取手牌 index 0（無手牌則取第一件裝備） | — |
 | 遺計（郭嘉） | 受傷後 | `ACCEPT`（自摸 2）/ `GIVE`（令他人獲得 1）/ `SKIP` | — | GIVE 必填 |
 | 剛烈（夏侯惇）第一段 | 受傷後 | `ACCEPT`（判定）/ `SKIP` | — | — |
 | 剛烈 第二段（問傷害來源） | 判定非紅桃後 | `DISCARD` / `DAMAGE` | DISCARD 必填 2 張手牌 | — |

@@ -50,13 +50,14 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, "player-b", "player-a", "", "skip")
                 .andExpect(status().isOk());
 
-        // B ACCEPT 反饋
+        // B ACCEPT 反饋，cardIds[0] = 來源手牌 index（0-based，同順手牽羊 targetCardIndex）
         mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 { "playerId": "player-b",
                                   "skillName": "反饋",
-                                  "choice": "ACCEPT"
+                                  "choice": "ACCEPT",
+                                  "cardIds": ["0"]
                                 }"""))
                 .andExpect(status().isOk());
 
