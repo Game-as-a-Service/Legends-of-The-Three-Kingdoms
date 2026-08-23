@@ -87,6 +87,54 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         assertTrue(game.isTopBehaviorEmpty());
     }
 
+    @DisplayName("反饋 ACCEPT cardIds[0] 為數字 → 依 0-based index 取來源手牌（同順手牽羊語意）")
+    @Test
+    public void fanKuiAcceptTakesHandCardByIndex() {
+        Game game = createGame(General.劉備, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        // 出殺後 a 手牌順序 = [BH3029, BH4030]
+        a.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029), new Peach(BH4030)));
+
+        killAndSkip(game, "player-a", "player-b");
+        game.playerUseSkillEffect("player-b", "反饋", "ACCEPT", List.of("1"), null);
+
+        assertTrue(b.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BH4030.getCardId())),
+                "index 1 → 取第二張手牌");
+        assertEquals(1, a.getHandSize());
+        assertTrue(a.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BH3029.getCardId())),
+                "第一張手牌留在來源");
+    }
+
+    @DisplayName("反饋 ACCEPT index 越界 → IllegalArgumentException，不動任何牌")
+    @Test
+    public void fanKuiAcceptIndexOverSizeThrows() {
+        Game game = createGame(General.劉備, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029)));
+
+        killAndSkip(game, "player-a", "player-b");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> game.playerUseSkillEffect("player-b", "反饋", "ACCEPT", List.of("1"), null));
+        assertEquals(1, a.getHandSize(), "越界不取牌");
+        assertEquals(0, game.getPlayer("player-b").getHandSize());
+    }
+
+    @DisplayName("反饋 ACCEPT cardIds[0] 既非 index 也非來源裝備 id → IllegalArgumentException")
+    @Test
+    public void fanKuiAcceptInvalidPickThrows() {
+        Game game = createGame(General.劉備, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029)));
+
+        killAndSkip(game, "player-a", "player-b");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> game.playerUseSkillEffect("player-b", "反饋", "ACCEPT", List.of("EH5031"), null));
+        assertEquals(1, a.getHandSize());
+    }
+
     // ===== 遺計 =====
 
     @DisplayName("郭嘉受傷 → 遺計 ACCEPT 摸兩張")

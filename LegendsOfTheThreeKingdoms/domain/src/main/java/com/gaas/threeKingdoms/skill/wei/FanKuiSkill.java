@@ -20,13 +20,14 @@ import java.util.List;
 /**
  * 司馬懿 (WEI002) 反饋 — 當你受到傷害時，可獲得傷害來源的一張牌（手牌或裝備）（issue #163）。
  *
- * ACCEPT 取牌規則：
- *   - request.cardIds[0] 指定傷害來源的裝備牌 id → 取該裝備
- *   - 未指定 → 取來源第一張手牌（手牌為隱藏資訊，等同隨機）
+ * ACCEPT 取牌規則（對齊順手牽羊 useSnatchEffect 的選牌語意）：
+ *   - request.cardIds[0] 為數字 → 來源手牌的 0-based index（手牌為隱藏資訊，等同盲選）
+ *   - request.cardIds[0] 為傷害來源的裝備牌 id → 取該裝備
+ *   - 未指定 → 取來源第一張手牌（index 0）；來源無手牌時退而取第一件裝備
  *   - 來源無手牌無裝備 → 觸發時即不詢問
+ *   - 前端可由 GameStatusEvent seats 取得來源手牌張數（index 範圍 0..N-1）
  *
- * v1 範圍：top behavior 為 JianXiongCompatibleTopBehavior 且非 polling caller（或空 stack）
- * 時觸發；AOE polling 中的 defer-resume 整合為 follow-up。
+ * 觸發：top behavior 為 JianXiongCompatibleTopBehavior（含 AOE polling caller，PR #221）或空 stack。
  */
 public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
 
@@ -91,14 +92,21 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
 
         if ("ACCEPT".equals(choice)) {
             String takenCardId;
-            if (cardIds != null && !cardIds.isEmpty()
-                    && attacker.getEquipment().getAllEquipmentCardIds().contains(cardIds.get(0))) {
-                takenCardId = takeEquipment(attacker, simaYi, cardIds.get(0));
+            String pick = (cardIds != null && !cardIds.isEmpty()) ? cardIds.get(0) : null;
+            if (pick != null && attacker.getEquipment().getAllEquipmentCardIds().contains(pick)) {
+                takenCardId = takeEquipment(attacker, simaYi, pick);
+            } else if (pick != null && pick.matches("\\d+")) {
+                // 手牌 index（0-based，同順手牽羊 targetCardIndex）
+                int index = Integer.parseInt(pick);
+                if (index >= attacker.getHandSize()) {
+                    throw new IllegalArgumentException("Hand card index over size");
+                }
+                takenCardId = takeHandCard(attacker, simaYi, index);
+            } else if (pick != null) {
+                throw new IllegalArgumentException("Invalid FanKui pick: " + pick
+                        + "（須為來源手牌 index 或來源裝備 id）");
             } else if (attacker.getHandSize() > 0) {
-                HandCard taken = attacker.getHand().getCards().get(0);
-                takenCardId = taken.getId();
-                attacker.playCard(takenCardId);
-                simaYi.getHand().addCardToHand(taken);
+                takenCardId = takeHandCard(attacker, simaYi, 0);
             } else if (attacker.getEquipment().hasAnyEquipment()) {
                 takenCardId = takeEquipment(attacker, simaYi,
                         attacker.getEquipment().getAllEquipmentCardIds().get(0));
@@ -115,6 +123,13 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             throw new IllegalArgumentException("Invalid FanKui choice: " + choice);
         }
         return events;
+    }
+
+    private String takeHandCard(Player from, Player to, int index) {
+        HandCard taken = from.getHand().getCards().get(index);
+        from.playCard(taken.getId());
+        to.getHand().addCardToHand(taken);
+        return taken.getId();
     }
 
     private String takeEquipment(Player from, Player to, String equipmentId) {
