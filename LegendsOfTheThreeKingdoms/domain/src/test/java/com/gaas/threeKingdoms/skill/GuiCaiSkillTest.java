@@ -6,6 +6,7 @@ import com.gaas.threeKingdoms.events.AskSkillEffectEvent;
 import com.gaas.threeKingdoms.events.ContentmentEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.EightDiagramTacticEffectEvent;
+import com.gaas.threeKingdoms.events.GameStatusEvent;
 import com.gaas.threeKingdoms.events.LightningEvent;
 import com.gaas.threeKingdoms.events.LightningTransferredEvent;
 import com.gaas.threeKingdoms.events.SkillEffectEvent;
@@ -233,6 +234,31 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         assertTrue(effect.isSuccess(), "替換成紅心 → 八卦陣成功");
         assertEquals(4, b.getHP(), "視為出閃，不受傷");
         assertTrue(game.isTopBehaviorEmpty(), "殺已結算完畢");
+    }
+
+    @DisplayName("使用者回報：鬼才換牌結束後 activePlayer 應回到回合主 A（最後一個 GameStatusEvent 快照）")
+    @Test
+    public void guiCaiResolveFinalStatusSnapshotHasActivePlayerA() {
+        Game game = createGame(General.甘寧, General.孫權, General.司馬懿, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getEquipment().setArmor(new EightDiagramTactic(EC2067));
+        game.getPlayer("player-c").getHand().addCardToHand(new Peach(BH3029));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.getDeck().add(List.of(new Kill(BS9009)));
+        game.playerUseEquipment("player-b", EC2067.getCardId(), "player-b", EquipmentPlayType.ACTIVE);
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId(), "鬼才詢問中");
+
+        List<DomainEvent> events = game.playerUseSkillEffect(
+                "player-c", "鬼才", "ACCEPT", List.of(BH3029.getCardId()), null);
+
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+        GameStatusEvent last = events.stream().filter(e -> e instanceof GameStatusEvent)
+                .map(e -> (GameStatusEvent) e).reduce((x, y) -> y).orElseThrow();
+        assertEquals("player-a", last.getRound().getActivePlayer(),
+                "presenter 取最後一個 GameStatusEvent → 須為推進後的最終狀態（回合主 A）");
     }
 
     @DisplayName("鬼才 SKIP → 原黑桃判定八卦陣失敗，續問閃")

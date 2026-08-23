@@ -24,7 +24,9 @@ public class UseSkillEffectPresenter implements UseSkillEffectUseCase.UseSkillEf
     public void renderEvents(List<DomainEvent> events) {
         List<ViewModel<?>> effectViewModels = domainEventToViewModelMapper.mapEventsToViewModels(events);
 
-        GameStatusEvent gameStatusEvent = getEvent(events, GameStatusEvent.class).orElseThrow();
+        // 取最後一個 GameStatusEvent = 技能 resolve + 後續推進（判定 resume / 輪詢 resume）後的最終狀態；
+        // 第一個可能是推進前的快照（activePlayer 仍為被詢問者）
+        GameStatusEvent gameStatusEvent = lastGameStatusEvent(events);
         List<PlayerEvent> playerEvents = gameStatusEvent.getSeats();
         RoundEvent roundEvent = gameStatusEvent.getRound();
         List<PlayerDataViewModel> playerDataViewModels = playerEvents.stream().map(PlayerDataViewModel::new).toList();
@@ -96,5 +98,13 @@ public class UseSkillEffectPresenter implements UseSkillEffectUseCase.UseSkillEf
         private boolean accepted;
         private List<String> dataCardIds;
         private String dataPlayerId;
+    }
+    private static GameStatusEvent lastGameStatusEvent(List<DomainEvent> events) {
+        for (int i = events.size() - 1; i >= 0; i--) {
+            if (events.get(i) instanceof GameStatusEvent status) {
+                return status;
+            }
+        }
+        throw new IllegalStateException("No GameStatusEvent in events");
     }
 }
