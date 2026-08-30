@@ -716,6 +716,46 @@ POST /api/games/{gameId}/player:useSkillEffect
 **問閃時的出牌驗證（issue #229）**：被問閃時以 `player:playCard` 打出非閃牌 —
 可轉化（傾國黑牌 / 龍膽殺）→ 自動發動轉化技視為出閃；不可轉化 → 400 明確錯誤（先前會被默默吞掉導致卡住）。
 
+#### 傾國（甄姬）發動與使用
+
+**條件**：甄姬（`WEI007`）**被問閃時**（被殺、萬箭齊發、方天畫戟 — 收到 `AskDodgeEvent` 或成為問閃對象），手上有黑色（黑桃/梅花）手牌。傾國沒有事前的 `AskSkillEffectEvent` 詢問 — 由前端在問閃 UI 直接提供黑牌作為出閃選項。
+
+**方式一：直接出牌（推薦，前端不需特殊處理）** — 把黑色手牌當一般出牌打出：
+
+```json
+POST /api/games/{gameId}/player:playCard
+{
+  "playerId": "甄姬的playerId",
+  "targetPlayerId": "攻擊者playerId",
+  "cardId": "黑色手牌id",
+  "playType": "active"
+}
+```
+
+後端偵測「被問閃 + 非閃牌 + 有傾國」自動發動轉化。
+
+**方式二：useSkillEffect**：
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{
+  "playerId": "甄姬的playerId",
+  "skillName": "傾國",
+  "choice": "DODGE",
+  "cardIds": ["黑色手牌id"]
+}
+```
+
+**結算（兩種方式相同）**：
+- 廣播 `SkillEffectEvent`（skillName=傾國、accepted=true、dataCardIds=[該黑牌]）+ `PlayCardEvent`（視為出閃）
+- 該黑牌進墓地，效果等同出閃：殺被擋、萬箭/方天畫戟輪詢推進到下一位
+- `round.activePlayer` 回到應繼續行動者（普通殺 → 攻擊者；輪詢 → 下一位被詢問者）
+- 攻擊者裝青龍偃月刀/貫石斧時照常觸發後續詢問（同真閃）
+
+**錯誤情境（400）**：
+- 出紅色牌 / 牌不在手 → `IllegalArgumentException`
+- 不想發動：照原本流程出真閃或 `playType: "skip"`
+
 **v1 範圍備註**：
 - 反饋在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221：受傷 → 反饋詢問 → resolve 後 resume 輪詢）；
   遺計 / 剛烈在 AOE polling 中仍不觸發（可循同一 resume flag 開啟，follow-up）；三者瀕死皆不觸發
