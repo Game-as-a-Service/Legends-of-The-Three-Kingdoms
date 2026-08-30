@@ -171,10 +171,10 @@ public class Game {
     public List<DomainEvent> playerTakeTurnStartInJudgement(Player currentRoundPlayer) {
         List<DomainEvent> events = new ArrayList<>();
         if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
-            // 洛神：回合開始（延遲錦囊判定之前）黑色判定牌全收
-            events.addAll(SkillEngine.luoShenJudgementLoop(this, currentRoundPlayer));
+            // 洛神：回合開始（延遲錦囊判定之前）先詢問甄姬是否發動（issue #227）
+            events.addAll(SkillEngine.luoShenAskActivation(this, currentRoundPlayer));
             if (!topBehavior.isEmpty()
-                    && topBehavior.peek() instanceof WaitingSkillEffectBehavior) { // 鬼才介入洛神判定 → 暫停
+                    && topBehavior.peek() instanceof WaitingSkillEffectBehavior) { // 洛神詢問（或鬼才介入）→ 暫停
                 return events;
             }
             List<DomainEvent> judgeEvents = judgePlayerShouldDelay();
@@ -206,6 +206,12 @@ public class Game {
             if (!topBehavior.isEmpty()) {
                 return events;
             }
+
+            // 本次補判的樂不思蜀成功也要跳過出牌階段（洛神 resolve 後才進入延遲錦囊判定的路徑）
+            contentmentSuccess = contentmentSuccess || judgeEvents.stream()
+                    .filter(event -> event instanceof ContentmentEvent)
+                    .map(event -> (ContentmentEvent) event)
+                    .anyMatch(ContentmentEvent::isSuccess);
 
             if (RoundPhase.Drawing.equals(currentRound.getRoundPhase())) {
                 DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentSuccess);

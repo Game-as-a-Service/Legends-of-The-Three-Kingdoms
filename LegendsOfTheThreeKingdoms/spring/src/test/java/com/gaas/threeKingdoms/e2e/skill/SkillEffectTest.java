@@ -166,4 +166,76 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
         assertEquals(3, finalState.getPlayer("player-c").getHP());
         assertEquals(3, finalState.getPlayer("player-d").getHP());
     }
+    @Test
+    public void testLuoShenAskThenAcceptAcrossRequests() throws Exception {
+        // Given：A 回合結束後輪到 B（甄姬）；判定牌疊 BS9009(黑收) → BH3029(紅停)，摸 2 = BH2028 + BH4030
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH);
+        Player playerB = createPlayer("player-b", 4, General.甄姬, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.孫權, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.孫權, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Peach(BH4030), new com.gaas.threeKingdoms.handcard.basiccard.Dodge(BH2028),
+                new Peach(BH3029), new Kill(BS9009)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        // When：A 結束回合 → B 回合開始，先詢問洛神並暫停（WaitingSkillEffectBehavior 經 MongoDB 存取）
+        mockMvcUtil.finishAction(gameId, "player-a").andExpect(status().isOk());
+
+        Game paused = repository.findById(gameId).orElseThrow();
+        assertFalse(paused.getTopBehavior().isEmpty(), "洛神詢問中，回合開始流程暫停");
+        assertEquals(0, paused.getPlayer("player-b").getHandSize(), "尚未判定，未收牌未摸牌");
+        assertEquals("player-b", paused.getCurrentRound().getActivePlayer().getId());
+
+        // B ACCEPT 洛神 → 黑色 BS9009 收入手牌、紅色 BH3029 停 → 接著摸 2
+        mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-b",
+                                  "skillName": "洛神",
+                                  "choice": "ACCEPT"
+                                }"""))
+                .andExpect(status().isOk());
+
+        // Then：收 1 張黑判定牌 + 摸 2，紅判定牌進墓地，流程推進到 B 的出牌階段
+        Game saved = repository.findById(gameId).orElseThrow();
+        assertTrue(saved.getPlayer("player-b").getHand().getCards().stream()
+                .anyMatch(c -> c.getId().equals(BS9009.getCardId())), "黑色判定牌收入手牌");
+        assertEquals(3, saved.getPlayer("player-b").getHandSize(), "收 1 + 摸 2");
+        assertTrue(saved.getGraveyard().contains(BH3029.getCardId()), "紅色判定牌進墓地");
+        assertTrue(saved.getTopBehavior().isEmpty());
+        assertEquals("player-b", saved.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @Test
+    public void testLuoShenSkipAcrossRequests() throws Exception {
+        // Given：同上，但 B 放棄洛神
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH);
+        Player playerB = createPlayer("player-b", 4, General.甄姬, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.孫權, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.孫權, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Peach(BH4030), new com.gaas.threeKingdoms.handcard.basiccard.Dodge(BH2028)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        mockMvcUtil.finishAction(gameId, "player-a").andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-b",
+                                  "skillName": "洛神",
+                                  "choice": "SKIP"
+                                }"""))
+                .andExpect(status().isOk());
+
+        // Then：不判定，直接摸 2 進出牌階段
+        Game saved = repository.findById(gameId).orElseThrow();
+        assertEquals(2, saved.getPlayer("player-b").getHandSize(), "SKIP 不判定，直接摸 2");
+        assertTrue(saved.getTopBehavior().isEmpty());
+        assertEquals("player-b", saved.getCurrentRound().getActivePlayer().getId());
+    }
 }

@@ -675,6 +675,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 激將（劉備主公技） | 主公劉備被南蠻/決鬥要求出殺時，依座位順序詢問蜀將 | `ACCEPT` / `DECLINE` | ACCEPT 必填 [殺 id]（蜀將手中） | — |
 | 流離（大喬） | 大喬成為殺目標、被問閃之前 | `ACCEPT` / `SKIP` | ACCEPT 必填 [要棄的手牌 id] | ACCEPT 必填：轉移目標（距離 1 內、非攻擊者） |
 | 鬼才（司馬懿） | 任意角色判定牌抽出後、生效前（閃電 / 樂不思蜀 / 八卦陣 / 鐵騎 / 剛烈 / 洛神；dataCardIds = [原判定牌]、dataPlayerId = 判定所屬玩家） | `ACCEPT` / `SKIP` | ACCEPT 必填 [替換用手牌 id] | — |
+| 洛神（甄姬） | 甄姬回合開始、延遲錦囊（閃電/樂不思蜀）判定之前（issue #227） | `ACCEPT`（開始判定：黑色收入手牌自動續判、紅色停，不逐輪詢問）/ `SKIP` | — | — |
 | 護駕（曹操主公技）發動詢問 | 主公曹操被要求出閃、且有其他存活魏將時（issue #217） | `ACCEPT`（開始魏將輪詢，見 §21）/ `SKIP`（自己出閃） | — | — |
 
 ### 自動觸發技（無需呼叫本 API，僅廣播 `SkillEffectEvent`）
@@ -682,7 +683,6 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 武將 | 技能 | 行為 |
 |---|---|---|
 | 郭嘉 | 天妒 | 自己判定牌生效後自動收入手牌（閃電 / 樂不思蜀 / 剛烈判定） |
-| 甄姬 | 洛神 | 回合開始自動判定：黑色收入手牌續判、紅色停 |
 | 馬超 | 鐵騎 | 出殺指定目標後自動判定：非紅桃 → 目標不能出閃直接結算 |
 | 孫尚香 | 梟姬 | 失去裝備（被拆 / 被順 / 被反饋取走）自動摸 2 |
 | 孫權 | 救援 | 主公技。主公孫權瀕死時，其他吳勢力對其使用的桃回復效果 +1（自動加成，出桃仍走 playCard） |
@@ -727,6 +727,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 救援採官方標準版語意（桃效果 +1）；issue 原文描述的「可出桃給其」即既有瀕死求桃流程
 - 鬼才覆蓋全部判定路徑：閃電 / 樂不思蜀（皆含 Ward 路徑）/ 八卦陣 / 鐵騎 / 剛烈 / 洛神；
   洛神多張判定牌逐張詢問；同一次判定僅詢問一次（官方 FAQ）
+- 洛神為發動詢問一次（ACCEPT 後黑收自動續判）；判定中每張判定牌仍逐張過鬼才暫停點
 - 武聖/奇襲 v1 限手牌（裝備區紅/黑牌轉化 follow-up）；轉化殺的奸雄取牌為 follow-up
 - 轉化殺的傷害結算以 VirtualKill 進行；事件中 cardId 為來源真實牌
 
@@ -817,7 +818,7 @@ Stack trace 僅記錄於 server log。
 | `HeavenlyDoubleHalberdKillTriggerEvent` | 方天畫戟發動，多目標殺（含 attackerPlayerId、cardId、targetPlayerIds） |
 | `JianXiongEffectEvent` | 奸雄結算結果（含 `playerId`、`sourceCardIds : List<String>`、`taken`） |
 | `HuJiaEffectEvent` | 護駕回應結果（含 `playerId`、`caoCaoPlayerId`、`accepted`、`dodgeCardId`） |
-| `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/洛神/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察） |
+| `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察）；洛神每張判定牌各發一則（accepted=是否黑色收牌） |
 
 ---
 

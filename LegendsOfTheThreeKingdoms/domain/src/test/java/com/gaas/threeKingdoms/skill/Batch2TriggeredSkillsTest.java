@@ -292,7 +292,7 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
 
     // ===== 洛神 =====
 
-    @DisplayName("甄姬回合開始洛神 → 黑色判定牌全收，紅色停")
+    @DisplayName("甄姬回合開始先詢問洛神；ACCEPT → 黑色判定牌全收，紅色停")
     @Test
     public void luoShenCollectsBlackCardsUntilRed() {
         Game game = createGame(General.甄姬, General.劉備, General.孫權, General.孫權);
@@ -300,7 +300,16 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         // Stack：後 add 的先抽 → 抽序 = BS9009(黑) → BS8008(黑) → BH3029(紅停)
         game.getDeck().add(List.of(new Peach(BH3029), new Kill(BS8008), new Kill(BS9009)));
 
-        List<DomainEvent> events = game.playerTakeTurnStartInJudgement(a);
+        List<DomainEvent> askEvents = game.playerTakeTurnStartInJudgement(a);
+
+        assertTrue(askEvents.stream().anyMatch(e -> e instanceof AskSkillEffectEvent
+                        && ((AskSkillEffectEvent) e).getSkillName().equals("洛神")
+                        && ((AskSkillEffectEvent) e).getPlayerId().equals("player-a")),
+                "回合開始先詢問洛神，不自動判定");
+        assertFalse(a.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BS9009.getCardId())),
+                "詢問前不收牌");
+
+        List<DomainEvent> events = game.playerUseSkillEffect("player-a", "洛神", "ACCEPT", null, null);
 
         assertTrue(a.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BS9009.getCardId())));
         assertTrue(a.getHand().getCards().stream().anyMatch(c -> c.getId().equals(BS8008.getCardId())));
@@ -308,7 +317,51 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
                 "紅色判定牌不收");
         long luoShenEvents = events.stream().filter(e -> e instanceof SkillEffectEvent
                 && ((SkillEffectEvent) e).getSkillName().equals("洛神")).count();
-        assertEquals(3, luoShenEvents, "兩黑一紅共三次判定事件");
+        assertEquals(3, luoShenEvents, "兩黑一紅共三次判定事件（ACCEPT 後不逐輪詢問）");
+        assertTrue(game.isTopBehaviorEmpty(), "resolve 後 stack 清空");
+    }
+
+    @DisplayName("洛神 SKIP → 不判定，直接進入摸牌流程")
+    @Test
+    public void luoShenSkipProceedsToDraw() {
+        Game game = createGame(General.甄姬, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        int handBefore = a.getHandSize();
+        game.playerTakeTurnStartInJudgement(a);
+
+        List<DomainEvent> events = game.playerUseSkillEffect("player-a", "洛神", "SKIP", null, null);
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof SkillEffectEvent
+                        && ((SkillEffectEvent) e).getSkillName().equals("洛神")
+                        && !((SkillEffectEvent) e).isAccepted()),
+                "SKIP 廣播放棄事件");
+        assertEquals(handBefore + 2, a.getHandSize(), "不判定，直接摸 2");
+        assertTrue(game.isTopBehaviorEmpty());
+        assertEquals(a, game.getCurrentRound().getActivePlayer());
+    }
+
+    @DisplayName("洛神先於延遲錦囊判定：詢問時閃電尚未判定，resolve 後才判閃電")
+    @Test
+    public void luoShenAskedBeforeLightningJudgement() {
+        Game game = createGame(General.甄姬, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.addDelayScrollCard(new Lightning(SSA014));
+        // 抽序 = BH3029(洛神紅停) → BH4030(閃電判定紅心，不中轉移) → 摸 2 = BD2093 + BD3094
+        game.getDeck().add(List.of(new Dodge(BD3094), new Dodge(BD2093), new Peach(BH4030), new Peach(BH3029)));
+
+        game.playerTakeTurnStartInJudgement(a);
+
+        assertTrue(a.getDelayScrollCards().stream().anyMatch(c -> c.getId().equals(SSA014.getCardId())),
+                "洛神詢問期間閃電尚未判定");
+
+        game.playerUseSkillEffect("player-a", "洛神", "ACCEPT", null, null);
+
+        assertFalse(a.getDelayScrollCards().stream().anyMatch(c -> c.getId().equals(SSA014.getCardId())),
+                "洛神結算後才判閃電（紅心不中 → 移出 A 判定區）");
+        assertTrue(b.getDelayScrollCards().stream().anyMatch(c -> c.getId().equals(SSA014.getCardId())),
+                "閃電不中轉移給下家");
+        assertEquals(4, a.getHP(), "閃電未命中");
     }
 
     @DisplayName("非甄姬回合開始 → 洛神不觸發")
@@ -321,6 +374,8 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
 
         assertFalse(events.stream().anyMatch(e -> e instanceof SkillEffectEvent
                 && ((SkillEffectEvent) e).getSkillName().equals("洛神")));
+        assertFalse(events.stream().anyMatch(e -> e instanceof AskSkillEffectEvent
+                && ((AskSkillEffectEvent) e).getSkillName().equals("洛神")));
     }
 
     // ===== 鐵騎 =====
