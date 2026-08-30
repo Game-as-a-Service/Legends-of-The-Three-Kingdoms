@@ -448,7 +448,8 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         // 摸牌也必須疊牌控制：initDeck 牌堆裡有同 id 的 BS8008，隨機摸到會誤觸
         // 「原判定牌不收」斷言（CI flake）
         game.getDeck().add(List.of(new Dodge(BD2093), new Peach(BH4030), new Kill(BS8008)));
-        List<DomainEvent> events = game.playerTakeTurnStartInJudgement(a);
+        game.playerTakeTurnStartInJudgement(a); // issue #227：先詢問洛神
+        List<DomainEvent> events = game.playerUseSkillEffect("player-a", "洛神", "ACCEPT", null, null);
 
         AskSkillEffectEvent ask = events.stream()
                 .filter(e -> e instanceof AskSkillEffectEvent).map(e -> (AskSkillEffectEvent) e)
@@ -481,7 +482,8 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
 
         // 抽序 = BS8008(黑) → BH4030(紅停) → 摸 2 = BD2093 + BD3094（摸牌疊牌控制，避免隨機）
         game.getDeck().add(List.of(new Dodge(BD3094), new Dodge(BD2093), new Peach(BH4030), new Kill(BS8008)));
-        game.playerTakeTurnStartInJudgement(a);
+        game.playerTakeTurnStartInJudgement(a); // issue #227：先詢問洛神
+        game.playerUseSkillEffect("player-a", "洛神", "ACCEPT", null, null);
 
         List<DomainEvent> firstResume = game.playerUseSkillEffect("player-b", "鬼才", "SKIP", null, null);
 

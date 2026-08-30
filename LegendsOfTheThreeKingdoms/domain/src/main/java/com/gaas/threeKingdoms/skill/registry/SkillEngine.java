@@ -220,16 +220,27 @@ public final class SkillEngine {
     }
 
     /**
-     * 洛神：回合開始判定 loop — 黑色（黑桃/梅花）收入手牌續判，紅色停。
-     * 非甄姬回 empty list；含鬼才暫停點（暫停時 caller 應檢查 topBehavior 並中止回合開始流程）。
+     * 洛神：回合開始判定階段先詢問甄姬是否發動（issue #227 改主動觸發）。
+     * 非甄姬回 empty list；有洛神 → push WaitingSkillEffect(洛神) 並回詢問事件
+     * （caller 檢查 topBehavior 為 WaitingSkillEffectBehavior 時中止回合開始流程）。
+     * ACCEPT 後判定 loop（黑收續判、紅停，不再逐輪詢問）由
+     * {@link com.gaas.threeKingdoms.skill.wei.LuoShenSkill#resolveChoice} 進入 {@link #luoShenContinueLoop}。
      */
-    public static List<DomainEvent> luoShenJudgementLoop(Game game, Player roundPlayer) {
+    public static List<DomainEvent> luoShenAskActivation(Game game, Player roundPlayer) {
         boolean hasLuoShen = skillsOf(roundPlayer).stream()
                 .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.wei.LuoShenSkill);
         if (!hasLuoShen) {
             return List.of();
         }
-        return luoShenContinueLoop(game, roundPlayer);
+        var waiting = new com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior(
+                game, roundPlayer, com.gaas.threeKingdoms.skill.wei.LuoShenSkill.SKILL_NAME);
+        game.updateTopBehavior(waiting);
+        game.getCurrentRound().setActivePlayer(roundPlayer);
+        return List.of(
+                new com.gaas.threeKingdoms.events.AskSkillEffectEvent(
+                        com.gaas.threeKingdoms.skill.wei.LuoShenSkill.SKILL_NAME,
+                        roundPlayer.getId(), List.of(), null),
+                game.getGameStatusEvent("洛神：詢問 " + roundPlayer.getId() + " 是否發動"));
     }
 
     /** 洛神判定 loop 本體（鬼才 resume 後續判亦由此進入）；每張判定牌抽出後先過鬼才暫停點。 */
