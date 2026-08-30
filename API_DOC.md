@@ -706,12 +706,15 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 技能 | choice | cardIds | targetPlayerId | 使用情境 |
 |---|---|---|---|---|
 | 武聖（關羽） | `KILL` | [紅色手牌 id] | 主動殺必填 | 主動出殺（topBehavior 空）或回應南蠻/決鬥（KILL response） |
-| 龍膽（趙雲） | `KILL` / `DODGE` | [閃 id] / [殺 id] | 主動殺必填 | 殺↔閃雙向；回應問閃用 DODGE、回應需殺用 KILL |
-| 傾國（甄姬） | `DODGE` | [黑色手牌 id] | — | 被問閃時（被殺/萬箭/方天畫戟） |
+| 龍膽（趙雲） | `KILL` / `DODGE` | [閃 id] / [殺 id] | 主動殺必填 | 殺↔閃雙向；回應問閃用 DODGE、回應需殺用 KILL；問閃時亦可直接以 `player:playCard` 打出殺，後端自動視為發動龍膽（issue #229） |
+| 傾國（甄姬） | `DODGE` | [黑色手牌 id] | — | 被問閃時（被殺/萬箭/方天畫戟）；亦可直接以 `player:playCard` 打出黑牌，後端自動視為發動傾國（issue #229） |
 | 奇襲（甘寧） | `DISMANTLE` | [黑色手牌 id] | 必填 | 主動；後續走 useDismantleEffect |
 | 國色（大喬） | `CONTENTMENT` | [方塊手牌 id] | 必填 | 主動；牌以樂不思蜀身份進判定區 |
 
 轉化殺計入出殺次數限制（咆哮/諸葛連弩豁免照常）；轉化殺對空城/謙遜的目標限制照常套用。
+
+**問閃時的出牌驗證（issue #229）**：被問閃時以 `player:playCard` 打出非閃牌 —
+可轉化（傾國黑牌 / 龍膽殺）→ 自動發動轉化技視為出閃；不可轉化 → 400 明確錯誤（先前會被默默吞掉導致卡住）。
 
 **v1 範圍備註**：
 - 反饋在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221：受傷 → 反饋詢問 → resolve 後 resume 輪詢）；

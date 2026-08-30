@@ -337,6 +337,21 @@ public class Game {
 
         if (!topBehavior.isEmpty()) {
             Behavior behavior = topBehavior.peek();
+            // 傾國/龍膽：被問閃時直接以 playCard 打出可轉化的非閃牌 → 視為發動轉化技。
+            // 原本會落入各 behavior 非閃 else 分支默默回空 events / null → 前端卡住（issue #229）
+            if (behavior instanceof com.gaas.threeKingdoms.behavior.HuJiaCompatibleAskDodgeBehavior
+                    && behavior.getReactionPlayers().contains(playerId)) {
+                HandCard cardInHand = actingPlayer.getHand().getCard(cardId).orElse(null);
+                if (cardInHand != null && !(cardInHand instanceof com.gaas.threeKingdoms.handcard.basiccard.Dodge)) {
+                    com.gaas.threeKingdoms.skill.trigger.CardConversionSkill conversion =
+                            findDodgeConversionSkill(playerId, cardInHand);
+                    if (conversion != null) {
+                        return applyConversionResponse(playerId, conversion.getSkillName(),
+                                com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_DODGE,
+                                List.of(cardId), targetPlayerId);
+                    }
+                }
+            }
             List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType);
             //  確認topBehavior是否有需要pop掉的behavior
             removeCompletedBehaviors();
@@ -1016,6 +1031,16 @@ public class Game {
         List<DomainEvent> events = waiting.resolveChoice(playerId, choice, cardIds, targetPlayerId);
         removeCompletedBehaviors();
         return events;
+    }
+
+    /** 玩家是否有可把指定牌當閃打出的轉化技（傾國：黑色手牌 / 龍膽：殺）。 */
+    private com.gaas.threeKingdoms.skill.trigger.CardConversionSkill findDodgeConversionSkill(String playerId, HandCard source) {
+        Player self = getPlayer(playerId);
+        return com.gaas.threeKingdoms.skill.registry.SkillRegistry.of(self.getGeneralCard().getGeneralId()).stream()
+                .filter(sk -> sk instanceof com.gaas.threeKingdoms.skill.trigger.CardConversionSkill)
+                .map(sk -> (com.gaas.threeKingdoms.skill.trigger.CardConversionSkill) sk)
+                .filter(sk -> sk.canConvert(source, com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_DODGE))
+                .findFirst().orElse(null);
     }
 
     private com.gaas.threeKingdoms.skill.trigger.CardConversionSkill findConversionSkill(String playerId, String skillName) {
