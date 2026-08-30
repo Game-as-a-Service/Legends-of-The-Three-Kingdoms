@@ -206,9 +206,11 @@ public class ArrowBarrageBehavior extends Behavior
             }
             return events;
         } else {
-            //TODO:怕有其他效果或殺的其他case
+            // 非閃且非可轉化牌（傾國/龍膽已在 Game.playerPlayCard 攔截）— 明確報錯，
+            // 不再回 null 造成前端卡住（issue #229）
+            throw new IllegalArgumentException(
+                    "被詢問出閃時只能出閃、skip 或發動轉化技（傾國/龍膽）：" + cardId);
         }
-        return null;
     }
 
     public boolean isInReactionPlayers(String playerId) {

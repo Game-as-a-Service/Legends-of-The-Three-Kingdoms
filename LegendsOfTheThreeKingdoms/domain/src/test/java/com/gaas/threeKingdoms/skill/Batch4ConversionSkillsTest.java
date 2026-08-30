@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.player.Player;
 import org.junit.jupiter.api.DisplayName;
@@ -131,6 +132,194 @@ public class Batch4ConversionSkillsTest extends PassiveSkillTestBase {
 
         assertEquals(4, b.getHP());
         assertTrue(game.getTopBehavior().isEmpty());
+    }
+
+    @DisplayName("傾國擋普通殺後遊戲可繼續：activePlayer 回攻擊者、可結束回合")
+    @Test
+    public void qingGuoDodgeThenGameContinues() {
+        Game game = createGame(General.劉備, General.甄姬, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerUseSkillEffect("player-b", "傾國", "DODGE", List.of(BS9009.getCardId()), null);
+
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId(),
+                "傾國後 activePlayer 應回攻擊者");
+        assertTrue(game.getTopBehavior().isEmpty());
+
+        // 遊戲可繼續：A 結束回合 → 輪到 B（甄姬）回合開始詢問洛神
+        List<DomainEvent> events = game.finishAction("player-a");
+        assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId(), "回合正常輪替");
+    }
+
+    @DisplayName("傾國回應萬箭齊發（非最後 reactor）→ 輪詢推進到下一家")
+    @Test
+    public void qingGuoAgainstArrowBarrageAdvancesPolling() {
+        Game game = createGame(General.劉備, General.甄姬, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new ArrowBarrage(SHA040));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", SHA040.getCardId(), "player-a", "active");
+        game.playerUseSkillEffect("player-b", "傾國", "DODGE", List.of(BS9009.getCardId()), null);
+
+        assertEquals(4, b.getHP(), "傾國當閃 → 不扣血");
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId(),
+                "輪詢應推進到 C");
+
+        game.playerPlayCard("player-c", "", "player-a", "skip");
+        game.playerPlayCard("player-d", "", "player-a", "skip");
+        assertEquals(3, game.getPlayer("player-c").getHP());
+        assertEquals(3, game.getPlayer("player-d").getHP());
+        assertTrue(game.getTopBehavior().isEmpty(), "萬箭結算完畢");
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("傾國回應萬箭齊發（最後 reactor）→ 結算收尾、activePlayer 回出牌者")
+    @Test
+    public void qingGuoAsLastReactorInArrowBarrage() {
+        Game game = createGame(General.劉備, General.孫權, General.孫權, General.甄姬);
+        Player a = game.getPlayer("player-a");
+        Player d = game.getPlayer("player-d");
+        a.getHand().addCardToHand(new ArrowBarrage(SHA040));
+        d.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", SHA040.getCardId(), "player-a", "active");
+        game.playerPlayCard("player-b", "", "player-a", "skip");
+        game.playerPlayCard("player-c", "", "player-a", "skip");
+        game.playerUseSkillEffect("player-d", "傾國", "DODGE", List.of(BS9009.getCardId()), null);
+
+        assertEquals(4, d.getHP());
+        assertTrue(game.getTopBehavior().isEmpty(), "最後 reactor 傾國 → 萬箭收尾");
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("傾國回應方天畫戟多目標殺 → 推進到下一個目標")
+    @Test
+    public void qingGuoAgainstHeavenlyDoubleHalberd() {
+        Game game = createGame(General.劉備, General.甄姬, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getEquipment().setWeapon(new com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.HeavenlyDoubleHalberdCard(EDQ103));
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerUseHeavenlyDoubleHalberdKill("player-a", BS8008.getCardId(),
+                List.of("player-b", "player-c"));
+        game.playerUseSkillEffect("player-b", "傾國", "DODGE", List.of(BS9009.getCardId()), null);
+
+        assertEquals(4, b.getHP(), "第一目標傾國擋下");
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId(),
+                "推進到第二目標");
+
+        game.playerPlayCard("player-c", "", "player-a", "skip");
+        assertEquals(3, game.getPlayer("player-c").getHP());
+        assertTrue(game.getTopBehavior().isEmpty());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("攻擊者裝青龍偃月刀時傾國擋殺 → 觸發 GDCB 詢問，SKIP 後遊戲可繼續")
+    @Test
+    public void qingGuoDodgeTriggersGreenDragonAsk() {
+        Game game = createGame(General.劉備, General.甄姬, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getEquipment().setWeapon(new com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.GreenDragonCrescentBladeCard(ES5005));
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.playerUseSkillEffect(
+                "player-b", "傾國", "DODGE", List.of(BS9009.getCardId()), null);
+
+        assertTrue(events.stream().anyMatch(e ->
+                        e instanceof com.gaas.threeKingdoms.events.AskGreenDragonCrescentBladeEffectEvent),
+                "閃被擋 → 詢問青龍偃月刀");
+
+        game.playerUseGreenDragonCrescentBladeEffect("player-a",
+                com.gaas.threeKingdoms.events.AskGreenDragonCrescentBladeEffectEvent.Choice.SKIP, null);
+        assertEquals(4, b.getHP());
+        assertTrue(game.getTopBehavior().isEmpty());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("issue #229：被問閃時直接以 playCard 打出黑牌 → 自動視為發動傾國")
+    @Test
+    public void qingGuoViaPlainPlayCardAutoConverts() {
+        Game game = createGame(General.劉備, General.甄姬, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        // 前端行為：不走 useSkillEffect，直接把黑牌當一般出牌打出
+        List<DomainEvent> events = game.playerPlayCard("player-b", BS9009.getCardId(), "player-a", "active");
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof com.gaas.threeKingdoms.events.SkillEffectEvent
+                        && ((com.gaas.threeKingdoms.events.SkillEffectEvent) e).getSkillName().equals("傾國")
+                        && ((com.gaas.threeKingdoms.events.SkillEffectEvent) e).isAccepted()),
+                "自動轉化為傾國並廣播 SkillEffectEvent");
+        assertEquals(4, b.getHP(), "視為出閃 → 不扣血");
+        assertTrue(game.getGraveyard().contains(BS9009.getCardId()));
+        assertTrue(game.getTopBehavior().isEmpty());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
+    }
+
+    @DisplayName("issue #229：萬箭齊發被問閃時以 playCard 打出黑牌 → 自動傾國、輪詢推進")
+    @Test
+    public void qingGuoViaPlainPlayCardInArrowBarrage() {
+        Game game = createGame(General.劉備, General.甄姬, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new ArrowBarrage(SHA040));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", SHA040.getCardId(), "player-a", "active");
+        game.playerPlayCard("player-b", BS9009.getCardId(), "player-a", "active");
+
+        assertEquals(4, b.getHP());
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId(), "輪詢推進到 C");
+    }
+
+    @DisplayName("issue #229：趙雲被問閃時以 playCard 打出殺 → 自動視為發動龍膽")
+    @Test
+    public void longDanViaPlainPlayCardAutoConverts() {
+        Game game = createGame(General.劉備, General.趙雲, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.playerPlayCard("player-b", BS9009.getCardId(), "player-a", "active");
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof com.gaas.threeKingdoms.events.SkillEffectEvent
+                        && ((com.gaas.threeKingdoms.events.SkillEffectEvent) e).getSkillName().equals("龍膽")),
+                "殺當閃 → 自動龍膽");
+        assertEquals(4, b.getHP());
+        assertTrue(game.getTopBehavior().isEmpty());
+    }
+
+    @DisplayName("issue #229：無轉化技的玩家被問閃時打出非閃牌 → 明確報錯而非默默吞掉")
+    @Test
+    public void nonConvertibleCardAsDodgeResponseThrows() {
+        Game game = createGame(General.劉備, General.孫權, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getHand().addCardToHand(new Kill(BS9009));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+
+        assertThrows(IllegalArgumentException.class, () ->
+                game.playerPlayCard("player-b", BS9009.getCardId(), "player-a", "active"));
+        assertFalse(game.getTopBehavior().isEmpty(), "報錯後仍在等 B 回應");
+        assertEquals(4, b.getHP(), "未結算");
     }
 
     @DisplayName("傾國不能轉紅色牌")

@@ -706,12 +706,55 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 技能 | choice | cardIds | targetPlayerId | 使用情境 |
 |---|---|---|---|---|
 | 武聖（關羽） | `KILL` | [紅色手牌 id] | 主動殺必填 | 主動出殺（topBehavior 空）或回應南蠻/決鬥（KILL response） |
-| 龍膽（趙雲） | `KILL` / `DODGE` | [閃 id] / [殺 id] | 主動殺必填 | 殺↔閃雙向；回應問閃用 DODGE、回應需殺用 KILL |
-| 傾國（甄姬） | `DODGE` | [黑色手牌 id] | — | 被問閃時（被殺/萬箭/方天畫戟） |
+| 龍膽（趙雲） | `KILL` / `DODGE` | [閃 id] / [殺 id] | 主動殺必填 | 殺↔閃雙向；回應問閃用 DODGE、回應需殺用 KILL；問閃時亦可直接以 `player:playCard` 打出殺，後端自動視為發動龍膽（issue #229） |
+| 傾國（甄姬） | `DODGE` | [黑色手牌 id] | — | 被問閃時（被殺/萬箭/方天畫戟）；亦可直接以 `player:playCard` 打出黑牌，後端自動視為發動傾國（issue #229） |
 | 奇襲（甘寧） | `DISMANTLE` | [黑色手牌 id] | 必填 | 主動；後續走 useDismantleEffect |
 | 國色（大喬） | `CONTENTMENT` | [方塊手牌 id] | 必填 | 主動；牌以樂不思蜀身份進判定區 |
 
 轉化殺計入出殺次數限制（咆哮/諸葛連弩豁免照常）；轉化殺對空城/謙遜的目標限制照常套用。
+
+**問閃時的出牌驗證（issue #229）**：被問閃時以 `player:playCard` 打出非閃牌 —
+可轉化（傾國黑牌 / 龍膽殺）→ 自動發動轉化技視為出閃；不可轉化 → 400 明確錯誤（先前會被默默吞掉導致卡住）。
+
+#### 傾國（甄姬）發動與使用
+
+**條件**：甄姬（`WEI007`）**被問閃時**（被殺、萬箭齊發、方天畫戟 — 收到 `AskDodgeEvent` 或成為問閃對象），手上有黑色（黑桃/梅花）手牌。傾國沒有事前的 `AskSkillEffectEvent` 詢問 — 由前端在問閃 UI 直接提供黑牌作為出閃選項。
+
+**方式一：直接出牌（推薦，前端不需特殊處理）** — 把黑色手牌當一般出牌打出：
+
+```json
+POST /api/games/{gameId}/player:playCard
+{
+  "playerId": "甄姬的playerId",
+  "targetPlayerId": "攻擊者playerId",
+  "cardId": "黑色手牌id",
+  "playType": "active"
+}
+```
+
+後端偵測「被問閃 + 非閃牌 + 有傾國」自動發動轉化。
+
+**方式二：useSkillEffect**：
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{
+  "playerId": "甄姬的playerId",
+  "skillName": "傾國",
+  "choice": "DODGE",
+  "cardIds": ["黑色手牌id"]
+}
+```
+
+**結算（兩種方式相同）**：
+- 廣播 `SkillEffectEvent`（skillName=傾國、accepted=true、dataCardIds=[該黑牌]）+ `PlayCardEvent`（視為出閃）
+- 該黑牌進墓地，效果等同出閃：殺被擋、萬箭/方天畫戟輪詢推進到下一位
+- `round.activePlayer` 回到應繼續行動者（普通殺 → 攻擊者；輪詢 → 下一位被詢問者）
+- 攻擊者裝青龍偃月刀/貫石斧時照常觸發後續詢問（同真閃）
+
+**錯誤情境（400）**：
+- 出紅色牌 / 牌不在手 → `IllegalArgumentException`
+- 不想發動：照原本流程出真閃或 `playType: "skip"`
 
 **v1 範圍備註**：
 - 反饋在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221：受傷 → 反饋詢問 → resolve 後 resume 輪詢）；
