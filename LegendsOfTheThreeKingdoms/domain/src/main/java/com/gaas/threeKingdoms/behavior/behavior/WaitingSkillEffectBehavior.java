@@ -58,24 +58,40 @@ public class WaitingSkillEffectBehavior extends Behavior {
         List<DomainEvent> events = new java.util.ArrayList<>(
                 skill.resolveChoice(game, this, choice, cardIds, targetPlayerId));
 
-        // AOE polling resume：必須在 isOneRound=true 之前跑 —
-        // resume 可能把底層 polling behavior 的 isOneRound 改回 false（mid-poll），
-        // 需先於本 behavior 標記完成、避免 removeCompletedBehaviors 誤 pop polling behavior。
-        if ("true".equals(getParam(PARAM_RESUME_POLLING))) {
-            game.peekTopBehaviorSecondElement().ifPresent(under -> {
-                if (under instanceof com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior compatible
-                        && compatible.isPollingCaller()) {
-                    events.addAll(compatible.resumeJianXiongPolling(behaviorPlayer.getId()));
+        // AOE polling resume 收鏈掃描：damage 當下 polling caller（南蠻/萬箭）把待推進的
+        // reactor 記在自己的 param（DEFERRED_ADVANCE_PLAYER_ID，reload-safe）。本 waiting
+        // 完成後由 stack 頂往下跳過已完成者；第一個未完成 behavior 若正是帶標記的 polling
+        // caller，表示技能詢問鏈已全部收斂 → resume 輪詢並清除標記。
+        // 剛烈兩段式（ASK_XIAHOU → ASK_SOURCE）與鬼才巢狀詢問（issue #165）因此自然收鏈；
+        // 舊版只認「flag waiting 的下一層」，鏈上多一個 waiting 就會斷、輪詢卡住。
+        isOneRound = true;
+        List<com.gaas.threeKingdoms.behavior.Behavior> stack = game.getTopBehavior();
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            com.gaas.threeKingdoms.behavior.Behavior under = stack.get(i);
+            if (under instanceof WaitingSkillEffectBehavior && under.isOneRound()) {
+                continue; // 鏈上已完成、待 pop 的 waiting（含本 behavior 自己）
+            }
+            // 注意不可依 polling behavior 的 isOneRound 判斷 mid-poll（詢問期間可能為 true，
+            // resume 內部才會依剩餘 reactor 重設）；defer 與否只看標記本身
+            if (under instanceof com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior compatible
+                    && compatible.isPollingCaller()) {
+                String deferredReactorId = (String) under.getParam(
+                        com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior.PARAM_DEFERRED_ADVANCE_PLAYER_ID);
+                if (deferredReactorId != null) {
+                    under.putParam(
+                            com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior.PARAM_DEFERRED_ADVANCE_PLAYER_ID,
+                            null);
+                    events.addAll(compatible.resumeJianXiongPolling(deferredReactorId));
                 }
-            });
+            }
+            break; // 只看第一個未完成 behavior
         }
 
         // 最終狀態快照：技能 resolve 可能先發 GameStatusEvent 再推進（鬼才 resume 判定、
-        // 反饋 AOE resume 輪詢），presenter 取最後一個 GameStatusEvent 才能拿到正確的
+        // 反饋/剛烈 AOE resume 輪詢），presenter 取最後一個 GameStatusEvent 才能拿到正確的
         // activePlayer / HP（使用者回報：鬼才換牌後 activePlayer 停在司馬懿）
         events.add(game.getGameStatusEvent(firstStatusMessage(events, skillName + " 結算")));
 
-        isOneRound = true;
         return events;
     }
 

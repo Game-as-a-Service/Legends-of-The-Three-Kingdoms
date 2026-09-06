@@ -211,9 +211,16 @@ public class GuiCaiSkill implements ChoiceResolvableSkill {
     private List<DomainEvent> resumeGangLie(Game game, WaitingSkillEffectBehavior waiting,
                                             Player owner, HandCard judgementCard) {
         String sourceId = (String) waiting.getParam(PARAM_GANGLIE_SOURCE_ID);
-        // pop 鬼才 waiting + 底下已完成的剛烈 ASK_XIAHOU waiting
+        // pop 鬼才 waiting + 底下已完成的剛烈 ASK_XIAHOU waiting。
+        // 不可用 removeCompletedBehaviors：AOE（南蠻/萬箭）mid-poll 的 polling behavior
+        // isOneRound 亦為 true，會被一併掃掉、收鏈掃描便找不到 deferred polling caller
+        // （issue #165 剛烈 AOE）。只 pop 已完成的技能詢問 waiting。
         waiting.setIsOneRound(true);
-        game.removeCompletedBehaviors();
+        var stack = game.getTopBehavior();
+        while (!stack.isEmpty() && stack.peek() instanceof WaitingSkillEffectBehavior
+                && stack.peek().isOneRound()) {
+            stack.pop();
+        }
         return GangLieSkill.resolveJudgementOutcome(game, owner, sourceId, judgementCard);
     }
 

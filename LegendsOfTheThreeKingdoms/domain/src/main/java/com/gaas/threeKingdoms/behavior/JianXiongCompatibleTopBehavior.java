@@ -12,6 +12,15 @@ package com.gaas.threeKingdoms.behavior;
 public interface JianXiongCompatibleTopBehavior {
 
     /**
+     * Polling caller 在 damage 後偵測到 OnDamagedSkill 詢問（WaitingSkillEffectBehavior +
+     * resume flag）時，把「待推進的 reactor id」記在自己的 param（BehaviorData 可持久化，
+     * reload-safe）。技能詢問鏈全部完成後（WaitingSkillEffectBehavior.resolveChoice 的
+     * 收鏈掃描），讀取此 param 呼叫 {@link #resumeJianXiongPolling} 並清除。
+     * 剛烈（issue #165）等兩段式/鬼才巢狀詢問也因此能正確 resume。
+     */
+    String PARAM_DEFERRED_ADVANCE_PLAYER_ID = "DEFERRED_ADVANCE_PLAYER_ID";
+
+    /**
      * polling-style caller 在 damage 後仍需保留底層 behavior、等 WaitingJX 解決後 resume polling。
      * caller 須自行：
      *   1. 在 damage 後偵測 {@code WaitingJianXiongResponseBehavior} 在 stack 頂

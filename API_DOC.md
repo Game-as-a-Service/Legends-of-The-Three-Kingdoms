@@ -670,7 +670,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 |---|---|---|---|---|
 | 反饋（司馬懿） | 受傷後（含南蠻/萬箭） | `ACCEPT` / `SKIP` | 可選 1 個值：來源**手牌 index**（數字字串，0-based，同順手牽羊 `targetCardIndex`；張數見 seats）或來源**裝備 id**（`dataCardIds` 列出）；不給 = 取手牌 index 0（無手牌則取第一件裝備） | — |
 | 遺計（郭嘉） | 受傷後 | `ACCEPT`（自摸 2）/ `GIVE`（令他人獲得 1）/ `SKIP` | — | GIVE 必填 |
-| 剛烈（夏侯惇）第一段 | 受傷後 | `ACCEPT`（判定）/ `SKIP` | — | — |
+| 剛烈（夏侯惇）第一段 | 受傷後（含南蠻/萬箭） | `ACCEPT`（判定）/ `SKIP` | — | — |
 | 剛烈 第二段（問傷害來源） | 判定非紅桃後 | `DISCARD` / `DAMAGE` | DISCARD 必填 2 張手牌 | — |
 | 激將（劉備主公技） | 主公劉備被南蠻/決鬥要求出殺時，依座位順序詢問蜀將 | `ACCEPT` / `DECLINE` | ACCEPT 必填 [殺 id]（蜀將手中） | — |
 | 流離（大喬） | 大喬成為殺目標、被問閃之前 | `ACCEPT` / `SKIP` | ACCEPT 必填 [要棄的手牌 id] | ACCEPT 必填：轉移目標（距離 1 內、非攻擊者） |
@@ -757,8 +757,9 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 不想發動：照原本流程出真閃或 `playType: "skip"`
 
 **v1 範圍備註**：
-- 反饋在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221：受傷 → 反饋詢問 → resolve 後 resume 輪詢）；
-  遺計 / 剛烈在 AOE polling 中仍不觸發（可循同一 resume flag 開啟，follow-up）；三者瀕死皆不觸發
+- 反饋 / 剛烈在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221 / issue #165：受傷 → 詢問 →
+  詢問鏈收斂後 resume 輪詢；剛烈兩段式與鬼才巢狀介入亦支援）；
+  遺計在 AOE polling 中仍不觸發（可循同一收鏈掃描開啟，follow-up）；三者瀕死皆不觸發
 - 剛烈 DAMAGE 反傷不進瀕死流程整合（follow-up）
 - 鐵騎 v1 自動判定（不問）；目標有八卦陣時走防具路徑不受鐵騎影響（follow-up）
 - 梟姬不覆蓋「主動換裝蓋掉舊裝備」路徑（follow-up）
