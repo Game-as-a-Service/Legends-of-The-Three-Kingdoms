@@ -156,11 +156,13 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
                 return events;
             }
 
-            // 偵測反饋等 OnDamagedSkill 介入（WaitingSkillEffectBehavior + resume flag）：
-            // polling-advance defer 到 WaitingSkillEffectBehavior.resolveChoice 的 resume hook
+            // 偵測反饋/剛烈等 OnDamagedSkill 介入（WaitingSkillEffectBehavior + resume flag）：
+            // polling-advance defer 到 WaitingSkillEffectBehavior.resolveChoice 的收鏈掃描；
+            // 待推進的 reactor 記在自己的 param（reload-safe）
             if (!game.isTopBehaviorEmpty()
                     && game.peekTopBehavior() instanceof WaitingSkillEffectBehavior wse
                     && "true".equals(wse.getParam(WaitingSkillEffectBehavior.PARAM_RESUME_POLLING))) {
+                putParam(PARAM_DEFERRED_ADVANCE_PLAYER_ID, playerId);
                 List<DomainEvent> events = new ArrayList<>(damagedEvent);
                 String message = game.getGamePhase().getPhaseName().equals("GeneralDying")
                         ? "扣血已瀕臨死亡" : "扣血但還活著";

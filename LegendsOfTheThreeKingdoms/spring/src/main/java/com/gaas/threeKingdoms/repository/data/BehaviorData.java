@@ -65,6 +65,7 @@ public class BehaviorData {
                 if (params != null && Boolean.TRUE.equals(params.get(POLLING_STARTED))) {
                     barbarianInvasionBehavior.setPollingStarted(true);
                 }
+                restoreDeferredAdvanceParam(barbarianInvasionBehavior);
                 yield barbarianInvasionBehavior;
             }
             case "ArrowBarrageBehavior" -> {
@@ -80,6 +81,7 @@ public class BehaviorData {
                 if (params != null && Boolean.TRUE.equals(params.get(POLLING_STARTED))) {
                     arrowBarrageBehavior.setPollingStarted(true);
                 }
+                restoreDeferredAdvanceParam(arrowBarrageBehavior);
                 yield arrowBarrageBehavior;
             }
             case "BorrowedSwordBehavior" -> {
@@ -440,6 +442,17 @@ public class BehaviorData {
         return behavior;
     }
 
+
+    /**
+     * AOE polling caller 的 deferred-advance 標記（反饋/剛烈詢問鏈收斂後 resume 輪詢用，
+     * issue #165/#221）— toDomain 逐 key 還原，漏掉會在跨 request 時 resume 失效（#209 同型）。
+     */
+    private void restoreDeferredAdvanceParam(Behavior behavior) {
+        String key = com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior.PARAM_DEFERRED_ADVANCE_PLAYER_ID;
+        if (params != null && params.get(key) != null) {
+            behavior.putParam(key, params.get(key));
+        }
+    }
 
     public static BehaviorData fromDomain(Behavior behavior) {
         Map<String, Object> params = new HashMap<>(behavior.getParams());

@@ -26,7 +26,9 @@ import java.util.List;
  *   1. 夏侯惇 ACCEPT → 立即判定；紅桃 → 結束；非紅桃 → push 第二個 WaitingSkillEffect 問來源
  *   2. 來源 choice "DISCARD" + cardIds(2 張手牌) 或 "DAMAGE"（受 1 傷）
  *
- * v1 範圍：非 AOE polling 中觸發；來源手牌 < 2 時只能選 DAMAGE。
+ * AOE polling（南蠻/萬箭）中亦觸發（mirror 反饋 #221）：詢問鏈（含 ASK_SOURCE 第二段、
+ * 鬼才巢狀）全部收斂後由 WaitingSkillEffectBehavior 收鏈掃描 resume 輪詢。
+ * 來源手牌 < 2 時只能選 DAMAGE；反傷不進瀕死流程（同反間，v1 慣例）。
  */
 public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
 
@@ -57,15 +59,22 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             return List.of();
         }
         Behavior top = game.isTopBehaviorEmpty() ? null : game.peekTopBehavior();
-        if (top != null && !(top instanceof JianXiongCompatibleTopBehavior compatible
-                && !compatible.isPollingCaller())) {
+        if (top != null && !(top instanceof JianXiongCompatibleTopBehavior)) {
             return List.of();
         }
-
-        game.removeCompletedBehaviors();
+        // polling caller（南蠻/萬箭）需保留底層 behavior，詢問鏈收斂後 resume 輪詢
+        // （mirror 反饋 #221 樣板；兩段式收鏈由 WaitingSkillEffectBehavior 掃描處理）
+        boolean isPollingCaller = top instanceof JianXiongCompatibleTopBehavior compatible
+                && compatible.isPollingCaller();
+        if (!isPollingCaller) {
+            game.removeCompletedBehaviors();
+        }
         WaitingSkillEffectBehavior waiting = new WaitingSkillEffectBehavior(game, damaged, SKILL_NAME);
         waiting.putParam(PARAM_SOURCE_ID, source.getId());
         waiting.putParam(PARAM_STAGE, "ASK_XIAHOU");
+        if (isPollingCaller) {
+            waiting.putParam(WaitingSkillEffectBehavior.PARAM_RESUME_POLLING, "true");
+        }
         game.updateTopBehavior(waiting);
         game.getCurrentRound().setActivePlayer(damaged);
 
