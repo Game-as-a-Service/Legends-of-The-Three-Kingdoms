@@ -716,10 +716,13 @@ public class Game {
     }
 
     private Player findNextAlivePlayer(Player player) {
+        // 存活判準沿用座位表成員資格（死亡結算即移出座位表），不用 healthStatus：
+        // 測試 fixture 未必有設定 healthStatus
+        List<Player> seatedPlayers = seatingChart.getPlayers();
         int seat = players.indexOf(player);
         for (int i = 1; i <= players.size(); i++) {
             Player candidate = players.get((seat + i) % players.size());
-            if (candidate.isStillAlive()) {
+            if (seatedPlayers.contains(candidate)) {
                 return candidate;
             }
         }
