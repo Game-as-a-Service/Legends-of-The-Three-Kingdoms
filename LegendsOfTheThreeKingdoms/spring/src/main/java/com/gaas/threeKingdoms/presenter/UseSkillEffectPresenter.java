@@ -77,6 +77,11 @@ public class UseSkillEffectPresenter implements UseSkillEffectUseCase.UseSkillEf
         public SkillEffectViewModel(SkillEffectDataViewModel data) {
             super("SkillEffectEvent", data, "武將技發動結果");
         }
+
+        /** 帶 domain event 具體結算訊息（如「剛烈判定紅桃，未生效」，issue #235）。 */
+        public SkillEffectViewModel(SkillEffectDataViewModel data, String message) {
+            super("SkillEffectEvent", data, message);
+        }
     }
 
     @Data

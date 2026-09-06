@@ -18,7 +18,14 @@ public class SkillEffectEvent extends DomainEvent {
 
     public SkillEffectEvent(String skillName, String playerId, boolean accepted,
                             List<String> dataCardIds, String dataPlayerId) {
-        super("SkillEffectEvent", String.format("%s：%s %s", skillName, playerId, accepted ? "發動" : "放棄"));
+        this(skillName, playerId, accepted, dataCardIds, dataPlayerId,
+                String.format("%s：%s %s", skillName, playerId, accepted ? "發動" : "放棄"));
+    }
+
+    /** 帶具體結算訊息的版本 — 前端顯示事件層 message（issue #235）。 */
+    public SkillEffectEvent(String skillName, String playerId, boolean accepted,
+                            List<String> dataCardIds, String dataPlayerId, String message) {
+        super("SkillEffectEvent", message);
         this.skillName = skillName;
         this.playerId = playerId;
         this.accepted = accepted;

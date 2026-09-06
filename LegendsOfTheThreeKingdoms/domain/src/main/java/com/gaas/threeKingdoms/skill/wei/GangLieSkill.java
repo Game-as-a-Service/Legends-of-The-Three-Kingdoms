@@ -124,8 +124,11 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
                                                             HandCard judgement) {
         List<DomainEvent> events = new ArrayList<>();
         boolean success = judgement.getSuit() != Suit.HEART;
+        String resultMessage = success
+                ? "剛烈判定生效，" + sourceId + " 選擇棄兩張手牌或受 1 點傷害"
+                : "剛烈判定紅桃，未生效";
         events.add(new SkillEffectEvent(SKILL_NAME, xiaHou.getId(), success,
-                List.of(judgement.getId()), sourceId));
+                List.of(judgement.getId()), sourceId, resultMessage));
         events.addAll(SkillEngine.afterJudgement(game, xiaHou, judgement));
 
         if (!success) {
@@ -163,13 +166,15 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
                 HandCard discarded = source.playCard(cardId);
                 game.getGraveyard().add(discarded);
             }
-            events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, cardIds, xiaHouId));
+            events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, cardIds, xiaHouId,
+                    source.getId() + " 棄兩張手牌回應剛烈"));
             events.add(game.getGameStatusEvent(source.getId() + " 棄兩張手牌回應剛烈"));
         } else if ("DAMAGE".equals(choice)) {
             int originalHp = source.getHP();
             source.damage(1);
-            events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, List.of(), xiaHouId));
-            events.add(game.getGameStatusEvent(source.getId() + " 受剛烈 1 點傷害（" + originalHp + "→" + source.getHP() + "）"));
+            String damageMessage = source.getId() + " 受剛烈 1 點傷害（" + originalHp + "→" + source.getHP() + "）";
+            events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, List.of(), xiaHouId, damageMessage));
+            events.add(game.getGameStatusEvent(damageMessage));
             // v1：剛烈反傷不進瀕死流程整合（HP 仍會歸零，但 dying ask 流程為 follow-up）
         } else {
             throw new IllegalArgumentException("Invalid GangLie source choice: " + choice);
