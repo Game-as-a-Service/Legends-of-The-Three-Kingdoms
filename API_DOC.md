@@ -62,7 +62,7 @@ POST /api/games/{gameId}/player:monarchChooseGeneral
 | playerId | String | 主公玩家 ID |
 | generalId | String | 選擇的武將 ID（如 SHU001 劉備） |
 
-**流程**：主公選將 → 其他玩家收到可選將領列表
+**流程**：主公選將 → 其他玩家收到可選將領列表；另廣播全員選將進度（見下方 GeneralSelectionStatusEvent）
 
 ---
 
@@ -77,7 +77,32 @@ POST /api/games/{gameId}/player:otherChooseGeneral
 | playerId | String | 玩家 ID |
 | generalId | String | 選擇的武將 ID |
 
-**流程**：全部選完 → 發牌（每人 4 張）→ 主公回合開始
+**流程**：每位玩家選完都廣播全員選將進度；全部選完 → 發牌（每人 4 張）→ 主公回合開始（`InitialEndEvent` + `RoundStartEvent` 即開局訊號，無另外的「開始遊戲」API）
+
+### 選將進度廣播 GeneralSelectionStatusEvent（issue #237）
+
+每次有人選完武將（含主公）廣播給**全部玩家**：
+
+```json
+{
+  "gameId": "my-id",
+  "playerIds": ["Scolley", "Happypola", "YangJun", "Tux"],
+  "event": "GeneralSelectionStatusEvent",
+  "data": {
+    "selectedPlayerIds": ["Scolley", "Tux"],
+    "pendingPlayerIds": ["Happypola", "YangJun"],
+    "selectedCount": 2,
+    "totalCount": 4,
+    "allSelected": false
+  },
+  "message": "Tux 已選擇武將（2/4）"
+}
+```
+
+- **不帶武將 id** — 身分局非主公暗選，武將由開局的 `InitialEndEvent` 揭曉（主公另有 `MonarchGeneralChosenEvent` 公開亮將）
+- 最後一位選完會先收到 `allSelected: true` 的進度，接著才是 `InitialEndEvent`
+- 前端判斷：`data.pendingPlayerIds.length === 0` = 全員已選；收到 `InitialEndEvent` = 進入牌局
+- **重整/重連補狀態**：選將階段呼叫 `GET /api/games/{gameId}?playerId=xxx`，推播的 `findGameEvent` 會在 `data.selectionStatus` 帶同一份進度物件（非選將階段為 `null`）
 
 ---
 
@@ -812,6 +837,7 @@ Stack trace 僅記錄於 server log。
 
 | 事件 | 說明 | 觸發 API |
 |------|------|----------|
+| `GeneralSelectionStatusEvent` | 選將進度（每次有人選完武將廣播全員；格式見「其他玩家選將」節） | monarchChooseGeneral / otherChooseGeneral |
 | `PlayCardEvent` | 有人出牌 | playCard |
 | `PlayWardCardEvent` | 有人出無懈可擊 | playWardCard |
 | `GameStatusEvent` | 遊戲狀態更新（每次操作都附帶） | 所有 API |

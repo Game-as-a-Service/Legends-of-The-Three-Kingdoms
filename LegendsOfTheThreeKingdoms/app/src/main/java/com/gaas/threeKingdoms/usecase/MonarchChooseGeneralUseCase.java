@@ -19,12 +19,14 @@ public class MonarchChooseGeneralUseCase {
     private final GameRepository repository;
 
 
-    public void execute(String gameId, MonarchChooseGeneralRequest request, MonarchChooseGeneralCardPresenter presenter) {
+    public void execute(String gameId, MonarchChooseGeneralRequest request, MonarchChooseGeneralCardPresenter presenter,
+                        OthersChoosePlayerGeneralUseCase.SelectionStatusPresenter selectionStatusPresenter) {
         Game game = repository.findById(gameId)
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         List<DomainEvent> events = game.monarchChoosePlayerGeneral(request.getPlayerId(), request.getGeneralId());
         repository.save(game);
         presenter.renderEvents(events);
+        selectionStatusPresenter.renderEvents(events);
     }
 
 

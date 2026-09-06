@@ -121,6 +121,9 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
         shouldGetGeneralCardsByOthers();
 
+        // 主公選完 → 全員收到選將進度 1/4（issue #237）
+        shouldReceiveSelectionStatus(1, false);
+
         shouldChooseGeneralsByOthers();
 
         shouldGetInitialEndGameStatus();
@@ -422,6 +425,9 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        // B 選完 → 全員收到選將進度 2/4（issue #237）
+        shouldReceiveSelectionStatus(2, false);
+
         // Then 玩家B武將為馬超 ((玩家B general是 general1 is true)
         Game game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
@@ -442,6 +448,9 @@ public class GameTest extends AbstractBaseIntegrationTest {
                                 """))
                 .andExpect(status().isOk())
                 .andReturn();
+
+        // C 選完 → 全員收到選將進度 3/4（issue #237）
+        shouldReceiveSelectionStatus(3, false);
 
         game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
@@ -464,6 +473,9 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        // D（最後一位）選完 → 全員收到選將進度 4/4 allSelected（在 InitialEnd 之前，issue #237）
+        shouldReceiveSelectionStatus(4, true);
+
         game = repository.findById("my-id")
                 .orElseThrow(() -> new NotFoundException("Game not found"));
 
@@ -473,6 +485,19 @@ public class GameTest extends AbstractBaseIntegrationTest {
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
                 .stream().filter(x -> x.getGeneralId().equals("WEI002"))
                 .count());
+    }
+
+    /** 選將進度推播驗證（issue #237）：每位玩家收到 GeneralSelectionStatusEvent 且 selectedCount 正確。 */
+    private void shouldReceiveSelectionStatus(int expectedSelectedCount, boolean expectedAllSelected) throws InterruptedException, JsonProcessingException {
+        for (String playerId : List.of("player-a", "player-b", "player-c", "player-d")) {
+            String message = map.get(playerId).poll(5, TimeUnit.SECONDS);
+            assertNotNull(message, playerId + " 未收到選將進度推播");
+            com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(message);
+            assertEquals("GeneralSelectionStatusEvent", node.get("event").asText(), playerId + " 應收到選將進度");
+            assertEquals(expectedSelectedCount, node.get("data").get("selectedCount").asInt());
+            assertEquals(4, node.get("data").get("totalCount").asInt());
+            assertEquals(expectedAllSelected, node.get("data").get("allSelected").asBoolean());
+        }
     }
 
     // 推播 所有玩家的武將 && 手牌

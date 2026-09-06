@@ -21,7 +21,24 @@ public class FindGamePresenter implements FindGameByIdUseCase.FindGamePresenter<
                 .filter(player -> playerId.equals(player.getId()))
                 .findFirst()
                 .orElseThrow(NoSuchElementException::new);
-        viewModel = new FindGameViewModel(game.getGameId(), new FindGameDataViewModel(CreateGamePresenter.hiddenRoleInformationByPlayer(game, currentPlayer)), "", playerId);
+        viewModel = new FindGameViewModel(game.getGameId(),
+                new FindGameDataViewModel(
+                        CreateGamePresenter.hiddenRoleInformationByPlayer(game, currentPlayer),
+                        buildSelectionStatus(game)),
+                "", playerId);
+    }
+
+    /** 選將階段（Initial）重整/重連補進度（issue #237）；其餘階段為 null。 */
+    private static GeneralSelectionStatusPresenter.GeneralSelectionStatusDataViewModel buildSelectionStatus(Game game) {
+        if (!"Initial".equals(game.getGamePhase().getPhaseName())) {
+            return null;
+        }
+        List<String> selected = game.getPlayers().stream()
+                .filter(p -> p.getGeneralCard() != null).map(Player::getId).toList();
+        List<String> pending = game.getPlayers().stream()
+                .filter(p -> p.getGeneralCard() == null).map(Player::getId).toList();
+        return new GeneralSelectionStatusPresenter.GeneralSelectionStatusDataViewModel(
+                selected, pending, selected.size(), game.getPlayers().size(), pending.isEmpty());
     }
 
     @Override
@@ -49,6 +66,8 @@ public class FindGamePresenter implements FindGameByIdUseCase.FindGamePresenter<
     @AllArgsConstructor
     public static class FindGameDataViewModel {
         private List<CreateGamePresenter.SeatViewModel> seats;
+        // 選將階段的進度快照（issue #237）；非 Initial 階段為 null（additive 欄位）
+        private GeneralSelectionStatusPresenter.GeneralSelectionStatusDataViewModel selectionStatus;
     }
 
 
