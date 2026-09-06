@@ -104,6 +104,28 @@ POST /api/games/{gameId}/player:otherChooseGeneral
 - 前端判斷：`data.pendingPlayerIds.length === 0` = 全員已選；收到 `InitialEndEvent` = 進入牌局
 - **重整/重連補狀態**：選將階段呼叫 `GET /api/games/{gameId}?playerId=xxx`，推播的 `findGameEvent` 會在 `data.selectionStatus` 帶同一份進度物件（非選將階段為 `null`）
 
+### 連線狀態廣播 PlayerConnectionStatusEvent（issue #239）
+
+玩家 WebSocket 訂閱 `/websocket/legendsOfTheThreeKingdoms/{gameId}/{playerId}` 或斷線時，廣播該局全員：
+
+```json
+{
+  "gameId": "my-id",
+  "event": "PlayerConnectionStatusEvent",
+  "data": {
+    "connectedPlayerIds": ["Scolley", "Happypola", "Tux"],
+    "connectedCount": 3,
+    "totalCount": 4
+  },
+  "message": "Tux 已連線（3/4）"
+}
+```
+
+- 連線是傳輸層狀態（不進遊戲存檔）：訂閱即連線、STOMP session 斷線即離線；重整會連發「已離線」+「已連線」兩則，前端照最後一則渲染
+- 同玩家多分頁：首個分頁連上才算連線、最後一個關閉才算離線
+- 遊戲尚未建立時的訂閱、或非該局玩家的訂閱（觀戰）→ 不廣播
+- 前端判斷：`data.connectedCount === data.totalCount` = 全員在線；此事件在**整場遊戲**都會發（牌局中掉線也會廣播，可做斷線提示）
+
 ---
 
 ## 5. 出牌
@@ -838,6 +860,7 @@ Stack trace 僅記錄於 server log。
 | 事件 | 說明 | 觸發 API |
 |------|------|----------|
 | `GeneralSelectionStatusEvent` | 選將進度（每次有人選完武將廣播全員；格式見「其他玩家選將」節） | monarchChooseGeneral / otherChooseGeneral |
+| `PlayerConnectionStatusEvent` | 連線狀態（玩家訂閱/斷線時廣播全員；格式見「其他玩家選將」節） | WebSocket 訂閱/斷線（非 HTTP API） |
 | `PlayCardEvent` | 有人出牌 | playCard |
 | `PlayWardCardEvent` | 有人出無懈可擊 | playWardCard |
 | `GameStatusEvent` | 遊戲狀態更新（每次操作都附帶） | 所有 API |
