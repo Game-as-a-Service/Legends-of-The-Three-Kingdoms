@@ -50,11 +50,15 @@ public class FanKuiFullFlowTest extends AbstractBaseIntegrationTest {
                                 """))
                 .andExpect(status().isOk());
 
-        // 選將
+        // 選將（每步會多一則 GeneralSelectionStatusEvent 進度推播，issue #237 — pop 數對應調整）
         chooseGeneral("player:monarchChooseGeneral", "player-a", "SHU001"); // 劉備
         websocketUtil.popAllPlayerMessage();
+        websocketUtil.popAllPlayerMessage();
+        websocketUtil.popAllPlayerMessage();
         chooseGeneral("player:otherChooseGeneral", "player-b", "WEI002");   // 司馬懿
+        websocketUtil.popAllPlayerMessage();
         chooseGeneral("player:otherChooseGeneral", "player-c", "WU001");
+        websocketUtil.popAllPlayerMessage();
         chooseGeneral("player:otherChooseGeneral", "player-d", "WU002");    // 最後一位 → 發牌、A 回合開始
         websocketUtil.popAllPlayerMessage();
         websocketUtil.popAllPlayerMessage();

@@ -23,7 +23,8 @@ public class InitialEndPresenter implements OthersChoosePlayerGeneralUseCase.Ini
     private List<InitialEndViewModel> initialEndViewModels;
 
     public void renderEvents(List<DomainEvent> events) {
-        if (!events.isEmpty()) {
+        // 以事件存在與否判斷（選將中 events 只有 GeneralSelectionStatusEvent，issue #237）
+        if (ViewModel.getEvent(events, InitialEndEvent.class).isPresent()) {
             updateInitialEventToViewModel(events);
         } else {
             initialEndViewModels = Collections.emptyList();

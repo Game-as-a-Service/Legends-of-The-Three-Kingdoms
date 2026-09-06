@@ -75,6 +75,23 @@ public class WebSocketBroadCast {
         }
     }
 
+    /** 選將進度廣播（issue #237）— 事件不存在（如錯誤流程）時靜默跳過。 */
+    public void pushGeneralSelectionStatusEvent(GeneralSelectionStatusPresenter presenter) {
+        GeneralSelectionStatusPresenter.GeneralSelectionStatusViewModel viewModel = presenter.present();
+        if (viewModel == null) {
+            return;
+        }
+        try {
+            String json = objectMapper.writeValueAsString(viewModel);
+            for (String playerId : viewModel.getPlayerIds()) {
+                messagingTemplate.convertAndSend(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", viewModel.getGameId(), playerId), json);
+            }
+        } catch (Exception e) {
+            System.err.println("****************** pushGeneralSelectionStatusEvent ");
+            e.printStackTrace();
+        }
+    }
+
     public void pushInitialEndEvent(InitialEndPresenter presenter) {
         List<InitialEndPresenter.InitialEndViewModel> initialEndViewModels = presenter.present();
         try {

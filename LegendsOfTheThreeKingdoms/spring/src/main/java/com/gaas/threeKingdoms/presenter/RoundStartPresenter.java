@@ -21,7 +21,8 @@ public class RoundStartPresenter implements OthersChoosePlayerGeneralUseCase.Rou
     }
 
     public void renderEvents(List<DomainEvent> events) {
-        if (!events.isEmpty()) {
+        // 以事件存在與否判斷（選將中 events 只有 GeneralSelectionStatusEvent，issue #237）
+        if (ViewModel.getEvent(events, RoundStartEvent.class).isPresent()) {
             viewModels = new ArrayList<>();
             updateEventToPlayerTakeTurnViewModel(events);
         } else {

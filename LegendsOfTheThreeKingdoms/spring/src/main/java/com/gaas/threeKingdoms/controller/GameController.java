@@ -71,8 +71,10 @@ public class GameController {
     @PostMapping("/api/games/{gameId}/player:monarchChooseGeneral")
     public ResponseEntity<?> chooseGeneralByMonarch(@PathVariable String gameId, @RequestBody ChooseGeneralRequest request) {
         MonarchChooseGeneralCardPresenter monarchChooseGeneralCardPresenter = new MonarchChooseGeneralCardPresenter();
-        monarchChooseGeneralUseCase.execute(gameId, request.toMonarchChooseGeneralRequest(), monarchChooseGeneralCardPresenter);
+        GeneralSelectionStatusPresenter selectionStatusPresenter = new GeneralSelectionStatusPresenter();
+        monarchChooseGeneralUseCase.execute(gameId, request.toMonarchChooseGeneralRequest(), monarchChooseGeneralCardPresenter, selectionStatusPresenter);
         webSocketBroadCast.pushMonarchChooseGeneralsCardEvent(monarchChooseGeneralCardPresenter);
+        webSocketBroadCast.pushGeneralSelectionStatusEvent(selectionStatusPresenter);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -80,7 +82,10 @@ public class GameController {
     public ResponseEntity<?> chooseGeneralByOthers(@PathVariable String gameId, @RequestBody ChooseGeneralRequest request) {
         InitialEndPresenter initialEndPresenter = new InitialEndPresenter();
         RoundStartPresenter roundStartPresenter = new RoundStartPresenter();
-        othersChoosePlayerGeneralUseCase.execute(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter, roundStartPresenter);
+        GeneralSelectionStatusPresenter selectionStatusPresenter = new GeneralSelectionStatusPresenter();
+        othersChoosePlayerGeneralUseCase.execute(gameId, request.toMonarchChooseGeneralRequest(), initialEndPresenter, roundStartPresenter, selectionStatusPresenter);
+        // 進度先推（選將中；最後一位時 allSelected=true），再推開局事件
+        webSocketBroadCast.pushGeneralSelectionStatusEvent(selectionStatusPresenter);
         webSocketBroadCast.pushInitialEndEvent(initialEndPresenter);
         webSocketBroadCast.pushPlayerTakeTurnEvent(roundStartPresenter);
         return ResponseEntity.ok(HttpStatus.OK);

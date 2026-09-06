@@ -114,8 +114,22 @@ public class Game {
 
         List<DomainEvent> getGeneralCardEventByOthers = getOtherCanChooseGeneralCards();
         getGeneralCardEventByOthers.add(monarchChooseGeneralCardEvent);
+        getGeneralCardEventByOthers.add(buildGeneralSelectionStatusEvent(playerId));
 
         return getGeneralCardEventByOthers;
+    }
+
+    /**
+     * 選將進度快照（issue #237）：只帶「誰選完了」，不帶武將 id — 非主公暗選，
+     * 武將由 InitialEndEvent 開局揭曉。
+     */
+    private GeneralSelectionStatusEvent buildGeneralSelectionStatusEvent(String justSelectedPlayerId) {
+        List<String> selected = players.stream()
+                .filter(p -> p.getGeneralCard() != null).map(Player::getId).toList();
+        List<String> pending = players.stream()
+                .filter(p -> p.getGeneralCard() == null).map(Player::getId).toList();
+        return new GeneralSelectionStatusEvent(gameId,
+                players.stream().map(Player::getId).toList(), selected, pending, justSelectedPlayerId);
     }
 
     public List<DomainEvent> othersChoosePlayerGeneral(String playerId, String generalId) {
@@ -124,7 +138,8 @@ public class Game {
         player.setGeneralCard(generalCard);
 
         if (players.stream().anyMatch(currentPlayer -> currentPlayer.getGeneralCard() == null)) {
-            return Collections.emptyList();
+            // 還有人沒選完：廣播選將進度（先前回空 events → 前端無從得知進度，issue #237）
+            return List.of(buildGeneralSelectionStatusEvent(playerId));
         }
 
         assignHpToPlayers();
@@ -153,7 +168,9 @@ public class Game {
         DomainEvent initialEndEvent = new InitialEndEvent(gameId, playerEvents, roundEvent, this.getGamePhase().getPhaseName());
 
         List<DomainEvent> domainEvents = playerTakeTurn(getCurrentRoundPlayer());
-        List<DomainEvent> combineEvents = new ArrayList<>(List.of(initialEndEvent));
+        // 最後一位選完：進度（allSelected=true）→ InitialEnd 開局（issue #237）
+        List<DomainEvent> combineEvents = new ArrayList<>(
+                List.of(buildGeneralSelectionStatusEvent(playerId), initialEndEvent));
         combineEvents.addAll(domainEvents);
 
         return combineEvents;
