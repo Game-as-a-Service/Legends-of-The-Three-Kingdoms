@@ -308,8 +308,11 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
     public void luoShenCollectsBlackCardsUntilRed() {
         Game game = createGame(General.甄姬, General.劉備, General.孫權, General.孫權);
         Player a = game.getPlayer("player-a");
-        // Stack：後 add 的先抽 → 抽序 = BS9009(黑) → BS8008(黑) → BH3029(紅停)
-        game.getDeck().add(List.of(new Peach(BH3029), new Kill(BS8008), new Kill(BS9009)));
+        // Stack：後 add 的先抽 → 抽序 = BS9009(黑) → BS8008(黑) → BH3029(紅停) → 摸 2 = BH4030、BH2028
+        // 摸牌也疊死：initDeck 牌堆裡有另一張同 id 的 BH3029，隨機摸到會誤中
+        // 「紅色判定牌不收」斷言（CI 機率性 flake）
+        game.getDeck().add(List.of(new Dodge(BH2028), new Peach(BH4030),
+                new Peach(BH3029), new Kill(BS8008), new Kill(BS9009)));
 
         List<DomainEvent> askEvents = game.playerTakeTurnStartInJudgement(a);
 
