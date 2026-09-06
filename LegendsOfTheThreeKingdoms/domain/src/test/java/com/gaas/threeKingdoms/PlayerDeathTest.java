@@ -1385,4 +1385,177 @@ public class PlayerDeathTest {
         assertEquals(0, game.getPlayer("player-b").getBloodCard().getHp());
 
     }
+
+    @DisplayName("""
+            Given
+            玩家ABCD（issue #231 回歸：距離跨屍減一）
+            B hp = 1，A 手牌有殺，ABCD 都沒有桃
+            A 到 C 的座位距離為 2（隔著 B）
+
+            When
+            A 殺 B，全員 skip 桃 → B 死亡
+
+            Then
+            A 到 C 的距離變為 1，A 不需武器即可攻擊 C
+            """)
+    @Test
+    public void givenPlayerABCD_WhenBDies_ThenDistanceAcrossDeadPlayerReducesByOne() {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.甘寧))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+        playerA.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(1))
+                .withGeneralCard(new GeneralCard(General.孫權))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        game.setPlayers(Arrays.asList(playerA, playerB, playerC, playerD));
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        assertEquals(2, game.getSeatingChart().calculateDistance(playerA, playerC));
+        assertFalse(game.isInAttackRange(playerA, playerC));
+
+        // When：A 殺 B，全員 skip 桃 → B 死亡
+        game.playerPlayCard(playerA.getId(), "BS8008", playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+        // Then：B 移出座位表，A→C 距離由 2 減為 1，可直接攻擊
+        assertTrue(game.getSeatingChart().getPlayers().stream().noneMatch(p -> p.getId().equals("player-b")));
+        assertEquals(1, game.getSeatingChart().calculateDistance(playerA, playerC));
+        assertTrue(game.isInAttackRange(playerA, playerC));
+    }
+
+    @DisplayName("""
+            Given
+            玩家ABCD（issue #231：回合玩家自己死亡後的輪替）
+            B hp = 3，B 的判定區有閃電，B 沒有桃
+            A 的回合結束後輪到 B
+
+            When
+            B 回合開始閃電判定失敗（黑桃 3）→ 3 點傷害 → B 瀕死，全員 skip 桃 → B 死亡
+
+            Then
+            下一回合是 C（死者的下一位），而非座位表第 0 位的 A
+            """)
+    @Test
+    public void givenCurrentRoundPlayerDiesOnOwnTurn_ThenNextRoundGoesToPlayerAfterDeadOne() {
+        // Given
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new com.gaas.threeKingdoms.handcard.Deck(List.of(
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003), // B 的閃電判定牌（黑桃 3 → 命中）
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003),
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003),
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003),
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003),
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003),
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003),
+                new com.gaas.threeKingdoms.handcard.scrollcard.Dismantle(SS3003)
+        )));
+
+        Player playerA = PlayerBuilder.construct()
+                .withId("player-a")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MONARCH))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        java.util.Stack<com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard> delayScrolls = new java.util.Stack<>();
+        delayScrolls.push(new com.gaas.threeKingdoms.handcard.scrollcard.Lightning(SSA014));
+        Player playerB = PlayerBuilder.construct()
+                .withId("player-b")
+                .withBloodCard(new BloodCard(3))
+                .withGeneralCard(new GeneralCard(General.關羽))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.TRAITOR))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .withDelayScrollCards(delayScrolls)
+                .build();
+
+        Player playerC = PlayerBuilder.construct()
+                .withId("player-c")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.張飛))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.REBEL))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        Player playerD = PlayerBuilder.construct()
+                .withId("player-d")
+                .withBloodCard(new BloodCard(4))
+                .withGeneralCard(new GeneralCard(General.趙雲))
+                .withHealthStatus(HealthStatus.ALIVE)
+                .withRoleCard(new RoleCard(Role.MINISTER))
+                .withHand(new Hand())
+                .withEquipment(new Equipment())
+                .build();
+
+        game.setPlayers(Arrays.asList(playerA, playerB, playerC, playerD));
+        game.setCurrentRound(new Round(playerA));
+        game.enterPhase(new Normal(game));
+
+        // When：A 結束回合 → B 回合開始閃電判定失敗 → B 瀕死
+        game.finishAction(playerA.getId());
+        assertEquals(0, playerB.getBloodCard().getHp());
+
+        // 全員 skip 桃（詢問順序從瀕死者 B 開始）
+        game.playerPlayCard(playerB.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerC.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        game.playerPlayCard(playerD.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+        List<DomainEvent> events = game.playerPlayCard(playerA.getId(), "", playerB.getId(), PlayType.SKIP.getPlayType());
+
+        // Then：B 死亡，下一回合是死者的下一位 C（修正前誤跳到座位表第 0 位的 A）
+        SettlementEvent settlementEvent = getEvent(events, SettlementEvent.class).orElseThrow(RuntimeException::new);
+        assertEquals("player-b", settlementEvent.getPlayerId());
+        assertTrue(game.getSeatingChart().getPlayers().stream().noneMatch(p -> p.getId().equals("player-b")));
+        assertEquals("player-c", game.getCurrentRound().getCurrentRoundPlayer().getId());
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId());
+    }
 }

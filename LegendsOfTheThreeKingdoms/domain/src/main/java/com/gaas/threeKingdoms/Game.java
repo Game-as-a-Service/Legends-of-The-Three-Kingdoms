@@ -708,9 +708,22 @@ public class Game {
     }
 
     public List<DomainEvent> goNextRound(Player player) {
-        Player nextPlayer = seatingChart.getNextPlayer(player);
+        // 不可用 seatingChart.getNextPlayer：回合玩家自己死亡時已被移出座位表，
+        // indexOf = -1 會誤跳到 0 號位（issue #231）。改以原始座位順序找下一位存活玩家。
+        Player nextPlayer = findNextAlivePlayer(player);
         currentRound = new Round(nextPlayer);
         return playerTakeTurn(nextPlayer);
+    }
+
+    private Player findNextAlivePlayer(Player player) {
+        int seat = players.indexOf(player);
+        for (int i = 1; i <= players.size(); i++) {
+            Player candidate = players.get((seat + i) % players.size());
+            if (candidate.isStillAlive()) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("No alive player found after " + player.getId());
     }
 
     public void askActivePlayerPlayPeachCard() {
