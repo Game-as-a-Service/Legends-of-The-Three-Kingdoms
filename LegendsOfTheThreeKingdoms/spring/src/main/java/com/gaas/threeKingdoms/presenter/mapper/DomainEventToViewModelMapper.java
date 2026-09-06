@@ -313,7 +313,8 @@ public class DomainEventToViewModelMapper {
             UseSkillEffectPresenter.SkillEffectDataViewModel dataViewModel = new UseSkillEffectPresenter.SkillEffectDataViewModel(
                     skillEvent.getSkillName(), skillEvent.getPlayerId(), skillEvent.isAccepted(),
                     skillEvent.getDataCardIds(), skillEvent.getDataPlayerId());
-            return new UseSkillEffectPresenter.SkillEffectViewModel(dataViewModel);
+            // 帶 domain event 的具體結算訊息（如「剛烈判定紅桃，未生效」，issue #235）
+            return new UseSkillEffectPresenter.SkillEffectViewModel(dataViewModel, skillEvent.getMessage());
         });
 
         eventToViewModelMappers.put(AskHuJiaEffectEvent.class, event -> {

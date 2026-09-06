@@ -232,8 +232,15 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
                         && ((AskSkillEffectEvent) e).getPlayerId().equals("player-a")),
                 "判定生效應詢問傷害來源");
 
-        game.playerUseSkillEffect("player-a", "剛烈", "DAMAGE", null, null);
+        assertEquals("剛烈判定生效，player-a 選擇棄兩張手牌或受 1 點傷害", events.stream()
+                .filter(e -> e instanceof SkillEffectEvent se && se.getSkillName().equals("剛烈"))
+                .findFirst().orElseThrow().getMessage(), "事件層 message 帶具體結算文字（issue #235）");
+
+        List<DomainEvent> damageEvents = game.playerUseSkillEffect("player-a", "剛烈", "DAMAGE", null, null);
         assertEquals(3, a.getHP(), "來源選擇受 1 點傷害");
+        assertEquals("player-a 受剛烈 1 點傷害（4→3）", damageEvents.stream()
+                .filter(e -> e instanceof SkillEffectEvent se && se.getSkillName().equals("剛烈"))
+                .findFirst().orElseThrow().getMessage());
     }
 
     @DisplayName("夏侯惇剛烈、判定生效 → 來源選 DISCARD 棄兩張手牌")
@@ -269,6 +276,10 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         assertFalse(events.stream().anyMatch(e -> e instanceof AskSkillEffectEvent));
         assertTrue(game.isTopBehaviorEmpty());
         assertEquals(4, game.getPlayer("player-a").getHP());
+        // 事件層 message 帶具體結算文字（issue #235：前端顯示的是事件的 message）
+        assertEquals("剛烈判定紅桃，未生效", events.stream()
+                .filter(e -> e instanceof SkillEffectEvent se && se.getSkillName().equals("剛烈"))
+                .findFirst().orElseThrow().getMessage());
     }
 
     // ===== 天妒 =====
