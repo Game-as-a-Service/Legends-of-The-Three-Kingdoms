@@ -249,6 +249,7 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
     private void addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(List<DomainEvent> events) {
         game.peekTopBehaviorSecondElement().ifPresent(secondBehavior -> {
             if (secondBehavior instanceof BarbarianInvasionBehavior barbarianInvasionBehavior) {
+                if (isPollingFinishedOrCurrentReactorDead(barbarianInvasionBehavior)) return;
                 Player behaviorCurrentReactionPlayer = barbarianInvasionBehavior.getCurrentReactionPlayer();
                 if (barbarianInvasionBehavior.isInReactionPlayers(behaviorCurrentReactionPlayer.getId())) {
                     events.add(new AskKillEvent(behaviorCurrentReactionPlayer.getId()));
@@ -261,6 +262,7 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
     private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events) {
         game.peekTopBehaviorSecondElement().ifPresent(secondBehavior -> {
             if (secondBehavior instanceof ArrowBarrageBehavior arrowBarrageBehavior) {
+                if (isPollingFinishedOrCurrentReactorDead(arrowBarrageBehavior)) return;
                 Player arrowBarrageCurrentReactionPlayer = arrowBarrageBehavior.getCurrentReactionPlayer();
                 if (arrowBarrageBehavior.isInReactionPlayers(arrowBarrageCurrentReactionPlayer.getId())) {
                     events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
@@ -268,6 +270,24 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                 game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
             }
         });
+    }
+
+    /**
+     * AOE 輪詢已結束、或 currentReactionPlayer 已死 → 不可 resume。
+     * <p>
+     * 最後一個 reactor 瀕死時 BI/AB 的 advanceAfterDamage 只設 isOneRound=true，
+     * currentReactionPlayer 仍指著那個瀕死者（沒有下一位可推進）。若他沒被救回，
+     * 這裡若照舊 resume 就會對死者發 AskKill/AskDodge 並把他設成 activePlayer —
+     * 死人因此能繼續出牌（使用者回報「馬超被南蠻死了後變殭屍」），
+     * 同時 events 帶了 ask 事件也讓外層的 goNextRound 整段被跳過，回合接不下去。
+     * <p>
+     * 方天畫戟版本（{@link #addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior}）
+     * 早已有 isOneRound 守門，此處補齊 BI/AB。
+     */
+    private boolean isPollingFinishedOrCurrentReactorDead(Behavior aoeBehavior) {
+        if (aoeBehavior.isOneRound()) return true;
+        Player currentReactor = aoeBehavior.getCurrentReactionPlayer();
+        return currentReactor == null || currentReactor.isAlreadyDeath();
     }
 
     private void addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(List<DomainEvent> events) {

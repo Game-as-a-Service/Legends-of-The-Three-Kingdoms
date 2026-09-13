@@ -450,6 +450,11 @@ public class Game {
         if (!activePlayer.getId().equals(playerId)) {
             throw new IllegalStateException("ActivePlayer is not " + playerId + " , now ActivePlayer is " + activePlayer.getId());
         }
+        // 死人不得行動（殭屍守門）。瀕死中的玩家 healthStatus 仍是 ALIVE（自救出桃合法），
+        // 只有 removeDyingPlayer 之後才是 DEATH — 此時任何 action 都是狀態機漏洞造成的。
+        if (activePlayer.isAlreadyDeath()) {
+            throw new IllegalStateException("Player " + playerId + " is already dead and cannot act");
+        }
     }
 
     private void checkIsPlayerHasThisEquipment(String playerId, String cardId) {

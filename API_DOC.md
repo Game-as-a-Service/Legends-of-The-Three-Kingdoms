@@ -858,6 +858,9 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 反饋 / 剛烈在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221 / issue #165：受傷 → 詢問 →
   詢問鏈收斂後 resume 輪詢；剛烈兩段式與鬼才巢狀介入亦支援）；
   遺計在 AOE polling 中仍不觸發（可循同一收鏈掃描開啟，follow-up）；三者瀕死皆不觸發
+- AOE polling 中被扣死的玩家（含**最後一位**被詢問者）不會再收到 AskKill/AskDodge；
+  瀕死結算結束後 `activePlayer` 回到回合玩家。死亡玩家的任何 action 一律 400
+  （`IllegalStateException: ... is already dead and cannot act`）
 - 剛烈 DAMAGE 反傷不進瀕死流程整合（follow-up）
 - 鐵騎 v1 自動判定（不問）；目標有八卦陣時走防具路徑不受鐵騎影響（follow-up）
 - 梟姬不覆蓋「主動換裝蓋掉舊裝備」路徑（follow-up）
@@ -893,7 +896,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | error | HTTP | 常見情境 |
 |-------|------|----------|
 | `DistanceErrorException` | 400 | 殺 / 順手牽羊超出距離 |
-| `IllegalStateException` | 400 | 非法遊戲狀態：不是你的回合、不是當前需回應的玩家、殺次數已用完、技能每回合限一次等 |
+| `IllegalStateException` | 400 | 非法遊戲狀態：不是你的回合、不是當前需回應的玩家、**已死亡玩家嘗試行動**、殺次數已用完、技能每回合限一次等 |
 | `IllegalArgumentException` | 400 | 非法參數：卡牌不在手中、目標不合法、棄牌數不足等 |
 | `ValidationError` | 400 | Request body 欄位驗證失敗 |
 | `NotFoundException` | 404 | gameId 不存在 |
