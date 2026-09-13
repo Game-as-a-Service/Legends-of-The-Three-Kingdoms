@@ -202,14 +202,28 @@ public class Game {
                     .anyMatch(ContentmentEvent::isSuccess);
 
             if (RoundPhase.Drawing.equals(currentRound.getRoundPhase())) {
-                DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentEventSuccess);
-                events.add(drawCardEvent);
-                if (contentmentEventSuccess) {
-                    events.addAll(finishAction(currentRoundPlayer.getId()));
-                } else {
-                    events.add(getGameStatusEvent(drawCardEvent.getMessage()));
+                // 裸衣：判定後、摸牌前詢問許褚是否發動（主動觸發）
+                List<DomainEvent> luoYiAsk = SkillEngine.luoYiAskActivation(
+                        this, currentRoundPlayer, contentmentEventSuccess);
+                if (!luoYiAsk.isEmpty()) {
+                    events.addAll(luoYiAsk);
+                    return events;
                 }
+                events.addAll(proceedDrawPhase(currentRoundPlayer, contentmentEventSuccess));
             }
+        }
+        return events;
+    }
+
+    /** 摸牌階段本體：摸牌 →（樂不思蜀生效則直接結束出牌）。裸衣 resolve 後亦由此進入。 */
+    public List<DomainEvent> proceedDrawPhase(Player currentRoundPlayer, boolean contentmentSuccess) {
+        List<DomainEvent> events = new ArrayList<>();
+        DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentSuccess);
+        events.add(drawCardEvent);
+        if (contentmentSuccess) {
+            events.addAll(finishAction(currentRoundPlayer.getId()));
+        } else {
+            events.add(getGameStatusEvent(drawCardEvent.getMessage()));
         }
         return events;
     }
@@ -231,13 +245,14 @@ public class Game {
                     .anyMatch(ContentmentEvent::isSuccess);
 
             if (RoundPhase.Drawing.equals(currentRound.getRoundPhase())) {
-                DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentSuccess);
-                events.add(drawCardEvent);
-                if (contentmentSuccess) {
-                    events.addAll(finishAction(currentRoundPlayer.getId()));
-                } else {
-                    events.add(getGameStatusEvent(drawCardEvent.getMessage()));
+                // 裸衣：判定後、摸牌前詢問許褚是否發動（主動觸發）
+                List<DomainEvent> luoYiAsk = SkillEngine.luoYiAskActivation(
+                        this, currentRoundPlayer, contentmentSuccess);
+                if (!luoYiAsk.isEmpty()) {
+                    events.addAll(luoYiAsk);
+                    return events;
                 }
+                events.addAll(proceedDrawPhase(currentRoundPlayer, contentmentSuccess));
             }
         }
         return events;
@@ -325,7 +340,7 @@ public class Game {
 
     private int calculatePlayerCanDrawCardSize(Player player) {
         // 基礎 2 張 + 技能修正（英姿 +1 / 裸衣 -1），下限 0
-        return Math.max(0, 2 + SkillEngine.drawPhaseDelta(player));
+        return Math.max(0, 2 + SkillEngine.drawPhaseDelta(this, player));
     }
 
     private void refreshDeckWhenCardsNumLessThen(int requiredCardNumber) {

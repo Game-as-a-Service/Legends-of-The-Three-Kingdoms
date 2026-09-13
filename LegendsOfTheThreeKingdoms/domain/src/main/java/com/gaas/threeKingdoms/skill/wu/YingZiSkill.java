@@ -24,7 +24,7 @@ public class YingZiSkill implements DrawPhaseDeltaSkill, HandLimitSkill {
     }
 
     @Override
-    public int drawCardDelta() {
+    public int drawCardDelta(com.gaas.threeKingdoms.Game game, Player player) {
         return 1;
     }
 
