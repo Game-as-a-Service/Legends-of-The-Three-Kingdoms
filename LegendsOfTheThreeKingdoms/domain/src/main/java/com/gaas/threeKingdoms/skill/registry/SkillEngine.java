@@ -245,6 +245,20 @@ public final class SkillEngine {
     }
 
     /**
+     * 梟姬等：失去 lostCount 張裝備牌後的補摸事件。
+     * <p>
+     * 官方梟姬是 per-card（「每當你失去一張裝備區裡的牌」）→ 一次失去 N 張摸 2N，
+     * 故張數以 lostCount 相乘。無此類技能（或 lostCount <= 0）回 empty list，
+     * caller 可無條件 addAll。
+     */
+    public static List<DomainEvent> afterLoseEquipment(Game game, Player player, int lostCount) {
+        if (lostCount <= 0) return List.of();
+        int drawCount = drawCountAfterLoseEquipment(player) * lostCount;
+        if (drawCount <= 0) return List.of();
+        return List.of(game.drawCardToPlayer(player, false, drawCount));
+    }
+
+    /**
      * 洛神：回合開始判定階段先詢問甄姬是否發動（issue #227 改主動觸發）。
      * 非甄姬回 empty list；有洛神 → push WaitingSkillEffect(洛神) 並回詢問事件
      * （caller 檢查 topBehavior 為 WaitingSkillEffectBehavior 時中止回合開始流程）。
