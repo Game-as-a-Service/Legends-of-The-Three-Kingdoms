@@ -411,6 +411,13 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
                 "鐵騎生效不問閃");
         assertEquals(3, b.getHP(), "直接扣血");
         assertEquals(1, b.getHandSize(), "閃未被消耗");
+        // 使用者回報：訊息須帶判定牌與結果（原本只有「鐵騎：xxx 發動」）
+        SkillEffectEvent tieQi = events.stream()
+                .filter(e -> e instanceof SkillEffectEvent).map(e -> (SkillEffectEvent) e)
+                .filter(e -> e.getSkillName().equals("鐵騎")).findFirst().orElseThrow();
+        assertTrue(tieQi.getMessage().contains("鐵騎判定") && tieQi.getMessage().contains("黑桃9"),
+                "訊息應含判定牌：" + tieQi.getMessage());
+        assertTrue(tieQi.getMessage().contains("生效"), tieQi.getMessage());
     }
 
     @DisplayName("馬超出殺、鐵騎判定紅桃 → 照常問閃")
@@ -426,6 +433,11 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
 
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));
         assertEquals(4, game.getPlayer("player-b").getHP());
+        SkillEffectEvent tieQi = events.stream()
+                .filter(e -> e instanceof SkillEffectEvent).map(e -> (SkillEffectEvent) e)
+                .filter(e -> e.getSkillName().equals("鐵騎")).findFirst().orElseThrow();
+        assertTrue(tieQi.getMessage().contains("鐵騎判定") && tieQi.getMessage().contains("未生效"),
+                "訊息應含判定結果：" + tieQi.getMessage());
     }
 
     // ===== 梟姬 =====

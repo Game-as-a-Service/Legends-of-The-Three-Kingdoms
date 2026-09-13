@@ -292,9 +292,14 @@ public final class SkillEngine {
                                             List<DomainEvent> events) {
         boolean black = judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.SPADE
                 || judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.CLUB;
+        String judgementDesc = judgement.getSuit().getDisplayName()
+                + judgement.getRank().getRepresentation() + " " + judgement.getName();
+        String message = black
+                ? String.format("洛神判定：%s → 黑色，收入手牌續判", judgementDesc)
+                : String.format("洛神判定：%s → 紅色，停止", judgementDesc);
         events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
                 com.gaas.threeKingdoms.skill.wei.LuoShenSkill.SKILL_NAME,
-                roundPlayer.getId(), black, List.of(judgement.getId()), null));
+                roundPlayer.getId(), black, List.of(judgement.getId()), null, message));
         if (black) {
             game.getGraveyard().removeCard(judgement.getId())
                     .ifPresent(card -> roundPlayer.getHand().addCardToHand(card));
@@ -319,9 +324,16 @@ public final class SkillEngine {
         boolean success = judgement.getSuit() != com.gaas.threeKingdoms.handcard.Suit.HEART;
         successOut[0] = success;
         List<DomainEvent> events = new ArrayList<>();
+        // 帶判定結果訊息（使用者回報：只顯示「鐵騎：xxx 發動」看不到判定牌與結果）
+        String judgementDesc = judgement.getSuit().getDisplayName()
+                + judgement.getRank().getRepresentation() + " " + judgement.getName();
+        String message = success
+                ? String.format("鐵騎判定：%s → 生效，%s 不能出閃",
+                        judgementDesc, target.getGeneralName())
+                : String.format("鐵騎判定：%s → 紅桃未生效，照常問閃", judgementDesc);
         events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
                 com.gaas.threeKingdoms.skill.shu.TieQiSkill.SKILL_NAME,
-                attacker.getId(), success, List.of(judgement.getId()), target.getId()));
+                attacker.getId(), success, List.of(judgement.getId()), target.getId(), message));
         events.addAll(afterJudgement(game, attacker, judgement));
         return events;
     }
