@@ -86,15 +86,40 @@ public final class SkillEngine {
                 .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.trigger.KillCountUnlimitedSkill);
     }
 
-    /** 英姿(+1) / 裸衣(-1)：摸牌階段抽牌數修正。 */
-    public static int drawPhaseDelta(Player player) {
+    /** 英姿(+1) / 裸衣(-1，需當回合已發動)：摸牌階段抽牌數修正。 */
+    public static int drawPhaseDelta(Game game, Player player) {
         int delta = 0;
         for (Skill skill : skillsOf(player)) {
             if (skill instanceof com.gaas.threeKingdoms.skill.trigger.DrawPhaseDeltaSkill d) {
-                delta += d.drawCardDelta();
+                delta += d.drawCardDelta(game, player);
             }
         }
         return delta;
+    }
+
+    /**
+     * 裸衣：判定階段之後、摸牌之前詢問許褚是否發動（改主動觸發；mirror 洛神 #227 樣板）。
+     * 非許褚回 empty list（caller 直接摸牌）；許褚 → push WaitingSkillEffect(裸衣) 暫停，
+     * ACCEPT/SKIP 由 LuoYiSkill.resolveChoice 接續摸牌流程。
+     */
+    public static List<DomainEvent> luoYiAskActivation(Game game, Player roundPlayer,
+                                                       boolean contentmentSuccess) {
+        boolean hasLuoYi = skillsOf(roundPlayer).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.wei.LuoYiSkill);
+        if (!hasLuoYi) {
+            return List.of();
+        }
+        var waiting = new com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior(
+                game, roundPlayer, com.gaas.threeKingdoms.skill.wei.LuoYiSkill.SKILL_NAME);
+        waiting.putParam(com.gaas.threeKingdoms.skill.wei.LuoYiSkill.PARAM_CONTENTMENT_SUCCESS,
+                String.valueOf(contentmentSuccess));
+        game.updateTopBehavior(waiting);
+        game.getCurrentRound().setActivePlayer(roundPlayer);
+        return List.of(
+                new com.gaas.threeKingdoms.events.AskSkillEffectEvent(
+                        com.gaas.threeKingdoms.skill.wei.LuoYiSkill.SKILL_NAME,
+                        roundPlayer.getId(), List.of(), null),
+                game.getGameStatusEvent("裸衣：詢問 " + roundPlayer.getId() + " 是否發動"));
     }
 
     /** 英姿等：手牌上限（預設 = HP）。 */
