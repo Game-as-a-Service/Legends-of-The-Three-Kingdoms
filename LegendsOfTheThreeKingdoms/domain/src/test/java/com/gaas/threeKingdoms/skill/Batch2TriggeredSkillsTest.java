@@ -4,15 +4,24 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskSkillEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.PlayEquipmentCardEvent;
 import com.gaas.threeKingdoms.events.SkillEffectEvent;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.HexMark;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -471,5 +480,142 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         game.useSnatchEffect("player-a", "player-b", EH5031.getCardId(), null);
 
         assertEquals(2, b.getHandSize(), "梟姬：失去裝備摸兩張");
+    }
+
+    // ===== 梟姬：主動換裝（使用者回報「孫尚香 貫石斧替換武器後梟姬未生效」）=====
+
+    /** 孫尚香當回合主，手上一張新裝備；回傳出牌事件。 */
+    private List<DomainEvent> sunShangXiangEquips(Game game, EquipmentCard newEquipment) {
+        game.getPlayer("player-a").getHand().addCardToHand(newEquipment);
+        return game.playerPlayCard("player-a", newEquipment.getId(), "player-a", "active");
+    }
+
+    @DisplayName("孫尚香換武器蓋掉舊武器 → 梟姬摸兩張、舊武器進棄牌堆")
+    @Test
+    public void xiaoJiDrawsTwoAfterReplacingOwnWeapon() {
+        Game game = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+
+        sunShangXiangEquips(game, new StonePiercingAxeCard(ED5083));
+
+        assertEquals(2, a.getHandSize(), "梟姬：主動換裝失去舊武器也要摸兩張");
+        assertEquals(ED5083.getCardId(), a.getEquipment().getWeapon().getId(), "裝備區應為新武器");
+        assertTrue(game.getGraveyard().contains(ECA066.getCardId()), "被蓋掉的舊武器要進棄牌堆，不能人間蒸發");
+        assertFalse(game.getGraveyard().contains(ED5083.getCardId()), "新武器在裝備區，不該同時在棄牌堆");
+    }
+
+    @DisplayName("孫尚香裝備區原本沒武器 → 沒有失去裝備，梟姬不觸發")
+    @Test
+    public void xiaoJiDoesNotTriggerWhenNoOriginEquipment() {
+        Game game = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+
+        sunShangXiangEquips(game, new StonePiercingAxeCard(ED5083));
+
+        assertEquals(0, a.getHandSize(), "空欄位裝新武器沒有「失去」，不可摸牌");
+        assertEquals(ED5083.getCardId(), a.getEquipment().getWeapon().getId());
+    }
+
+    @DisplayName("孫尚香換防具 / +1 馬 / -1 馬 → 各摸兩張、舊裝備進棄牌堆")
+    @Test
+    public void xiaoJiDrawsTwoAfterReplacingArmorAndMounts() {
+        // 防具
+        Game armorGame = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player armorOwner = armorGame.getPlayer("player-a");
+        armorOwner.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        sunShangXiangEquips(armorGame, new EightDiagramTactic(EC2067));
+        assertEquals(2, armorOwner.getHandSize(), "梟姬：換防具摸兩張");
+        assertEquals(EC2067.getCardId(), armorOwner.getEquipment().getArmor().getId());
+        assertTrue(armorGame.getGraveyard().contains(ES2015.getCardId()));
+
+        // +1 馬
+        Game plusGame = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player plusOwner = plusGame.getPlayer("player-a");
+        plusOwner.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        sunShangXiangEquips(plusGame, new HexMark(EC5070));
+        assertEquals(2, plusOwner.getHandSize(), "梟姬：換 +1 馬摸兩張");
+        assertEquals(EC5070.getCardId(), plusOwner.getEquipment().getPlusOne().getId());
+        assertTrue(plusGame.getGraveyard().contains(ES5018.getCardId()));
+
+        // -1 馬
+        Game minusGame = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player minusOwner = minusGame.getPlayer("player-a");
+        minusOwner.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        sunShangXiangEquips(minusGame, new VioletStallion(EDK104));
+        assertEquals(2, minusOwner.getHandSize(), "梟姬：換 -1 馬摸兩張");
+        assertEquals(EDK104.getCardId(), minusOwner.getEquipment().getMinusOne().getId());
+        assertTrue(minusGame.getGraveyard().contains(EH5044.getCardId()));
+    }
+
+    @DisplayName("新裝上的 +1 馬留在裝備區，不可同時進棄牌堆（PlusMountsBehavior 原本誤用 playerPlayCard）")
+    @Test
+    public void newlyEquippedPlusMountsDoesNotGoToGraveyard() {
+        Game game = createGame(General.劉備, General.孫權, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+
+        a.getHand().addCardToHand(new HexMark(EC5070));
+        game.playerPlayCard("player-a", EC5070.getCardId(), "player-a", "active");
+
+        assertEquals(EC5070.getCardId(), a.getEquipment().getPlusOne().getId());
+        assertFalse(game.getGraveyard().contains(EC5070.getCardId()),
+                "裝備中的牌若同時在棄牌堆，洗牌後會憑空多一張");
+    }
+
+    @DisplayName("非孫尚香換裝 → 不摸牌，但舊裝備仍要進棄牌堆")
+    @Test
+    public void nonSunShangXiangReplacingWeaponStillDiscardsOldEquipment() {
+        Game game = createGame(General.劉備, General.孫尚香, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+
+        game.getPlayer("player-a").getHand().addCardToHand(new StonePiercingAxeCard(ED5083));
+        game.playerPlayCard("player-a", ED5083.getCardId(), "player-a", "active");
+
+        assertEquals(0, a.getHandSize(), "沒有梟姬不該摸牌");
+        assertTrue(game.getGraveyard().contains(ECA066.getCardId()), "舊裝備進棄牌堆與武將技無關");
+    }
+
+    @DisplayName("換武器時 deprecatedCardId 是舊武器，不是防具（EquipWeaponBehavior 誤讀 getArmor()）")
+    @Test
+    public void playEquipmentCardEventReportsReplacedWeaponNotArmor() {
+        Game game = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        a.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+
+        List<DomainEvent> events = sunShangXiangEquips(game, new StonePiercingAxeCard(ED5083));
+
+        PlayEquipmentCardEvent equipEvent = events.stream()
+                .filter(e -> e instanceof PlayEquipmentCardEvent).map(e -> (PlayEquipmentCardEvent) e)
+                .findFirst().orElseThrow();
+        assertEquals(ECA066.getCardId(), equipEvent.getDeprecatedCardId(),
+                "被換掉的是舊武器，防具沒有離開裝備區");
+        assertEquals(ES2015.getCardId(), a.getEquipment().getArmor().getId(), "防具不該被動到");
+        assertFalse(game.getGraveyard().contains(ES2015.getCardId()), "防具沒有失去，不該進棄牌堆");
+    }
+
+    @DisplayName("梟姬 per-card：一次失去 N 張裝備 → 摸 2N")
+    @Test
+    public void xiaoJiDrawsPerLostEquipmentCard() {
+        Game game = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+
+        SkillEngine.afterLoseEquipment(game, a, 2);
+
+        assertEquals(4, a.getHandSize(), "官方梟姬每張各觸發一次 → 失去 2 張摸 4 張");
+    }
+
+    @DisplayName("梟姬 helper：沒失去裝備或非孫尚香 → 無事件、不摸牌")
+    @Test
+    public void afterLoseEquipmentIsNoOpWithoutLossOrSkill() {
+        Game game = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player sunShangXiang = game.getPlayer("player-a");
+        Player liuBei = game.getPlayer("player-b");
+
+        assertTrue(SkillEngine.afterLoseEquipment(game, sunShangXiang, 0).isEmpty(), "失去 0 張不觸發");
+        assertEquals(0, sunShangXiang.getHandSize());
+        assertTrue(SkillEngine.afterLoseEquipment(game, liuBei, 1).isEmpty(), "無梟姬不觸發");
+        assertEquals(0, liuBei.getHandSize());
     }
 }

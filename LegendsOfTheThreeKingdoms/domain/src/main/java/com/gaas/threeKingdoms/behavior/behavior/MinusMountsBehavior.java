@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
 import com.gaas.threeKingdoms.player.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MinusMountsBehavior extends Behavior {
@@ -18,19 +19,22 @@ public class MinusMountsBehavior extends Behavior {
     @Override
     public List<DomainEvent> playerAction() {
         playerPlayEquipmentCard(behaviorPlayer, behaviorPlayer, cardId);
-        MinusMountsCard mountsCard = behaviorPlayer.getEquipment().getMinusOne();
+        MinusMountsCard originMounts = behaviorPlayer.getEquipment().getMinusOne();
         String originEquipmentId = "";
-        if (mountsCard != null) {
-            originEquipmentId = mountsCard.getId();
+        if (originMounts != null) {
+            originEquipmentId = originMounts.getId();
         }
         card.effect(behaviorPlayer);
-        return List.of(game.getGameStatusEvent("出牌"),
+
+        List<DomainEvent> events = new ArrayList<>(List.of(game.getGameStatusEvent("出牌"),
                 new PlayCardEvent(
                 "出牌",
                 behaviorPlayer.getId(),
                 behaviorPlayer.getId(),
                 cardId,
-                playType), new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId));
+                playType), new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId)));
+        events.addAll(discardReplacedEquipment(originMounts));
+        return events;
     }
 
 }

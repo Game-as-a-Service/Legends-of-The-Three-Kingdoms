@@ -4,7 +4,9 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -107,6 +109,21 @@ public class Behavior {
     protected void playerPlayEquipmentCard(Player player, Player targetPlayer, String cardId) {
         HandCard handCard = player.playCard(cardId);
         game.updateRoundInformation(targetPlayer, handCard);
+    }
+
+    /**
+     * 主動換裝：新裝備蓋掉同欄位的舊裝備 → 舊裝備離開裝備區。
+     * <p>
+     * 裝備卡的 effect() 是直接覆寫 Equipment 欄位參考，舊裝備不會經過任何「移除」流程，
+     * 所以進棄牌堆與觸發「失去裝備」技能都得在這裡補。
+     * 官方梟姬只界定「失去裝備區裡的牌」、未限定來源，自己換裝也算失去 → 觸發。
+     *
+     * @param originEquipment 被蓋掉的舊裝備，null（原本該欄位是空的）表示沒有失去任何裝備
+     */
+    protected List<DomainEvent> discardReplacedEquipment(EquipmentCard originEquipment) {
+        if (originEquipment == null) return List.of();
+        game.getGraveyard().add(originEquipment);
+        return SkillEngine.afterLoseEquipment(game, behaviorPlayer, 1);
     }
 
     protected void playerPlayCardNotUpdateActivePlayer(Player player, String cardId) {
