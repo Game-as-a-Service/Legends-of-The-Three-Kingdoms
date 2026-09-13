@@ -4,9 +4,14 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskSkillEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
+import com.gaas.threeKingdoms.events.DrawCardEvent;
+import com.gaas.threeKingdoms.events.GameStatusEvent;
 import com.gaas.threeKingdoms.events.PlayEquipmentCardEvent;
+import com.gaas.threeKingdoms.events.PlayerDamagedEvent;
+import com.gaas.threeKingdoms.events.PlayerEvent;
 import com.gaas.threeKingdoms.events.SkillEffectEvent;
 import com.gaas.threeKingdoms.generalcard.General;
+import com.gaas.threeKingdoms.handcard.EquipmentPlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
@@ -16,6 +21,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.HexMark;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.ShadowHorse;
 import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
@@ -617,5 +623,149 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         assertEquals(0, sunShangXiang.getHandSize());
         assertTrue(SkillEngine.afterLoseEquipment(game, liuBei, 1).isEmpty(), "無梟姬不觸發");
         assertEquals(0, liuBei.getHandSize());
+    }
+
+    // ===== 梟姬 × 反饋：司馬懿取走孫尚香裝備區的牌，孫尚香也算「失去裝備」 =====
+
+    @DisplayName("孫尚香殺司馬懿、被反饋取走唯一裝備 → 梟姬摸兩張")
+    @Test
+    public void xiaoJiDrawsTwoWhenFanKuiTakesHerEquipment() {
+        Game game = createGame(General.孫尚香, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008)); // 出殺後空手，反饋只能取裝備
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        killAndSkip(game, "player-a", "player-b");
+        game.playerUseSkillEffect("player-b", "反饋", "ACCEPT", null, null);
+
+        assertEquals(2, a.getHandSize(), "梟姬：裝備被反饋取走也是失去裝備，要摸兩張");
+        assertFalse(a.getEquipment().hasAnyEquipment(), "裝備已離開孫尚香的裝備區");
+        assertTrue(b.getHand().getCards().stream().anyMatch(c -> c.getId().equals(ES2015.getCardId())),
+                "反饋取走的裝備進司馬懿手牌，不進棄牌堆");
+        assertFalse(game.getGraveyard().contains(ES2015.getCardId()));
+    }
+
+    @DisplayName("反饋指定取孫尚香的裝備（來源還有手牌）→ 梟姬摸兩張")
+    @Test
+    public void xiaoJiDrawsTwoWhenFanKuiPicksEquipmentExplicitly() {
+        Game game = createGame(General.孫尚香, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029)));
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        killAndSkip(game, "player-a", "player-b");
+        game.playerUseSkillEffect("player-b", "反饋", "ACCEPT",
+                List.of(ES2015.getCardId()), null);
+
+        assertEquals(3, a.getHandSize(), "原本剩的桃 + 梟姬摸的兩張");
+        assertNull(a.getEquipment().getArmor());
+    }
+
+    @DisplayName("反饋取的是手牌 → 沒有失去裝備，梟姬不觸發")
+    @Test
+    public void xiaoJiNotTriggeredWhenFanKuiTakesHandCard() {
+        Game game = createGame(General.孫尚香, General.司馬懿, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(Arrays.asList(new Kill(BS8008), new Peach(BH3029)));
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        killAndSkip(game, "player-a", "player-b");
+        game.playerUseSkillEffect("player-b", "反饋", "ACCEPT", null, null); // 來源有手牌 → 取手牌
+
+        assertEquals(0, a.getHandSize(), "取手牌不是失去裝備，不可摸牌");
+        assertEquals(ES2015.getCardId(), a.getEquipment().getArmor().getId(), "裝備沒被動到");
+    }
+
+    // ===== 梟姬 × 麒麟弓：被棄掉的馬也是失去裝備，且摸牌要排在傷害之前 =====
+
+    /** A 裝麒麟弓殺 B、B 不出閃、A 發動麒麟弓效果；回傳發動效果的事件。 */
+    private List<DomainEvent> qilinBowKill(Game game) {
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setWeapon(new QilinBowCard(EH5031));
+        a.getHand().addCardToHand(new Kill(BS8008));
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerPlayCard("player-b", "", "player-a", "skip");
+        return game.playerUseEquipment("player-a", EH5031.getCardId(), "player-b", EquipmentPlayType.ACTIVE);
+    }
+
+    @DisplayName("孫尚香只有一匹馬被麒麟弓棄掉 → 梟姬摸兩張，且摸牌事件排在傷害事件之前")
+    @Test
+    public void xiaoJiDrawsTwoWhenQilinBowRemovesHerOnlyMount() {
+        Game game = createGame(General.劉備, General.孫尚香, General.孫權, General.孫權);
+        Player b = game.getPlayer("player-b");
+        b.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+
+        List<DomainEvent> events = qilinBowKill(game);
+
+        assertEquals(2, b.getHandSize(), "梟姬：馬被麒麟弓棄掉也要摸兩張");
+        assertNull(b.getEquipment().getPlusOne());
+        assertEquals(3, b.getHP(), "麒麟弓棄馬不影響殺的傷害");
+
+        int drawIndex = indexOfFirst(events, DrawCardEvent.class);
+        int damagedIndex = indexOfFirst(events, PlayerDamagedEvent.class);
+        assertTrue(drawIndex >= 0, "應有梟姬的摸牌事件");
+        assertTrue(damagedIndex >= 0, "應有殺的傷害事件");
+        assertTrue(drawIndex < damagedIndex,
+                "官方順序是先失去裝備（摸牌）再受到傷害，前端才不會先看到扣血再看到摸牌");
+
+        GameStatusEvent lastStatus = lastGameStatusEvent(events);
+        assertEquals(2, seatOf(lastStatus, "player-b").getHand().getSize(),
+                "最後的 GameStatusEvent 要含摸到的兩張（快照在摸牌之後才取）");
+    }
+
+    @DisplayName("孫尚香有兩匹馬、攻擊方選一匹棄掉 → 梟姬摸兩張")
+    @Test
+    public void xiaoJiDrawsTwoWhenAttackerChoosesWhichMountToDiscard() {
+        Game game = createGame(General.劉備, General.孫尚香, General.孫權, General.孫權);
+        Player b = game.getPlayer("player-b");
+        b.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        b.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+
+        List<DomainEvent> askEvents = qilinBowKill(game);
+        assertEquals(0, b.getHandSize(), "還沒選馬就不算失去裝備");
+
+        List<DomainEvent> chooseEvents = game.playerChooseHorseForQilinBow("player-a", ES5018.getCardId());
+
+        assertEquals(2, b.getHandSize(), "梟姬：被選中的馬離開裝備區 → 摸兩張");
+        assertNull(b.getEquipment().getPlusOne());
+        assertNotNull(b.getEquipment().getMinusOne(), "沒被選中的馬留著，只算失去一張");
+        assertTrue(indexOfFirst(chooseEvents, DrawCardEvent.class) >= 0, "選馬後要推摸牌事件");
+    }
+
+    @DisplayName("非孫尚香被麒麟弓棄馬 → 不摸牌")
+    @Test
+    public void nonSunShangXiangLosingMountToQilinBowDrawsNothing() {
+        Game game = createGame(General.劉備, General.關羽, General.孫權, General.孫權);
+        Player b = game.getPlayer("player-b");
+        b.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+
+        qilinBowKill(game);
+
+        assertEquals(0, b.getHandSize(), "沒有梟姬不該摸牌");
+        assertNull(b.getEquipment().getPlusOne());
+        assertEquals(3, b.getHP());
+    }
+
+    private static int indexOfFirst(List<DomainEvent> events, Class<? extends DomainEvent> type) {
+        for (int i = 0; i < events.size(); i++) {
+            if (type.isInstance(events.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static GameStatusEvent lastGameStatusEvent(List<DomainEvent> events) {
+        return events.stream()
+                .filter(e -> e instanceof GameStatusEvent).map(e -> (GameStatusEvent) e)
+                .reduce((first, second) -> second)
+                .orElseThrow();
+    }
+
+    private static PlayerEvent seatOf(GameStatusEvent event, String playerId) {
+        return event.getSeats().stream()
+                .filter(seat -> seat.getId().equals(playerId))
+                .findFirst().orElseThrow();
     }
 }

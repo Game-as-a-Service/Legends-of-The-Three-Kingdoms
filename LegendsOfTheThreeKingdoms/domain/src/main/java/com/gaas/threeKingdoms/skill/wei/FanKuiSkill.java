@@ -11,6 +11,7 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.skill.context.DamageContext;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import com.gaas.threeKingdoms.skill.trigger.ChoiceResolvableSkill;
 import com.gaas.threeKingdoms.skill.trigger.OnDamagedSkill;
 
@@ -92,9 +93,11 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
 
         if ("ACCEPT".equals(choice)) {
             String takenCardId;
+            boolean tookEquipment = false;
             String pick = (cardIds != null && !cardIds.isEmpty()) ? cardIds.get(0) : null;
             if (pick != null && equipmentIds(attacker).contains(pick)) {
                 takenCardId = takeEquipment(attacker, simaYi, pick);
+                tookEquipment = true;
             } else if (pick != null && pick.matches("\\d+")) {
                 // 手牌 index（0-based，同順手牽羊 targetCardIndex）
                 int index = Integer.parseInt(pick);
@@ -109,11 +112,16 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
                 takenCardId = takeHandCard(attacker, simaYi, 0);
             } else if (attacker.getEquipment().hasAnyEquipment()) {
                 takenCardId = takeEquipment(attacker, simaYi, equipmentIds(attacker).get(0));
+                tookEquipment = true;
             } else {
                 throw new IllegalStateException("attacker has no card to take");
             }
             events.add(new SkillEffectEvent(SKILL_NAME, simaYi.getId(), true,
                     List.of(takenCardId), attackerId));
+            if (tookEquipment) {
+                // 梟姬：被取走的是裝備區的牌 → 失去者（傷害來源）摸牌；取手牌不算失去裝備
+                events.addAll(SkillEngine.afterLoseEquipment(game, attacker, 1));
+            }
             events.add(game.getGameStatusEvent(simaYi.getId() + " 發動反饋"));
         } else if ("SKIP".equals(choice)) {
             events.add(new SkillEffectEvent(SKILL_NAME, simaYi.getId(), false, List.of(), attackerId));

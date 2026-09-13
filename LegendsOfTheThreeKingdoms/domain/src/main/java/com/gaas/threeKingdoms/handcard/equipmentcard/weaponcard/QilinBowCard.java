@@ -11,6 +11,7 @@ import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +44,9 @@ public class QilinBowCard extends WeaponCard {
             removeMountCardId = removedMount.getId();
             game.getGraveyard().add(removedMount);
             message = String.format("發動麒麟弓效果 移除 %s", removeMountCardId);
+            // 梟姬：失去裝備 → 摸牌。麒麟弓是「先移除馬、再造成傷害」，摸牌事件也要排在傷害事件之前，
+            // 且必須在 getDamagedEvent / getGameStatusEvent 之前呼叫（兩者都會快照當下的玩家狀態）。
+            List<DomainEvent> loseMountDrawEvents = SkillEngine.afterLoseEquipment(game, damagedPlayer, 1);
             HandCard card = behavior.getCard(); // Kill
             int originalHp = damagedPlayer.getHP();
             List<DomainEvent> damageEvents = game.getDamagedEvent(behavior.getBehaviorPlayer().getId(), damagedPlayer.getId(), behavior.getCardId(), card, PlayType.SYSTEM_INTERNAL.getPlayType(), originalHp, damagedPlayer, currentRound, Optional.of(behavior));
@@ -52,6 +56,7 @@ public class QilinBowCard extends WeaponCard {
                 QilinBowCardEffectEvent qilinBowCardEffectEvent = new QilinBowCardEffectEvent(message, true, removeMountCardId);
                 GameStatusEvent gameStatusEvent = game.getGameStatusEvent(message);
                 events.add(qilinBowCardEffectEvent);
+                events.addAll(loseMountDrawEvents);
                 events.addAll(damageEvents);
                 events.add(gameStatusEvent);
             } else {
@@ -62,6 +67,7 @@ public class QilinBowCard extends WeaponCard {
                 behavior.setIsOneRound(false);
                 GameStatusEvent gameStatusEvent = game.getGameStatusEvent(message);
                 events.add(qilinBowCardEffectEvent);
+                events.addAll(loseMountDrawEvents);
                 events.addAll(damageEvents);
                 events.add(gameStatusEvent);
             }

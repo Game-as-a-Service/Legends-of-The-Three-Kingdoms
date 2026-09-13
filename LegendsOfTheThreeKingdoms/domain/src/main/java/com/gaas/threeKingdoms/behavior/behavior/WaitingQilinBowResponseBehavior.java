@@ -7,7 +7,9 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,11 @@ public class WaitingQilinBowResponseBehavior extends Behavior {
         game.getGraveyard().add(mountsCard);
         game.getCurrentRound().setStage(Stage.Normal);
         isOneRound = true;
-        return Collections.singletonList(removeHorseEvent);
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(removeHorseEvent);
+        // 梟姬：失去裝備 → 摸牌（caller 之後才取 GameStatusEvent，手牌數會含這 2 張）
+        events.addAll(SkillEngine.afterLoseEquipment(game, damagedPlayer, 1));
+        return events;
     }
 
 }
