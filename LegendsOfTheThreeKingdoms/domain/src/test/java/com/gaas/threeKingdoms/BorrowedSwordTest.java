@@ -797,4 +797,82 @@ public class BorrowedSwordTest {
         assertEquals(game.getCurrentRound().getCurrentRoundPlayer().getId(), "player-a");
         assertEquals(game.getActivePlayer().getId(), "player-a");
     }
+
+    /**
+     * A 出借刀殺人指定 B 殺 C；B 選擇不出殺（skip）。
+     * 交出武器的收牌者一律取自 behavior 的出借刀者（A），與請求帶的 targetPlayerId 無關 —
+     * 前端沒有 A 的 id 時可直接送空字串（issue #241 前端提問）。
+     */
+    @DisplayName("借刀殺人 skip 交武器：targetPlayerId 為空字串也照常把武器交給出借刀者 A")
+    @Test
+    public void borrowedSwordSkip_worksWithEmptyTargetPlayerId() {
+        Game game = givenBorrowedSwordAssignedBToKillC();
+        Player playerA = game.getPlayer("player-a");
+        Player playerB = game.getPlayer("player-b");
+
+        List<DomainEvent> events = game.playerPlayCard(
+                playerB.getId(), "", "", PlayType.SKIP.getPlayType());
+
+        WeaponUsurpationEvent usurpation = events.stream()
+                .filter(e -> e instanceof WeaponUsurpationEvent)
+                .map(e -> (WeaponUsurpationEvent) e)
+                .findFirst().orElseThrow();
+        assertEquals("player-b", usurpation.getGivenWeaponPlayerId());
+        assertEquals("player-a", usurpation.getTakenWeaponPlayerId(), "收武器者由 behavior 決定，非請求參數");
+        assertNull(playerB.getEquipmentWeaponCard());
+        assertTrue(playerA.getHand().getCards().stream().anyMatch(card -> card.getId().equals("ECA066")));
+        assertFalse(game.getTopBehavior().stream().anyMatch(b -> b instanceof BorrowedSwordBehavior));
+        assertEquals("player-a", game.getActivePlayer().getId());
+    }
+
+    @DisplayName("借刀殺人 skip 交武器：targetPlayerId 帶成攻擊目標 C 也不影響 — 武器仍交給 A")
+    @Test
+    public void borrowedSwordSkip_ignoresWrongTargetPlayerId() {
+        Game game = givenBorrowedSwordAssignedBToKillC();
+        Player playerA = game.getPlayer("player-a");
+        Player playerC = game.getPlayer("player-c");
+
+        game.playerPlayCard("player-b", "", playerC.getId(), PlayType.SKIP.getPlayType());
+
+        assertTrue(playerA.getHand().getCards().stream().anyMatch(card -> card.getId().equals("ECA066")));
+        assertNull(playerC.getEquipmentWeaponCard());
+        assertEquals(4, playerC.getHP(), "C 不該因為被填進 targetPlayerId 而受影響");
+    }
+
+    /** A(有借刀殺人) → 指定 B(有連弩 + 一張殺) 殺 C；回傳已進入「等 B 回應」狀態的 game。 */
+    private Game givenBorrowedSwordAssignedBToKillC() {
+        Game game = new Game();
+        game.initDeck();
+        Player playerA = PlayerBuilder.construct().withId("player-a")
+                .withHand(new Hand()).withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4)).withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE).withRoleCard(new RoleCard(Role.MONARCH)).build();
+        playerA.getHand().addCardToHand(Arrays.asList(new BorrowedSword(SCK065)));
+
+        Player playerB = PlayerBuilder.construct().withId("player-b")
+                .withHand(new Hand()).withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4)).withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE).withRoleCard(new RoleCard(Role.TRAITOR)).build();
+        playerB.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+        Equipment equipmentB = new Equipment();
+        equipmentB.setWeapon(new RepeatingCrossbowCard(ECA066));
+        playerB.setEquipment(equipmentB);
+
+        Player playerC = PlayerBuilder.construct().withId("player-c")
+                .withHand(new Hand()).withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4)).withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE).withRoleCard(new RoleCard(Role.TRAITOR)).build();
+        Player playerD = PlayerBuilder.construct().withId("player-d")
+                .withHand(new Hand()).withEquipment(new Equipment())
+                .withBloodCard(new BloodCard(4)).withGeneralCard(new GeneralCard(General.劉備))
+                .withHealthStatus(HealthStatus.ALIVE).withRoleCard(new RoleCard(Role.TRAITOR)).build();
+
+        game.setPlayers(asList(playerA, playerB, playerC, playerD));
+        game.enterPhase(new Normal(game));
+        game.setCurrentRound(new Round(playerA));
+
+        game.playerPlayCard(playerA.getId(), SCK065.getCardId(), playerB.getId(), PlayType.ACTIVE.getPlayType());
+        game.useBorrowedSwordEffect(playerA.getId(), playerB.getId(), playerC.getId());
+        return game;
+    }
 }
