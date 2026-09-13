@@ -116,17 +116,20 @@ public class BountifulHarvestBehavior extends Behavior {
 
     private List<DomainEvent> askNextPlayerOrWard() {
         List<DomainEvent> events = new ArrayList<>();
-        if (game.doesAnyPlayerHaveWard(behaviorPlayer.getId())) {
+        // Phase 2 是「錦囊對單一玩家的效果」逐人結算 — 出牌者也可無懈他人的拿牌效果，
+        // 不沿用 Phase 1 的出牌者排除（使用者回報：出牌者從牌池拿到無懈後無法立即使用）
+        if (game.doesAnyPlayerHaveWard()) {
             game.getCurrentRound().setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
 
             Behavior wardBehavior = new WardBehavior(
                     game, null,
-                    game.whichPlayersHaveWard(behaviorPlayer.getId()).stream()
+                    game.whichPlayersHaveWard().stream()
                             .map(Player::getId).collect(Collectors.toList()),
                     null, cardId, PlayType.INACTIVE.getPlayType(), card, true
             );
             wardBehavior.putParam(WARD_TRIGGER_PLAYER_ID, behaviorPlayer.getId());
+            wardBehavior.putParam(WardBehavior.WARD_INCLUDE_TRIGGER_PLAYER, "true");
             wardBehavior.putParam(WARD_TARGET_PLAYER_IDS, List.of(currentReactionPlayer.getId()));
             game.updateTopBehavior(wardBehavior);
 
