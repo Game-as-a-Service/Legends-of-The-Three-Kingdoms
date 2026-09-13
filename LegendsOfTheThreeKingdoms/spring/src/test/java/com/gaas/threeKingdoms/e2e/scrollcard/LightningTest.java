@@ -178,8 +178,8 @@ public class LightningTest extends AbstractBaseIntegrationTest {
 
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//        testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);
@@ -316,8 +316,8 @@ public class LightningTest extends AbstractBaseIntegrationTest {
 
         for (String testPlayerId : playerIds) {
             String testPlayerJson = "";
-            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//        testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            testPlayerJson = websocketUtil.getValue(testPlayerId);
             testPlayerId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, testPlayerId));
             String expectedJson = Files.readString(path);
