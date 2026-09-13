@@ -294,7 +294,27 @@ POST /api/games/{gameId}/player:useBorrowedSwordEffect
 | borrowedPlayerId | String | 被借刀的玩家 ID（擁有武器的人） |
 | attackTargetPlayerId | String | 被借刀者需要殺的目標 |
 
-**流程**：出借刀殺人 → (Ward 詢問) → 被借刀者出殺或交出武器
+**流程**：出借刀殺人 → (Ward 詢問) → 出借刀者以本 API 指定被借刀者與攻擊目標 → 被借刀者收到 `BorrowedSwordEvent` 後回應（見下）
+
+### 被借刀者的回應（走 playCard API，無獨立 endpoint）
+
+**出殺** — 對指定目標出殺，之後進入正常的殺 → 閃流程：
+
+```json
+POST /api/games/{gameId}/player:playCard
+{ "playerId": "<被借刀者>", "targetPlayerId": "<攻擊目標>", "cardId": "<殺的 cardId>", "playType": "active" }
+```
+
+**不出殺（交出武器）** — `playType: "skip"`、`cardId` 空字串；武器移入出借刀者手牌，廣播 `WeaponUsurpationEvent`：
+
+```json
+POST /api/games/{gameId}/player:playCard
+{ "playerId": "<被借刀者>", "targetPlayerId": "<出借刀者>", "cardId": "", "playType": "skip" }
+```
+
+**注意**：被借刀者手上完全沒有殺（且不能以丈八蛇矛替代）時，系統不詢問、直接自動交出武器 —
+前端不會收到 `BorrowedSwordEvent`，直接收 `WeaponUsurpationEvent`。有轉化技（龍膽/武聖）時亦可改用
+`player:useSkillEffect` 以轉化牌當殺回應（見 §轉化技）。
 
 ---
 
