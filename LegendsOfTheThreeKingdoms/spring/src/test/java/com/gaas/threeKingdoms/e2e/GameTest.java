@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -118,11 +119,6 @@ public class GameTest extends AbstractBaseIntegrationTest {
         shouldCreateGame();
 
         shouldChooseGeneralsByMonarch();
-
-        shouldGetGeneralCardsByOthers();
-
-        // 主公選完 → 全員收到選將進度 1/4（issue #237）
-        shouldReceiveSelectionStatus(1, false);
 
         shouldChooseGeneralsByOthers();
 
@@ -346,24 +342,36 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .count());
 
         // WebSocket 推播給前端資訊
-        // 主公選擇的腳色全部人都可以知道
-        // 注意：STOMP 廣播順序不保證（CI flake：偶爾先收到其他事件的 array JSON），
-        // 逐一 poll 直到收到 MonarchGeneralChosenEvent 為止
+        // 主公選完會有多則推播（MonarchGeneralChosenEvent / getGeneralCardEventByOthers /
+        // GeneralSelectionStatusEvent），STOMP 順序不保證（既有 CI flake）→
+        // 每位玩家收齊全部訊息後按 event 類型比對（issue #237）
         for (Player player : game.getPlayers()) {
-            String monarchChooseGeneralCardMessage = null;
-            for (int attempt = 0; attempt < 3; attempt++) {
-                String candidate = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
-                if (candidate != null && candidate.contains("MonarchGeneralChosenEvent")) {
-                    monarchChooseGeneralCardMessage = candidate;
-                    break;
-                }
-            }
+            boolean isMonarch = "player-a".equals(player.getId());
+            Map<String, String> received = pollMessagesByEvent(player.getId(), isMonarch ? 2 : 3);
+
+            String monarchChooseGeneralCardMessage = received.get("MonarchGeneralChosenEvent");
             assertNotNull(monarchChooseGeneralCardMessage,
                     player.getId() + " 未收到 MonarchGeneralChosenEvent");
             MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel monarchChooseGeneralCardViewModel = objectMapper.readValue(monarchChooseGeneralCardMessage, MonarchChooseGeneralCardPresenter.MonarchChooseGeneralCardViewModel.class);
             assertEquals("主公已選擇 劉備", monarchChooseGeneralCardViewModel.getMessage());
             assertEquals("SHU001", monarchChooseGeneralCardViewModel.getData().getMonarchGeneralCard());
             assertEquals("MonarchGeneralChosenEvent", monarchChooseGeneralCardViewModel.getEvent());
+
+            // 選將進度 1/4（issue #237）
+            String statusMessage = received.get("GeneralSelectionStatusEvent");
+            assertNotNull(statusMessage, player.getId() + " 未收到選將進度推播");
+            com.fasterxml.jackson.databind.JsonNode statusNode = objectMapper.readTree(statusMessage);
+            assertEquals(1, statusNode.get("data").get("selectedCount").asInt());
+            assertFalse(statusNode.get("data").get("allSelected").asBoolean());
+
+            // 其他玩家另收到 3 張可選武將
+            if (!isMonarch) {
+                String getGeneralCardByOthersMessage = received.get("getGeneralCardEventByOthers");
+                assertNotNull(getGeneralCardByOthersMessage, player.getId() + " 未收到可選武將列表");
+                MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel getGeneralCardByOthersViewModel = objectMapper.readValue(getGeneralCardByOthersMessage, MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel.class);
+                assertEquals("請選擇武將", getGeneralCardByOthersViewModel.getMessage());
+                assertEquals(3, getGeneralCardByOthersViewModel.getData().size());
+            }
         }
 
         // PlayerB打主公選擇角色的API
@@ -382,19 +390,6 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
     }
 
-    private void shouldGetGeneralCardsByOthers() throws Exception {
-        Game game = repository.findById("my-id")
-                .orElseThrow(() -> new NotFoundException("Game not found"));
-        List<Player> otherPlayers = game.getPlayers().stream().filter(player -> player.getRoleCard().getRole() != Role.MONARCH).collect(Collectors.toList());
-        for (Player player : otherPlayers) {
-            String getGeneralCardByOthersMessage = map.get(player.getId()).poll(5, TimeUnit.SECONDS);
-            MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel getGeneralCardByOthersViewModel = objectMapper.readValue(getGeneralCardByOthersMessage, MonarchChooseGeneralCardPresenter.GetGeneralCardByOthersViewModel.class);
-            assertNotNull(getGeneralCardByOthersMessage);
-            assertEquals("請選擇武將", getGeneralCardByOthersViewModel.getMessage());
-            assertEquals(3, getGeneralCardByOthersViewModel.getData().size());
-            assertEquals("getGeneralCardEventByOthers", getGeneralCardByOthersViewModel.getEvent());
-        }
-    }
 
 
     private void shouldChooseGeneralsByOthers() throws Exception {
@@ -485,6 +480,25 @@ public class GameTest extends AbstractBaseIntegrationTest {
         assertEquals(0, game.getGeneralCardDeck().getGeneralStack()
                 .stream().filter(x -> x.getGeneralId().equals("WEI002"))
                 .count());
+    }
+
+    /** 收齊 count 則訊息並按 event 類型歸類（STOMP 順序不保證；同型事件保留最後一則）。 */
+    private Map<String, String> pollMessagesByEvent(String playerId, int count) throws InterruptedException {
+        Map<String, String> byEvent = new java.util.HashMap<>();
+        for (int i = 0; i < count; i++) {
+            String message = map.get(playerId).poll(5, TimeUnit.SECONDS);
+            assertNotNull(message, playerId + " 第 " + (i + 1) + " 則訊息未收到");
+            String eventName = "unknown";
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(message);
+                if (node.has("event")) {
+                    eventName = node.get("event").asText();
+                }
+            } catch (JsonProcessingException ignored) {
+            }
+            byEvent.put(eventName, message);
+        }
+        return byEvent;
     }
 
     /** 選將進度推播驗證（issue #237）：每位玩家收到 GeneralSelectionStatusEvent 且 selectedCount 正確。 */
