@@ -8,6 +8,8 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +18,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class WebsocketUtil {
+
+    /**
+     * 固定的走訪順序，{@code player-a} 必須在第一個 —— 見
+     * {@link #popOneMessagePerPlayer}，牠是用來等「這批推播開始抵達」的探針。
+     * 全部 49 個用到 {@link #popAllPlayerMessage()} 的測試檔都有 player-a。
+     */
+    static final List<String> PLAYER_KEYS = List.of(
+            "player-a", "player-b", "player-c", "player-d", "player-e", "player-f", "player-g");
+
+    /** 等第一位玩家的訊息抵達的上限。STOMP 推播是非同步的，HTTP response 回來不代表訊息已進佇列。 */
+    static final long BATCH_ARRIVAL_TIMEOUT_MILLIS = 1000L;
+
+    /** 同一批推播是 server 端連續發給每位玩家的，抵達時間只差幾 ms，其餘玩家沿用原本的短 timeout。 */
+    static final long SAME_BATCH_TIMEOUT_MILLIS = 50L;
+
     WebSocketClient webSocketClient;
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
@@ -63,13 +80,52 @@ public class WebsocketUtil {
         }
     }
 
+    /**
+     * 清掉上一個步驟推播出來的訊息：每位玩家各 pop 一則。
+     * <p>
+     * 「每次呼叫每位玩家 pop 一則」的語意不能改 —— 有測試靠 pop 次數對應訊息數
+     * （見 {@code FanKuiFullFlowTest} 選將那段）。這裡只調整等待時間，見
+     * {@link #popOneMessagePerPlayer}。
+     */
     public void popAllPlayerMessage() {
         try {
-            for (String key : map.keySet()) {
-                map.get(key).poll(50, TimeUnit. MILLISECONDS);
-            }
+            popOneMessagePerPlayer(PLAYER_KEYS, map,
+                    BATCH_ARRIVAL_TIMEOUT_MILLIS, SAME_BATCH_TIMEOUT_MILLIS);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 每位玩家 pop 一則訊息。抽成 static 是為了能不開 websocket 直接單元測試（見 WebsocketUtilTest）。
+     * <p>
+     * 原本的寫法是每位玩家固定 {@code poll(50ms)}。但 STOMP 推播是非同步的，HTTP response 回來
+     * 不代表訊息已經進到佇列；整批晚到超過 50ms（GC、container 抖動）時這批就沒被清掉、留在佇列裡，
+     * 於是下一個 {@link #getValue} 讀到的是上一步的舊訊息 → 斷在 JSON 比對上（issue #249 的間歇性失敗）。
+     * <p>
+     * 改法只有一處：第一位玩家（player-a，一定在局中）改用長 timeout 當探針，等「這批推播開始抵達」；
+     * 一旦抵達，同批其餘玩家的訊息只差幾 ms，沿用原本的短 timeout 即可。
+     * <p>
+     * 其餘玩家**一律**給短 timeout，不要試圖跳過「看起來沒上桌」的玩家來省時間 ——
+     * 曾經試過用「收過訊息 = 在局中」來判斷並讓沒上桌的玩家 0ms，結果第一次呼叫時
+     * player-a 的訊息已到、b/c/d 還沒到，roster 被誤判成已知，b/c/d 拿到 0ms 反而更容易漏清，
+     * 打壞了 FanKuiAskPushTest / FanKuiFullFlowTest / QingGuoPushTest / JianXiongTest。
+     * player-e/f/g 每次白等 50ms（334 個呼叫點約 50 秒）是刻意保留的原行為。
+     */
+    static void popOneMessagePerPlayer(List<String> orderedKeys,
+                                       Map<String, BlockingQueue<String>> queues,
+                                       long batchArrivalTimeoutMillis,
+                                       long sameBatchTimeoutMillis) throws InterruptedException {
+        boolean probeSpent = false;
+        for (String key : orderedKeys) {
+            BlockingQueue<String> queue = queues.get(key);
+            if (queue == null) {
+                continue;
+            }
+            long timeoutMillis = probeSpent ? sameBatchTimeoutMillis : batchArrivalTimeoutMillis;
+            probeSpent = true;
+            queue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
         }
     }
 
