@@ -296,6 +296,25 @@ POST /api/games/{gameId}/player:useBorrowedSwordEffect
 
 **流程**：出借刀殺人 → (Ward 詢問) → 出借刀者以本 API 指定被借刀者與攻擊目標 → 被借刀者收到 `BorrowedSwordEvent` 後回應（見下）
 
+### 被借刀者收到的詢問事件
+
+```json
+{
+  "event": "BorrowedSwordEvent",
+  "data": {
+    "cardId": "SCK065",
+    "borrowedPlayerId": "<被借刀者>",
+    "attackTargetPlayerId": "<攻擊目標>"
+  },
+  "message": "要求 <被借刀者> 對 <攻擊目標> 出殺"
+}
+```
+
+⚠️ **被詢問者欄位是 `borrowedPlayerId`，不是 `playerId`**（與 `AskKillEvent` / `AskDodgeEvent`
+等以 `data.playerId` 標示被詢問者的事件不同）。前端分派彈窗時若以 `data.playerId` 過濾，
+被借刀者永遠不會進流程 — 需改用 `data.borrowedPlayerId`。
+本事件**不帶出借刀者（A）的 id**；skip 交武器不需要它（見下方 `targetPlayerId` 說明）。
+
 ### 被借刀者的回應（走 playCard API，無獨立 endpoint）
 
 **出殺** — 對指定目標出殺，之後進入正常的殺 → 閃流程：
@@ -309,8 +328,13 @@ POST /api/games/{gameId}/player:playCard
 
 ```json
 POST /api/games/{gameId}/player:playCard
-{ "playerId": "<被借刀者>", "targetPlayerId": "<出借刀者>", "cardId": "", "playType": "skip" }
+{ "playerId": "<被借刀者>", "targetPlayerId": "", "cardId": "", "playType": "skip" }
 ```
+
+**`targetPlayerId` 在 skip 路徑不影響結算**：收下武器的人由後端從 borrowed sword behavior
+取（= 出借刀者），與請求帶什麼無關；該欄位只會原樣出現在廣播的 `PlayCardEvent.targetPlayerId`。
+所以前端從 `BorrowedSwordEvent` 拿不到出借刀者 id 時，送空字串 `""` 即可（習慣寫法，同其他 skip 請求）。
+出殺（`playType: "active"`）則相反 — `targetPlayerId` 必填且必須是 `attackTargetPlayerId`。
 
 **注意**：被借刀者手上完全沒有殺（且不能以丈八蛇矛替代）時，系統不詢問、直接自動交出武器 —
 前端不會收到 `BorrowedSwordEvent`，直接收 `WeaponUsurpationEvent`。有轉化技（龍膽/武聖）時亦可改用
