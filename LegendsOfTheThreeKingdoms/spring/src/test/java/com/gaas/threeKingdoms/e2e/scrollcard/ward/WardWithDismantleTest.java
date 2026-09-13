@@ -131,8 +131,8 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
         // Then
 
         for (String testPlayerId : playerIds) {
-            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            String testPlayerJson = websocketUtil.getValue(testPlayerId);
             String fileSafeId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, fileSafeId));
             String expectedJson = Files.readString(path);
@@ -925,8 +925,8 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
         String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Dismantle/SystemAskAForWardEvent_for_%s.json";
 
         for (String testPlayerId : playerIds) {
-            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-//            String testPlayerJson = websocketUtil.getValue(testPlayerId);
+//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
+            String testPlayerJson = websocketUtil.getValue(testPlayerId);
             String fileSafeId = testPlayerId.replace("-", "_");
             Path path = Paths.get(String.format(filePathTemplate, fileSafeId));
             String expectedJson = Files.readString(path);
