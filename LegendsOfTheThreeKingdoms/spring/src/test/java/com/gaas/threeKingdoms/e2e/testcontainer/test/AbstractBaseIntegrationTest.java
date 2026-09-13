@@ -75,9 +75,23 @@ public abstract class AbstractBaseIntegrationTest {
         Thread.sleep(1000);
     }
 
+    /**
+     * 順序不能反：**先刪 game，再關 websocket**。
+     * <p>
+     * {@code WebSocketConnectionListener#onDisconnect} 在某玩家最後一條 session 斷線時會廣播
+     * 「已離線」的 PlayerConnectionStatusEvent 給該局全員（issue #239）。DISCONNECT frame 是
+     * 非同步處理的，若此時 game 還在 MongoDB 裡，這則廣播會多送一則訊息、打進下一支測試的佇列，
+     * 造成新的訊息位移。先刪 game 就讓 {@code broadcastConnectionStatus} 查不到 game 提早 return。
+     * <p>
+     * （在洩漏被修掉之前這條路徑一直是死的：session 從不 unregister，
+     * {@code PlayerConnectionRegistry} 永遠判斷不到「最後一條」，洩漏意外遮住了它。）
+     */
     @AfterEach
-    public void deleteMockGame() {
+    public void tearDown() {
         repository.deleteById(gameId);
+        if (websocketUtil != null) {
+            websocketUtil.close();
+        }
     }
 
     /**

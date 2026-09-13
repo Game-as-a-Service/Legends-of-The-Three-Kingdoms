@@ -16,22 +16,14 @@ import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.round.RoundPhase;
 import com.gaas.threeKingdoms.utils.ShuffleWrapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.converter.StringMessageConverter;
-import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,11 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.values;
@@ -55,63 +42,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
+/**
+ * 這支原本自己維護一份 {@link WebsocketUtil} 的複製品（獨立的 stompClient、獨立的訊息 map，
+ * 訂閱 my-id 的 player-a~d），而且跟修好之前的 WebsocketUtil 一樣把 {@code connectAsync}
+ * 的 future 丟棄 —— 於是這 4 條 session 永遠不會關，是 issue #249 session 洩漏的第二個來源
+ * （CI 上的簽名就是 close() 後連線表殘留 {@code [player-a, player-b, player-c, player-d]}）。
+ * <p>
+ * base class 的 {@code websocketUtil} 本來就訂閱同一個 gameId 的 player-a~g，是這份複製品的
+ * 超集，所以直接改用繼承來的 websocketUtil：洩漏隨著重複程式碼一起消失，
+ * 也不必再多睡一次 1 秒。
+ */
 public class GameTest extends AbstractBaseIntegrationTest {
-
-    private WebSocketStompClient stompClient;
-    private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-    final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        //初始化前端 WebSocket 連線，模擬前端收到的 WebSocket 訊息
-        System.out.println("GameTest port:" + port);
-        WebSocketClient webSocketClient = new StandardWebSocketClient();
-        this.stompClient = new WebSocketStompClient(webSocketClient);
-        this.stompClient.setMessageConverter(new StringMessageConverter());
-        map.computeIfAbsent("player-a", k -> new LinkedBlockingQueue<>());
-        map.computeIfAbsent("player-b", k -> new LinkedBlockingQueue<>());
-        map.computeIfAbsent("player-c", k -> new LinkedBlockingQueue<>());
-        map.computeIfAbsent("player-d", k -> new LinkedBlockingQueue<>());
-        setupClientSubscribe("my-id", "player-a");
-        setupClientSubscribe("my-id", "player-b");
-        setupClientSubscribe("my-id", "player-c");
-        setupClientSubscribe("my-id", "player-d");
-        Thread.sleep(1000);
-    }
-
-    private void setupClientSubscribe(String gameId, String playerId) throws Exception {
-        final AtomicReference<Throwable> failure = new AtomicReference<>(); // 創建一個原子型的引用變量，用於存放發生的異常
-
-        StompSessionHandler handler = new TestSessionHandler(failure) {
-            @Override
-            public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
-                throw new RuntimeException("Failure in WebSocket handling", exception);
-            }
-
-            @Override
-            public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe(String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", gameId, playerId), new StompFrameHandler() {  // 訂閱伺服器的 "/websocket/legendsOfTheThreeKingdoms/gameId/playerId" 路徑的訊息
-                    @Override
-                    public Type getPayloadType(StompHeaders headers) {  // 定義從伺服器收到的訊息內容的類型
-                        return String.class;
-                    }
-
-                    @Override
-                    public void handleFrame(StompHeaders headers, Object payload) {
-                        try {
-                            map.computeIfAbsent(playerId, k -> new LinkedBlockingQueue<>()).add((String) payload);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        };
-        this.stompClient.connectAsync("ws://localhost:{port}/legendsOfTheThreeKingdoms", this.headers, handler, this.port);
-    }
 
     @Test
     public void happyPath() throws Exception {
@@ -213,19 +157,19 @@ public class GameTest extends AbstractBaseIntegrationTest {
         // WebSocket 推播給前端資訊 (主公)
         checkPlayerAGetCreateGameEvent();
 
-        String playerBGeneralEvent = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        String playerBGeneralEvent = websocketUtil.getValue("player-b");
         assertNotNull(playerBGeneralEvent);
         CreateGamePresenter.CreateGameViewModel generalCardViewModelB = objectMapper.readValue(playerBGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelB);
         assertEquals("請等待主公選擇武將", generalCardViewModelB.getMessage());
 
-        String playerCGeneralEvent = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        String playerCGeneralEvent = websocketUtil.getValue("player-c");
         assertNotNull(playerCGeneralEvent);
         CreateGamePresenter.CreateGameViewModel generalCardViewModelC = objectMapper.readValue(playerCGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelC);
         assertEquals("請等待主公選擇武將", generalCardViewModelC.getMessage());
 
-        String playerDGeneralEvent = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        String playerDGeneralEvent = websocketUtil.getValue("player-d");
         assertNotNull(playerDGeneralEvent);
         CreateGamePresenter.CreateGameViewModel generalCardViewModelD = objectMapper.readValue(playerDGeneralEvent, CreateGamePresenter.CreateGameViewModel.class);
         assertNotNull(generalCardViewModelD);
@@ -246,7 +190,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         boolean getGeneralCardEventReceived = false;
 
         for (int i = 0; i < 2; i++) {
-            String messageJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+            String messageJson = websocketUtil.getValue("player-a");
             assertNotNull(messageJson, "Expected to receive a message for player-a, but queue was empty.");
 
             // First, parse the message as a generic JsonNode to check the event type
@@ -295,7 +239,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
 
     private void checkGetGameEvent() throws InterruptedException, JsonProcessingException {
-        String findGameViewModelMessage = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String findGameViewModelMessage = websocketUtil.getValue("player-a");
         FindGamePresenter.FindGameViewModel findGameViewModel = objectMapper.readValue(findGameViewModelMessage, FindGamePresenter.FindGameViewModel.class);
         assertNotNull(findGameViewModelMessage);
         assertEquals("", findGameViewModel.getMessage());
@@ -486,7 +430,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
     private Map<String, String> pollMessagesByEvent(String playerId, int count) throws InterruptedException {
         Map<String, String> byEvent = new java.util.HashMap<>();
         for (int i = 0; i < count; i++) {
-            String message = map.get(playerId).poll(5, TimeUnit.SECONDS);
+            String message = websocketUtil.getValue(playerId);
             assertNotNull(message, playerId + " 第 " + (i + 1) + " 則訊息未收到");
             String eventName = "unknown";
             try {
@@ -504,7 +448,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
     /** 選將進度推播驗證（issue #237）：每位玩家收到 GeneralSelectionStatusEvent 且 selectedCount 正確。 */
     private void shouldReceiveSelectionStatus(int expectedSelectedCount, boolean expectedAllSelected) throws InterruptedException, JsonProcessingException {
         for (String playerId : List.of("player-a", "player-b", "player-c", "player-d")) {
-            String message = map.get(playerId).poll(5, TimeUnit.SECONDS);
+            String message = websocketUtil.getValue(playerId);
             assertNotNull(message, playerId + " 未收到選將進度推播");
             com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(message);
             assertEquals("GeneralSelectionStatusEvent", node.get("event").asText(), playerId + " 應收到選將進度");
@@ -525,7 +469,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         for (int i = 0; i < game.getPlayers().size(); i++) {
             Player currentPlayer = game.getPlayers().get(i);
-            String initialEndViewModelMessageT = map.get(currentPlayer.getId()).poll(5, TimeUnit.SECONDS);
+            String initialEndViewModelMessageT = websocketUtil.getValue(currentPlayer.getId());
 
             assertNotNull(initialEndViewModelMessageT);
             InitialEndPresenter.InitialEndViewModel initialEndViewModel = objectMapper.readValue(initialEndViewModelMessageT, InitialEndPresenter.InitialEndViewModel.class);
@@ -613,22 +557,22 @@ public class GameTest extends AbstractBaseIntegrationTest {
 
         playCard("player-b", "player-a", "", "skip")
                 .andExpect(status().isOk()).andReturn();
-        String playerBSkipJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playerBSkipJsonForA = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBSkipJsonForA);
 
-        String playerBSkipJsonForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        String playerBSkipJsonForB = websocketUtil.getValue("player-b");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBSkipJsonForB);
 
-        String playerBSkipJsonForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        String playerBSkipJsonForC = websocketUtil.getValue("player-c");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBSkipJsonForC);
 
-        String playerBSkipJsonForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        String playerBSkipJsonForD = websocketUtil.getValue("player-d");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/PlayCard/round_playcard_player_b_skip_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBSkipJsonForD);
@@ -638,25 +582,25 @@ public class GameTest extends AbstractBaseIntegrationTest {
     // 玩家 A 抽牌結束後推播發生的 domain event
 
     private void shouldGetRoundStartStatus() throws InterruptedException, IOException {
-        String actualJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String actualJson = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_monarch_player_a.json");
         String expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
 
-        actualJson = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        actualJson = websocketUtil.getValue("player-b");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_player_b.json");
         expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
 
-        actualJson = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        actualJson = websocketUtil.getValue("player-c");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_player_c.json");
         expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
         assertEquals(expectedJson, actualJson);
 
-        actualJson = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        actualJson = websocketUtil.getValue("player-d");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/RoundStart/round_start_player_d.json");
         expectedJson = Files.readString(path);
         assertNotNull(expectedJson);
@@ -712,7 +656,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
     }
 
     private String getJsonByPlayerId(String playerId) throws InterruptedException {
-        return map.get(playerId).poll(5, TimeUnit.SECONDS);
+        return websocketUtil.getValue(playerId);
     }
 
     private void shouldDrawCardToPlayer(int expectHandSize) {
@@ -748,22 +692,22 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String playerAFinishActionForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playerAFinishActionForA = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAFinishActionForA);
 
-        String playerAFinishActionForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        String playerAFinishActionForB = websocketUtil.getValue("player-b");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAFinishActionForB);
 
-        String playerAFinishActionForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        String playerAFinishActionForC = websocketUtil.getValue("player-c");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAFinishActionForC);
 
-        String playerAFinishActionForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        String playerAFinishActionForD = websocketUtil.getValue("player-d");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round1/FinishAction/round_finishaction_player_a_to_drawcard_player_b_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerAFinishActionForD);
@@ -804,22 +748,22 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String playerBFinishActionForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playerBFinishActionForA = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBFinishActionForA);
 
-        String playerBFinishActionForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        String playerBFinishActionForB = websocketUtil.getValue("player-b");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBFinishActionForB);
 
-        String playerBFinishActionForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        String playerBFinishActionForC = websocketUtil.getValue("player-c");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBFinishActionForC);
 
-        String playerBFinishActionForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        String playerBFinishActionForD = websocketUtil.getValue("player-d");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/FinishAction/round_finishaction_player_b_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerBFinishActionForD);
@@ -844,22 +788,22 @@ public class GameTest extends AbstractBaseIntegrationTest {
         playCard("player-a", "player-b", "", "skip")
                 .andExpect(status().isOk()).andReturn();
 
-        String playerASkipJsonForA = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playerASkipJsonForA = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForA);
 
-        String playerASkipJsonForB = map.get("player-b").poll(5, TimeUnit.SECONDS);
+        String playerASkipJsonForB = websocketUtil.getValue("player-b");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_b.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForB);
 
-        String playerASkipJsonForC = map.get("player-c").poll(5, TimeUnit.SECONDS);
+        String playerASkipJsonForC = websocketUtil.getValue("player-c");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_c.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForC);
 
-        String playerASkipJsonForD = map.get("player-d").poll(5, TimeUnit.SECONDS);
+        String playerASkipJsonForD = websocketUtil.getValue("player-d");
         path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_a_skip_for_player_d.json");
         expectedJson = Files.readString(path);
         assertEquals(expectedJson, playerASkipJsonForD);
@@ -884,7 +828,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         playCard("player-b", targetPlayerId, "BD7085", "active")
                 .andExpect(status().isOk()).andReturn();
 
-        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playCardJson = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/PlayCard/round_playcard_player_b_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playCardJson);
@@ -933,7 +877,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playCardJson = websocketUtil.getValue("player-a");
         Path path = Paths.get("src/test/resources/TestJsonFile/HappyPath/Round2/DiscardCard/round_discard_player_b_for_player_a.json");
         String expectedJson = Files.readString(path);
         assertEquals(expectedJson, playCardJson);
@@ -985,10 +929,10 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        map.get("player-a").poll(5, TimeUnit.SECONDS);
-        map.get("player-b").poll(5, TimeUnit.SECONDS);
-        map.get("player-c").poll(5, TimeUnit.SECONDS);
-        map.get("player-d").poll(5, TimeUnit.SECONDS);
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
     }
 
     private void shouldPlayerCDiscardCardRound3() throws Exception {
@@ -1017,10 +961,10 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        map.get("player-a").poll(5, TimeUnit.SECONDS);
-        map.get("player-b").poll(5, TimeUnit.SECONDS);
-        map.get("player-c").poll(5, TimeUnit.SECONDS);
-        map.get("player-d").poll(5, TimeUnit.SECONDS);
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
     }
 
     private void playerDTakeTurnRound4() throws Exception {
@@ -1038,10 +982,10 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .andReturn();
 
         // 推播
-        map.get("player-a").poll(5, TimeUnit.SECONDS);
-        map.get("player-b").poll(5, TimeUnit.SECONDS);
-        map.get("player-c").poll(5, TimeUnit.SECONDS);
-        map.get("player-d").poll(5, TimeUnit.SECONDS);
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
     }
 
 
@@ -1065,7 +1009,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
         playCard(currentPlayer, targetPlayerId, cardId, "active")
                 .andExpect(status().isOk()).andReturn();
 
-        String playCardJson = map.get("player-a").poll(5, TimeUnit.SECONDS);
+        String playCardJson = websocketUtil.getValue("player-a");
 
         String playerBGetPlayerBPlayCardJson = getJsonByPlayerId("player-b");
 
@@ -1092,10 +1036,10 @@ public class GameTest extends AbstractBaseIntegrationTest {
         playCard(currentPlayer, targetPlayerId, "", "skip")
                 .andExpect(status().isOk()).andReturn();
 
-        map.get("player-a").poll(5, TimeUnit.SECONDS);
-        map.get("player-b").poll(5, TimeUnit.SECONDS);
-        map.get("player-c").poll(5, TimeUnit.SECONDS);
-        map.get("player-d").poll(5, TimeUnit.SECONDS);
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
     }
 
     private void shouldPlayerDiscardCard() throws Exception {
@@ -1523,29 +1467,6 @@ public class GameTest extends AbstractBaseIntegrationTest {
                           "cardId": "%s",
                           "playType": "%s"
                         }""", currentPlayerId, targetPlayerId, cardId, playType)));
-    }
-
-    public class TestSessionHandler extends StompSessionHandlerAdapter {
-        private final AtomicReference<Throwable> failure;
-
-        public TestSessionHandler(AtomicReference failure) {
-            this.failure = failure;
-        }
-
-        @Override
-        public void handleFrame(StompHeaders headers, Object payload) {
-            this.failure.set(new Exception(headers.toString()));
-        }
-
-        @Override
-        public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
-            this.failure.set(ex);
-        }
-
-        @Override
-        public void handleTransportError(StompSession session, Throwable ex) {
-            this.failure.set(ex);
-        }
     }
 
 }

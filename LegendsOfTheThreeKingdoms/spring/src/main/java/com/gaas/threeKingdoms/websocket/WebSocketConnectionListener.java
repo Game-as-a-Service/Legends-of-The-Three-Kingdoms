@@ -8,10 +8,8 @@ import com.gaas.threeKingdoms.presenter.PlayerConnectionStatusPresenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,11 +41,13 @@ public class WebSocketConnectionListener {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @EventListener
-    public void onSubscribe(SessionSubscribeEvent event) {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String destination = accessor.getDestination();
-        String sessionId = accessor.getSessionId();
+    /**
+     * 由 {@link SubscriptionReadyInterceptor} 在 broker 註冊完這條訂閱之後呼叫。
+     * <p>
+     * **不要改回 {@code @EventListener(SessionSubscribeEvent)}**：那個 event 早於 broker 註冊，
+     * 廣播會被丟棄，剛訂閱的玩家收不到自己的「已連線」事件。原因見 interceptor 的 javadoc。
+     */
+    public void onSubscriptionRegistered(String sessionId, String destination) {
         if (destination == null || sessionId == null) {
             return;
         }
