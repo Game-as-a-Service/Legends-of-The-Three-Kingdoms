@@ -310,4 +310,111 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
         assertEquals("player-a", finalState.getCurrentRound().getActivePlayer().getId(),
                 "輪詢結束 activePlayer 回到出牌者");
     }
+
+    @Test
+    public void testYiJiAcceptInBarbarianInvasionPollingAcrossRequests() throws Exception {
+        // Given：A 出南蠻，B（郭嘉）無殺 skip 受傷 → 遺計詢問插在南蠻 polling caller 之上
+        // （issue #250；waiting 的 RESUME_POLLING 與南蠻的 deferred 標記需經 MongoDB 存取存活 — #209 同型坑）
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion(SS7007));
+        Player playerB = createPlayer("player-b", 4, General.郭嘉, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.孫權, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.孫權, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Peach(BH4030), new Kill(BS8008), new Peach(BH3029))); // 遺計摸牌用
+        game.setDeck(deck);
+        repository.save(game);
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-a", "SS7007", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", "skip")
+                .andExpect(status().isOk());
+
+        // 遺計詢問中：輪詢暫停（activePlayer = B），底層南蠻 behavior 保留
+        Game paused = repository.findById(gameId).orElseThrow();
+        assertEquals("player-b", paused.getCurrentRound().getActivePlayer().getId());
+        assertEquals(2, paused.getTopBehavior().size(), "南蠻 behavior + 遺計 waiting");
+        assertEquals(3, paused.getPlayer("player-b").getHP());
+
+        // B ACCEPT 遺計 → 摸兩張 → 詢問收鏈 → resume 輪詢問 C
+        mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-b",
+                                  "skillName": "遺計",
+                                  "choice": "ACCEPT"
+                                }"""))
+                .andExpect(status().isOk());
+
+        Game resumed = repository.findById(gameId).orElseThrow();
+        assertEquals(2, resumed.getPlayer("player-b").getHandSize(), "遺計摸兩張");
+        assertEquals("player-c", resumed.getCurrentRound().getActivePlayer().getId(),
+                "遺計結算後 resume 輪詢問 C — 跳人或卡住即為 bug");
+        assertEquals(1, resumed.getTopBehavior().size(), "遺計 waiting 已收掉，南蠻 behavior 續存");
+
+        // C、D skip → 輪詢正常結束
+        mockMvcUtil.playCard(gameId, "player-c", "player-a", "", "skip")
+                .andExpect(status().isOk());
+        mockMvcUtil.playCard(gameId, "player-d", "player-a", "", "skip")
+                .andExpect(status().isOk());
+
+        Game finalState = repository.findById(gameId).orElseThrow();
+        assertTrue(finalState.getTopBehavior().isEmpty());
+        assertEquals(3, finalState.getPlayer("player-c").getHP());
+        assertEquals(3, finalState.getPlayer("player-d").getHP());
+        assertEquals("player-a", finalState.getCurrentRound().getActivePlayer().getId(),
+                "輪詢結束 activePlayer 回到出牌者");
+    }
+
+    @Test
+    public void testYiJiGiveInArrowBarragePollingAcrossRequests() throws Exception {
+        // Given：A 出萬箭，B（郭嘉）無閃 skip 受傷 → 遺計 GIVE 指定尚未被問的 D 獲得一張
+        // （驗證 targetPlayerId 經 HTTP 傳遞 + 結算後仍照座位順序 resume 問 C）
+        Player playerA = createPlayer("player-a", 4, General.劉備, HealthStatus.ALIVE, Role.MONARCH,
+                new com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage(SHA040));
+        Player playerB = createPlayer("player-b", 4, General.郭嘉, HealthStatus.ALIVE, Role.MINISTER);
+        Player playerC = createPlayer("player-c", 4, General.孫權, HealthStatus.ALIVE, Role.REBEL);
+        Player playerD = createPlayer("player-d", 4, General.孫權, HealthStatus.ALIVE, Role.MINISTER);
+        Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
+        Deck deck = new Deck();
+        deck.add(List.of(new Peach(BH4030), new Peach(BH3029)));
+        game.setDeck(deck);
+        repository.save(game);
+
+        mockMvcUtil.playCard(gameId, "player-a", "player-a", "SHA040", PlayType.ACTIVE.getPlayType())
+                .andExpect(status().isOk());
+        mockMvcUtil.playCard(gameId, "player-b", "player-a", "", "skip")
+                .andExpect(status().isOk());
+
+        Game paused = repository.findById(gameId).orElseThrow();
+        assertEquals("player-b", paused.getCurrentRound().getActivePlayer().getId());
+        assertEquals(2, paused.getTopBehavior().size(), "萬箭 behavior + 遺計 waiting");
+
+        mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-b",
+                                  "skillName": "遺計",
+                                  "choice": "GIVE",
+                                  "targetPlayerId": "player-d"
+                                }"""))
+                .andExpect(status().isOk());
+
+        Game resumed = repository.findById(gameId).orElseThrow();
+        assertEquals(0, resumed.getPlayer("player-b").getHandSize(), "GIVE 時郭嘉自己不摸牌");
+        assertEquals(1, resumed.getPlayer("player-d").getHandSize(), "D 從牌堆獲得一張");
+        assertEquals("player-c", resumed.getCurrentRound().getActivePlayer().getId(),
+                "GIVE 結算後 resume 輪詢問 C");
+
+        mockMvcUtil.playCard(gameId, "player-c", "player-a", "", "skip")
+                .andExpect(status().isOk());
+        mockMvcUtil.playCard(gameId, "player-d", "player-a", "", "skip")
+                .andExpect(status().isOk());
+
+        Game finalState = repository.findById(gameId).orElseThrow();
+        assertTrue(finalState.getTopBehavior().isEmpty());
+        assertEquals(3, finalState.getPlayer("player-c").getHP());
+        assertEquals(3, finalState.getPlayer("player-d").getHP());
+    }
 }

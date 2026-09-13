@@ -765,7 +765,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 技能 | 觸發 | choice | cardIds | targetPlayerId |
 |---|---|---|---|---|
 | 反饋（司馬懿） | 受傷後（含南蠻/萬箭） | `ACCEPT` / `SKIP` | 可選 1 個值：來源**手牌 index**（數字字串，0-based，同順手牽羊 `targetCardIndex`；張數見 seats）或來源**裝備 id**（`dataCardIds` 列出）；不給 = 取手牌 index 0（無手牌則取第一件裝備） | — |
-| 遺計（郭嘉） | 受傷後 | `ACCEPT`（自摸 2）/ `GIVE`（令他人獲得 1）/ `SKIP` | — | GIVE 必填 |
+| 遺計（郭嘉） | 受傷後（含南蠻/萬箭） | `ACCEPT`（自摸 2）/ `GIVE`（令他人獲得 1）/ `SKIP` | — | GIVE 必填 |
 | 剛烈（夏侯惇）第一段 | 受傷後（含南蠻/萬箭） | `ACCEPT`（判定）/ `SKIP` | — | — |
 | 剛烈 第二段（問傷害來源） | 判定非紅桃後 | `DISCARD` / `DAMAGE` | DISCARD 必填 2 張手牌 | — |
 | 激將（劉備主公技） | 主公劉備被南蠻/決鬥要求出殺時，依座位順序詢問蜀將 | `ACCEPT` / `DECLINE` | ACCEPT 必填 [殺 id]（蜀將手中） | — |
@@ -855,9 +855,10 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 不想發動：照原本流程出真閃或 `playType: "skip"`
 
 **v1 範圍備註**：
-- 反饋 / 剛烈在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221 / issue #165：受傷 → 詢問 →
-  詢問鏈收斂後 resume 輪詢；剛烈兩段式與鬼才巢狀介入亦支援）；
-  遺計在 AOE polling 中仍不觸發（可循同一收鏈掃描開啟，follow-up）；三者瀕死皆不觸發
+- 反饋 / 剛烈 / 遺計在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221 / issue #165 / issue #250：
+  受傷 → 詢問 → 詢問鏈收斂後 resume 輪詢，回到原本的 AOE 詢問輪；剛烈兩段式與鬼才巢狀介入亦支援）。
+  遺計在輪詢中 `GIVE` 給尚未被詢問的角色也合法（該角色可能因此取得可回應的殺 / 閃）；
+  三者瀕死皆不觸發
 - AOE polling 中被扣死的玩家（含**最後一位**被詢問者）不會再收到 AskKill/AskDodge；
   瀕死結算結束後 `activePlayer` 回到回合玩家。死亡玩家的任何 action 一律 400
   （`IllegalStateException: ... is already dead and cannot act`）

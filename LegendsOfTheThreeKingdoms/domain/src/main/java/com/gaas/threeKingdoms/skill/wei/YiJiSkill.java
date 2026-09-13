@@ -24,7 +24,10 @@ import java.util.List;
  *   - "GIVE" + targetPlayerId：該角色從牌堆獲得 1 張
  *   - "SKIP"：放棄
  *
- * v1 範圍：非 AOE polling 中觸發（同反饋）；瀕死不觸發。
+ * AOE polling（南蠻/萬箭）中亦觸發（mirror 反饋 #221 / 剛烈 #233，issue #250）：
+ * 詢問插在 polling caller 之上，choice 結算後由 {@link WaitingSkillEffectBehavior}
+ * 的收鏈掃描讀取 caller 的 deferred 標記 resume 輪詢，回到原本的 AOE 詢問輪。
+ * 瀕死不觸發。
  */
 public class YiJiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
 
@@ -48,13 +51,20 @@ public class YiJiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             return List.of();
         }
         Behavior top = game.isTopBehaviorEmpty() ? null : game.peekTopBehavior();
-        if (top != null && !(top instanceof JianXiongCompatibleTopBehavior compatible
-                && !compatible.isPollingCaller())) {
-            return List.of();
+        if (top != null && !(top instanceof JianXiongCompatibleTopBehavior)) {
+            return List.of(); // 非相容 host 不觸發
         }
-
-        game.removeCompletedBehaviors();
+        // polling caller（南蠻/萬箭）需保留底層 behavior，詢問結算後 resume 輪詢
+        // （mirror 反饋 #221 / 剛烈 #233 樣板；收鏈由 WaitingSkillEffectBehavior 掃描處理）
+        boolean isPollingCaller = top instanceof JianXiongCompatibleTopBehavior compatible
+                && compatible.isPollingCaller();
+        if (!isPollingCaller) {
+            game.removeCompletedBehaviors();
+        }
         WaitingSkillEffectBehavior waiting = new WaitingSkillEffectBehavior(game, damaged, SKILL_NAME);
+        if (isPollingCaller) {
+            waiting.putParam(WaitingSkillEffectBehavior.PARAM_RESUME_POLLING, "true");
+        }
         game.updateTopBehavior(waiting);
         game.getCurrentRound().setActivePlayer(damaged);
 
