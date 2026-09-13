@@ -15,12 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 public class WebsocketUtil {
 
@@ -40,12 +42,31 @@ public class WebsocketUtil {
     /** 輪詢佇列的間隔。等待是「所有佇列同時等」，不是逐個 queue 各自 poll，所以不會累加。 */
     static final long POLL_INTERVAL_MILLIS = 2L;
 
+    /**
+     * 就緒哨兵的 payload 前綴。凡是以此開頭的訊息都**不會**進測試佇列（見 {@link #setupClientSubscribe}），
+     * 所以就算某個哨兵姍姍來遲也絕不可能被誤讀成遊戲事件。
+     */
+    static final String SENTINEL_PREFIX = "__e2e-subscription-ready__";
+
+    /** 等所有訂閱就緒的上限。正常在數十 ms 內完成，逾時代表基建壞了，該讓測試大聲失敗而不是默默慢下去。 */
+    static final long SUBSCRIPTION_READY_TIMEOUT_MILLIS = 5000L;
+
+    /** 補送哨兵的間隔。SimpleBroker 對還沒有 subscriber 的 destination 是直接丟棄，所以必須重送。 */
+    static final long SENTINEL_RETRY_INTERVAL_MILLIS = 10L;
+
     WebSocketClient webSocketClient;
     private WebSocketStompClient stompClient;
     private final WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
     private final ConcurrentHashMap<String, BlockingQueue<String>> map = new ConcurrentHashMap<>();
     private final Integer port;
+    private final String gameId;
     private volatile boolean isClearing = false;
+
+    /** 這個 instance 的哨兵識別碼，避免收到別的 instance（別支測試）的哨兵就誤判自己已就緒。 */
+    private final String readyNonce = UUID.randomUUID().toString();
+
+    /** 已經確認「推播真的送得到」的玩家。 */
+    private final Set<String> readyPlayers = ConcurrentHashMap.newKeySet();
 
     /**
      * 每條 STOMP 連線的 future。{@link #close()} 靠它逐條 disconnect ——
@@ -61,6 +82,7 @@ public class WebsocketUtil {
 
     public WebsocketUtil(Integer port, String gameId) throws Exception {
         this.port = port;
+        this.gameId = gameId;
         setUp(gameId);
     }
 
@@ -85,12 +107,79 @@ public class WebsocketUtil {
         setupClientSubscribe(gameId, "player-g");
     }
 
+    /**
+     * 等到 7 條訂閱**真的收得到推播**才回來 —— 取代原本 {@code @BeforeEach} 裡那行
+     * {@code Thread.sleep(1000)}。
+     *
+     * <h4>為什麼原本要睡 1 秒</h4>
+     * {@code connectAsync} 是非同步的，建構子回來時 7 條連線都還沒訂閱完；測試接著就打 HTTP
+     * 建局，而 SimpleBroker 對「沒有 subscriber 的 destination」是**直接丟棄、不排隊**，
+     * 所以訂閱沒趕上就等於永久漏掉第一批事件。1 秒是「應該夠了吧」的猜測：
+     * 既不保證正確（負載高時仍可能不夠），又對 259 支測試各收 1 秒的固定稅
+     * （量過：5 個 class / 53 支測試，72.4s 裡有 53s 是這行）。
+     *
+     * <h4>改成什麼</h4>
+     * 由呼叫端（{@code AbstractBaseIntegrationTest}）提供一個「往 destination 送訊息」的 sender，
+     * 這裡對每個還沒就緒的玩家送一枚哨兵，收到自己的哨兵才算該條訂閱就緒。
+     * 這是端到端的證據，不是計時器：訂閱已註冊、broker 走訪得到它、frame handler 也接得到。
+     * <ul>
+     *   <li>**必須重送** —— 訂閱還沒註冊時哨兵會被丟棄，送一次而不重試就會永遠等不到。</li>
+     *   <li>**哨兵絕不進測試佇列** —— {@link #setupClientSubscribe} 的 frame handler 依
+     *       {@link #SENTINEL_PREFIX} 過濾。重送本來就可能讓多枚哨兵在路上，若靠事後「清到安靜」
+     *       來收拾，遲到的那枚就會變成下一次 {@code getValue()} 讀到的東西 —— 正是這套測試
+     *       最常見的失敗形態（訊息位移）。在來源就攔掉才是真的安全。</li>
+     *   <li>nonce 讓別支測試殘留的哨兵不會被誤認成自己的。</li>
+     * </ul>
+     *
+     * @param sender (destination, payload) → 送出，通常是 {@code SimpMessagingTemplate::convertAndSend}
+     */
+    public void awaitSubscriptionsReady(BiConsumer<String, String> sender) throws InterruptedException {
+        long deadlineNanos = System.nanoTime()
+                + TimeUnit.MILLISECONDS.toNanos(SUBSCRIPTION_READY_TIMEOUT_MILLIS);
+        while (readyPlayers.size() < PLAYER_KEYS.size()) {
+            for (String playerId : PLAYER_KEYS) {
+                if (!readyPlayers.contains(playerId)) {
+                    sender.accept(destinationOf(playerId), sentinelPayload(readyNonce, playerId));
+                }
+            }
+            if (readyPlayers.size() == PLAYER_KEYS.size()) {
+                break;
+            }
+            if (System.nanoTime() >= deadlineNanos) {
+                List<String> notReady = PLAYER_KEYS.stream().filter(key -> !readyPlayers.contains(key)).toList();
+                throw new IllegalStateException(String.format(
+                        "等了 %d ms 這些玩家的訂閱還是收不到推播：%s（gameId=%s）",
+                        SUBSCRIPTION_READY_TIMEOUT_MILLIS, notReady, gameId));
+            }
+            Thread.sleep(SENTINEL_RETRY_INTERVAL_MILLIS);
+        }
+    }
+
+    String destinationOf(String playerId) {
+        return String.format("/websocket/legendsOfTheThreeKingdoms/%s/%s", gameId, playerId);
+    }
+
+    /** 哨兵帶上 nonce 與 playerId，收到時才能確認「是我這個 instance 的、這條訂閱的」。 */
+    static String sentinelPayload(String nonce, String playerId) {
+        return SENTINEL_PREFIX + ":" + nonce + ":" + playerId;
+    }
+
+    /** 只要看起來是哨兵就一律不進測試佇列，包含別的 instance 送的。 */
+    static boolean isSentinel(String payload) {
+        return payload != null && payload.startsWith(SENTINEL_PREFIX);
+    }
+
     public String getValue(String key) {
         try {
             return map.get(key).poll(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /** 不等待，只看佇列現在有沒有東西。用來斷言「這裡本來就該是空的」（見 WebsocketReadinessBarrierTest）。 */
+    public String pollNow(String key) {
+        return map.get(key).poll();
     }
 
     public void clearAllQueues() {
@@ -252,6 +341,13 @@ public class WebsocketUtil {
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
+                        if (isSentinel((String) payload)) {
+                            // 就緒哨兵不是遊戲事件，不能進佇列（見 awaitSubscriptionsReady）
+                            if (sentinelPayload(readyNonce, playerId).equals(payload)) {
+                                readyPlayers.add(playerId);
+                            }
+                            return;
+                        }
                         if (isClearing) {
                             return; // 忽略資料處理
                         }

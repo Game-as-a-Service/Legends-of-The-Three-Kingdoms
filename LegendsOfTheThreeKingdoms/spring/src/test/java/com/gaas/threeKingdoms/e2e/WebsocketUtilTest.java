@@ -218,4 +218,25 @@ public class WebsocketUtilTest {
         }
         assertTrue(absentPlayers.isEmpty(), "7 人局沒有人缺席");
     }
+
+    @DisplayName("就緒哨兵認得出自己送的、也認得出別人送的（都不能進佇列）")
+    @Test
+    void sentinelIsRecognisableRegardlessOfSender() {
+        String mine = WebsocketUtil.sentinelPayload("nonce-1", "player-a");
+        String otherInstance = WebsocketUtil.sentinelPayload("nonce-2", "player-a");
+
+        assertTrue(WebsocketUtil.isSentinel(mine));
+        // 別支測試殘留的哨兵也要被攔掉，否則會被當成遊戲事件讀進來
+        assertTrue(WebsocketUtil.isSentinel(otherInstance));
+        // 但不能被誤認成「我這條訂閱已就緒」的證據
+        assertNotEquals(mine, otherInstance);
+    }
+
+    @DisplayName("真的遊戲事件 JSON 不會被當成哨兵過濾掉")
+    @Test
+    void realEventIsNotMistakenForSentinel() {
+        assertFalse(WebsocketUtil.isSentinel("{\"event\":\"GetGeneralCardEvent\",\"gameId\":\"my-id\"}"));
+        assertFalse(WebsocketUtil.isSentinel(""));
+        assertFalse(WebsocketUtil.isSentinel(null));
+    }
 }

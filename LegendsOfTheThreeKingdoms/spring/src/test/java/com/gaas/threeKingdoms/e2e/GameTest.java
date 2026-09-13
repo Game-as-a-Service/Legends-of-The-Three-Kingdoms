@@ -426,7 +426,13 @@ public class GameTest extends AbstractBaseIntegrationTest {
                 .count());
     }
 
-    /** 收齊 count 則訊息並按 event 類型歸類（STOMP 順序不保證；同型事件保留最後一則）。 */
+    /**
+     * 收齊 count 則訊息並按 event 類型歸類（同型事件保留最後一則）。
+     * <p>
+     * 註解原本寫「STOMP 順序不保證」—— 那描述的是 {@code clientOutboundChannel} 多執行緒造成的
+     * 亂序，現在已由 {@code WebSocketConfig} 的 {@code setPreservePublishOrder(true)} 關掉。
+     * 這個 helper 留著只是因為它讀起來就是「這一步會推出這幾種事件」，不必寫死順序。
+     */
     private Map<String, String> pollMessagesByEvent(String playerId, int count) throws InterruptedException {
         Map<String, String> byEvent = new java.util.HashMap<>();
         for (int i = 0; i < count; i++) {
