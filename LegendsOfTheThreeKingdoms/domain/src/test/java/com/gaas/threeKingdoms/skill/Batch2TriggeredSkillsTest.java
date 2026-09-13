@@ -3,6 +3,8 @@ package com.gaas.threeKingdoms.skill;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskSkillEffectEvent;
+import com.gaas.threeKingdoms.events.AskStonePiercingAxeEffectEvent;
+import com.gaas.threeKingdoms.events.DiscardEquipmentEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.DrawCardEvent;
 import com.gaas.threeKingdoms.events.GameStatusEvent;
@@ -24,10 +26,13 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxeCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.BorrowedSword;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
 import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
+import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.skill.registry.SkillEngine;
+import com.gaas.threeKingdoms.skill.wu.ZhiHengSkill;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -745,6 +750,223 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         assertEquals(0, b.getHandSize(), "沒有梟姬不該摸牌");
         assertNull(b.getEquipment().getPlusOne());
         assertEquals(3, b.getHP());
+    }
+
+    // ===== 梟姬 × 借刀殺人：武器被奪走也是失去裝備 =====
+
+    @DisplayName("孫尚香有殺卻選擇不出 → 武器被借刀殺人奪走，梟姬摸兩張")
+    @Test
+    public void xiaoJiDrawsTwoWhenBorrowedSwordUsurpsWeaponAfterSkip() {
+        Game game = createGame(General.劉備, General.孫尚香, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new BorrowedSword(SCK065));
+        b.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+        b.getHand().addCardToHand(new Kill(BS8008));
+
+        game.playerPlayCard("player-a", SCK065.getCardId(), "player-b", "active");
+        game.useBorrowedSwordEffect("player-a", "player-b", "player-c");
+        List<DomainEvent> events = game.playerPlayCard("player-b", "", "player-c", "skip");
+
+        assertEquals(3, b.getHandSize(), "留著沒出的殺 + 梟姬摸的兩張");
+        assertNull(b.getEquipmentWeaponCard(), "武器已離開孫尚香的裝備區");
+        assertTrue(a.getHand().getCards().stream().anyMatch(c -> c.getId().equals(ECA066.getCardId())),
+                "被奪的武器進出借刀殺人者手牌");
+        assertTrue(indexOfFirst(events, DrawCardEvent.class) >= 0, "要推梟姬的摸牌事件");
+        assertEquals(3, seatOf(lastGameStatusEvent(events), "player-b").getHand().getSize(),
+                "最後的 GameStatusEvent 手牌數要含摸到的兩張");
+    }
+
+    @DisplayName("孫尚香沒有殺 → 借刀殺人直接奪走武器，梟姬摸兩張")
+    @Test
+    public void xiaoJiDrawsTwoWhenBorrowedSwordUsurpsWeaponWithoutKill() {
+        Game game = createGame(General.劉備, General.孫尚香, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new BorrowedSword(SCK065));
+        b.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+
+        game.playerPlayCard("player-a", SCK065.getCardId(), "player-b", "active");
+        List<DomainEvent> events = game.useBorrowedSwordEffect("player-a", "player-b", "player-c");
+
+        assertEquals(2, b.getHandSize(), "梟姬：武器被直接奪走也要摸兩張");
+        assertNull(b.getEquipmentWeaponCard());
+        assertTrue(indexOfFirst(events, DrawCardEvent.class) >= 0, "要推梟姬的摸牌事件");
+        assertEquals(2, seatOf(lastGameStatusEvent(events), "player-b").getHand().getSize());
+    }
+
+    @DisplayName("非孫尚香武器被借刀殺人奪走 → 不摸牌")
+    @Test
+    public void nonSunShangXiangLosingWeaponToBorrowedSwordDrawsNothing() {
+        Game game = createGame(General.劉備, General.關羽, General.張飛, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new BorrowedSword(SCK065));
+        b.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+
+        game.playerPlayCard("player-a", SCK065.getCardId(), "player-b", "active");
+        game.useBorrowedSwordEffect("player-a", "player-b", "player-c");
+
+        assertEquals(0, b.getHandSize(), "沒有梟姬不該摸牌");
+        assertNull(b.getEquipmentWeaponCard());
+    }
+
+    // ===== 梟姬 × 貫石斧：代價棄到裝備區的牌也算失去裝備 =====
+
+    /** A 裝貫石斧殺 B、B 出閃 → 停在 AskStonePiercingAxeEffectEvent 等 A 選擇。 */
+    private void axeKillDodged(Game game) {
+        game.getPlayer("player-a").getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
+        game.getPlayer("player-a").getHand().addCardToHand(new Kill(BS8008));
+        game.getPlayer("player-b").getHand().addCardToHand(new Dodge(BH2028));
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerPlayCard("player-b", BH2028.getCardId(), "player-a", "active");
+    }
+
+    @DisplayName("孫尚香貫石斧代價棄一手牌一裝備 → 梟姬摸兩張，且摸牌排在傷害之前")
+    @Test
+    public void xiaoJiDrawsTwoWhenAxeCostDiscardsOneEquipment() {
+        Game game = createGame(General.孫尚香, General.劉備, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        a.getHand().addCardToHand(new Peach(BH3029));
+        axeKillDodged(game);
+
+        List<DomainEvent> events = game.playerUseStonePiercingAxeEffect("player-a",
+                AskStonePiercingAxeEffectEvent.Choice.DISCARD_TWO,
+                List.of(BH3029.getCardId(), EH5044.getCardId()));
+
+        assertEquals(2, a.getHandSize(), "殺與桃都出掉了，剩下的是梟姬摸的兩張");
+        assertNull(a.getEquipment().getMinusOne(), "當代價的馬已離開裝備區");
+        assertTrue(game.getGraveyard().contains(EH5044.getCardId()));
+        assertEquals(3, b.getHP(), "貫石斧強制命中，閃無效");
+
+        int drawIndex = indexOfFirst(events, DrawCardEvent.class);
+        int damagedIndex = indexOfFirst(events, PlayerDamagedEvent.class);
+        assertTrue(drawIndex >= 0, "應有梟姬的摸牌事件");
+        assertTrue(drawIndex < damagedIndex, "先付出代價（失去裝備 → 摸牌）再結算強制命中的傷害");
+        assertEquals(2, seatOf(lastGameStatusEvent(events), "player-a").getHand().getSize(),
+                "最後的 GameStatusEvent 手牌數要含摸到的兩張");
+    }
+
+    @DisplayName("孫尚香貫石斧代價棄兩張裝備 → 梟姬 per-card 摸四張")
+    @Test
+    public void xiaoJiDrawsFourWhenAxeCostDiscardsTwoEquipment() {
+        Game game = createGame(General.孫尚香, General.劉備, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        a.getEquipment().setPlusOne(new ShadowHorse(ES5018));
+        axeKillDodged(game);
+
+        game.playerUseStonePiercingAxeEffect("player-a",
+                AskStonePiercingAxeEffectEvent.Choice.DISCARD_TWO,
+                List.of(EH5044.getCardId(), ES5018.getCardId()));
+
+        assertEquals(4, a.getHandSize(), "一次失去 2 張裝備 → 每張各摸 2，共 4 張");
+        assertNull(a.getEquipment().getMinusOne());
+        assertNull(a.getEquipment().getPlusOne());
+        assertNotNull(a.getEquipmentWeaponCard(), "貫石斧本身沒當代價棄掉");
+        assertEquals(3, b.getHP());
+    }
+
+    @DisplayName("非孫尚香用貫石斧棄裝備當代價 → 不摸牌")
+    @Test
+    public void nonSunShangXiangAxeCostDrawsNothing() {
+        Game game = createGame(General.關羽, General.劉備, General.張飛, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        a.getHand().addCardToHand(new Peach(BH3029));
+        axeKillDodged(game);
+
+        game.playerUseStonePiercingAxeEffect("player-a",
+                AskStonePiercingAxeEffectEvent.Choice.DISCARD_TWO,
+                List.of(BH3029.getCardId(), EH5044.getCardId()));
+
+        assertEquals(0, a.getHandSize(), "沒有梟姬不該摸牌");
+        assertNull(a.getEquipment().getMinusOne());
+    }
+
+    // ===== 梟姬 × 制衡：棄到裝備區的牌也算失去裝備 =====
+    // 制衡是孫權的技、梟姬是孫尚香的，同一牌局不會有玩家同時擁有兩者；
+    // 這裡直接呼叫 ZhiHengSkill.activate 驗證 hook 本身（見 ZhiHengSkill 內註解）。
+
+    @DisplayName("制衡棄掉裝備的人若有梟姬 → 制衡摸完再摸 2N")
+    @Test
+    public void zhiHengDiscardingEquipmentAlsoTriggersXiaoJi() {
+        Game game = createGame(General.孫尚香, General.劉備, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(new Peach(BH3029));
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        new ZhiHengSkill().activate(game, a, null,
+                List.of(BH3029.getCardId(), ES2015.getCardId()), null);
+
+        assertEquals(4, a.getHandSize(), "制衡棄 2 摸 2 + 梟姬失去 1 張裝備摸 2");
+        assertFalse(a.getEquipment().hasAnyEquipment());
+    }
+
+    @DisplayName("孫權自己制衡棄裝備 → 只有制衡的等量摸牌")
+    @Test
+    public void zhiHengWithoutXiaoJiDrawsOnlyReplacement() {
+        Game game = createGame(General.孫權, General.劉備, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+
+        new ZhiHengSkill().activate(game, a, null, List.of(ES2015.getCardId()), null);
+
+        assertEquals(1, a.getHandSize(), "棄 1 摸 1，沒有梟姬不額外摸");
+    }
+
+    // ===== 梟姬 × 主公殺忠臣：一次棄光裝備區，per-card 摸 2N =====
+
+    /** A(主公) 殺死 hp=1 的忠臣 B，b→c→d→a 依序不出桃；回傳結算事件。 */
+    private List<DomainEvent> monarchKillsMinister(Game game) {
+        game.getPlayer("player-b").setBloodCard(new BloodCard(1));
+        game.getPlayer("player-a").getHand().addCardToHand(new Kill(BS8008));
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+        game.playerPlayCard("player-b", "", "player-a", "skip"); // 不出閃 → 瀕死
+        game.playerPlayCard("player-b", "", "player-b", "skip");
+        game.playerPlayCard("player-c", "", "player-b", "skip");
+        game.playerPlayCard("player-d", "", "player-b", "skip");
+        return game.playerPlayCard("player-a", "", "player-b", "skip");
+    }
+
+    @DisplayName("孫尚香主公殺死忠臣、棄光兩張裝備 → 梟姬摸四張")
+    @Test
+    public void xiaoJiDrawsPerEquipmentWhenMonarchDiscardsAllAfterKillingMinister() {
+        Game game = createGame(General.孫尚香, General.劉備, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        a.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+
+        List<DomainEvent> events = monarchKillsMinister(game);
+
+        assertFalse(a.getEquipment().hasAnyEquipment(), "主公殺忠臣罰則：手牌與裝備全棄");
+        assertEquals(4, a.getHandSize(),
+                "梟姬 per-card：罰則棄光 2 張裝備 → 摸 4 張（棄牌罰則已先結算完，摸到的留在手上）");
+
+        DiscardEquipmentEvent discardEquipmentEvent = events.stream()
+                .filter(e -> e instanceof DiscardEquipmentEvent).map(e -> (DiscardEquipmentEvent) e)
+                .findFirst().orElseThrow();
+        assertEquals(2, discardEquipmentEvent.getEquipmentCardIds().size());
+        assertTrue(indexOfFirst(events, DrawCardEvent.class)
+                        > indexOfFirst(events, DiscardEquipmentEvent.class),
+                "摸牌事件要排在棄裝備事件之後（先失去才摸）");
+    }
+
+    @DisplayName("非孫尚香主公殺忠臣棄光裝備 → 不摸牌")
+    @Test
+    public void nonSunShangXiangMonarchDiscardingAllDrawsNothing() {
+        Game game = createGame(General.甘寧, General.劉備, General.關羽, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        a.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+
+        monarchKillsMinister(game);
+
+        assertFalse(a.getEquipment().hasAnyEquipment());
+        assertEquals(0, a.getHandSize(), "沒有梟姬不該摸牌");
     }
 
     private static int indexOfFirst(List<DomainEvent> events, Class<? extends DomainEvent> type) {

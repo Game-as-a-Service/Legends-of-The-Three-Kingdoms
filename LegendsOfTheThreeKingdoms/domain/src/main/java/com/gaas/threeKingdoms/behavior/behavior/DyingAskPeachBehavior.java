@@ -132,6 +132,10 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                         game.getGraveyard().add(discardEquipmentList);
 
                         events.addAll(List.of(discardCardEvent, discardEquipmentEvent));
+                        // 梟姬：主公一次棄光裝備區 → 每失去一張摸 2（N 張 → 2N 張）。
+                        // 罰則本身已結算完（手牌+裝備都已進棄牌堆），摸到的牌留在手上。
+                        events.addAll(SkillEngine.afterLoseEquipment(
+                                game, game.getLastAttacker(), discardEquipment.size()));
                     }
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
