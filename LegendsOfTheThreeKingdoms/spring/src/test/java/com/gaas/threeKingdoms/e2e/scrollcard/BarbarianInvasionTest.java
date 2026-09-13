@@ -285,9 +285,19 @@ public class BarbarianInvasionTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, "player-b", "player-c", "", PlayType.SKIP.getPlayType())
                 .andExpect(status().isOk()).andReturn();
         popAllPlayerMessage();
+
         // Then
-        // 不會報錯
-        // C玩家死亡
+        // C 玩家死亡。原本這裡只有註解寫「C玩家死亡」而沒有任何 assertion：
+        // 每個 request 都只 assert HTTP 200，所以就算 C 沒真的死、或血量沒歸零，測試照樣是綠的。
+        Game savedGame = repository.findById(gameId).orElseThrow();
+        Player playerC = savedGame.getPlayer("player-c");
+        assertEquals(0, playerC.getHP());
+        assertEquals(HealthStatus.DEATH, playerC.getHealthStatus());
+
+        // 沒人替 C 出桃，所以其他人血量不該被動到（南蠻入侵每人各出一張殺才免傷）
+        assertEquals(4, savedGame.getPlayer("player-a").getHP());
+        assertEquals(4, savedGame.getPlayer("player-b").getHP());
+        assertEquals(4, savedGame.getPlayer("player-d").getHP());
     }
 
 

@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
@@ -857,10 +858,11 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
             B對C使用過河拆橋
             
             Then
-            此時系統應詢問Ａ是否出無懈可擊，但A收到等待玩家出無懈可擊的event(AskPlayWardEvent)
+            只有持有無懈可擊的 A 被詢問(AskPlayWardEvent)
+            B C D 收到等待 A 出無懈可擊的 event(WaitForWardEvent)
             """)
     @Test
-    public void givenPlayerAHasWard_PlayerBHasDismantle_PlayerBTurn_WhenPlayerBPlaysDismantleOnC_ThenSystemAskAForWardEvent() throws Exception {
+    public void givenPlayerAHasWard_PlayerBHasDismantle_PlayerBTurn_WhenPlayerBPlaysDismantleOnC_ThenOnlyAIsAskedAndBCDWait() throws Exception {
         Player playerA = PlayerBuilder.construct()
                 .withId("player-a")
                 .withHand(new Hand())
@@ -921,16 +923,18 @@ public class WardWithDismantleTest extends AbstractBaseIntegrationTest {
 
 
         // Then
-        List<String> playerIds = List.of("player-a");
-        String filePathTemplate = "src/test/resources/TestJsonFile/ScrollTest/Ward/Dismantle/SystemAskAForWardEvent_for_%s.json";
+        // 原本只比對 player-a，B C D 那三則推播沒讀也沒驗，
+        // 所以「A 被問、其餘人等待」只驗了一半：誰該被問有驗，誰該只是等待沒驗。
+        // （本測試的觸發者 B 手上沒有無懈可擊，因此不涵蓋 PR #127「觸發者自己有無懈可擊
+        //   要從 reactionPlayers 排除」那條，那條由本 class 其他幾支測試守著。）
+        Map<String, String> pushes = assertAllPlayerJson(
+                "src/test/resources/TestJsonFile/ScrollTest/Ward/Dismantle/SystemAskAForWardEvent_for_%s.json");
 
-        for (String testPlayerId : playerIds) {
-//            String testPlayerJson = JsonFileWriterUtil.writeJsonToFile(websocketUtil, testPlayerId, filePathTemplate);
-            String testPlayerJson = websocketUtil.getValue(testPlayerId);
-            String fileSafeId = testPlayerId.replace("-", "_");
-            Path path = Paths.get(String.format(filePathTemplate, fileSafeId));
-            String expectedJson = Files.readString(path);
-            assertEquals(expectedJson, testPlayerJson);
+        // 只有持有無懈可擊的 A 被詢問，其餘三人是等待狀態
+        assertEquals(List.of("AskPlayWardEvent"), eventNamesOf(pushes.get("player-a")));
+        for (String waitingPlayerId : List.of("player-b", "player-c", "player-d")) {
+            assertEquals(List.of("WaitForWardEvent"), eventNamesOf(pushes.get(waitingPlayerId)),
+                    waitingPlayerId + " 應該收到等待無懈可擊的 event");
         }
     }
 

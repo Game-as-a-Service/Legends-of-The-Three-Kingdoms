@@ -1,5 +1,7 @@
 package com.gaas.threeKingdoms.e2e.testcontainer.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.LegendsOfTheThreeKingdomsApplication;
 import com.gaas.threeKingdoms.e2e.JsonFileValidateHelper;
 import com.gaas.threeKingdoms.e2e.JsonFileWriterUtil;
@@ -23,7 +25,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -37,6 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public abstract class AbstractBaseIntegrationTest {
 
     public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:latest").withExposedPorts(27017);
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * 4 人場標準玩家 ID 列表，e2e test 絕大多數都是用 player-a/b/c/d 的固定命名。
@@ -123,16 +130,22 @@ public abstract class AbstractBaseIntegrationTest {
      * 若 subclass 把 {@link #shouldRegenerateFixtures()} override 成 true，會改為寫入模式，
      * 覆蓋該 test class 的 fixture 而不影響其他 test class。
      */
-    protected void assertAllPlayerJson(String filePathTemplate) throws Exception {
-        assertAllPlayerJson(filePathTemplate, DEFAULT_PLAYER_IDS);
+    protected Map<String, String> assertAllPlayerJson(String filePathTemplate) throws Exception {
+        return assertAllPlayerJson(filePathTemplate, DEFAULT_PLAYER_IDS);
     }
 
     /**
      * 與 {@link #assertAllPlayerJson(String)} 相同，但可以指定自訂玩家列表
      * （例如 3 人場或使用不同 id 命名的測試）。
+     *
+     * @return playerId 對應該玩家這一則推播的 JSON。golden file 比對只證明「跟上次一樣」，
+     *         回傳內容是為了讓測試能再補上「這一則到底該是什麼事件」這種說明意圖的 assertion——
+     *         否則一旦有人用 {@link #shouldRegenerateFixtures()} 重產 fixture，
+     *         錯誤的行為會被直接寫進 golden file 而沒有任何測試會紅。
      */
-    protected void assertAllPlayerJson(String filePathTemplate, List<String> playerIds) throws Exception {
+    protected Map<String, String> assertAllPlayerJson(String filePathTemplate, List<String> playerIds) throws Exception {
         boolean regenerate = shouldRegenerateFixtures();
+        Map<String, String> jsonByPlayerId = new LinkedHashMap<>();
         for (String playerId : playerIds) {
             String actualJson = regenerate
                     ? JsonFileWriterUtil.writeJsonToFile(websocketUtil, playerId, filePathTemplate)
@@ -141,6 +154,22 @@ public abstract class AbstractBaseIntegrationTest {
             Path path = Paths.get(String.format(filePathTemplate, filePlayerId));
             String expectedJson = Files.readString(path);
             assertEquals(expectedJson, actualJson);
+            jsonByPlayerId.put(playerId, actualJson);
         }
+        return jsonByPlayerId;
+    }
+
+    /**
+     * 取出一則推播的 {@code events} 陣列裡的事件名稱，順序保持原樣。
+     * 用來寫「這一則推播該是哪些事件」的 assertion，而不必整份 JSON 比對。
+     */
+    protected static List<String> eventNamesOf(String pushJson) throws Exception {
+        JsonNode events = OBJECT_MAPPER.readTree(pushJson).get("events");
+        if (events == null) {
+            return List.of();
+        }
+        List<String> names = new ArrayList<>();
+        events.forEach(event -> names.add(event.get("event").asText()));
+        return names;
     }
 }

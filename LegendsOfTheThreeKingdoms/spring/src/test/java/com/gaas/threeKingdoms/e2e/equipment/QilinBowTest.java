@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static com.gaas.threeKingdoms.e2e.MockUtil.createPlayer;
 import static com.gaas.threeKingdoms.e2e.MockUtil.initGame;
@@ -34,6 +35,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class QilinBowTest extends AbstractBaseIntegrationTest {
+
+    private static final String EIGHT_DIAGRAM_FIXTURE_DIR =
+            "src/test/resources/TestJsonFile/EquipmentTest/PlayQilinBow/";
 
     @Test
     public void testPlayerAPlayQilinBow() throws Exception {
@@ -115,12 +119,16 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        String playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
-        String playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
-        String playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
-        String playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+        // 這支測試原本把 16 則推播全部讀出來丟掉（變數一路被覆寫、一次 assert 都沒有），
+        // 等於只驗了四個 request 都回 200。以下改成逐步比對推播內容 + 直接檢查血量。
+        // B 只有防具沒有馬，所以麒麟弓效果不該被詢問，B 收到的是八卦陣的詢問——
+        // 這個「不該出現麒麟弓詢問」才是本測試的重點，所以除了 golden file 也直接驗事件名稱。
+        Map<String, String> killPushes = assertAllPlayerJson(
+                EIGHT_DIAGRAM_FIXTURE_DIR + "player_a_kill_b_and_b_ask_eightdiagram_for_%s.json");
+        assertEquals(List.of("PlayCardEvent", "AskPlayEquipmentEffectEvent"),
+                eventNamesOf(killPushes.get("player-b")));
 
-        // B 發動八卦陣，八卦陣效果抽到 (黑桃7) 的 Event ，效果失敗
+        // B 發動八卦陣，判定牌是黑桃（牌堆只有一張 BS8008），效果失敗
         currentPlayer = "player-b";
         targetPlayerId = "player-a";
         playedCardId = "ES2015";
@@ -128,10 +136,13 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.useEquipment(gameId, currentPlayer, targetPlayerId, playedCardId, EquipmentPlayType.ACTIVE)
                 .andExpect(status().isOk()).andReturn();
 
-        playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
-        playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
-        playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
-        playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+        Map<String, String> judgementPushes = assertAllPlayerJson(
+                EIGHT_DIAGRAM_FIXTURE_DIR + "player_b_eightdiagram_judgement_failed_for_%s.json");
+        // 八卦陣失敗，所以還是要問 B 出不出閃
+        assertEquals(List.of("UseEquipmentEffectEvent", "AskDodgeEvent"),
+                eventNamesOf(judgementPushes.get("player-b")));
+        // 八卦陣失敗只是沒能自動閃避，傷害還沒結算，B 仍是滿血
+        assertEquals(4, currentPlayerHp("player-b"));
 
         // B 玩家出閃，血量不變
         currentPlayer = "player-b";
@@ -140,10 +151,9 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
-        playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
-        playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
-        playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+        assertAllPlayerJson(EIGHT_DIAGRAM_FIXTURE_DIR + "player_b_play_dodge_after_eightdiagram_failed_for_%s.json");
+        // 「血量不變」原本只是註解，這裡真的驗一次：閃成功擋掉殺，B 沒有掉血
+        assertEquals(4, currentPlayerHp("player-b"));
 
         // A 玩家出桃
         currentPlayer = "player-a";
@@ -152,10 +162,15 @@ public class QilinBowTest extends AbstractBaseIntegrationTest {
         mockMvcUtil.playCard(gameId, currentPlayer, targetPlayerId, playedCardId, PlayType.ACTIVE.getPlayType())
                 .andExpect(status().isOk()).andReturn();
 
-        playerAPlayKillJsonForA = websocketUtil.getValue("player-a");
-        playerAPlayKillJsonForB = websocketUtil.getValue("player-b");
-        playerAPlayKillJsonForC = websocketUtil.getValue("player-c");
-        playerAPlayKillJsonForD = websocketUtil.getValue("player-d");
+        Map<String, String> peachPushes = assertAllPlayerJson(
+                EIGHT_DIAGRAM_FIXTURE_DIR + "player_a_play_peach_at_full_hp_for_%s.json");
+        assertEquals(List.of("PlayCardEvent", "PeachEvent"), eventNamesOf(peachPushes.get("player-a")));
+        // A 本來就滿血，出桃不會超過血量上限（目前產品端允許滿血出桃，這裡只是把現況鎖住）
+        assertEquals(4, currentPlayerHp("player-a"));
+    }
+
+    private int currentPlayerHp(String playerId) {
+        return repository.findById(gameId).orElseThrow().getPlayer(playerId).getHP();
     }
 
     @Test
