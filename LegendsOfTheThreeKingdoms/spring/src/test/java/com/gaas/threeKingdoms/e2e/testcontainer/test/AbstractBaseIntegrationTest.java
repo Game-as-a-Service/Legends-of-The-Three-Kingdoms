@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -56,6 +57,10 @@ public abstract class AbstractBaseIntegrationTest {
     @Autowired
     protected MockMvc mockMvc;
 
+    /** 只用來送就緒哨兵，見 {@link #setup()}。 */
+    @Autowired
+    protected SimpMessagingTemplate messagingTemplate;
+
     protected MockMvcUtil mockMvcUtil;
 
     protected JsonFileValidateHelper helper;
@@ -67,12 +72,18 @@ public abstract class AbstractBaseIntegrationTest {
 
     protected String gameId = "my-id";
 
+    /**
+     * 這裡原本是 {@code Thread.sleep(1000)}：等 7 條 STOMP 訂閱建立完成，否則測試接著建局送出的
+     * 第一批推播會因為「destination 還沒有 subscriber」被 SimpleBroker 直接丟棄。
+     * 現在改成等實際的就緒證據（見 {@link WebsocketUtil#awaitSubscriptionsReady}）——
+     * 既是保證而不是「1 秒應該夠了吧」的猜測，也把 259 支測試各付 1 秒的固定稅拿掉。
+     */
     @BeforeEach
     public void setup() throws Exception {
         mockMvcUtil = new MockMvcUtil(mockMvc);
         websocketUtil = new WebsocketUtil(port, gameId);
         helper = new JsonFileValidateHelper(websocketUtil);
-        Thread.sleep(1000);
+        websocketUtil.awaitSubscriptionsReady(messagingTemplate::convertAndSend);
     }
 
     /**

@@ -10,7 +10,6 @@ import com.gaas.threeKingdoms.handcard.basiccard.Peach;
 import com.gaas.threeKingdoms.player.HealthStatus;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.rolecard.Role;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -29,13 +28,6 @@ public class FinishingTest extends AbstractBaseIntegrationTest {
 
     FinishingTest() {
         this.gameId = "dyingTestGame";
-    }
-
-    @BeforeEach
-    public void setup() throws Exception {
-        websocketUtil = new WebsocketUtil(port, gameId);
-        mockMvcUtil = new MockMvcUtil(mockMvc);
-        Thread.sleep(1000);
     }
 
     @Test
