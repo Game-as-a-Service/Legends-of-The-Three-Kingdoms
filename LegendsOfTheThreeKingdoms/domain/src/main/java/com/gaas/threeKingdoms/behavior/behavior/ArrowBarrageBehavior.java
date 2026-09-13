@@ -221,7 +221,7 @@ public class ArrowBarrageBehavior extends Behavior
 
     /**
      * 依 reactionPlayers 列表順序找 playerId 之後第一個存活 reactor；null = 沒有了。
-     * 不可用座位 getNextPlayer：謙遜等免疫技會把玩家從列表排除（同南蠻的跳人/亂序修正）。
+     * 不可用座位 getNextPlayer：目標免疫技會把玩家從列表排除（同南蠻的跳人/亂序修正）。
      */
     private Player nextAliveReactorAfter(String playerId) {
         int idx = reactionPlayers.indexOf(playerId);

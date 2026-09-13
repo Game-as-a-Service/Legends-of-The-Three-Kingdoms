@@ -168,9 +168,9 @@ public class BarbarianInvasionPollingOrderTest {
         assertTrue(game.getTopBehavior().isEmpty());
     }
 
-    @DisplayName("c=陸遜（謙遜免疫）→ 只問 b、d；b 回應後直接問 d，且陸遜不被問")
+    @DisplayName("c=陸遜（標準版謙遜只免疫順手牽羊/樂不思蜀）→ 南蠻照常問 b、c、d 且陸遜扣血")
     @Test
-    public void qianXunImmuneMiddle_asksOnlyBandD() {
+    public void luXunIsNormalBarbarianTarget_asksBCD() {
         Game game = createGame(General.甘寧, General.甘寧, General.陸遜, General.孫權);
         game.getPlayer("player-a").getHand().addCardToHand(new BarbarianInvasion(SS7007));
 
@@ -178,13 +178,14 @@ public class BarbarianInvasionPollingOrderTest {
         assertEquals(List.of("player-b"), askKillTargets(e1));
 
         List<DomainEvent> e2 = game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
-        assertEquals(List.of("player-d"), askKillTargets(e2),
-                "陸遜免疫應被跳過 — 問 c 或直接結束皆為 bug");
-        assertEquals("player-d", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(List.of("player-c"), askKillTargets(e2), "謙遜不免疫南蠻，陸遜照常被問");
+
+        List<DomainEvent> e3 = game.playerPlayCard("player-c", "", "player-a", PlayType.SKIP.getPlayType());
+        assertEquals(List.of("player-d"), askKillTargets(e3));
 
         game.playerPlayCard("player-d", "", "player-a", PlayType.SKIP.getPlayType());
         assertTrue(game.getTopBehavior().isEmpty(), "d 回應後南蠻應結束");
-        assertEquals(4, game.getPlayer("player-c").getHP(), "陸遜不受傷");
+        assertEquals(3, game.getPlayer("player-c").getHP(), "陸遜照常受傷");
         assertEquals(3, game.getPlayer("player-d").getHP());
     }
 
@@ -269,9 +270,9 @@ public class BarbarianInvasionPollingOrderTest {
         assertEquals(4, game.getPlayer("player-c").getHP(), "c 被無懈保護不扣血");
     }
 
-    @DisplayName("phase 2 無懈保護 b 成功 + c=陸遜免疫 → 下一個被問的必須是 d（不可問陸遜）")
+    @DisplayName("phase 2 無懈保護 b 成功 → 依 reactionPlayers 列表推進問 c，再問 d")
     @Test
-    public void wardCancelOnB_withImmuneLuXunNext_asksD() {
+    public void wardCancelOnB_thenAsksCandD() {
         Game game = createGame(General.甘寧, General.甘寧, General.陸遜, General.孫權);
         game.getPlayer("player-a").getHand().addCardToHand(new BarbarianInvasion(SS7007));
         game.getPlayer("player-b").getHand().addCardToHand(new Ward(SSJ011));
@@ -279,16 +280,18 @@ public class BarbarianInvasionPollingOrderTest {
         game.playerPlayCard("player-a", SS7007.getCardId(), "player-a", "active");
         // b 放棄 phase 1 → phase 2 詢問（目標 b 自己）
         game.playWardCard("player-b", "", PlayType.SKIP.getPlayType());
-        // b 出無懈保護自己 → 南蠻對 b 無效，輪詢推進：陸遜免疫必須跳過，直接問 d
+        // b 出無懈保護自己 → 南蠻對 b 無效，輪詢依列表推進到 c
         List<DomainEvent> e3 = game.playWardCard("player-b", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
-        assertEquals(List.of("player-d"), askKillTargets(e3),
-                "無懈取消後座位推進會誤問免疫的陸遜 — 必須依 reactionPlayers 列表推進");
-        assertEquals("player-d", game.getCurrentRound().getActivePlayer().getId());
+        assertEquals(List.of("player-c"), askKillTargets(e3), "無懈取消後應推進問 c");
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId());
+
+        List<DomainEvent> e4 = game.playerPlayCard("player-c", "", "player-a", PlayType.SKIP.getPlayType());
+        assertEquals(List.of("player-d"), askKillTargets(e4));
 
         game.playerPlayCard("player-d", "", "player-a", PlayType.SKIP.getPlayType());
         assertTrue(game.getTopBehavior().isEmpty());
         assertEquals(4, game.getPlayer("player-b").getHP(), "b 被無懈保護不扣血");
-        assertEquals(4, game.getPlayer("player-c").getHP(), "陸遜免疫不扣血");
+        assertEquals(3, game.getPlayer("player-c").getHP());
         assertEquals(3, game.getPlayer("player-d").getHP());
     }
 
