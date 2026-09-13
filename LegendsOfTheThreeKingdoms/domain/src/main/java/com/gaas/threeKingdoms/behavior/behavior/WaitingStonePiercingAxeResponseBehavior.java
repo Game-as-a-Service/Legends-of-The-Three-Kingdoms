@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.EquipmentCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +76,7 @@ public class WaitingStonePiercingAxeResponseBehavior extends Behavior {
         }
 
         // 棄兩張牌
+        int lostEquipmentCount = 0;
         for (String discardCardId : discardCardIds) {
             boolean inHand = attackerPlayer.getHand().getCards().stream()
                     .anyMatch(c -> c.getId().equals(discardCardId));
@@ -89,10 +91,16 @@ public class WaitingStonePiercingAxeResponseBehavior extends Behavior {
                         .orElseThrow(() -> new RuntimeException("Equipment not found: " + discardCardId));
                 attackerPlayer.getEquipment().removeEquipment(discardCardId);
                 game.getGraveyard().add(equipmentCard);
+                lostEquipmentCount++;
             }
         }
 
         events.add(new StonePiercingAxeTriggerEvent(attackerPlayer.getId(), targetPlayerId, discardCardIds));
+
+        // 梟姬：貫石斧的代價棄到裝備區的牌也算失去裝備（棄兩張裝備 → 摸四張）。
+        // 必須在 getDamagedEvent / getGameStatusEvent 之前呼叫（兩者都會快照當下玩家狀態），
+        // 摸牌事件也因此排在傷害事件之前。
+        events.addAll(SkillEngine.afterLoseEquipment(game, attackerPlayer, lostEquipmentCount));
 
         // 強制命中：直接造成傷害
         isOneRound = true;  // 讓自己被 pop

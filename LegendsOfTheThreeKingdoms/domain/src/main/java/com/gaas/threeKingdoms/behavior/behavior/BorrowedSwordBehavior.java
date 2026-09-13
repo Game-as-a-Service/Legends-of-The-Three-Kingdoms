@@ -14,6 +14,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanVipe
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,8 @@ public class BorrowedSwordBehavior extends Behavior {
             List<DomainEvent> events = new ArrayList<>();
             events.add(new PlayCardEvent("不出牌", playerId, targetPlayerId, cardId, playType));
             events.add(new WeaponUsurpationEvent(playerId, behaviorPlayer.getId(), targetWeaponCard.getId()));
+            // 梟姬：武器被借刀殺人奪走也算失去裝備 → 摸牌（排在 GameStatusEvent 之前，狀態快照才含這幾張）
+            events.addAll(SkillEngine.afterLoseEquipment(game, player, 1));
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             events.add(game.getGameStatusEvent("跳過"));
@@ -104,6 +107,8 @@ public class BorrowedSwordBehavior extends Behavior {
             isOneRound = true;
             events.add(new PlayCardEvent("不出牌", borrowedPlayerId, currentPlayerId, "", PlayType.SKIP.getPlayType()));
             events.add(new WeaponUsurpationEvent(borrowedPlayerId, behaviorPlayer.getId(), targetWeaponCard.getId()));
+            // 梟姬：B 無殺可出、武器被直接奪走 → 同樣是失去裝備
+            events.addAll(SkillEngine.afterLoseEquipment(game, borrowedPlayer, 1));
             Round currentRound = game.getCurrentRound();
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             events.add(game.getGameStatusEvent("跳過"));
