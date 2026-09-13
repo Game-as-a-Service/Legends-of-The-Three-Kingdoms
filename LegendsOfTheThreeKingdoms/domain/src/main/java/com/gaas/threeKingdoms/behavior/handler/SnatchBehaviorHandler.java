@@ -32,6 +32,12 @@ public class SnatchBehaviorHandler extends PlayCardBehaviorHandler {
 
         HandCard card = player.getHand().getCard(cardId).orElseThrow(NoSuchElementException::new);
 
+        // 謙遜等：目標不能成為順手牽羊的目標（mirror ContentmentBehaviorHandler）
+        if (com.gaas.threeKingdoms.skill.registry.SkillEngine.isImmuneToCard(currentReactionPlayer, card)) {
+            throw new IllegalStateException(String.format(
+                    "%s cannot be targeted by Snatch (target immunity skill)", currentReactionPlayer.getId()));
+        }
+
         String errorMessage = "對象沒手牌或者裝備牌";
         if (currentReactionPlayer.getHandSize() == 0 && !currentReactionPlayer.getEquipment().hasAnyEquipment()) {
             throw new IllegalArgumentException(errorMessage);

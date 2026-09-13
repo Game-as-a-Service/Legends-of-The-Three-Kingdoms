@@ -655,7 +655,8 @@ public class Game {
             );
             domainEvents.addAll(damageEvents);
         } else {
-            // 謙遜等：跳過不能成為閃電目標的玩家（最壞情況繞回原判定者自己）
+            // 目標免疫技（TargetImmunitySkill）：跳過不能成為閃電目標的玩家
+            // （標準版謙遜不含閃電，目前無技能命中；保留通用守門，最壞情況繞回原判定者自己）
             Player nextPlayer = seatingChart.getNextPlayer(player);
             int hops = seatingChart.getPlayers().size();
             while (hops-- > 0 && !nextPlayer.equals(player)

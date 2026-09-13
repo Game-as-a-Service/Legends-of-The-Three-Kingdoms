@@ -229,7 +229,7 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
 
     /**
      * 依 reactionPlayers 列表順序找 playerId 之後第一個存活 reactor；null = 沒有了。
-     * 不可用座位 getNextPlayer：謙遜等免疫技會把玩家從列表排除（座位上仍存在），
+     * 不可用座位 getNextPlayer：目標免疫技會把玩家從列表排除（座位上仍存在），
      * 座位推進會誤問免疫者、且免疫者在列表尾時 isLast 判斷失效（issue：南蠻跳人/亂序）。
      */
     private Player nextAliveReactorAfter(String playerId) {
