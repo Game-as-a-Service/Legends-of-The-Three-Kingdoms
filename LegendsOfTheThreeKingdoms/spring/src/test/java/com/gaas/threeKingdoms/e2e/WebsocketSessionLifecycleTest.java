@@ -33,6 +33,19 @@ public class WebsocketSessionLifecycleTest extends AbstractBaseIntegrationTest {
     @Autowired
     private PlayerConnectionRegistry registry;
 
+    /**
+     * 用專屬 gameId，不跟其他測試共用預設的 {@code my-id}。
+     * <p>
+     * 連線表是以 gameId 分群的，若共用 my-id，任何**其他** test class 沒關掉的 session 都會
+     * 讓這裡的「連線表應該清空」失敗 —— 而且只在該 class 剛好排在前面時才失敗，變成順序相依。
+     * 本地跑就是排在 GameTest 之前所以綠燈，CI 排在之後才炸出
+     * {@code [player-a, player-b, player-c, player-d]}（GameTest 洩漏的 4 條，已一併修掉）。
+     * 這支測試要驗的是「close() 會釋放**自己**開的 session」，用獨立 gameId 才問得精準。
+     */
+    WebsocketSessionLifecycleTest() {
+        this.gameId = "websocket-session-lifecycle";
+    }
+
     @DisplayName("@BeforeEach 開的 7 條 STOMP session 在 close() 之後必須全部從連線表消失")
     @Test
     public void websocketSessionsAreFullyReleasedOnClose() throws Exception {
