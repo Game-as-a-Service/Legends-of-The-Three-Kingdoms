@@ -365,6 +365,9 @@ POST /api/games/{gameId}/player:chooseCardFromBountifulHarvest
 
 **流程**：出五穀豐登 → (Ward Phase1) → 翻 N 張牌 → 逐人選牌 → (Ward Phase2 每人詢問) → 選一張加入手牌
 
+**Ward 詢問名單**：Phase 1（取消整張五穀豐登）不含出牌者；Phase 2 為逐人效果結算，
+詢問名單含**所有**持無懈者 — 包括出牌者與剛從牌池選走無懈的玩家（取得後立即可用）
+
 ---
 
 ## 15. 雌雄雙股劍發動選擇（攻擊者）

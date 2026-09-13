@@ -648,4 +648,78 @@ public class WardWithBountifulHarvestTest {
         assertEquals(1, playerC.getHandSize());
         assertEquals(1, playerD.getHandSize());
     }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，A 的回合，A 有五穀豐登，無人持無懈
+            牌池含一張無懈可擊
+
+            A 出五穀豐登 → A 選桃，B 從牌池選走無懈可擊
+
+            Then
+            C 選牌前的無懈詢問包含 B（剛取得即可使用）
+            B 出無懈 → C 被跳過沒拿牌，輪到 D
+            """)
+    @Test
+    public void test12_pickedWardUsableImmediately() {
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new Deck(List.of(new Kill(BS8008), new Ward(SSJ011), new Peach(BH3029), new Peach(BH0036))));
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new BountifulHarvest(SH3042)));
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerA);
+
+        game.playerPlayCard("player-a", SH3042.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        game.playerChooseCardFromBountifulHarvest("player-a", BH0036.getCardId());
+        List<DomainEvent> afterBPick = game.playerChooseCardFromBountifulHarvest("player-b", SSJ011.getCardId());
+
+        WaitForWardEvent wardAsk = getEvent(afterBPick, WaitForWardEvent.class).orElseThrow();
+        assertTrue(wardAsk.getPlayerIds().contains("player-b"), "剛拿到無懈的 B 應在詢問名單");
+
+        List<DomainEvent> wardEvents = game.playWardCard("player-b", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        assertEquals(0, game.getPlayer("player-c").getHandSize(), "C 的效果被無懈 → 沒拿牌");
+        assertTrue(wardEvents.stream().anyMatch(e -> e instanceof BountifulHarvestEvent
+                && ((BountifulHarvestEvent) e).getNextChoosingPlayerId().equals("player-d")), "跳過 C 輪到 D");
+    }
+
+    @DisplayName("""
+            Given
+            玩家 A B C D，A 的回合，A 有五穀豐登，無人持無懈
+            牌池含一張無懈可擊
+
+            A 出五穀豐登 → 出牌者 A 自己從牌池選走無懈可擊
+
+            Then
+            B 選牌前的無懈詢問包含 A（使用者回報：出牌者取得後無法立即使用）
+            Phase 2 為逐人效果結算，出牌者可無懈他人的拿牌效果
+            A 出無懈 → B 被跳過沒拿牌，輪到 C
+            """)
+    @Test
+    public void test13_casterPickedWardUsableImmediately() {
+        Game game = new Game();
+        game.initDeck();
+        game.setDeck(new Deck(List.of(new Kill(BS8008), new Ward(SSJ011), new Peach(BH3029), new Peach(BH0036))));
+
+        Player playerA = createPlayer("player-a", General.劉備, Role.MONARCH);
+        playerA.getHand().addCardToHand(Arrays.asList(new BountifulHarvest(SH3042)));
+        Player playerB = createPlayer("player-b", General.關羽, Role.MINISTER);
+        Player playerC = createPlayer("player-c", General.張飛, Role.REBEL);
+        Player playerD = createPlayer("player-d", General.孫權, Role.TRAITOR);
+        setupGame(game, asList(playerA, playerB, playerC, playerD), playerA);
+
+        game.playerPlayCard("player-a", SH3042.getCardId(), "", PlayType.ACTIVE.getPlayType());
+        List<DomainEvent> afterAPick = game.playerChooseCardFromBountifulHarvest("player-a", SSJ011.getCardId());
+
+        WaitForWardEvent wardAsk = getEvent(afterAPick, WaitForWardEvent.class).orElseThrow();
+        assertTrue(wardAsk.getPlayerIds().contains("player-a"), "出牌者拿到無懈也應在詢問名單");
+
+        List<DomainEvent> wardEvents = game.playWardCard("player-a", SSJ011.getCardId(), PlayType.ACTIVE.getPlayType());
+        assertEquals(0, game.getPlayer("player-b").getHandSize(), "B 的效果被無懈 → 沒拿牌");
+        assertTrue(wardEvents.stream().anyMatch(e -> e instanceof BountifulHarvestEvent
+                && ((BountifulHarvestEvent) e).getNextChoosingPlayerId().equals("player-c")), "跳過 B 輪到 C");
+    }
 }

@@ -25,6 +25,12 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isSkip;
 public class WardBehavior extends Behavior {
 
     public static final String WARD_TRIGGER_PLAYER_ID = "WARD_TRIGGER_PLAYER_ID";
+    /**
+     * 值 "true" 時，出牌者（WARD_TRIGGER_PLAYER_ID）也納入無懈詢問名單。
+     * 用於「錦囊對單一玩家的效果」逐人結算（如五穀豐登 Phase 2）— 出牌者可無懈
+     * 他人的效果；預設（無此 param）維持排除出牌者（不能無懈自己的牌）。
+     */
+    public static final String WARD_INCLUDE_TRIGGER_PLAYER = "WARD_INCLUDE_TRIGGER_PLAYER";
     public static final String WARD_TARGET_PLAYER_IDS = "WARD_TARGET_PLAYER_IDS";
 
     public WardBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card, boolean isTargetPlayerNeedToResponse) {
@@ -36,8 +42,10 @@ public class WardBehavior extends Behavior {
         List<DomainEvent> events = new ArrayList<>();
         List<String> playerIds = new ArrayList<>();
         String wardTriggerPlayerId = (String) getParam(WARD_TRIGGER_PLAYER_ID);
+        boolean includeTriggerPlayer = "true".equals(getParam(WARD_INCLUDE_TRIGGER_PLAYER));
         game.getPlayers().forEach(player -> {
-                    if (player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward) && !player.getId().equals(wardTriggerPlayerId)) {
+                    if (player.getHand().getCards().stream().anyMatch(card -> card instanceof Ward)
+                            && (includeTriggerPlayer || !player.getId().equals(wardTriggerPlayerId))) {
                         playerIds.add(player.getId());
                     }
                 }
