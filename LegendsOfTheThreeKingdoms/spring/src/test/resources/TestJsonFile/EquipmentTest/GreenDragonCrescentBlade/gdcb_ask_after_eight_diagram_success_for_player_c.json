@@ -5,7 +5,7 @@
       "drawCardId" : "BH3029",
       "success" : true
     },
-    "message" : "八卦陣判定：紅心3 桃 → 紅色，視為出閃"
+    "message" : "發動效果 成功"
   }, {
     "event" : "AskGreenDragonCrescentBladeEffectEvent",
     "data" : {

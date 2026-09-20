@@ -56,12 +56,8 @@ public class UseEquipmentEffectPresenter implements UseEquipmentUseCase.UseEquip
 
 
     public static class UseEquipmentEffectViewModel extends ViewModel<UseEquipmentEffectDataViewModel> {
-        /**
-         * message 由 domain event 帶進來（如「八卦陣判定：紅心5 桃 → 紅色，視為出閃」）。
-         * 原本固定成「發動效果 成功／失敗」，使用者回報看不出是哪張牌造成成功或失敗。
-         */
-        public UseEquipmentEffectViewModel(UseEquipmentEffectDataViewModel data, String message) {
-            super("UseEquipmentEffectEvent", data, message);
+        public UseEquipmentEffectViewModel(UseEquipmentEffectDataViewModel data) {
+            super("UseEquipmentEffectEvent", data, String.format("發動效果 %s", data.isSuccess ? "成功" : "失敗"));
         }
     }
 

@@ -306,7 +306,8 @@ public final class SkillEngine {
                                             List<DomainEvent> events) {
         boolean black = judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.SPADE
                 || judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.CLUB;
-        String judgementDesc = judgement.judgementDescription();
+        String judgementDesc = judgement.getSuit().getDisplayName()
+                + judgement.getRank().getRepresentation() + " " + judgement.getName();
         String message = black
                 ? String.format("洛神判定：%s → 黑色，收入手牌續判", judgementDesc)
                 : String.format("洛神判定：%s → 紅色，停止", judgementDesc);
@@ -338,7 +339,8 @@ public final class SkillEngine {
         successOut[0] = success;
         List<DomainEvent> events = new ArrayList<>();
         // 帶判定結果訊息（使用者回報：只顯示「鐵騎：xxx 發動」看不到判定牌與結果）
-        String judgementDesc = judgement.judgementDescription();
+        String judgementDesc = judgement.getSuit().getDisplayName()
+                + judgement.getRank().getRepresentation() + " " + judgement.getName();
         String message = success
                 ? String.format("鐵騎判定：%s → 生效，%s 不能出閃",
                         judgementDesc, target.getGeneralName())

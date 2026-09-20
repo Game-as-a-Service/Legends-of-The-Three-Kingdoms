@@ -31,18 +31,8 @@ public class EightDiagramTactic extends ArmorCard {
         if (isEffectSuccess) {
             currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
         }
-        events.add(new EightDiagramTacticEffectEvent(judgementMessage(card, isEffectSuccess), isEffectSuccess, card.getId()));
+        events.add(new EightDiagramTacticEffectEvent("發動八卦陣效果", isEffectSuccess, card.getId()));
         return events;
-    }
-
-    /**
-     * 判定結果的具體文字。前端遊戲 log 只顯示 message，原本固定是「發動效果 成功／失敗」，
-     * 看不出是哪張牌造成成功或失敗（使用者回報）。格式對齊鐵騎／洛神（issue #235、#244）。
-     */
-    private String judgementMessage(HandCard card, boolean isEffectSuccess) {
-        return isEffectSuccess
-                ? String.format("八卦陣判定：%s → 紅色，視為出閃", card.judgementDescription())
-                : String.format("八卦陣判定：%s → 黑色，未生效，照常問閃", card.judgementDescription());
     }
 
     private boolean isEffectSuccess(HandCard card) {
