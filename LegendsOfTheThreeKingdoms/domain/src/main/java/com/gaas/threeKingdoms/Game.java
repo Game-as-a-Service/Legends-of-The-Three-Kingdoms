@@ -362,6 +362,7 @@ public class Game {
     public void setSeatingChart(SeatingChart seatingChart) {this.seatingChart = seatingChart;}
 
     public List<DomainEvent> playerPlayCard(String playerId, String cardId, String targetPlayerId, String playType) {
+        checkGameIsNotOver();
         PlayType.checkPlayTypeIsValid(playType);
         checkIsCurrentRoundValid(playerId);
         Player actingPlayer = getPlayer(playerId);
@@ -445,6 +446,24 @@ public class Game {
         }
     }
 
+    /** 勝負已分（GameOver phase）。 */
+    public boolean isGameOver() {
+        return gamePhase instanceof GameOver;
+    }
+
+    /**
+     * 遊戲結束後不再接受任何玩家操作（使用者回報：遊戲結束後還可以繼續出牌）。
+     * <p>
+     * GameOverEvent 廣播出去之後，回合狀態其實還是活的（activePlayer 停在最後一位回應者、
+     * behavior stack 空的），所以出牌 / 結束回合 / 棄牌 / 用裝備全都還吃得下去，牌局會繼續跑。
+     * 這個守門加在每一支玩家操作的入口，讓勝負已分之後的請求一律被拒（同「死人不得行動」的做法）。
+     */
+    private void checkGameIsNotOver() {
+        if (isGameOver()) {
+            throw new IllegalStateException("遊戲已結束，不接受任何玩家操作");
+        }
+    }
+
     private void checkIsCurrentRoundValid(String playerId) {
         Player activePlayer = currentRound.getActivePlayer();
         if (!activePlayer.getId().equals(playerId)) {
@@ -465,6 +484,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseEquipment(String playerId, String cardId, String targetPlayerId, EquipmentPlayType playType) {
+        checkGameIsNotOver();
         checkIsCurrentRoundValid(playerId);
         checkIsPlayerHasThisEquipment(playerId, cardId);
         List<DomainEvent> events = Optional.ofNullable(equipmentEffectHandler.handle(playerId, cardId, targetPlayerId, playType)).orElse(new ArrayList<>());
@@ -473,6 +493,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerChooseHorseForQilinBow(String playerId, String cardId) {
+        checkGameIsNotOver();
         Behavior waitingQilinBowResponsebehavior = topBehavior.pop(); //  麒麟弓 behavior
         Behavior nomralKillbehavior = topBehavior.peek(); //  NormalKill
         List<DomainEvent> qilingBowEvents = waitingQilinBowResponsebehavior.responseToPlayerAction(playerId, nomralKillbehavior.getReactionPlayers().get(0), cardId, EquipmentPlayType.ACTIVE.getPlayType());
@@ -525,6 +546,7 @@ public class Game {
     }
 
     public List<DomainEvent> finishAction(String playerId) {
+        checkGameIsNotOver();
         List<DomainEvent> domainEvents = new ArrayList<>();
         Player currentRoundPlayer = currentRound.getCurrentRoundPlayer();
 
@@ -723,6 +745,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerDiscardCard(List<String> cardIds) {
+        checkGameIsNotOver();
         Player player = currentRound.getCurrentRoundPlayer();
         int needToDiscardSize = player.getHandSize() - SkillEngine.handCardLimit(player);
         if (cardIds.size() < needToDiscardSize) {
@@ -1001,6 +1024,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerActivateYinYangSwords(String playerId, AskActivateYinYangSwordsEvent.Choice choice) {
+        checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
             throw new IllegalStateException("No active behavior waiting for YinYangSwords activation");
         }
@@ -1015,6 +1039,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseYinYangSwordsEffect(String playerId, YinYangSwordsEffectEvent.Choice choice, String cardId) {
+        checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
             throw new IllegalStateException("No active behavior waiting for YinYangSwords effect response");
         }
@@ -1029,6 +1054,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseGreenDragonCrescentBladeEffect(String playerId, AskGreenDragonCrescentBladeEffectEvent.Choice choice, String killCardId) {
+        checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
             throw new IllegalStateException("No active behavior waiting for GreenDragonCrescentBlade effect response");
         }
@@ -1043,6 +1069,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseJianXiongEffect(String playerId, AskJianXiongEffectEvent.Choice choice) {
+        checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
             throw new IllegalStateException("No active behavior waiting for JianXiong effect response");
         }
@@ -1058,6 +1085,7 @@ public class Game {
 
     public List<DomainEvent> playerUseSkillEffect(String playerId, String skillName, String choice,
                                                   List<String> cardIds, String targetPlayerId) {
+        checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
             // proactive 分支：出牌階段主動發動（轉化技 / 制衡 / 苦肉 / 仁德 / 觀星...）
             if (findConversionSkill(playerId, skillName) != null) {
@@ -1271,6 +1299,7 @@ public class Game {
     public List<DomainEvent> playerUseHuJiaEffect(String playerId,
                                                   com.gaas.threeKingdoms.events.AskHuJiaEffectEvent.Choice choice,
                                                   String cardId) {
+        checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
             throw new IllegalStateException("No active behavior waiting for HuJia effect response");
         }
@@ -1284,6 +1313,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseStonePiercingAxeEffect(String playerId, AskStonePiercingAxeEffectEvent.Choice choice, List<String> discardCardIds) {
+        checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
             throw new IllegalStateException("No active behavior waiting for StonePiercingAxe effect response");
         }
@@ -1298,6 +1328,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerUseViperSpearKill(String playerId, String targetPlayerId, List<String> discardCardIds) {
+        checkGameIsNotOver();
         Player attacker = getPlayer(playerId);
 
         // 驗證：玩家是當前 activePlayer（active = 自己回合; passive = 被詢問者）
@@ -1396,6 +1427,7 @@ public class Game {
     public List<DomainEvent> playerUseHeavenlyDoubleHalberdKill(String playerId,
                                                                  String cardId,
                                                                  List<String> targetPlayerIds) {
+        checkGameIsNotOver();
         Player attacker = getPlayer(playerId);
 
         // 1. activePlayer 驗證
@@ -1499,6 +1531,7 @@ public class Game {
     }
 
     public List<DomainEvent> useBorrowedSwordEffect(String currentPlayerId, String borrowedPlayerId, String attackTargetPlayerId) {
+        checkGameIsNotOver();
         Behavior behavior = topBehavior.peek();
         Player borrowedPlayer = getPlayer(borrowedPlayerId);
         if (behavior instanceof BorrowedSwordBehavior &&
@@ -1554,6 +1587,7 @@ public class Game {
     }
 
     public List<DomainEvent> useDismantleEffect(String currentPlayerId, String targetPlayerId, String cardId, Integer targetCardIndex) {
+        checkGameIsNotOver();
         Behavior behavior = topBehavior.peek();
         List<HandCard> cards = getPlayer(targetPlayerId).getHand().getCards();
         HandCard handCard = null;
@@ -1578,6 +1612,7 @@ public class Game {
     }
 
     public List<DomainEvent> playWardCard(String playerId, String cardId, String playType) {
+        checkGameIsNotOver();
         if (!currentRound.getStage().equals(Stage.Wait_Accept_Ward_Effect)) {
             throw new IllegalStateException(String.format("CurrentRound stage not Wait_Accept_Ward_Effect but [%s]", currentRound.getStage()));
         }
@@ -1601,6 +1636,7 @@ public class Game {
     }
 
     public List<DomainEvent> playerChooseCardFromBountifulHarvest(String currentPlayerId, String cardId) {
+        checkGameIsNotOver();
         Behavior behavior = topBehavior.peek();
         if (behavior instanceof BountifulHarvestBehavior) {
             Optional.ofNullable(behavior.getParam(BountifulHarvestBehavior.BOUNTIFUL_HARVEST_CARDS))
@@ -1668,6 +1704,7 @@ public class Game {
     }
 
     public List<DomainEvent> useSnatchEffect(String currentPlayerId, String targetPlayerId, String cardId, Integer targetCardIndex) {
+        checkGameIsNotOver();
         Behavior behavior = topBehavior.peek();
         List<HandCard> cards = getPlayer(targetPlayerId).getHand().getCards();
         HandCard handCard = null;
