@@ -91,11 +91,14 @@ public class GuiCaiSkill implements ChoiceResolvableSkill {
         extraParams.forEach(waiting::putParam);
         game.updateTopBehavior(waiting);
         game.getCurrentRound().setActivePlayer(guiCaiHolder);
+        // 訊息帶判定牌描述：司馬懿要看得到自己在換掉哪張牌才能決定換不換（使用者回報判定牌不展示）
+        String question = String.format("鬼才：%s 可替換 %s 的%s判定牌 %s",
+                guiCaiHolder.getId(), owner.getId(), judgementTypeName, drawnCard.judgementDescription());
         return Optional.of(List.of(
                 new AskSkillEffectEvent(SKILL_NAME, guiCaiHolder.getId(),
-                        List.of(drawnCard.getId()), owner.getId()),
-                game.getGameStatusEvent("鬼才：" + guiCaiHolder.getId() + " 可替換 "
-                        + owner.getId() + " 的" + judgementTypeName + "判定牌")));
+                        List.of(drawnCard.getId()), owner.getId(),
+                        AskSkillEffectEvent.ACCEPT_OR_SKIP, question),
+                game.getGameStatusEvent(question)));
     }
 
     @Override
@@ -121,10 +124,12 @@ public class GuiCaiSkill implements ChoiceResolvableSkill {
             }
             judgementCard = simaYi.playCard(replacementId);
             game.getGraveyard().add(judgementCard);
+            // 訊息寫花色點數牌名而非 cardId：換上來的這張才是真正生效的判定牌（使用者回報判定牌不展示）
+            String replacedMessage = String.format("%s 發動鬼才，以 %s 替換 %s 的判定牌",
+                    simaYi.getId(), judgementCard.judgementDescription(), owner.getId());
             events.add(new SkillEffectEvent(SKILL_NAME, simaYi.getId(), true,
-                    List.of(replacementId), owner.getId()));
-            events.add(game.getGameStatusEvent(String.format(
-                    "%s 發動鬼才，以 %s 替換判定牌", simaYi.getId(), replacementId)));
+                    List.of(replacementId), owner.getId(), replacedMessage));
+            events.add(game.getGameStatusEvent(replacedMessage));
         } else if ("SKIP".equals(choice)) {
             judgementCard = drawn;
             events.add(new SkillEffectEvent(SKILL_NAME, simaYi.getId(), false, List.of(), owner.getId()));

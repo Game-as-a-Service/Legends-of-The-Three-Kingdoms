@@ -28,7 +28,9 @@ import java.util.List;
  *
  * AOE polling（南蠻/萬箭）中亦觸發（mirror 反饋 #221）：詢問鏈（含 ASK_SOURCE 第二段、
  * 鬼才巢狀）全部收斂後由 WaitingSkillEffectBehavior 收鏈掃描 resume 輪詢。
- * 來源手牌 < 2 時只能選 DAMAGE；反傷不進瀕死流程（同反間，v1 慣例）。
+ * 來源手牌 < 2 時只能受傷；反傷不進瀕死流程（同反間，v1 慣例）。
+ * 第二段的詢問事件帶 options = [DISCARD, DAMAGE]，來源的回應只分「有挑兩張手牌（棄牌）」
+ * 與「其他（受傷）」兩種，不會因為前端送了 ACCEPT/SKIP 就把遊戲鎖住（使用者回報）。
  */
 public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
 
@@ -37,6 +39,9 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
     public static final String PARAM_SOURCE_ID = "GANGLIE_SOURCE_ID";
     public static final String PARAM_STAGE = "GANGLIE_STAGE"; // ASK_XIAHOU | ASK_SOURCE
     public static final String PARAM_XIAHOU_ID = "GANGLIE_XIAHOU_ID";
+    /** ASK_SOURCE 階段的合法回應（詢問事件的 options，前端照這個畫按鈕）。 */
+    public static final String CHOICE_DISCARD = "DISCARD";
+    public static final String CHOICE_DAMAGE = "DAMAGE";
 
     @Override
     public String getGeneralId() {
@@ -124,16 +129,19 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
                                                             HandCard judgement) {
         List<DomainEvent> events = new ArrayList<>();
         boolean success = judgement.getSuit() != Suit.HEART;
+        // 帶判定牌描述（使用者回報：只看到「判定生效／未生效」，看不出是哪張牌造成的，
+        // 同 issue #235 起的慣例，見八卦陣／鐵騎／洛神）
+        String judgementDesc = judgement.judgementDescription();
         String resultMessage = success
-                ? "剛烈判定生效，" + sourceId + " 選擇棄兩張手牌或受 1 點傷害"
-                : "剛烈判定紅桃，未生效";
+                ? String.format("剛烈判定：%s → 非紅桃，生效", judgementDesc)
+                : String.format("剛烈判定：%s → 紅桃，未生效", judgementDesc);
         events.add(new SkillEffectEvent(SKILL_NAME, xiaHou.getId(), success,
                 List.of(judgement.getId()), sourceId, resultMessage));
         events.addAll(SkillEngine.afterJudgement(game, xiaHou, judgement));
 
         if (!success) {
             game.getCurrentRound().setActivePlayer(game.getCurrentRound().getCurrentRoundPlayer());
-            events.add(game.getGameStatusEvent("剛烈判定紅桃，未生效"));
+            events.add(game.getGameStatusEvent(resultMessage));
             return events;
         }
 
@@ -146,9 +154,24 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
         game.updateTopBehavior(askSource);
         game.getCurrentRound().setActivePlayer(source);
 
-        events.add(new AskSkillEffectEvent(SKILL_NAME, sourceId, List.of(), xiaHou.getId()));
-        events.add(game.getGameStatusEvent("剛烈判定生效，" + sourceId + " 選擇棄兩張手牌或受 1 點傷害"));
+        // 這一段問的是「棄兩張或受傷」，不是「要不要發動剛烈」：options 與訊息都要講清楚，
+        // 否則前端只畫得出發動／放棄，兩個都不是合法答案（使用者回報卡局）
+        String question = String.format("剛烈判定生效：請 %s 選擇棄兩張手牌或受 1 點傷害", sourceId);
+        events.add(new AskSkillEffectEvent(SKILL_NAME, sourceId, List.of(), xiaHou.getId(),
+                List.of(CHOICE_DISCARD, CHOICE_DAMAGE), question));
+        events.add(game.getGameStatusEvent(question));
         return events;
+    }
+
+    /** 來源受剛烈 1 點傷害的事件。 */
+    private static List<DomainEvent> sourceDamageEvents(Game game, Player source, String xiaHouId) {
+        int originalHp = source.getHP();
+        source.damage(1);
+        String damageMessage = source.getId() + " 受剛烈 1 點傷害（" + originalHp + "→" + source.getHP() + "）";
+        // v1：剛烈反傷不進瀕死流程整合（HP 仍會歸零，但 dying ask 流程為 follow-up）
+        return List.of(
+                new SkillEffectEvent(SKILL_NAME, source.getId(), true, List.of(), xiaHouId, damageMessage),
+                game.getGameStatusEvent(damageMessage));
     }
 
     private List<DomainEvent> resolveSourceChoice(Game game, WaitingSkillEffectBehavior waiting,
@@ -158,7 +181,12 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
         List<DomainEvent> events = new ArrayList<>();
         game.getCurrentRound().setActivePlayer(game.getCurrentRound().getCurrentRoundPlayer());
 
-        if ("DISCARD".equals(choice)) {
+        // 剛烈是強制二選一，來源不能「不選」。舊版只認 DISCARD／DAMAGE，其他 choice 一律
+        // 丟 IllegalArgumentException —— 但前端對這個詢問只畫得出通用的發動／放棄，兩者都被
+        // 拒絕，玩家怎麼按都回不了合法答案，遊戲就停在這裡（使用者回報卡局）。
+        // 因此：明確要棄牌（或已挑好兩張手牌）→ 棄牌；其餘任何回應 → 受 1 點傷害。
+        boolean wantsDiscard = CHOICE_DISCARD.equals(choice) || (cardIds != null && cardIds.size() == 2);
+        if (wantsDiscard) {
             if (cardIds == null || cardIds.size() != 2) {
                 throw new IllegalArgumentException("DISCARD requires exactly 2 hand cards");
             }
@@ -169,15 +197,8 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, cardIds, xiaHouId,
                     source.getId() + " 棄兩張手牌回應剛烈"));
             events.add(game.getGameStatusEvent(source.getId() + " 棄兩張手牌回應剛烈"));
-        } else if ("DAMAGE".equals(choice)) {
-            int originalHp = source.getHP();
-            source.damage(1);
-            String damageMessage = source.getId() + " 受剛烈 1 點傷害（" + originalHp + "→" + source.getHP() + "）";
-            events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, List.of(), xiaHouId, damageMessage));
-            events.add(game.getGameStatusEvent(damageMessage));
-            // v1：剛烈反傷不進瀕死流程整合（HP 仍會歸零，但 dying ask 流程為 follow-up）
         } else {
-            throw new IllegalArgumentException("Invalid GangLie source choice: " + choice);
+            events.addAll(sourceDamageEvents(game, source, xiaHouId));
         }
         return events;
     }

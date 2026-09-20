@@ -304,8 +304,9 @@ public class DomainEventToViewModelMapper {
             AskSkillEffectEvent askEvent = (AskSkillEffectEvent) event;
             UseSkillEffectPresenter.AskSkillEffectDataViewModel dataViewModel = new UseSkillEffectPresenter.AskSkillEffectDataViewModel(
                     askEvent.getSkillName(), askEvent.getPlayerId(),
-                    askEvent.getDataCardIds(), askEvent.getDataPlayerId());
-            return new UseSkillEffectPresenter.AskSkillEffectViewModel(dataViewModel);
+                    askEvent.getDataCardIds(), askEvent.getDataPlayerId(), askEvent.getOptions());
+            // 帶 domain event 的具體問題（如剛烈第二段問的是棄兩張或受傷，不是要不要發動）
+            return new UseSkillEffectPresenter.AskSkillEffectViewModel(dataViewModel, askEvent.getMessage());
         });
 
         eventToViewModelMappers.put(SkillEffectEvent.class, event -> {
