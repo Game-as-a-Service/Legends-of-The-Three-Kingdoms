@@ -22,4 +22,13 @@ public abstract class HandCard {
 
     public abstract void effect(Player player);
 
+    /**
+     * 判定牌的人類可讀描述：花色 + 點數 + 牌名（如「紅心5 桃」）。
+     * 給判定類事件的 message 用 —— 前端的遊戲 log 只顯示 message，
+     * 光寫「成功／失敗」看不出是哪張牌造成的（issue #235 起的慣例，見八卦陣／鐵騎／洛神）。
+     */
+    public String judgementDescription() {
+        return suit.getDisplayName() + rank.getRepresentation() + " " + name;
+    }
+
 }

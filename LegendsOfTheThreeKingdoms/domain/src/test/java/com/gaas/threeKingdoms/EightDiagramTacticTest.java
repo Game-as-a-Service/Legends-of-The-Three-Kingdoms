@@ -266,6 +266,10 @@ public class EightDiagramTacticTest {
                 .filter(event -> event instanceof EffectEvent)
                 .map(EffectEvent.class::cast)
                 .allMatch(EffectEvent::isSuccess));
+        // 前端遊戲 log 只顯示 message，原本固定「發動效果 成功」看不出是哪張牌造成的（使用者回報）
+        EightDiagramTacticEffectEvent effectEvent = getEvent(events, EightDiagramTacticEffectEvent.class).orElseThrow();
+        assertEquals(BH3029.getCardId(), effectEvent.getDrawCardId());
+        assertEquals("八卦陣判定：紅心3 桃 → 紅色，視為出閃", effectEvent.getMessage());
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
         assertEquals("player-b", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());
@@ -355,6 +359,10 @@ public class EightDiagramTacticTest {
         List<DomainEvent> events = game.playerUseEquipment(playerA.getId(), ES2015.getCardId(), playerA.getId(), EquipmentPlayType.ACTIVE);
 
         assertFalse(events.stream().map(EffectEvent.class::cast).allMatch(EffectEvent::isSuccess));
+        // 失敗時也要看得出是哪張牌造成的
+        EightDiagramTacticEffectEvent effectEvent = getEvent(events, EightDiagramTacticEffectEvent.class).orElseThrow();
+        assertEquals(SS3003.getCardId(), effectEvent.getDrawCardId());
+        assertEquals("八卦陣判定：黑桃3 過河拆橋 → 黑色，未生效，照常問閃", effectEvent.getMessage());
         assertEquals("player-b", game.getCurrentRound().getCurrentRoundPlayer().getId());
         assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
         assertEquals(4, game.getPlayer("player-a").getHP());

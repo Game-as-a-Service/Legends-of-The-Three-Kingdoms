@@ -232,6 +232,9 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
                 .map(e -> (EightDiagramTacticEffectEvent) e)
                 .findFirst().orElseThrow();
         assertTrue(effect.isSuccess(), "替換成紅心 → 八卦陣成功");
+        assertEquals(BH3029.getCardId(), effect.getDrawCardId(), "判定牌是鬼才換上的那張");
+        assertEquals("八卦陣判定：紅心3 桃 → 紅色，視為出閃", effect.getMessage(),
+                "message 要顯示換牌後的判定牌，而不是原本抽到的黑桃9 殺");
         assertEquals(4, b.getHP(), "視為出閃，不受傷");
         assertTrue(game.isTopBehaviorEmpty(), "殺已結算完畢");
     }
@@ -282,6 +285,7 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
                 .map(e -> (EightDiagramTacticEffectEvent) e)
                 .findFirst().orElseThrow();
         assertFalse(effect.isSuccess(), "原黑桃判定 → 八卦陣失敗");
+        assertEquals("八卦陣判定：黑桃9 殺 → 黑色，未生效，照常問閃", effect.getMessage());
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent
                         && ((AskDodgeEvent) e).getPlayerId().equals("player-b")),
                 "失敗後續問閃");

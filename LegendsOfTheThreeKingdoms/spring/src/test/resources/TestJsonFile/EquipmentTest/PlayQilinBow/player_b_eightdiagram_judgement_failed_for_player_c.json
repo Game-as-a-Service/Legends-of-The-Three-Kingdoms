@@ -5,7 +5,7 @@
       "drawCardId" : "BS8008",
       "success" : false
     },
-    "message" : "發動效果 失敗"
+    "message" : "八卦陣判定：黑桃8 殺 → 黑色，未生效，照常問閃"
   }, {
     "event" : "AskDodgeEvent",
     "data" : {

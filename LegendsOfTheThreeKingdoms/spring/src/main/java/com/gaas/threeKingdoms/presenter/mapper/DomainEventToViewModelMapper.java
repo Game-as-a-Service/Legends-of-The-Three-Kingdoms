@@ -174,7 +174,7 @@ public class DomainEventToViewModelMapper {
             UseEquipmentEffectPresenter.UseEquipmentEffectDataViewModel dataViewModel = new UseEquipmentEffectPresenter.UseEquipmentEffectDataViewModel(
                     tacticEffectEvent.getDrawCardId(), tacticEffectEvent.isSuccess()
             );
-            return new UseEquipmentEffectPresenter.UseEquipmentEffectViewModel(dataViewModel);
+            return new UseEquipmentEffectPresenter.UseEquipmentEffectViewModel(dataViewModel, tacticEffectEvent.getMessage());
         });
 
         eventToViewModelMappers.put(QilinBowCardEffectEvent.class, event -> {
