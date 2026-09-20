@@ -5,7 +5,7 @@
       "drawCardId" : "BH7033",
       "success" : true
     },
-    "message" : "發動效果 成功"
+    "message" : "八卦陣判定：紅心7 桃 → 紅色，視為出閃"
   }, {
     "event" : "AskStonePiercingAxeEffectEvent",
     "data" : {
