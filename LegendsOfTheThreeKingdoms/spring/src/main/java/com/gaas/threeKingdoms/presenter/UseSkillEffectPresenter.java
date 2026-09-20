@@ -68,8 +68,13 @@ public class UseSkillEffectPresenter implements UseSkillEffectUseCase.UseSkillEf
     }
 
     public static class AskSkillEffectViewModel extends ViewModel<AskSkillEffectDataViewModel> {
-        public AskSkillEffectViewModel(AskSkillEffectDataViewModel data) {
-            super("AskSkillEffectEvent", data, "詢問是否發動武將技");
+        /**
+         * message 由 domain event 帶進來（如「剛烈判定生效：請 player-a 選擇棄兩張手牌或受 1 點傷害」）。
+         * 原本固定成「詢問是否發動武將技」，非「是否發動」型的詢問因此顯示成錯的問題
+         * （使用者回報：剛烈判定生效後系統問司馬懿要不要發動剛烈，隨後卡局）。
+         */
+        public AskSkillEffectViewModel(AskSkillEffectDataViewModel data, String message) {
+            super("AskSkillEffectEvent", data, message);
         }
     }
 
@@ -92,6 +97,8 @@ public class UseSkillEffectPresenter implements UseSkillEffectUseCase.UseSkillEf
         private String playerId;
         private List<String> dataCardIds;
         private String dataPlayerId;
+        /** 這次詢問可回的 choice（送 player:useSkillEffect），前端照這個畫按鈕。 */
+        private List<String> options;
     }
 
     @Data
