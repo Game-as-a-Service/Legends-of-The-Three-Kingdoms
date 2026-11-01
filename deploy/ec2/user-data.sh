@@ -3,7 +3,7 @@
 # 用法：aws ec2 run-instances ... --user-data file://deploy/ec2/user-data.sh
 set -euxo pipefail
 
-DOMAIN=3k-api.scolley31.com
+DOMAIN="scolley31.com, www.scolley31.com"
 REGION=ap-northeast-1
 REGISTRY=779846811027.dkr.ecr.ap-northeast-1.amazonaws.com
 REPO=legends_of_the_three_kingdoms
