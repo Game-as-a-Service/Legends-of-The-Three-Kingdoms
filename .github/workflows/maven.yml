@@ -146,23 +146,6 @@ jobs:
           aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
             --query '{Status:Status,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' --output yaml
           [ "$STATUS" = "Success" ]
-
-      # Login to NAS Registry
-      - name: Login to NAS Registry
-        run: echo "${{ secrets.NAS_REGISTRY_PASSWORD }}" | docker login registry.parsons125.in -u "${{ secrets.NAS_REGISTRY_USERNAME }}" --password-stdin
-
-      # Docker tag & push to NAS Registry
-      - name: Docker push to NAS Registry
-        run: |
-          TIMESTAMP=$(date -u +%Y%m%d%H%M%S)
-          docker tag ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:latest
-          docker tag ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:${TIMESTAMP}
-          docker push registry.parsons125.in/three-kingdoms:latest
-          docker push registry.parsons125.in/three-kingdoms:${TIMESTAMP}
-
-      # Trigger NAS redeploy
-      - name: Trigger NAS Redeploy
-        run: curl -sf -X POST "https://webhook.parsons125.in/hooks/redeploy-3k-be-app?token=${{ secrets.NAS_REDEPLOY_TOKEN }}"
   # === Discord 通知：PR 開啟 ===
   notify-pr-opened:
     name: Notify PR Opened
