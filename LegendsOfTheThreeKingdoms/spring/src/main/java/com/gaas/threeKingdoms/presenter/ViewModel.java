@@ -1,5 +1,6 @@
 package com.gaas.threeKingdoms.presenter;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.gaas.threeKingdoms.events.DomainEvent;
 
 import lombok.AllArgsConstructor;
@@ -13,6 +14,8 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+// 固定輸出順序：Jackson 2.18+ 對「子類別覆寫 getter」的欄位排序規則改了，不指定會讓 event 跑到 data 後面
+@JsonPropertyOrder({"event", "data", "message"})
 public class ViewModel<T> {
     protected String event; //List<Event>
     protected T data;
