@@ -757,8 +757,14 @@ POST /api/games/{gameId}/player:useSkillEffect
 | cardIds | List\<String\>? | 選擇的牌（依技能） |
 | targetPlayerId | String? | 選擇的目標（依技能） |
 
-**觸發時機**：收到 `AskSkillEffectEvent`（內含 skillName / playerId / dataCardIds / dataPlayerId）後呼叫。
+**觸發時機**：收到 `AskSkillEffectEvent`（內含 skillName / playerId / dataCardIds / dataPlayerId / **options**）後呼叫。
 回應後廣播 `SkillEffectEvent`（accepted + data）。
+
+⚠️ **請以 `data.options` 決定要畫哪些按鈕，不要固定畫「發動／放棄」**。多數詢問的 options 是
+`["ACCEPT", "SKIP"]`，但同一個事件也用來問「二選一」型的問題（如剛烈第二段的
+`["DISCARD", "DAMAGE"]`）—— 對那種詢問，`ACCEPT` / `SKIP` 不是題目的答案。
+外層的 `message` 一律是該次詢問的真正問題（例如「剛烈判定生效：請 player-a 選擇棄兩張手牌或受 1 點傷害」），
+直接顯示即可，不要自己組「是否發動武將技」。
 
 ### 各技能 payload
 
@@ -774,6 +780,96 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 洛神（甄姬） | 甄姬回合開始、延遲錦囊（閃電/樂不思蜀）判定之前（issue #227） | `ACCEPT`（開始判定：黑色收入手牌自動續判、紅色停，不逐輪詢問）/ `SKIP` | — | — |
 | 裸衣（許褚） | 許褚回合開始、判定階段之後、摸牌之前（原自動觸發改主動） | `ACCEPT`（少摸一張、本回合殺/決鬥傷害 +1）/ `SKIP`（正常摸牌無加成） | — | — |
 | 護駕（曹操主公技）發動詢問 | 主公曹操被要求出閃、且有其他存活魏將時（issue #217） | `ACCEPT`（開始魏將輪詢，見 §21）/ `SKIP`（自己出閃） | — | — |
+
+#### 剛烈（夏侯惇）兩段式詢問與回應
+
+夏侯惇（`WEI003`）受到傷害後，**兩段各有一個 `AskSkillEffectEvent`，被問的人不同、options 也不同**，
+都用同一支 `player:useSkillEffect` 回應（無獨立 endpoint）。前端請用 `data.playerId` 判斷該問誰、
+用 `data.options` 決定按鈕。
+
+**第一段：問夏侯惇要不要判定**
+
+```json
+{
+  "event": "AskSkillEffectEvent",
+  "data": {
+    "skillName": "剛烈",
+    "playerId": "<夏侯惇>",
+    "dataCardIds": [],
+    "dataPlayerId": "<傷害來源>",
+    "options": ["ACCEPT", "SKIP"]
+  },
+  "message": "剛烈：詢問 <夏侯惇> 是否發動"
+}
+```
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{ "playerId": "<夏侯惇>", "skillName": "剛烈", "choice": "ACCEPT" }
+```
+
+`SKIP` → 廣播 `SkillEffectEvent`（accepted=false）後結束。
+
+**判定結果**（`ACCEPT` 後）：廣播 `SkillEffectEvent`，`message` 寫出是哪張判定牌造成生效／未生效，
+`dataCardIds` = [判定牌 id]：
+
+```json
+{
+  "event": "SkillEffectEvent",
+  "data": { "skillName": "剛烈", "playerId": "<夏侯惇>", "accepted": true,
+            "dataCardIds": ["<判定牌 id>"], "dataPlayerId": "<傷害來源>" },
+  "message": "剛烈判定：黑桃9 殺 → 非紅桃，生效"
+}
+```
+
+`accepted` = 判定是否生效（非紅桃 true／紅桃 false，`message` 為「剛烈判定：紅心3 桃 → 紅桃，未生效」）。
+紅桃 → 流程結束，不會有第二段。
+
+> 場上有司馬懿時，判定牌抽出後會先插入**鬼才**的詢問（`skillName: "鬼才"`、options `["ACCEPT","SKIP"]`、
+> `message` 例：「鬼才：player-a 可替換 player-b 的剛烈判定牌 黑桃3 過河拆橋」、`dataCardIds` = [原判定牌]）。
+> 司馬懿回應後才會出現上面的剛烈判定結果，且訊息裡的牌是**換上來的那張**。
+
+**第二段：問傷害來源棄兩張手牌或受傷**（僅判定生效時）
+
+```json
+{
+  "event": "AskSkillEffectEvent",
+  "data": {
+    "skillName": "剛烈",
+    "playerId": "<傷害來源>",
+    "dataCardIds": [],
+    "dataPlayerId": "<夏侯惇>",
+    "options": ["DISCARD", "DAMAGE"]
+  },
+  "message": "剛烈判定生效：請 <傷害來源> 選擇棄兩張手牌或受 1 點傷害"
+}
+```
+
+⚠️ 這一段**被問的是傷害來源，不是夏侯惇**（`data.playerId` = 來源、`data.dataPlayerId` = 夏侯惇），
+問的也不是「要不要發動剛烈」。這裡若沿用通用的發動／放棄彈窗，玩家按什麼都不是題目的答案。
+
+棄兩張手牌（`cardIds` 必須剛好 2 張手牌）：
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{ "playerId": "<傷害來源>", "skillName": "剛烈", "choice": "DISCARD", "cardIds": ["<手牌1>", "<手牌2>"] }
+```
+
+受 1 點傷害：
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{ "playerId": "<傷害來源>", "skillName": "剛烈", "choice": "DAMAGE" }
+```
+
+**結算廣播**：棄牌 → `SkillEffectEvent`（`dataCardIds` = 棄掉的兩張、message「X 棄兩張手牌回應剛烈」）；
+受傷 → `SkillEffectEvent`（message「X 受剛烈 1 點傷害（4→3）」）。兩者之後 `topBehavior` 皆清空，回合繼續。
+
+**容錯**：剛烈是強制二選一，來源不能「不選」。後端只把「明確送 `DISCARD`」或「帶了剛好 2 張 `cardIds`」
+視為棄牌，**其他任何 choice（含 `SKIP` / `ACCEPT` / 空值）一律結算為受 1 點傷害**，不會丟錯或卡住流程。
+所以舊前端送 `SKIP` 也走得完，但按鈕仍請照 `options` 畫，玩家才選得到棄牌。
+（來源手牌不足 2 張時只能受傷：送 `DISCARD` 但 `cardIds` 不是 2 張會得到 400
+`DISCARD requires exactly 2 hand cards`。）
 
 ### 自動觸發技（無需呼叫本 API，僅廣播 `SkillEffectEvent`）
 
@@ -951,7 +1047,7 @@ Stack trace 僅記錄於 server log。
 | `ViperSpearKillTriggerEvent` | 丈八蛇矛發動：攻擊者棄兩張牌作為虛擬殺使用（通知事件，無需回應） | useViperSpearKill |
 | `AskJianXiongEffectEvent` | 奸雄發動：曹操選擇是否獲得造成傷害的牌（含 `playerId`、`sourceCardIds : List<String>`） | useJianXiongEffect |
 | `AskHuJiaEffectEvent` | 護駕：詢問魏將是否代主公曹操出閃（含 `playerId`、`caoCaoPlayerId`、`dodgeCardIdsInHand`） | useHuJiaEffect |
-| `AskSkillEffectEvent` | 通用武將技詢問（含 `skillName`、`playerId`、`dataCardIds`、`dataPlayerId`）— 反饋/遺計/剛烈/反間/觀星/激將/流離等 | useSkillEffect |
+| `AskSkillEffectEvent` | 通用武將技詢問（含 `skillName`、`playerId`、`dataCardIds`、`dataPlayerId`、`options`）— 反饋/遺計/剛烈/反間/觀星/激將/流離等。**`options` = 本次可回的 choice，按鈕照它畫**（多為 `["ACCEPT","SKIP"]`，剛烈第二段為 `["DISCARD","DAMAGE"]`）；`message` 是該次詢問的真正問題，直接顯示 | useSkillEffect |
 
 ### 效果事件
 
@@ -978,7 +1074,7 @@ Stack trace 僅記錄於 server log。
 | `HeavenlyDoubleHalberdKillTriggerEvent` | 方天畫戟發動，多目標殺（含 attackerPlayerId、cardId、targetPlayerIds） |
 | `JianXiongEffectEvent` | 奸雄結算結果（含 `playerId`、`sourceCardIds : List<String>`、`taken`） |
 | `HuJiaEffectEvent` | 護駕回應結果（含 `playerId`、`caoCaoPlayerId`、`accepted`、`dodgeCardId`） |
-| `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察）；洛神每張判定牌各發一則（accepted=是否黑色收牌） |
+| `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察）；洛神每張判定牌各發一則（accepted=是否黑色收牌）。涉及判定的技（剛烈/鐵騎/八卦陣/洛神/鬼才）`message` 會寫出判定牌（花色+點數+牌名，如「剛烈判定：黑桃9 殺 → 非紅桃，生效」），戰報直接顯示本欄即可 |
 
 ---
 
