@@ -24,6 +24,13 @@ docker network inspect 3k >/dev/null 2>&1 || docker network create 3k
 
 mkdir -p /opt/3k
 
+# --- MongoDB：只在 docker network 3k 內可連，不對外開 port；資料存在 volume mongo_data ---
+# t3.micro 只有 1GB RAM，WiredTiger cache 限制 256MB
+docker rm -f mongo 2>/dev/null || true
+docker run -d --name mongo --network 3k --restart unless-stopped \
+  -v mongo_data:/data/db \
+  mongo:7 --wiredTigerCacheSizeGB 0.25
+
 # --- Caddy：自動申請 Let's Encrypt 憑證，反向代理到後端（含 WebSocket）---
 mkdir -p /opt/3k/caddy
 # 掛整個目錄而不是單一檔案：單檔 bind mount 在檔案被取代（如 sed -i）後，container 會看不到新內容
@@ -55,6 +62,7 @@ docker rm -f 3k-backend 2>/dev/null || true
 docker run -d --name 3k-backend --network 3k --restart unless-stopped \\
   -p 127.0.0.1:8080:8080 \\
   -e JAVA_TOOL_OPTIONS="-Xms256m -Xmx512m" \\
+  -e SPRING_DATA_MONGODB_URI="mongodb://mongo:27017/legendsOfTheThreeKingdoms" \\
   "\${IMAGE}"
 
 # 等後端起來（最多 180 秒）
