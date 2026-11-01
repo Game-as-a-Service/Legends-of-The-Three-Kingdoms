@@ -250,12 +250,30 @@ public final class SkillEngine {
      * 官方梟姬是 per-card（「每當你失去一張裝備區裡的牌」）→ 一次失去 N 張摸 2N，
      * 故張數以 lostCount 相乘。無此類技能（或 lostCount <= 0）回 empty list，
      * caller 可無條件 addAll。
+     * <p>
+     * 先廣播 SkillEffectEvent 再廣播摸牌事件：前端遊戲 log 只讀 message，少了技能事件
+     * 就只看到「玩家摸牌」，看不出是梟姬發動（使用者回報）。
+     * <p>
+     * caller 注意：本方法會當場把牌加進手牌，所以必須在 {@code getGameStatusEvent}／
+     * {@code getDamagedEvent} 之前呼叫，否則那份快照的 hand 不含這幾張牌。
      */
     public static List<DomainEvent> afterLoseEquipment(Game game, Player player, int lostCount) {
         if (lostCount <= 0) return List.of();
         int drawCount = drawCountAfterLoseEquipment(player) * lostCount;
         if (drawCount <= 0) return List.of();
-        return List.of(game.drawCardToPlayer(player, false, drawCount));
+        List<DomainEvent> events = new ArrayList<>();
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.AfterLoseEquipmentSkill a
+                    && a.drawCountAfterLoseEquipment() > 0) {
+                events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                        a.getSkillName(), player.getId(), true, List.of(), null,
+                        String.format("%s：%s 失去 %d 張裝備，摸 %d 張牌",
+                                a.getSkillName(), player.getGeneralName(), lostCount,
+                                a.drawCountAfterLoseEquipment() * lostCount)));
+            }
+        }
+        events.add(game.drawCardToPlayer(player, false, drawCount));
+        return events;
     }
 
     /**

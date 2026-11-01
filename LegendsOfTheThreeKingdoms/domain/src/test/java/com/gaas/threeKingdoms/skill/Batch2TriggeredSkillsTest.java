@@ -516,6 +516,48 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         assertFalse(game.getGraveyard().contains(ED5083.getCardId()), "新武器在裝備區，不該同時在棄牌堆");
     }
 
+    @DisplayName("使用者回報：梟姬發動要有 SkillEffectEvent 說明是誰的什麼技能，且排在摸牌事件之前")
+    @Test
+    public void xiaoJiEmitsSkillEffectEventBeforeDrawCardEvent() {
+        Game game = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        game.getPlayer("player-a").getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+
+        List<DomainEvent> events = sunShangXiangEquips(game, new StonePiercingAxeCard(ED5083));
+
+        SkillEffectEvent skillEvent = events.stream()
+                .filter(e -> e instanceof SkillEffectEvent).map(e -> (SkillEffectEvent) e)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("少了技能事件，前端 log 只會顯示摸牌，看不出是梟姬"));
+        assertEquals("梟姬", skillEvent.getSkillName());
+        assertEquals("player-a", skillEvent.getPlayerId());
+        assertTrue(skillEvent.isAccepted());
+        assertEquals("梟姬：孫尚香 失去 1 張裝備，摸 2 張牌", skillEvent.getMessage());
+
+        int skillIndex = indexOfFirst(events, SkillEffectEvent.class);
+        int drawIndex = indexOfFirst(events, DrawCardEvent.class);
+        assertTrue(skillIndex < drawIndex, "先說技能發動，再說摸了幾張");
+    }
+
+    @DisplayName("使用者回報：梟姬摸到的牌要出現在 GameStatusEvent 的手牌快照裡")
+    @Test
+    public void gameStatusSnapshotContainsXiaoJiDrawnCards() {
+        Game game = createGame(General.孫尚香, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066));
+
+        List<DomainEvent> events = sunShangXiangEquips(game, new StonePiercingAxeCard(ED5083));
+
+        // presenter 取「第一個」GameStatusEvent 當畫面快照，所以第一個就得是摸牌後的狀態
+        GameStatusEvent status = events.stream()
+                .filter(e -> e instanceof GameStatusEvent).map(e -> (GameStatusEvent) e)
+                .findFirst().orElseThrow();
+        PlayerEvent seat = status.getSeats().stream()
+                .filter(p -> p.getId().equals("player-a")).findFirst().orElseThrow();
+        assertEquals(2, seat.getHand().getSize(), "快照的手牌張數要含梟姬補摸的兩張");
+        assertEquals(a.getHand().getCards().stream().map(card -> card.getId()).toList(),
+                seat.getHand().getCardIds(), "cardIds 也要一起更新，不能只有 size");
+    }
+
     @DisplayName("孫尚香裝備區原本沒武器 → 沒有失去裝備，梟姬不觸發")
     @Test
     public void xiaoJiDoesNotTriggerWhenNoOriginEquipment() {

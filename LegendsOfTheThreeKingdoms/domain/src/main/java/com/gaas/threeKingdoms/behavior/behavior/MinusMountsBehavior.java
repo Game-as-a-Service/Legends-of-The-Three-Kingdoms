@@ -26,6 +26,10 @@ public class MinusMountsBehavior extends Behavior {
         }
         card.effect(behaviorPlayer);
 
+        // 梟姬摸牌要先結算：presenter 取第一個 GameStatusEvent 當快照，
+        // 摸牌後才建快照，seats 的 hand 才含補摸的牌（使用者回報）
+        List<DomainEvent> loseEquipmentEvents = discardReplacedEquipment(originMounts);
+
         List<DomainEvent> events = new ArrayList<>(List.of(game.getGameStatusEvent("出牌"),
                 new PlayCardEvent(
                 "出牌",
@@ -33,7 +37,7 @@ public class MinusMountsBehavior extends Behavior {
                 behaviorPlayer.getId(),
                 cardId,
                 playType), new PlayEquipmentCardEvent(behaviorPlayer.getId(), cardId, originEquipmentId)));
-        events.addAll(discardReplacedEquipment(originMounts));
+        events.addAll(loseEquipmentEvents);
         return events;
     }
 
