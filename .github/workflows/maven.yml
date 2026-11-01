@@ -79,20 +79,23 @@ jobs:
     needs: build
     environment: production
     if: github.event_name == 'push' && github.ref_name == 'main'
+    # OIDC：向 AWS 換取短期憑證需要 id-token: write
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-      # Configure AWS credentials
+      # Configure AWS credentials（OIDC assume role，不存長期 access key）
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      # Login to Amazon ECR Public
-      - name: Login to Amazon ECR Public
+      # Login to Amazon ECR（private）
+      - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       # Download Artifact
       - name: Download Artifact
@@ -104,16 +107,16 @@ jobs:
         run: ls
       - name: Get Path
         run: pwd
-      # Docker build & push to AWS ECR Public
+      # Docker build & push to AWS ECR
       - name: Docker build & push
         run: |
           docker build \
             --build-arg JAR_FILENAME=target/${{ env.JAR_FILENAME }}.jar \
-            -t ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest \
-            -t ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:${{ github.sha }} \
+            -t ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest \
+            -t ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:${{ github.sha }} \
             -f docker/Dockerfile \
             .
-          docker push ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }} --all-tags
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }} --all-tags
 
       # Login to NAS Registry
       - name: Login to NAS Registry
@@ -123,8 +126,8 @@ jobs:
       - name: Docker push to NAS Registry
         run: |
           TIMESTAMP=$(date -u +%Y%m%d%H%M%S)
-          docker tag ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:latest
-          docker tag ${{ vars.AWS_ECR_URI }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:${TIMESTAMP}
+          docker tag ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:latest
+          docker tag ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }}:latest registry.parsons125.in/three-kingdoms:${TIMESTAMP}
           docker push registry.parsons125.in/three-kingdoms:latest
           docker push registry.parsons125.in/three-kingdoms:${TIMESTAMP}
 
