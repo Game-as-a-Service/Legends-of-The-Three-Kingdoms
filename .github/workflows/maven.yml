@@ -90,7 +90,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ap-northeast-1
 
       # Login to Amazon ECR（private）
       - name: Login to Amazon ECR
@@ -117,6 +117,35 @@ jobs:
             -f docker/Dockerfile \
             .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ vars.AWS_ECR_REPOSITORY_NAME }} --all-tags
+
+      # Deploy to EC2 via SSM（EC2 上的 /opt/3k/deploy.sh 由 deploy/ec2/user-data.sh 建立）
+      - name: Deploy to EC2
+        env:
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          TAG: ${{ github.sha }}
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy ${TAG}" \
+            --parameters "commands=[\"/opt/3k/deploy.sh ${TAG}\"]" \
+            --query Command.CommandId --output text)
+          echo "SSM command: $CMD_ID"
+
+          # 等待指令跑完（deploy.sh 最多等 180 秒讓後端起來）
+          STATUS=Pending
+          for i in $(seq 1 60); do
+            sleep 5
+            STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in
+              Success|Failed|Cancelled|TimedOut) break ;;
+            esac
+          done
+
+          aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+            --query '{Status:Status,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' --output yaml
+          [ "$STATUS" = "Success" ]
 
       # Login to NAS Registry
       - name: Login to NAS Registry
