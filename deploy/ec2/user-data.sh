@@ -25,7 +25,9 @@ docker network inspect 3k >/dev/null 2>&1 || docker network create 3k
 mkdir -p /opt/3k
 
 # --- Caddy：自動申請 Let's Encrypt 憑證，反向代理到後端（含 WebSocket）---
-cat > /opt/3k/Caddyfile <<EOF
+mkdir -p /opt/3k/caddy
+# 掛整個目錄而不是單一檔案：單檔 bind mount 在檔案被取代（如 sed -i）後，container 會看不到新內容
+cat > /opt/3k/caddy/Caddyfile <<EOF
 ${DOMAIN} {
   encode gzip
   reverse_proxy 3k-backend:8080
@@ -35,7 +37,7 @@ EOF
 docker rm -f caddy 2>/dev/null || true
 docker run -d --name caddy --network 3k --restart unless-stopped \
   -p 80:80 -p 443:443 \
-  -v /opt/3k/Caddyfile:/etc/caddy/Caddyfile:ro \
+  -v /opt/3k/caddy:/etc/caddy:ro \
   -v caddy_data:/data -v caddy_config:/config \
   caddy:2
 
