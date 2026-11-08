@@ -1,5 +1,7 @@
 package com.gaas.threeKingdoms.e2e.skill;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.e2e.testcontainer.test.AbstractBaseIntegrationTest;
 import com.gaas.threeKingdoms.generalcard.General;
@@ -105,5 +107,32 @@ public class GuoSeContentmentPersistenceTest extends AbstractBaseIntegrationTest
         assertEquals("player-c", saved.getCurrentRound().getCurrentRoundPlayer().getId(), "player-b 的出牌階段被跳過");
         assertEquals(2, saved.getPlayer("player-b").getHandSize(), "只有摸牌階段的 2 張，沒有出牌");
         assertTrue(saved.isTopBehaviorEmpty(), "無懈與判定流程都要收斂");
+    }
+
+    @DisplayName("使用者回報：國色後推播的 delayScrolls 要寫出效果，前端才知道方塊7 殺是樂不思蜀")
+    @Test
+    public void guoSePushShowsDelayScrollEffect() throws Exception {
+        repository.save(givenDaQiaoHoldingDiamondKill(false));
+        websocketUtil.popAllPlayerMessage();
+
+        daQiaoUsesGuoSeOnPlayerB();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        for (String viewer : List.of("player-a", "player-b", "player-c", "player-d")) {
+            JsonNode push = objectMapper.readTree(websocketUtil.getValue(viewer));
+            JsonNode targetSeat = null;
+            for (JsonNode seat : push.get("data").get("seats")) {
+                if ("player-b".equals(seat.get("id").asText())) {
+                    targetSeat = seat;
+                }
+            }
+            assertNotNull(targetSeat, viewer + " 應看得到 player-b 的座位");
+            JsonNode delayScrolls = targetSeat.get("delayScrolls");
+            assertEquals(1, delayScrolls.size());
+            JsonNode delay = delayScrolls.get(0);
+            assertEquals(BD7085.getCardId(), delay.get("cardId").asText(), "cardId 是實際的方塊7 殺");
+            assertEquals("CONTENTMENT", delay.get("effect").asText(), viewer + " 要知道它在判定區的效果是樂不思蜀");
+            assertEquals("樂不思蜀", delay.get("effectName").asText());
+        }
     }
 }

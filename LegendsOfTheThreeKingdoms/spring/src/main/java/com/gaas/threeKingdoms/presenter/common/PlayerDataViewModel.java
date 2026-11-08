@@ -23,7 +23,7 @@ public class PlayerDataViewModel {
     private int hp;
     private HandEvent hand;
     private List<String> equipments;
-    private List<String> delayScrolls;
+    private List<DelayScrollViewModel> delayScrolls;
 
     public PlayerDataViewModel(PlayerEvent playerEvent) {
         this.id = playerEvent.getId();
@@ -32,7 +32,7 @@ public class PlayerDataViewModel {
         this.hp = playerEvent.getHp();
         this.hand = playerEvent.getHand();
         this.equipments = playerEvent.getEquipments();
-        this.delayScrolls = playerEvent.getDelayScrolls();
+        this.delayScrolls = playerEvent.getDelayScrolls().stream().map(DelayScrollViewModel::new).toList();
     }
 
     public static PlayerDataViewModel deepCopy(PlayerDataViewModel p) {

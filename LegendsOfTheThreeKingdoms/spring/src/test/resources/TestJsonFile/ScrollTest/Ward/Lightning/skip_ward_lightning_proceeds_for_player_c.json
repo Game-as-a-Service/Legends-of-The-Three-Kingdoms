@@ -50,7 +50,11 @@
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ "SSA014" ]
+      "delayScrolls" : [ {
+        "cardId" : "SSA014",
+        "effect" : "LIGHTNING",
+        "effectName" : "閃電"
+      } ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU001",

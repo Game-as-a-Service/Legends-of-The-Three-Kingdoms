@@ -1155,6 +1155,34 @@ Stack trace 僅記錄於 server log。
 | `HuJiaEffectEvent` | 護駕回應結果（含 `playerId`、`caoCaoPlayerId`、`accepted`、`dodgeCardId`） |
 | `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察）；洛神每張判定牌各發一則（accepted=是否黑色收牌）。涉及判定的技（剛烈/鐵騎/八卦陣/洛神/鬼才）`message` 會寫出判定牌（花色+點數+牌名，如「剛烈判定：黑桃9 殺 → 非紅心，生效」），戰報直接顯示本欄即可 |
 
+
+### 判定區 `seats[].delayScrolls`
+
+`GameStatusEvent` 等事件的 `data.seats[]` 中，每位玩家的判定區是**物件陣列**（不是卡牌 id 陣列）：
+
+```json
+"delayScrolls" : [ {
+  "cardId" : "SD3081",
+  "effect" : "CONTENTMENT",
+  "effectName" : "樂不思蜀"
+} ]
+```
+
+| 欄位 | 說明 |
+|---|---|
+| `cardId` | **實際的那張牌**（畫牌面用） |
+| `effect` | 這張牌在判定區的效果：`CONTENTMENT`（樂不思蜀）/ `LIGHTNING`（閃電） |
+| `effectName` | 效果的中文名稱，可直接顯示 |
+
+`cardId` 與 `effect` 可能不一致：國色（大喬）會把方塊的任意牌當樂不思蜀放進判定區，
+例如上面的 `SD3081` 是方塊3 順手牽羊，但在判定區的效果是樂不思蜀。**判斷判定區是什麼效果請看 `effect`，不要用 `cardId` 推牌名。**
+
+一般情況：
+- 樂不思蜀：`{ "cardId": "SH6045", "effect": "CONTENTMENT", "effectName": "樂不思蜀" }`
+- 閃電：`{ "cardId": "SSA014", "effect": "LIGHTNING", "effectName": "閃電" }`
+
+> 格式變更：舊版為卡牌 id 陣列（`"delayScrolls" : [ "SC6071" ]`），前端需改讀物件的 `cardId` / `effect`。
+
 ---
 
 ## Debug API（測試用）
