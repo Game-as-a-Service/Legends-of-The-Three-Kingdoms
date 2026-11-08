@@ -887,6 +887,28 @@ public class Game {
         }
     }
 
+    /**
+     * 失去體力（不是傷害）使 HP ≤ 0 → 進入瀕死求桃。
+     * 失去體力沒有傷害來源，也不觸發任何受傷後技能（奸雄／反饋／剛烈…）。
+     *
+     * @param drawOnRevival 被救回後補摸的牌數（苦肉 = 2；死了就不摸）
+     */
+    public List<DomainEvent> enterDyingByHpLoss(Player player, int originalHp, int drawOnRevival) {
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(createPlayerDamagedEvent(originalHp, player));
+        this.enterPhase(new GeneralDying(this));
+        currentRound.setDyingPlayer(player);
+        currentRound.setActivePlayer(player);
+        DyingAskPeachBehavior dying = new DyingAskPeachBehavior(this, player,
+                getPlayers().stream().map(Player::getId).toList(), player,
+                null, PlayType.SYSTEM_INTERNAL.getPlayType(), null);
+        dying.setPendingDrawOnRevival(drawOnRevival);
+        updateTopBehavior(dying);
+        events.add(createPlayerDyingEvent(player));
+        events.add(createAskPeachEvent(player, player));
+        return events;
+    }
+
     private PlayerDyingEvent createPlayerDyingEvent(Player player) {
         return new PlayerDyingEvent(player.getId());
     }

@@ -42,6 +42,12 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
     private final String pendingSourceCardId;
     private final String pendingAttackerPlayerId;
     private final List<String> pendingViperSpearDiscardCardIds;
+    /**
+     * 被救回後要補摸的牌數（0 = 不摸）。苦肉「失去 1 點體力，然後摸兩張牌」：
+     * HP 1 發動會先進瀕死，救回後才摸牌、死了就不摸。
+     * 要跨 HTTP 請求存活，必須經 BehaviorData 持久化（不可用記憶體 callback，見 #209）。
+     */
+    private int pendingDrawOnRevival = 0;
 
     public DyingAskPeachBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         this(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, null, null, null);
@@ -107,8 +113,11 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                 } else if (isREBEL(dyingPlayer)) {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     Player lastDamagedPlayer = game.getLastAttacker();
-                    DomainEvent drawCardEvent = game.drawCardToPlayer(lastDamagedPlayer, false,3);
-                    events.addAll(List.of(settlementEvent, drawCardEvent));
+                    events.add(settlementEvent);
+                    // 沒有傷害來源（苦肉失去體力、閃電）→ 沒有人能領擊殺反賊的獎勵
+                    if (lastDamagedPlayer != null) {
+                        events.add(game.drawCardToPlayer(lastDamagedPlayer, false, 3));
+                    }
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
@@ -199,6 +208,10 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                     // Lightning 路徑下也可能有 JianXiong replay；交由 replay 接續
                     replayOnDamagedAfterRevival(dyingPlayer, events);
                 } else {
+                    // 苦肉等「救回後才摸牌」的效果
+                    if (pendingDrawOnRevival > 0) {
+                        events.add(game.drawCardToPlayer(dyingPlayer, false, pendingDrawOnRevival));
+                    }
                     // 致命傷被救回 → replay SkillEngine.onDamaged（FAQ: 曹操可發動奸雄收造成傷害的牌）
                     // 順序：先 replay，若 JianXiong 觸發（push WaitingJX）則把 polling-resume defer
                     // 進 WaitingJX.onResolved；否則立即 emit polling-resume 事件。
@@ -354,6 +367,10 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
         return new AskPeachEvent(player.getId(), dyingPlayer.getId());
     }
 
+
+    public void setPendingDrawOnRevival(int pendingDrawOnRevival) {
+        this.pendingDrawOnRevival = pendingDrawOnRevival;
+    }
 
     private boolean isSkip(String playType) {
         return PlayType.SKIP.getPlayType().equals(playType);
