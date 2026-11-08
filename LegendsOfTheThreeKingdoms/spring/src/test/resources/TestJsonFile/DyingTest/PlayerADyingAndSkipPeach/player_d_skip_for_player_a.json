@@ -29,8 +29,8 @@
       "roleId" : "Monarch",
       "hp" : 0,
       "hand" : {
-        "size" : 4,
-        "cardIds" : [ "BS8008", "BH3029", "BH2028", "BHK039" ]
+        "size" : 0,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]

@@ -42,8 +42,8 @@
       "roleId" : "Rebel",
       "hp" : 0,
       "hand" : {
-        "size" : 3,
-        "cardIds" : [ "BS8008", "BHK039", "SSA001" ]
+        "size" : 0,
+        "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]

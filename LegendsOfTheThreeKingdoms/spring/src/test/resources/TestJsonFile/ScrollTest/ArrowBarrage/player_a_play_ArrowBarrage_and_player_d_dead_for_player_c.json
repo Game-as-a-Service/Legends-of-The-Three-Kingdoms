@@ -34,7 +34,7 @@
       "roleId" : "",
       "hp" : 0,
       "hand" : {
-        "size" : 2,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
