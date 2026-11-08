@@ -1,7 +1,9 @@
 package com.gaas.threeKingdoms.repository.data;
 
 import com.gaas.threeKingdoms.generalcard.GeneralCard;
+import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
+import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.ScrollCard;
 import com.gaas.threeKingdoms.player.BloodCard;
 import com.gaas.threeKingdoms.player.HealthStatus;
@@ -60,10 +62,24 @@ public class PlayerData {
         player.setEquipment(this.equipment.toDomain());
         Stack<ScrollCard> delayScrolls = new Stack<>();
         for (String delayScroll : this.delayScrolls) {
-            delayScrolls.push((ScrollCard) PlayCard.findById(delayScroll));
+            delayScrolls.push(restoreDelayScroll(delayScroll));
         }
         player.setDelayScrollCards(delayScrolls);
         return player;
+    }
+
+    /**
+     * 判定區只存卡牌 id。一般情況 id 對應的就是錦囊牌（樂不思蜀 / 閃電）；
+     * 但國色（大喬）會把「方塊的任意牌」當樂不思蜀放進判定區，id 對應的是原本的殺 / 閃 / 裝備…，
+     * 直接轉型成 ScrollCard 會 ClassCastException，讓整局之後每個請求都讀不出遊戲。
+     * 判定區裡不是錦囊牌的，只可能是轉化來的樂不思蜀 → 包回 Contentment。
+     */
+    private static ScrollCard restoreDelayScroll(String cardId) {
+        HandCard card = PlayCard.findById(cardId);
+        if (card instanceof ScrollCard scrollCard) {
+            return scrollCard;
+        }
+        return new Contentment(PlayCard.valueOf(cardId));
     }
 
 }
