@@ -604,6 +604,8 @@ public class Game {
                 ScrollCard card = delayCards.pop();
                 currentRound.setCurrentCard(card);
                 if (card instanceof Contentment) {
+                    // 樂不思蜀不論判定結果（含無懈抵銷、鬼才改判）都在這裡離開判定區 → 進棄牌堆
+                    graveyard.add(card);
                     if (doesAnyPlayerHaveWard(null)) {
                         ContentmentJudgementBehavior cjb = new ContentmentJudgementBehavior(
                                 this, player, List.of(player.getId()), null,
@@ -669,6 +671,9 @@ public class Game {
         domainEvents.addAll(SkillEngine.afterJudgement(this, player, drawnCard));
 
         if (isLightningSuccess) {
+            // 閃電劈中 → 離開判定區進棄牌堆（沒劈中則轉移給下家，留在判定區流轉）。
+            // 在傷害結算前放入，與原本「出閃電時就已在棄牌堆」對奸雄等取牌技能的行為一致。
+            graveyard.add(card);
             List<DomainEvent> damageEvents = getDamagedEvent(
                     player.getId(),
                     player.getId(),
