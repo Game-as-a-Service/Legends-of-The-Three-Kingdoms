@@ -598,10 +598,12 @@ public class Game {
     private List<DomainEvent> judgePlayerShouldDelay() {
         Player player = currentRound.getCurrentRoundPlayer();
         List<DomainEvent> judgementEvents = new ArrayList<>();
+        DelayScrollTrace.judgementStart(gameId, player);
         if (player.hasAnyDelayScrollCard()) {
             Stack<ScrollCard> delayCards = player.getDelayScrollCards();
             while (!delayCards.isEmpty()) {
                 ScrollCard card = delayCards.pop();
+                DelayScrollTrace.judging(gameId, player, card);
                 currentRound.setCurrentCard(card);
                 if (card instanceof Contentment) {
                     // 樂不思蜀不論判定結果（含無懈抵銷、鬼才改判）都在這裡離開判定區 → 進棄牌堆
