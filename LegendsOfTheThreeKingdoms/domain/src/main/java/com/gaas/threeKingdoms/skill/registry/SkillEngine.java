@@ -360,7 +360,7 @@ public final class SkillEngine {
         String message = success
                 ? String.format("鐵騎判定：%s → 生效，%s 不能出閃",
                         judgementDesc, target.getGeneralName())
-                : String.format("鐵騎判定：%s → 紅桃未生效，照常問閃", judgementDesc);
+                : String.format("鐵騎判定：%s → 紅心，未生效，照常問閃", judgementDesc);
         events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
                 com.gaas.threeKingdoms.skill.shu.TieQiSkill.SKILL_NAME,
                 attacker.getId(), success, List.of(judgement.getId()), target.getId(), message));

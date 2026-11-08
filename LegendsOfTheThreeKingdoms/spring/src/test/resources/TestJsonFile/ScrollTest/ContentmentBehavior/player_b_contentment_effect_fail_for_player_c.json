@@ -27,7 +27,7 @@
       "drawCardId" : "BH3029",
       "success" : false
     },
-    "message" : "樂不思蜀效果判定！抽出卡牌BH3029，花色是紅心，效果失敗"
+    "message" : "樂不思蜀判定：紅心3 桃 → 紅心，未生效"
   }, {
     "event" : "JudgementEvent",
     "data" : "",

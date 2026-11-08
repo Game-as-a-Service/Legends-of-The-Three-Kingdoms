@@ -1,17 +1,18 @@
 package com.gaas.threeKingdoms.events;
 
+import com.gaas.threeKingdoms.handcard.HandCard;
 import lombok.Getter;
-
-import static com.gaas.threeKingdoms.handcard.PlayCard.findById;
 
 @Getter
 public class LightningEvent extends EffectEvent {
     private final String playerId;
     private final String drawCardId;
 
-    public LightningEvent(boolean isSuccess, String playerId, String drawCardId) {
-        super(isSuccess, String.format("閃電效果判定！抽出卡牌%s，是%s%s，效果%s", drawCardId, findById(drawCardId).getSuit().getDisplayName(), findById(drawCardId).getRank().getRepresentation(), isSuccess ? "成功" : "失敗"), "ContentmentEvent");
+    public LightningEvent(boolean isSuccess, String playerId, HandCard drawnCard) {
+        super(isSuccess, isSuccess
+                ? String.format("閃電判定：%s → 黑桃2~9，生效，受到雷電傷害", drawnCard.judgementDescription())
+                : String.format("閃電判定：%s → 未生效", drawnCard.judgementDescription()), "ContentmentEvent");
         this.playerId = playerId;
-        this.drawCardId = drawCardId;
+        this.drawCardId = drawnCard.getId();
     }
 }

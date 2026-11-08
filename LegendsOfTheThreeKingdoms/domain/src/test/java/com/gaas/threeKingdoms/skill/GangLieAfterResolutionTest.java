@@ -148,7 +148,7 @@ public class GangLieAfterResolutionTest {
 
         List<DomainEvent> events = game.playerUseSkillEffect("player-b", "剛烈", "ACCEPT", null, null);
 
-        assertEquals("剛烈判定：紅心2 閃 → 紅桃，未生效", gangLieMessage(events));
+        assertEquals("剛烈判定：紅心2 閃 → 紅心，未生效", gangLieMessage(events));
         assertEquals(4, game.getPlayer("player-a").getHP(), "未生效 → 來源不受傷");
         assertRoundCanGoOn(game, "player-a");
         assertCanStillPlayKillOnD(game);

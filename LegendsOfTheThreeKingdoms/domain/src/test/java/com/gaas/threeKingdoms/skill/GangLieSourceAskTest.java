@@ -93,7 +93,7 @@ public class GangLieSourceAskTest {
         Game game = givenSiMaYiDuelsXiaHouDun();
         List<DomainEvent> events = playUntilSourceAsked(game);
 
-        assertEquals("剛烈判定：黑桃3 過河拆橋 → 非紅桃，生效", gangLieMessage(events));
+        assertEquals("剛烈判定：黑桃3 過河拆橋 → 非紅心，生效", gangLieMessage(events));
     }
 
     @DisplayName("使用者回報 2：問來源的事件要帶 DISCARD/DAMAGE 選項與真正的問題，不是「是否發動剛烈」")
@@ -166,7 +166,7 @@ public class GangLieSourceAskTest {
         List<DomainEvent> events = game.playerUseSkillEffect("player-a", "鬼才", "ACCEPT",
                 List.of(BH3029.getCardId()), null);
 
-        assertEquals("剛烈判定：紅心3 桃 → 紅桃，未生效", gangLieMessage(events));
+        assertEquals("剛烈判定：紅心3 桃 → 紅心，未生效", gangLieMessage(events));
         assertEquals(4, game.getPlayer("player-a").getHP(), "未生效 → 來源不受傷");
         assertNull(askOf(events, "剛烈", "player-a"), "未生效不問來源");
     }

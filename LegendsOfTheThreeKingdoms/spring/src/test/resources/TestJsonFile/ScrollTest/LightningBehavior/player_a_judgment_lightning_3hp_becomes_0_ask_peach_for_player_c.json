@@ -27,7 +27,7 @@
       "drawCardId" : "SS3003",
       "success" : true
     },
-    "message" : "閃電效果判定！抽出卡牌SS3003，是黑桃3，效果成功"
+    "message" : "閃電判定：黑桃3 過河拆橋 → 黑桃2~9，生效，受到雷電傷害"
   }, {
     "event" : "PlayerDamagedEvent",
     "data" : {
