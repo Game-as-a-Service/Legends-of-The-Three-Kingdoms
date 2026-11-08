@@ -59,7 +59,7 @@
       "roleId" : "",
       "hp" : 0,
       "hand" : {
-        "size" : 4,
+        "size" : 0,
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],

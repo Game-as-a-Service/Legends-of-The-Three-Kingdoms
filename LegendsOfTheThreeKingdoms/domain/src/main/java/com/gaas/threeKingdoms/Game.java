@@ -982,6 +982,20 @@ public class Game {
     public void removeDyingPlayer(Player player) {
         seatingChart.getPlayers().remove(player);
         player.setHealthStatus(HealthStatus.DEATH);
+        discardAllCardsOfDeadPlayer(player);
+    }
+
+    /**
+     * 死亡：手牌、裝備區、判定區的牌全部進棄牌堆。
+     * 原本只把玩家移出座位表，牌留在死者身上 → 從牌堆循環中永久消失，牌越玩越少。
+     * 直接移除、不經一般「失去裝備」流程：死者不觸發梟姬等失去牌的技能。
+     */
+    private void discardAllCardsOfDeadPlayer(Player player) {
+        graveyard.add(player.discardAllCards());
+        graveyard.add(new ArrayList<HandCard>(player.discardAllEquipment()));
+        List<HandCard> delayScrolls = new ArrayList<>(player.getDelayScrollCards());
+        player.getDelayScrollCards().clear();
+        graveyard.add(delayScrolls);
     }
 
     public void setDeck(Deck deck) {
