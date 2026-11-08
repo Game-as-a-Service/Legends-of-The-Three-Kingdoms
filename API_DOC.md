@@ -886,7 +886,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 |---|---|---|---|---|
 | 制衡（孫權） | — | `ACCEPT` | 要棄的牌（手牌+裝備 id，≥1）→ 摸等量 | — |
 | 突襲（張遼） | 每回合 1 次 | `ACCEPT` | **目標玩家 id 列表**（1~2 名，借用此欄位） | — |
-| 苦肉（黃蓋） | HP ≥ 2 | `ACCEPT` | — | — |
+| 苦肉（黃蓋） | 無次數限制；HP 1 也可（進瀕死，見下方「苦肉」） | `ACCEPT` | — | — |
 | 反間（周瑜）第一段 | 每回合 1 次 | `ACCEPT` | [要給的手牌 id] | 目標玩家 |
 | 反間 第二段（目標回應） | — | `SPADE`/`HEART`/`DIAMOND`/`CLUB` | — | — |
 | 結姻（孫尚香） | 每回合 1 次 | `ACCEPT` | 2 張手牌 id（傷最重者由系統判定） | — |
@@ -950,6 +950,85 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 出紅色牌 / 牌不在手 → `IllegalArgumentException`
 - 不想發動：照原本流程出真閃或 `playType: "skip"`
 
+#### 國色（大喬）發動與使用
+
+**條件**：大喬（`WU006`）**自己回合的出牌階段**（`round.activePlayer` 是大喬、`topBehavior` 為空），手上有方塊手牌。
+效果是把那張方塊牌**當樂不思蜀**對一名其他角色使用。
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{
+  "playerId": "大喬的playerId",
+  "skillName": "國色",
+  "choice": "CONTENTMENT",
+  "cardIds": ["方塊手牌id"],
+  "targetPlayerId": "目標playerId"
+}
+```
+
+| 欄位 | 說明 |
+|---|---|
+| `choice` | 固定 `CONTENTMENT`（＝樂不思蜀，程式中的卡牌英文名 `Contentment`；轉化技的 choice 都是「要轉化成的牌」：`KILL` 殺、`DODGE` 閃、`DISMANTLE` 過河拆橋） |
+| `cardIds` | **剛好 1 張**方塊**手牌**（裝備區的方塊牌不行），例：`BD2080`（方塊2 閃） |
+| `targetPlayerId` | 必填，不可是自己 |
+
+**結算**：
+- 廣播 `SkillEffectEvent`（skillName=國色、accepted=true、dataCardIds=[該方塊牌]、targetPlayerId=目標）
+  → `PlayCardEvent`（視為出樂不思蜀）→ `GameStatusEvent`（「發動樂不思蜀」）
+- 該牌**以樂不思蜀身份**放進目標的判定區；之後與真的樂不思蜀完全相同：
+  目標回合判定時才詢問無懈可擊（發動當下不問），判定非紅心 → 跳過出牌階段
+  （判定訊息例：「樂不思蜀判定：黑桃7 南蠻入侵 → 非紅心，生效，跳過出牌階段」）
+- 大喬仍在自己的出牌階段，可繼續出牌
+
+**錯誤情境（400）**：
+
+| 情境 | error | message |
+|---|---|---|
+| 不是大喬的行動時機 | `IllegalStateException` | `ActivePlayer is not <playerId> , now ActivePlayer is <id>` |
+| `cardIds` 不是剛好 1 張 | `IllegalArgumentException` | `Conversion requires exactly 1 source card` |
+| 牌不在手上（含裝備區的牌） | `IllegalArgumentException` | `Source card not in hand: <cardId>` |
+| 不是方塊 | `IllegalArgumentException` | `國色 不能把 <cardId> 當 CONTENTMENT` |
+| 沒帶 `targetPlayerId` | `IllegalArgumentException` | `Conversion active play requires targetPlayerId` |
+| 目標是自己 | `IllegalArgumentException` | `不可以對自己出樂不思蜀` |
+| 目標判定區已有樂不思蜀 | `IllegalArgumentException` | `<targetPlayerId> 已經有樂不思蜀` |
+| 目標是陸遜（謙遜） | `IllegalStateException` | `target cannot be targeted by Contentment (immunity skill)` |
+
+#### 苦肉（黃蓋）發動與結算
+
+**條件**：黃蓋（`WU004`）**自己回合的出牌階段**（`round.activePlayer` 是黃蓋、`topBehavior` 為空）。**無次數限制**，HP 1 也可以發動。
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{
+  "playerId": "黃蓋的playerId",
+  "skillName": "苦肉",
+  "choice": "ACCEPT"
+}
+```
+
+`cardIds`、`targetPlayerId` 不需要帶。
+
+**效果**：失去 1 點體力，然後摸 2 張牌。是「**失去體力**」不是「受到傷害」：沒有傷害來源，
+**不會觸發任何受傷後技能**（奸雄 / 反饋 / 剛烈 / 遺計…）。
+
+**情境一：HP ≥ 2** — 立即結算：
+- 廣播 `SkillEffectEvent`（skillName=苦肉、accepted=true）→ 摸牌事件（2 張）→
+  `GameStatusEvent`（「<playerId> 發動苦肉（-1 HP, +2 牌）」）
+- 黃蓋仍在自己的出牌階段，可繼續出牌或再次發動
+
+**情境二：HP 1** — 失去最後 1 點體力進入**瀕死求桃**，**先不摸牌**：
+- 廣播 `SkillEffectEvent` → `PlayerDamagedEvent`（1→0，前端更新血量用）→ `PlayerDyingEvent` →
+  `AskPeachEvent`（從黃蓋自己開始，依座位順序詢問）→
+  `GameStatusEvent`（「<playerId> 發動苦肉，失去最後 1 點體力進入瀕死，救回後摸 2 張牌」）
+- 之後走一般的瀕死求桃流程（`player:playCard` 出桃，或 `playType: "skip"`）：
+  - **被救回** → 回到 1 血，**此時才摸 2 張**，回到黃蓋自己的出牌階段
+  - **沒人救** → 黃蓋死亡、**不摸牌**；因為沒有傷害來源，**沒有人能領擊殺反賊的 3 張獎勵**，
+    也沒有主公殺忠臣的懲罰；身分結算（主公死亡 → 遊戲結束等）照常，輪到下一位玩家
+
+**錯誤情境（400）**：
+- 不是黃蓋的行動時機 → `IllegalStateException`（`ActivePlayer is not <playerId> , now ActivePlayer is <id>`）
+- 發動者不是黃蓋 → `IllegalStateException`（`<playerId> has no active skill named 苦肉`）
+
 **v1 範圍備註**：
 - 反饋 / 剛烈 / 遺計在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221 / issue #165 / issue #250：
   受傷 → 詢問 → 詢問鏈收斂後 resume 輪詢，回到原本的 AOE 詢問輪；剛烈兩段式與鬼才巢狀介入亦支援）。
@@ -973,7 +1052,7 @@ POST /api/games/{gameId}/player:useSkillEffect
   v1 自動觸發不詢問（官方為「可以」，摸牌恆有利故不問）
 - 主動換裝被蓋掉的舊裝備會進棄牌堆；`PlayEquipmentCardEvent.deprecatedCardId`
   帶的是**同欄位**被換掉的那張（換武器 → 舊武器；欄位原本為空時為 `""`）
-- 苦肉 v1 需 HP ≥ 2（瀕死整合 follow-up）；反間目標受傷不進瀕死流程（follow-up）
+- 反間目標受傷不進瀕死流程（follow-up）
 - 觀星 issue 時機為回合開始；v1 以出牌階段主動發動實作（時機整合 follow-up）
 - 突襲 issue 時機為出牌階段開始；v1 出牌階段任意時點可發動（每回合一次）
 - 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
