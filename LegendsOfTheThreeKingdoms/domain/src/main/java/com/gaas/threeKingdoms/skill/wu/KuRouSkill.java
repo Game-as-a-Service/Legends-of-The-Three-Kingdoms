@@ -11,8 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 黃蓋 (WU004) 苦肉 — 出牌階段可對自己造成 1 點傷害，然後摸 2 張牌（issue #187）。
- * v1：HP ≥ 2 才可發動（HP=1 自殺進瀕死的整合為 follow-up）；無次數限制。
+ * 黃蓋 (WU004) 苦肉 — 出牌階段可失去 1 點體力，然後摸 2 張牌；無次數限制（issue #187）。
+ * <ul>
+ *   <li>是「失去體力」不是「受到傷害」：沒有傷害來源，不觸發任何受傷後技能。</li>
+ *   <li>HP 1 也能發動：失去體力後進入瀕死求桃，被救回才摸 2 張；沒被救回就死亡、不摸牌，
+ *       也沒有人能領擊殺獎勵。</li>
+ * </ul>
  */
 public class KuRouSkill implements ActivePhaseSkill {
 
@@ -32,14 +36,18 @@ public class KuRouSkill implements ActivePhaseSkill {
     @Override
     public List<DomainEvent> activate(Game game, Player self, String choice,
                                       List<String> cardIds, String targetPlayerId) {
-        if (self.getHP() < 2) {
-            throw new IllegalStateException("苦肉 v1 需 HP >= 2 才可發動（瀕死整合 follow-up）");
-        }
+        int originalHp = self.getHP();
+        // 失去體力：直接扣 HP，不走 getDamagedEvent（不觸發受傷後技能）
         self.damage(1);
         List<DomainEvent> events = new ArrayList<>();
         events.add(new SkillEffectEvent(SKILL_NAME, self.getId(), true, List.of(), null));
-        events.add(game.drawCardToPlayer(self, false, 2));
-        events.add(game.getGameStatusEvent(self.getId() + " 發動苦肉（-1 HP, +2 牌）"));
+        if (self.isHPGreaterThanZero()) {
+            events.add(game.drawCardToPlayer(self, false, 2));
+            events.add(game.getGameStatusEvent(self.getId() + " 發動苦肉（-1 HP, +2 牌）"));
+        } else {
+            events.addAll(game.enterDyingByHpLoss(self, originalHp, 2));
+            events.add(game.getGameStatusEvent(self.getId() + " 發動苦肉，失去最後 1 點體力進入瀕死，救回後摸 2 張牌"));
+        }
         return events;
     }
 }

@@ -35,6 +35,7 @@ public class BehaviorData {
     private static final String DYING_PENDING_SOURCE_CARD_ID = "DYING_PENDING_SOURCE_CARD_ID";
     private static final String DYING_PENDING_ATTACKER_PLAYER_ID = "DYING_PENDING_ATTACKER_PLAYER_ID";
     private static final String DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS = "DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS";
+    private static final String DYING_PENDING_DRAW_ON_REVIVAL = "DYING_PENDING_DRAW_ON_REVIVAL";
 
     private String behaviorName;
     private String behaviorPlayerId;
@@ -111,7 +112,7 @@ public class BehaviorData {
                 List<String> pendingViperSpearIds = params != null
                         ? (List<String>) params.get(DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS)
                         : null;
-                yield new DyingAskPeachBehavior(
+                DyingAskPeachBehavior dying = new DyingAskPeachBehavior(
                         game,
                         game.getPlayer(behaviorPlayerId),
                         reactionPlayers,
@@ -123,6 +124,11 @@ public class BehaviorData {
                         pendingAttackerId,
                         pendingViperSpearIds
                 );
+                Object pendingDraw = params != null ? params.get(DYING_PENDING_DRAW_ON_REVIVAL) : null;
+                if (pendingDraw instanceof Number n) {
+                    dying.setPendingDrawOnRevival(n.intValue());
+                }
+                yield dying;
             }
             case "EquipArmorBehavior" -> new EquipArmorBehavior(
                     game,
@@ -485,6 +491,9 @@ public class BehaviorData {
             }
             if (dying.getPendingViperSpearDiscardCardIds() != null) {
                 params.put(DYING_PENDING_VIPER_SPEAR_DISCARD_CARD_IDS, dying.getPendingViperSpearDiscardCardIds());
+            }
+            if (dying.getPendingDrawOnRevival() > 0) {
+                params.put(DYING_PENDING_DRAW_ON_REVIVAL, dying.getPendingDrawOnRevival());
             }
         }
         return BehaviorData.builder()

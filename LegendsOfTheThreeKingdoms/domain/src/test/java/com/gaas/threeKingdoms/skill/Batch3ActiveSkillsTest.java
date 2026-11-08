@@ -77,9 +77,9 @@ public class Batch3ActiveSkillsTest extends PassiveSkillTestBase {
 
     // ===== 苦肉 =====
 
-    @DisplayName("黃蓋苦肉：-1 HP 摸 2；HP=1 不可發動")
+    @DisplayName("黃蓋苦肉：失去 1 點體力摸 2（HP 1 進瀕死的情境見 KuRouSkillTest）")
     @Test
-    public void kuRouDamagesSelfAndDrawsTwo() {
+    public void kuRouLosesHpAndDrawsTwo() {
         Game game = createGame(General.黃蓋, General.劉備, General.劉備, General.劉備);
         Player a = game.getPlayer("player-a");
 
@@ -87,10 +87,6 @@ public class Batch3ActiveSkillsTest extends PassiveSkillTestBase {
 
         assertEquals(3, a.getHP());
         assertEquals(2, a.getHandSize());
-
-        a.getBloodCard().setHp(1);
-        assertThrows(IllegalStateException.class, () ->
-                game.playerUseSkillEffect("player-a", "苦肉", "ACCEPT", null, null));
     }
 
     // ===== 反間 =====
