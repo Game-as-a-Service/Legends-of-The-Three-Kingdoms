@@ -31,7 +31,11 @@
         "cardIds" : [ ]
       },
       "equipments" : [ "", "", "", "" ],
-      "delayScrolls" : [ "SC6071" ]
+      "delayScrolls" : [ {
+        "cardId" : "SC6071",
+        "effect" : "CONTENTMENT",
+        "effectName" : "樂不思蜀"
+      } ]
     }, {
       "id" : "player-c",
       "generalId" : "SHU001",

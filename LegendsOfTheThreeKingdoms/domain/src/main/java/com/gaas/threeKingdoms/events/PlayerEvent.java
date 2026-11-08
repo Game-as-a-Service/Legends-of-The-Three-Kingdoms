@@ -13,9 +13,9 @@ public class PlayerEvent extends DomainEvent {
     private int hp;
     private HandEvent hand;
     private List<String> equipments;
-    private List<String> delayScrolls;
+    private List<DelayScrollEvent> delayScrolls;
 
-    public PlayerEvent(String id, String generalId, String roleId, int hp, HandEvent hand, List<String> equipments, List<String> delayScrolls) {
+    public PlayerEvent(String id, String generalId, String roleId, int hp, HandEvent hand, List<String> equipments, List<DelayScrollEvent> delayScrolls) {
         super("PlayerEvent", "玩家資訊");
         this.id = id;
         this.generalId = generalId;
@@ -34,7 +34,7 @@ public class PlayerEvent extends DomainEvent {
         this.hp = player.getHP();
         this.hand = new HandEvent(player);
         this.equipments = player.getEquipment().getAllEquipmentCardIds();
-        this.delayScrolls = player.getDelayScrollCardIds();
+        this.delayScrolls = player.getDelayScrollCards().stream().map(DelayScrollEvent::of).toList();
     }
 
     public String getId() {
@@ -61,7 +61,7 @@ public class PlayerEvent extends DomainEvent {
         return equipments;
     }
 
-    public List<String> getDelayScrolls() {
+    public List<DelayScrollEvent> getDelayScrolls() {
         return delayScrolls;
     }
 }
