@@ -126,6 +126,16 @@ public class Behavior {
         return SkillEngine.afterLoseEquipment(game, behaviorPlayer, 1);
     }
 
+    /**
+     * 延時錦囊（樂不思蜀 / 閃電）放進判定區：從手牌移出，但**不進棄牌堆**。
+     * 牌在判定區時若同時在棄牌堆，洗牌時會被洗回牌堆、被人摸走（同一張牌出現兩次）。
+     * 真正離開判定區時才進棄牌堆：判定完（Game#judgePlayerShouldDelay）、閃電劈中、被過河拆橋拆掉。
+     */
+    protected void playerPlayDelayScrollCardNotUpdateActivePlayer(Player player, String cardId) {
+        player.playCard(cardId);
+        game.getCurrentRound().setCurrentCard(card);
+    }
+
     protected void playerPlayCardNotUpdateActivePlayer(Player player, String cardId) {
         HandCard handCard = player.playCard(cardId);
         game.getCurrentRound().setCurrentCard(card);
