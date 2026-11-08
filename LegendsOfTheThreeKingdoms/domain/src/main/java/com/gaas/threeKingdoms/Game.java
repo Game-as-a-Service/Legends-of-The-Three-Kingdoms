@@ -312,7 +312,8 @@ public class Game {
                         p.getHP(),
                         new HandEvent(p.getHandSize(), p.getHand().getCards().stream().map(HandCard::getId).collect(Collectors.toList())),
                         p.getEquipment().getAllEquipmentCardIds(),
-                        Collections.emptyList())).toList();
+                        // 判定區要帶實際內容（原本寫死空陣列：拿這份 seats 當遊戲狀態的 presenter 會看到判定區被清空）
+                        p.getDelayScrollCards().stream().map(DelayScrollEvent::of).toList())).toList();
 
         RoundEvent roundEvent = new RoundEvent(
                 currentRound.getRoundPhase().toString(),
