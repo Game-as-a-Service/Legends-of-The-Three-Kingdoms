@@ -222,6 +222,7 @@ public class Player {
                         () -> {
                             throw new RuntimeException("Card with ID " + cardId + " not found");
                         });
+        com.gaas.threeKingdoms.DelayScrollTrace.removed(this, cardId, "被拆除");
     }
 
 
@@ -267,6 +268,7 @@ public class Player {
 
     public void addDelayScrollCard(ScrollCard card) {
         delayScrollCards.add(card);
+        com.gaas.threeKingdoms.DelayScrollTrace.added(this, card);
     }
 
     public List<String> getDelayScrollCardIds() {
