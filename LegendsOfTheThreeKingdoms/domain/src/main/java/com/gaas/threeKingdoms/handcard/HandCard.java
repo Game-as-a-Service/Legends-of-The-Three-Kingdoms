@@ -28,7 +28,9 @@ public abstract class HandCard {
      * 光寫「成功／失敗」看不出是哪張牌造成的（issue #235 起的慣例，見八卦陣／鐵騎／洛神）。
      */
     public String judgementDescription() {
-        return suit.getDisplayName() + rank.getRepresentation() + " " + name;
+        // 點數 10 的 representation 是字元 '0'，顯示時要寫成「10」
+        String rankText = rank == Rank.TEN ? "10" : String.valueOf(rank.getRepresentation());
+        return suit.getDisplayName() + rankText + " " + name;
     }
 
 }

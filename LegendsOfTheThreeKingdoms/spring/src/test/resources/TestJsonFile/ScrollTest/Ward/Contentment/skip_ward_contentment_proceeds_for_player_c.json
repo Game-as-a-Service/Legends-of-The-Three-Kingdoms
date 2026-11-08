@@ -6,7 +6,7 @@
       "drawCardId" : "SSK013",
       "success" : true
     },
-    "message" : "樂不思蜀效果判定！抽出卡牌SSK013，花色是黑桃，效果成功"
+    "message" : "樂不思蜀判定：黑桃K 南蠻入侵 → 非紅心，生效，跳過出牌階段"
   }, {
     "event" : "JudgementEvent",
     "data" : "",

@@ -133,8 +133,8 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
         // 同 issue #235 起的慣例，見八卦陣／鐵騎／洛神）
         String judgementDesc = judgement.judgementDescription();
         String resultMessage = success
-                ? String.format("剛烈判定：%s → 非紅桃，生效", judgementDesc)
-                : String.format("剛烈判定：%s → 紅桃，未生效", judgementDesc);
+                ? String.format("剛烈判定：%s → 非紅心，生效", judgementDesc)
+                : String.format("剛烈判定：%s → 紅心，未生效", judgementDesc);
         events.add(new SkillEffectEvent(SKILL_NAME, xiaHou.getId(), success,
                 List.of(judgement.getId()), sourceId, resultMessage));
         events.addAll(SkillEngine.afterJudgement(game, xiaHou, judgement));

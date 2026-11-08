@@ -27,7 +27,7 @@
       "drawCardId" : "BH3029",
       "success" : false
     },
-    "message" : "閃電效果判定！抽出卡牌BH3029，是紅心3，效果失敗"
+    "message" : "閃電判定：紅心3 桃 → 未生效"
   }, {
     "event" : "LightningTransferredEvent",
     "data" : {

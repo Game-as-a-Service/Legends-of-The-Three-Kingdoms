@@ -818,11 +818,11 @@ POST /api/games/{gameId}/player:useSkillEffect
   "event": "SkillEffectEvent",
   "data": { "skillName": "剛烈", "playerId": "<夏侯惇>", "accepted": true,
             "dataCardIds": ["<判定牌 id>"], "dataPlayerId": "<傷害來源>" },
-  "message": "剛烈判定：黑桃9 殺 → 非紅桃，生效"
+  "message": "剛烈判定：黑桃9 殺 → 非紅心，生效"
 }
 ```
 
-`accepted` = 判定是否生效（非紅桃 true／紅桃 false，`message` 為「剛烈判定：紅心3 桃 → 紅桃，未生效」）。
+`accepted` = 判定是否生效（非紅桃 true／紅桃 false，`message` 為「剛烈判定：紅心3 桃 → 紅心，未生效」）。
 紅桃 → 流程結束，不會有第二段。
 
 > 場上有司馬懿時，判定牌抽出後會先插入**鬼才**的詢問（`skillName: "鬼才"`、options `["ACCEPT","SKIP"]`、
@@ -1074,7 +1074,7 @@ Stack trace 僅記錄於 server log。
 | `HeavenlyDoubleHalberdKillTriggerEvent` | 方天畫戟發動，多目標殺（含 attackerPlayerId、cardId、targetPlayerIds） |
 | `JianXiongEffectEvent` | 奸雄結算結果（含 `playerId`、`sourceCardIds : List<String>`、`taken`） |
 | `HuJiaEffectEvent` | 護駕回應結果（含 `playerId`、`caoCaoPlayerId`、`accepted`、`dodgeCardId`） |
-| `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察）；洛神每張判定牌各發一則（accepted=是否黑色收牌）。涉及判定的技（剛烈/鐵騎/八卦陣/洛神/鬼才）`message` 會寫出判定牌（花色+點數+牌名，如「剛烈判定：黑桃9 殺 → 非紅桃，生效」），戰報直接顯示本欄即可 |
+| `SkillEffectEvent` | 通用武將技結算結果（含 `skillName`、`playerId`、`accepted`、`dataCardIds`、`dataPlayerId`）— 含自動觸發技（天妒/鐵騎/梟姬/救援/馬術等鎖定技不發事件，僅結果可觀察）；洛神每張判定牌各發一則（accepted=是否黑色收牌）。涉及判定的技（剛烈/鐵騎/八卦陣/洛神/鬼才）`message` 會寫出判定牌（花色+點數+牌名，如「剛烈判定：黑桃9 殺 → 非紅心，生效」），戰報直接顯示本欄即可 |
 
 ---
 

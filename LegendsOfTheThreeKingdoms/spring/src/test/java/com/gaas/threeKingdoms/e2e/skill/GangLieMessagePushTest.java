@@ -76,7 +76,7 @@ public class GangLieMessagePushTest extends AbstractBaseIntegrationTest {
                     assertFalse(e.get("data").get("accepted").asBoolean(), "判定紅桃 → accepted=false");
                 }
             }
-            assertEquals("剛烈判定：紅心3 桃 → 紅桃，未生效", skillEffectMessage,
+            assertEquals("剛烈判定：紅心3 桃 → 紅心，未生效", skillEffectMessage,
                     playerId + " 的事件層 message 應為具體結算文字，且寫出是哪張判定牌（使用者回報）");
         }
     }
@@ -132,7 +132,7 @@ public class GangLieMessagePushTest extends AbstractBaseIntegrationTest {
                     judgementMessage = e.get("message").asText();
                 }
             }
-            assertEquals("剛烈判定：黑桃9 殺 → 非紅桃，生效", judgementMessage, playerId + " 看不到判定牌");
+            assertEquals("剛烈判定：黑桃9 殺 → 非紅心，生效", judgementMessage, playerId + " 看不到判定牌");
             assertNotNull(ask, playerId + " 應收到問來源的詢問事件");
             assertEquals("player-a", ask.get("data").get("playerId").asText(), "被問的是傷害來源");
             List<String> options = objectMapper.convertValue(

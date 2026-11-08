@@ -664,7 +664,7 @@ public class Game {
                 drawnCard.getRank().getValue() <= Rank.NINE.getValue();
 
         List<DomainEvent> domainEvents = new ArrayList<>();
-        domainEvents.add(new LightningEvent(isLightningSuccess, player.getId(), drawnCard.getId()));
+        domainEvents.add(new LightningEvent(isLightningSuccess, player.getId(), drawnCard));
         // 天妒等：判定牌生效後技能
         domainEvents.addAll(SkillEngine.afterJudgement(this, player, drawnCard));
 
@@ -724,7 +724,7 @@ public class Game {
         boolean contentmentSuccess = Suit.HEART != drawnCard.getSuit();
 
         List<DomainEvent> events = new ArrayList<>();
-        events.add(new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard.getId(), drawnCard.getSuit()));
+        events.add(new ContentmentEvent(contentmentSuccess, player.getId(), drawnCard));
         // 天妒等：判定牌生效後技能
         events.addAll(SkillEngine.afterJudgement(this, player, drawnCard));
         return events;
