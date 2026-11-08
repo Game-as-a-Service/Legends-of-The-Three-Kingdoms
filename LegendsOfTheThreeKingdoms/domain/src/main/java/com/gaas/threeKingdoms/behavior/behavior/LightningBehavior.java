@@ -22,7 +22,7 @@ public class LightningBehavior extends Behavior {
     public List<DomainEvent> playerAction() {
         List<DomainEvent> events = new ArrayList<>();
         String currentReactionPlayerId = currentReactionPlayer.getId();
-        playerPlayCardNotUpdateActivePlayer(behaviorPlayer, cardId);
+        playerPlayDelayScrollCardNotUpdateActivePlayer(behaviorPlayer, cardId);
         currentReactionPlayer.addDelayScrollCard((ScrollCard) card);
         events.add(new PlayCardEvent(
                 "出牌",
