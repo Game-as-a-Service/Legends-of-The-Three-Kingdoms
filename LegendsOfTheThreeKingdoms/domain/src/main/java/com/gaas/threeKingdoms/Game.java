@@ -740,7 +740,7 @@ public class Game {
         if (SkillEngine.canSkipDiscardPhase(this, player)) {
             return 0;
         }
-        // 手牌上限預設 = HP；技能可覆寫（英姿 = max(HP, 4)）
+        // 手牌上限預設 = 當前 HP；HandLimitSkill 可覆寫（目前沒有武將使用）
         return Math.max(0, player.getHandSize() - SkillEngine.handCardLimit(player));
     }
 

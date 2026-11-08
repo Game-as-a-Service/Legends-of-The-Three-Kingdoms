@@ -37,18 +37,30 @@ public class YingZiSkillTest extends PassiveSkillTestBase {
         assertEquals(2, a.getHandSize());
     }
 
-    @DisplayName("周瑜 HP=3、手牌 6 張 → 棄牌數 = 6 - max(3,4) = 2")
+    @DisplayName("使用者回報：周瑜 HP=3、手牌 4 張 → 要棄 1 張（標準版英姿不改手牌上限）")
     @Test
-    public void zhouYuHandLimitIsFour() {
+    public void zhouYuWithThreeHpAndFourCardsDiscardsOne() {
         Game game = createGame(General.周瑜, General.劉備, General.劉備, General.劉備);
         Player a = game.getPlayer("player-a");
         a.getBloodCard().setHp(3);
         a.getHand().addCardToHand(java.util.Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Dodge(BH2028),
+                new Peach(BH3029)));
+        game.getCurrentRound().setRoundPhase(RoundPhase.Discard);
+
+        assertEquals(1, game.getCurrentRoundPlayerDiscardCount(), "手牌上限 = HP 3 → 4-3=1");
+    }
+
+    @DisplayName("周瑜 HP=1、手牌 6 張 → 棄牌數 = 6 - 1 = 5（不再有 4 張保底）")
+    @Test
+    public void zhouYuHandLimitIsHp() {
+        Game game = createGame(General.周瑜, General.劉備, General.劉備, General.劉備);
+        Player a = game.getPlayer("player-a");
+        a.getBloodCard().setHp(1);
+        a.getHand().addCardToHand(java.util.Arrays.asList(new Kill(BS8008), new Kill(BS9009), new Dodge(BH2028),
                 new Dodge(BHK039), new Peach(BH3029), new Peach(BH4030)));
         game.getCurrentRound().setRoundPhase(RoundPhase.Discard);
 
-        assertEquals(2, game.getCurrentRoundPlayerDiscardCount(),
-                "英姿手牌上限 max(HP,4)=4 → 6-4=2");
+        assertEquals(5, game.getCurrentRoundPlayerDiscardCount());
     }
 
     @DisplayName("非周瑜 HP=3、手牌 6 張 → 棄牌數 = 6 - 3 = 3")

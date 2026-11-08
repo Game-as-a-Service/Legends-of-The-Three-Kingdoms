@@ -122,7 +122,7 @@ public final class SkillEngine {
                 game.getGameStatusEvent("裸衣：詢問 " + roundPlayer.getId() + " 是否發動"));
     }
 
-    /** 英姿等：手牌上限（預設 = HP）。 */
+    /** 手牌上限（預設 = 當前 HP；HandLimitSkill 可覆寫）。 */
     public static int handCardLimit(Player player) {
         int limit = player.getHP();
         for (Skill skill : skillsOf(player)) {

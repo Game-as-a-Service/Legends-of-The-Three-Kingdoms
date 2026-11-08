@@ -3,12 +3,13 @@ package com.gaas.threeKingdoms.skill.wu;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.skill.trigger.DrawPhaseDeltaSkill;
-import com.gaas.threeKingdoms.skill.trigger.HandLimitSkill;
 
 /**
- * 周瑜 (WU005) 英姿 — 鎖定技。摸牌階段多摸一張；手牌上限為 max(HP, 4)（issue #188）。
+ * 周瑜 (WU005) 英姿（身份標準版）— 摸牌階段多摸一張牌（issue #188）。
+ * 標準版英姿不改手牌上限：手牌上限仍等於當前體力。
+ * （issue #188 原寫「手牌上限 = max(HP, 4)」，不符合任何官方版本，已移除。）
  */
-public class YingZiSkill implements DrawPhaseDeltaSkill, HandLimitSkill {
+public class YingZiSkill implements DrawPhaseDeltaSkill {
 
     public static final String GENERAL_ID = General.周瑜.getGeneralId();
     public static final String SKILL_NAME = "英姿";
@@ -26,10 +27,5 @@ public class YingZiSkill implements DrawPhaseDeltaSkill, HandLimitSkill {
     @Override
     public int drawCardDelta(com.gaas.threeKingdoms.Game game, Player player) {
         return 1;
-    }
-
-    @Override
-    public int handLimit(Player self) {
-        return Math.max(self.getHP(), 4);
     }
 }
