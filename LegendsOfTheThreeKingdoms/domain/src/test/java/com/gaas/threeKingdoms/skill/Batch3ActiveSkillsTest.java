@@ -20,7 +20,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Batch 3：制衡 / 突襲 / 苦肉 / 反間 / 結姻 / 仁德 / 觀星（proactive useSkillEffect 分支）。
+ * Batch 3：制衡 / 苦肉 / 反間 / 結姻 / 仁德 / 觀星（proactive useSkillEffect 分支）。
  */
 public class Batch3ActiveSkillsTest extends PassiveSkillTestBase {
 
@@ -52,28 +52,7 @@ public class Batch3ActiveSkillsTest extends PassiveSkillTestBase {
                 game.playerUseSkillEffect("player-a", "制衡", "ACCEPT", List.of(BS8008.getCardId()), null));
     }
 
-    // ===== 突襲 =====
-
-    @DisplayName("張遼突襲：取兩名角色各一張手牌；每回合限一次")
-    @Test
-    public void tuXiTakesOneCardFromEachTarget() {
-        Game game = createGame(General.張遼, General.劉備, General.劉備, General.劉備);
-        Player a = game.getPlayer("player-a");
-        game.getPlayer("player-b").getHand().addCardToHand(new Kill(BS8008));
-        game.getPlayer("player-c").getHand().addCardToHand(new Dodge(BH2028));
-
-        game.playerUseSkillEffect("player-a", "突襲", "ACCEPT",
-                List.of("player-b", "player-c"), null);
-
-        assertEquals(2, a.getHandSize());
-        assertEquals(0, game.getPlayer("player-b").getHandSize());
-        assertEquals(0, game.getPlayer("player-c").getHandSize());
-
-        // 每回合限一次
-        game.getPlayer("player-b").getHand().addCardToHand(new Kill(BS9009));
-        assertThrows(IllegalStateException.class, () ->
-                game.playerUseSkillEffect("player-a", "突襲", "ACCEPT", List.of("player-b"), null));
-    }
+    // 突襲已改為摸牌階段詢問，見 TuXiSkillTest
 
     // ===== 苦肉 =====
 
