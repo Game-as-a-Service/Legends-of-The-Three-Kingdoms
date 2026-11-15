@@ -28,4 +28,10 @@ public class YingZiSkill implements DrawPhaseDeltaSkill {
     public int drawCardDelta(com.gaas.threeKingdoms.Game game, Player player) {
         return 1;
     }
+
+    /** 鎖定技、沒有詢問：摸牌時廣播 SkillEffectEvent，前端才看得出多摸一張的原因。 */
+    @Override
+    public boolean announcesOnDraw() {
+        return true;
+    }
 }

@@ -218,6 +218,9 @@ public class Game {
     /** 摸牌階段本體：摸牌 →（樂不思蜀生效則直接結束出牌）。裸衣 resolve 後亦由此進入。 */
     public List<DomainEvent> proceedDrawPhase(Player currentRoundPlayer, boolean contentmentSuccess) {
         List<DomainEvent> events = new ArrayList<>();
+        // 英姿等鎖定技：摸牌前先廣播技能發動（前端 log 才看得出為什麼多摸）
+        events.addAll(SkillEngine.drawPhaseAnnouncements(this, currentRoundPlayer,
+                calculatePlayerCanDrawCardSize(currentRoundPlayer)));
         DomainEvent drawCardEvent = drawCardToPlayer(currentRoundPlayer, !contentmentSuccess);
         events.add(drawCardEvent);
         if (contentmentSuccess) {

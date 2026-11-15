@@ -87,6 +87,26 @@ public final class SkillEngine {
     }
 
     /** 英姿(+1) / 裸衣(-1，需當回合已發動)：摸牌階段抽牌數修正。 */
+    /**
+     * 摸牌階段：需宣告的鎖定技（英姿）各廣播一則 SkillEffectEvent，
+     * 例「英姿：周瑜 摸牌階段多摸 1 張牌（共 3 張）」。
+     */
+    public static List<DomainEvent> drawPhaseAnnouncements(Game game, Player player, int totalDraw) {
+        List<DomainEvent> events = new java.util.ArrayList<>();
+        for (Skill skill : skillsOf(player)) {
+            if (skill instanceof com.gaas.threeKingdoms.skill.trigger.DrawPhaseDeltaSkill d && d.announcesOnDraw()) {
+                int delta = d.drawCardDelta(game, player);
+                if (delta == 0) continue;
+                String message = String.format("%s：%s 摸牌階段%s %d 張牌（共 %d 張）",
+                        skill.getSkillName(), player.getGeneralName(), delta > 0 ? "多摸" : "少摸",
+                        Math.abs(delta), totalDraw);
+                events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
+                        skill.getSkillName(), player.getId(), true, List.of(), null, message));
+            }
+        }
+        return events;
+    }
+
     public static int drawPhaseDelta(Game game, Player player) {
         int delta = 0;
         for (Skill skill : skillsOf(player)) {
