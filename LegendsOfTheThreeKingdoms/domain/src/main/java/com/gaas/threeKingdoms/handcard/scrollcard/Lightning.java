@@ -9,6 +9,11 @@ public class Lightning extends ScrollCard{
     }
 
     @Override
+    public boolean isDelayScroll() {
+        return true;
+    }
+
+    @Override
     public void effect(Player player) {
         player.damage(3);
     }

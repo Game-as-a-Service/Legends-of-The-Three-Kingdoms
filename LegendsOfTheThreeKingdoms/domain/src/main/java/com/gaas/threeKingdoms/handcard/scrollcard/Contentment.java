@@ -10,6 +10,11 @@ public class Contentment extends ScrollCard {
     }
 
     @Override
+    public boolean isDelayScroll() {
+        return true;
+    }
+
+    @Override
     public void effect(Player targetPlayer) {
     }
 }

@@ -434,9 +434,9 @@ public class Game {
             }
             return acceptedEvent;
         }
-        // 集智判定要在 handler 之前取牌型（出牌後牌已離手）
+        // 集智判定要在 handler 之前取牌型（出牌後牌已離手）；只算非延時錦囊（樂不思蜀、閃電不觸發）
         boolean isScrollPlay = actingPlayer.getHand().getCard(cardId)
-                .map(c -> c instanceof ScrollCard)
+                .map(c -> c instanceof ScrollCard scroll && !scroll.isDelayScroll())
                 .orElse(false);
         List<String> reActionPlayer = new ArrayList<>();
         reActionPlayer.add(targetPlayerId);
@@ -446,7 +446,7 @@ public class Game {
         }
         List<DomainEvent> events = behavior.playerAction();
         removeCompletedBehaviors();
-        // 集智：使用錦囊 → 摸牌（在連營檢查之前摸，補回的牌會讓連營不觸發 — 符合時序：摸牌先發生）
+        // 集智：使用非延時錦囊 → 摸牌（在連營檢查之前摸，補回的牌會讓連營不觸發 — 符合時序：摸牌先發生）
         if (isScrollPlay) {
             int jiZhiDraw = SkillEngine.drawCountAfterScrollUsed(actingPlayer);
             if (jiZhiDraw > 0) {
