@@ -98,4 +98,65 @@ public class KeJiSkillTest extends PassiveSkillTestBase {
 
         assertTrue(keJiEvent(game.finishAction("player-a")).isEmpty());
     }
+
+    private static int discardCountOf(java.util.List<com.gaas.threeKingdoms.events.DomainEvent> events) {
+        return events.stream().filter(e -> e instanceof com.gaas.threeKingdoms.events.NotifyDiscardEvent)
+                .map(e -> ((com.gaas.threeKingdoms.events.NotifyDiscardEvent) e).getDiscardCount())
+                .findFirst().orElseThrow();
+    }
+
+    @DisplayName("呂蒙自己出決鬥、回應時打出殺 → 算「打出過殺」，克己不生效，照常棄牌")
+    @Test
+    public void keJiDisabledAfterPlayingKillInOwnDuel() {
+        Game game = createGame(General.呂蒙, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(Arrays.asList(new com.gaas.threeKingdoms.handcard.scrollcard.Duel(SSA001),
+                new Kill(BS9009), new Dodge(BH2028), new Dodge(BHK039), new Peach(BH3029), new Peach(BH4030),
+                new Peach(BH7033)));
+        b.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        String active = com.gaas.threeKingdoms.handcard.PlayType.ACTIVE.getPlayType();
+        game.playerPlayCard("player-a", SSA001.getCardId(), "player-b", active);   // 呂蒙出決鬥
+        game.playerPlayCard("player-b", BS8008.getCardId(), "player-a", active);   // 甘寧打出殺
+        game.playerPlayCard("player-a", BS9009.getCardId(), "player-b", active);   // 呂蒙打出殺（甘寧沒殺了 → 自動結算受傷）
+
+        assertTrue(game.getCurrentRound().isKillPlayedThisTurn(), "回應時打出的殺也要算");
+        assertEquals(5, a.getHandSize());
+        assertEquals(1, discardCountOf(game.finishAction("player-a")), "克己不生效：5 張 - 4 HP = 棄 1");
+    }
+
+    @DisplayName("呂蒙出決鬥、對方沒有殺（自動結算）→ 呂蒙沒打出過殺，克己照常生效")
+    @Test
+    public void keJiStillAppliesWhenDuelEndsWithoutLuMengKill() {
+        Game game = createGame(General.呂蒙, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(Arrays.asList(new com.gaas.threeKingdoms.handcard.scrollcard.Duel(SSA001),
+                new Kill(BS9009), new Dodge(BH2028), new Dodge(BHK039), new Peach(BH3029), new Peach(BH4030),
+                new Peach(BH7033)));
+
+        // 甘寧手上沒有殺 → 決鬥自動結算（甘寧受傷），呂蒙沒有打出殺
+        game.playerPlayCard("player-a", SSA001.getCardId(), "player-b",
+                com.gaas.threeKingdoms.handcard.PlayType.ACTIVE.getPlayType());
+
+        assertFalse(game.getCurrentRound().isKillPlayedThisTurn());
+        assertEquals(0, discardCountOf(game.finishAction("player-a")), "克己：6 張全留");
+    }
+
+    @DisplayName("別人在呂蒙回合打出的殺不影響克己（只記回合玩家自己的殺）")
+    @Test
+    public void otherPlayersKillDoesNotDisableKeJi() {
+        Game game = createGame(General.呂蒙, General.甘寧, General.甘寧, General.甘寧);
+        Player b = game.getPlayer("player-b");
+        game.getPlayer("player-a").getHand().addCardToHand(Arrays.asList(
+                new com.gaas.threeKingdoms.handcard.scrollcard.Duel(SSA001)));
+        b.getHand().addCardToHand(Arrays.asList(new Kill(BS8008)));
+
+        game.playerPlayCard("player-a", SSA001.getCardId(), "player-b",
+                com.gaas.threeKingdoms.handcard.PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard("player-b", BS8008.getCardId(), "player-a",
+                com.gaas.threeKingdoms.handcard.PlayType.ACTIVE.getPlayType());   // 甘寧打出殺，呂蒙接著沒殺
+
+        assertFalse(game.getCurrentRound().isKillPlayedThisTurn(), "甘寧打出的殺不算呂蒙的");
+    }
 }
