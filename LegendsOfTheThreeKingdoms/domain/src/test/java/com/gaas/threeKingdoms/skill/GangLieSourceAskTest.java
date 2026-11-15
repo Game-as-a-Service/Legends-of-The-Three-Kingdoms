@@ -119,7 +119,10 @@ public class GangLieSourceAskTest {
 
         assertEquals(3, game.getPlayer("player-a").getHP(), "沒有選擇棄牌 → 受剛烈 1 點傷害");
         assertEquals("player-a 受剛烈 1 點傷害（4→3）", gangLieMessage(events));
-        assertTrue(game.getTopBehavior().isEmpty(), "剛烈結束後 stack 要清空，回合才走得下去");
+        // 剛烈反傷是真正的傷害（來源夏侯惇）→ 司馬懿受傷後可發動反饋拿夏侯惇的牌
+        assertEquals("player-a", askOf(events, "反饋", "player-a").getPlayerId());
+        game.playerUseSkillEffect("player-a", "反饋", "SKIP", null, null);
+        assertTrue(game.getTopBehavior().isEmpty(), "剛烈與反饋結束後 stack 要清空，回合才走得下去");
         assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
     }
 
