@@ -37,6 +37,11 @@ public class NormalActiveKillBehavior extends Behavior
         implements com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior,
                    HuJiaCompatibleAskDodgeBehavior {
 
+    /** 鐵騎判定結果（"true"/"false"）：雌雄雙股劍結算完後依此決定直接結算或問閃。BehaviorData 持久化。 */
+    public static final String PARAM_TIEQI_SUCCESS = "TIEQI_SUCCESS";
+    /** 本殺目標是否由流離轉移而來（"true"）。BehaviorData 持久化。 */
+    public static final String PARAM_LIULI_REDIRECTED = "LIULI_REDIRECTED";
+
     public NormalActiveKillBehavior(Game game, Player behaviorPlayer, List<String> reactionPlayers, Player currentReactionPlayer, String cardId, String playType, HandCard card) {
         super(game, behaviorPlayer, reactionPlayers, currentReactionPlayer, cardId, playType, card, true, false, false);
     }
@@ -53,17 +58,8 @@ public class NormalActiveKillBehavior extends Behavior
         List<DomainEvent> events = new ArrayList<>();
         events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType));
 
-        // 雌雄雙股劍效果：異性出殺時，先問攻擊者是否要發動
-        if (shouldTriggerYinYangSwords(behaviorPlayer, targetPlayer)) {
-            isOneRound = false;
-            currentRound.setActivePlayer(behaviorPlayer);
-            game.updateTopBehavior(new WaitingYinYangSwordsActivationBehavior(
-                    game, behaviorPlayer, Collections.singletonList(targetPlayerId),
-                    behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
-            events.add(new AskActivateYinYangSwordsEvent(behaviorPlayer.getId(), targetPlayerId));
-        } else {
-            emitTieQiThenArmorOrDodge(events, targetPlayer);
-        }
+        // 鐵騎（武將技）→ 雌雄雙股劍（武器技）→ 防具／閃（FAQ：先發動武將技能，後發動武器技能）
+        emitTieQiThenArmorOrDodge(events, targetPlayer);
         events.add(game.getGameStatusEvent("出牌"));
         return events;
     }
@@ -90,7 +86,70 @@ public class NormalActiveKillBehavior extends Behavior
             events.addAll(resumeTieQiJudgement(judgement, targetPlayer));
             return;
         }
+        afterTieQi(events, targetPlayer, false);
+    }
+
+    /**
+     * 鐵騎判定完（或沒有鐵騎）之後：
+     * <ol>
+     *   <li>雌雄雙股劍（異性、且非流離轉移來的目標）→ 先問攻擊者是否發動；結算完由
+     *       {@link #continueAfterYinYangSwords} 接回，依記下的鐵騎結果決定</li>
+     *   <li>鐵騎生效 → 不能出閃也不能發動八卦陣，直接結算傷害</li>
+     *   <li>否則 → 問防具或閃</li>
+     * </ol>
+     */
+    private void afterTieQi(List<DomainEvent> events, Player targetPlayer, boolean tieQiSuccess) {
+        if (!isRedirected() && shouldTriggerYinYangSwords(behaviorPlayer, targetPlayer)) {
+            isOneRound = false;
+            game.getCurrentRound().setActivePlayer(behaviorPlayer);
+            game.updateTopBehavior(new WaitingYinYangSwordsActivationBehavior(
+                    game, behaviorPlayer, Collections.singletonList(targetPlayer.getId()),
+                    behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
+            events.add(new AskActivateYinYangSwordsEvent(behaviorPlayer.getId(), targetPlayer.getId()));
+            return;
+        }
+        if (tieQiSuccess) {
+            damageWithoutDodge(events, targetPlayer);
+            return;
+        }
         emitArmorOrDodge(events, targetPlayer);
+    }
+
+    /**
+     * 雌雄雙股劍結算完（攻擊者放棄、目標無手牌、或目標選完）→ 接回殺的流程：
+     * 鐵騎已生效 → 直接結算傷害；否則問防具或閃（含護駕／流離等問閃前 hook）。
+     */
+    public List<DomainEvent> continueAfterYinYangSwords(Player targetPlayer) {
+        List<DomainEvent> events = new ArrayList<>();
+        game.getCurrentRound().setActivePlayer(targetPlayer);
+        if ("true".equals(getParam(PARAM_TIEQI_SUCCESS))) {
+            damageWithoutDodge(events, targetPlayer);
+        } else {
+            emitArmorOrDodge(events, targetPlayer);
+        }
+        return events;
+    }
+
+    /** 找 stack 中（由上往下）第一個殺 behavior —— 雌雄雙股劍的等待 behavior 疊在它上面。 */
+    public static NormalActiveKillBehavior findIn(Game game) {
+        java.util.Stack<com.gaas.threeKingdoms.behavior.Behavior> stack = game.getTopBehavior();
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            if (stack.get(i) instanceof NormalActiveKillBehavior kill) {
+                return kill;
+            }
+        }
+        throw new IllegalStateException("No NormalActiveKillBehavior in stack");
+    }
+
+    private void damageWithoutDodge(List<DomainEvent> events, Player targetPlayer) {
+        int originalHp = targetPlayer.getHP();
+        events.addAll(game.getDamagedEvent(targetPlayer.getId(), behaviorPlayer.getId(),
+                this.cardId, this.card, PlayType.SYSTEM_INTERNAL.getPlayType(),
+                originalHp, targetPlayer, game.getCurrentRound(), Optional.of(this)));
+    }
+
+    private boolean isRedirected() {
+        return "true".equals(getParam(PARAM_LIULI_REDIRECTED));
     }
 
     /** 問防具效果（八卦陣）或問閃；青釭劍無視防具時直接問閃。 */
@@ -113,14 +172,9 @@ public class NormalActiveKillBehavior extends Behavior
         List<DomainEvent> events = new ArrayList<>();
         boolean[] tieQiSuccess = new boolean[1];
         events.addAll(SkillEngine.tieQiResolvedEvents(game, behaviorPlayer, targetPlayer, judgement, tieQiSuccess));
-        if (tieQiSuccess[0]) {
-            int originalHp = targetPlayer.getHP();
-            events.addAll(game.getDamagedEvent(targetPlayer.getId(), behaviorPlayer.getId(),
-                    this.cardId, this.card, PlayType.SYSTEM_INTERNAL.getPlayType(),
-                    originalHp, targetPlayer, game.getCurrentRound(), Optional.of(this)));
-            return events;
-        }
-        emitArmorOrDodge(events, targetPlayer);
+        // 記下鐵騎結果（經 BehaviorData 持久化）：雌雄雙股劍跨請求結算完後要依此決定
+        putParam(PARAM_TIEQI_SUCCESS, String.valueOf(tieQiSuccess[0]));
+        afterTieQi(events, targetPlayer, tieQiSuccess[0]);
         return events;
     }
 
@@ -136,11 +190,6 @@ public class NormalActiveKillBehavior extends Behavior
     private boolean shouldTriggerYinYangSwords(Player attacker, Player target) {
         return attacker.getEquipmentWeaponCard() instanceof YinYangSwordsCard
                 && attacker.getGender() != target.getGender();
-    }
-
-    private void addAskDodgeOrEquipmentEffect(List<DomainEvent> events, Player targetPlayer, Round currentRound) {
-        // 雌雄雙股劍結算後：鐵騎先於防具（已知限制：官方是武將技先於武器技，這裡雙股劍仍在鐵騎之前）
-        emitTieQiThenArmorOrDodge(events, targetPlayer);
     }
 
     @Override
@@ -253,6 +302,8 @@ public class NormalActiveKillBehavior extends Behavior
     public List<DomainEvent> redirectTo(Player newTarget) {
         reactionPlayers.clear();
         reactionPlayers.add(newTarget.getId());
+        // 流離轉移來的目標不觸發雌雄雙股劍（維持原本行為）；持久化供鬼才暫停後 resume 判斷
+        putParam(PARAM_LIULI_REDIRECTED, "true");
         currentReactionPlayer = newTarget;
         game.getCurrentRound().setActivePlayer(newTarget);
 

@@ -157,15 +157,25 @@ public class BehaviorData {
                     playType,
                     PlayCard.findById(cardId)
             );
-            case "NormalActiveKillBehavior" -> new NormalActiveKillBehavior(
-                    game,
-                    game.getPlayer(behaviorPlayerId),
-                    reactionPlayers,
-                    game.getPlayer(currentReactionPlayerId),
-                    cardId,
-                    playType,
-                    PlayCard.findById(cardId)
-            );
+            case "NormalActiveKillBehavior" -> {
+                NormalActiveKillBehavior kill = new NormalActiveKillBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        playType,
+                        PlayCard.findById(cardId)
+                );
+                // 鐵騎結果 / 流離轉移標記：雌雄雙股劍跨請求結算、鬼才暫停後 resume 都要讀（#209 同型）
+                for (String key : List.of(NormalActiveKillBehavior.PARAM_TIEQI_SUCCESS,
+                        NormalActiveKillBehavior.PARAM_LIULI_REDIRECTED)) {
+                    if (params != null && params.get(key) != null) {
+                        kill.putParam(key, params.get(key));
+                    }
+                }
+                yield kill;
+            }
             case "ViperSpearKillBehavior" -> {
                 @SuppressWarnings("unchecked")
                 List<String> discardedCardIds = params != null
