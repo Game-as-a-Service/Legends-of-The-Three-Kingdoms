@@ -78,6 +78,8 @@ public class WaitingGreenDragonCrescentBladeResponseBehavior extends Behavior {
         // 發出 PlayCardEvent + GreenDragonCrescentBladeTriggerEvent
         events.add(new PlayCardEvent("出牌", attackerPlayer.getId(), targetPlayerId, killCardId, com.gaas.threeKingdoms.handcard.PlayType.ACTIVE.getPlayType()));
         events.add(new GreenDragonCrescentBladeTriggerEvent(attackerPlayer.getId(), targetPlayerId, killCardId));
+        // 連營：青龍偃月刀追加的殺是最後一張手牌 → 摸牌
+        events.addAll(com.gaas.threeKingdoms.skill.registry.SkillEngine.afterLoseHandCard(game, attackerPlayer));
 
         // 更新底下的 NormalActiveKillBehavior 的 cardId 和 card
         Behavior killBehavior = game.peekTopBehaviorSecondElement().orElse(null);

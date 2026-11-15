@@ -1607,8 +1607,10 @@ public class Game {
                 this, attacker, reactionPlayers, target, virtualKill, discardCardIds);
         updateTopBehavior(behavior);
 
-        List<DomainEvent> events = behavior.playerAction();
+        List<DomainEvent> events = new ArrayList<>(behavior.playerAction());
         removeCompletedBehaviors();
+        // 連營：丈八蛇矛棄掉最後兩張手牌 → 摸牌（同一般出殺，排在殺的事件之後）
+        appendDrawIfLostLastHandCard(attacker, events);
         return events;
     }
 
@@ -1624,8 +1626,11 @@ public class Game {
 
         // 交給對應 behavior 處理：advance reaction state / push ViperSpearKillBehavior（BorrowedSword）
         VirtualKill virtualKill = new VirtualKill();
-        List<DomainEvent> events = top.acceptVirtualKillResponse(attacker.getId(), targetPlayerId, virtualKill, discardCardIds);
+        List<DomainEvent> events = new ArrayList<>(
+                top.acceptVirtualKillResponse(attacker.getId(), targetPlayerId, virtualKill, discardCardIds));
         removeCompletedBehaviors();
+        // 連營：被動丈八蛇矛棄掉最後兩張手牌 → 摸牌
+        appendDrawIfLostLastHandCard(attacker, events);
         return events;
     }
 
@@ -1712,8 +1717,10 @@ public class Game {
                 this, attacker, seatingOrderedTargets, primaryTarget, cardId, killCard);
         updateTopBehavior(behavior);
 
-        List<DomainEvent> events = behavior.playerAction();
+        List<DomainEvent> events = new ArrayList<>(behavior.playerAction());
         removeCompletedBehaviors();
+        // 連營：方天畫戟的殺必為最後一張手牌 → 摸牌（單目標走 playerPlayCard，已在那裡處理）
+        appendDrawIfLostLastHandCard(attacker, events);
         return events;
     }
 

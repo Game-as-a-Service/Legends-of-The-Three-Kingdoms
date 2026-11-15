@@ -78,6 +78,8 @@ public class WardBehavior extends Behavior {
                     playType);
 
             domainEvents.add(playCardEvent);
+            // 連營：無懈可擊用掉最後一張手牌 → 先摸牌，再結算無懈鏈
+            domainEvents.addAll(com.gaas.threeKingdoms.skill.registry.SkillEngine.afterLoseHandCard(game, player));
 
             // 集智：無懈可擊是非延時錦囊 → 使用當下摸牌（在反制詢問／效果結算之前，
             // 不改 stage / activePlayer；每張無懈各觸發一次，反制鏈中再出也會再摸）
