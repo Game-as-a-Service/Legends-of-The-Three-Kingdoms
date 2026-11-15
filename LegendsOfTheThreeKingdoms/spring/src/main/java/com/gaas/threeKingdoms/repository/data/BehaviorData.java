@@ -6,6 +6,8 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.*;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
+import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -158,6 +160,12 @@ public class BehaviorData {
                     PlayCard.findById(cardId)
             );
             case "NormalActiveKillBehavior" -> {
+                // 轉化殺（武聖 / 龍膽）的 cardId 是真實來源牌（非殺）：還原成帶來源牌 id 的 VirtualKill，
+                // 與同一請求內的 domain 狀態一致（奸雄取來源牌、殺類判定仍視為殺）
+                HandCard killCard = PlayCard.findById(cardId);
+                if (killCard != null && !(killCard instanceof Kill)) {
+                    killCard = new VirtualKill(List.of(cardId));
+                }
                 NormalActiveKillBehavior kill = new NormalActiveKillBehavior(
                         game,
                         game.getPlayer(behaviorPlayerId),
@@ -165,7 +173,7 @@ public class BehaviorData {
                         game.getPlayer(currentReactionPlayerId),
                         cardId,
                         playType,
-                        PlayCard.findById(cardId)
+                        killCard
                 );
                 restoreKillParams(kill);
                 yield kill;

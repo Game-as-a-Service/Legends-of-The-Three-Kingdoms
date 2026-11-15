@@ -1,5 +1,7 @@
 package com.gaas.threeKingdoms.handcard.basiccard;
 
+import java.util.List;
+
 /**
  * 虛擬殺 — 由武器效果產生的殺（如丈八蛇矛），不對應 PlayCard enum 中的實體牌。
  * 效果同一般殺：扣 1 滴血。
@@ -14,7 +16,22 @@ public class VirtualKill extends Kill {
     public static final String VIRTUAL_CARD_ID = "VIPER_SPEAR_VIRTUAL_KILL";
     public static final String VIRTUAL_CARD_NAME = "殺（虛擬）";
 
+    /**
+     * 轉化殺（武聖 / 龍膽 等）的真實來源牌 id。奸雄要獲得「造成傷害的牌」＝這些實體牌。
+     * 武器虛擬殺（丈八蛇矛）不填 — 其棄牌由 ViperSpearKillBehavior 持有。
+     */
+    private final List<String> sourceCardIds;
+
     public VirtualKill() {
+        this(List.of());
+    }
+
+    public VirtualKill(List<String> sourceCardIds) {
         super(VIRTUAL_CARD_NAME, VIRTUAL_CARD_ID, null, null);
+        this.sourceCardIds = sourceCardIds == null ? List.of() : List.copyOf(sourceCardIds);
+    }
+
+    public List<String> getSourceCardIds() {
+        return sourceCardIds;
     }
 }
