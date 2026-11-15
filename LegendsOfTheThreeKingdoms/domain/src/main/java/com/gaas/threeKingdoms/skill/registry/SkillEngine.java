@@ -219,6 +219,19 @@ public final class SkillEngine {
         return count;
     }
 
+    /**
+     * 連營等：player 手牌被移走後若已歸零 → 補摸（無技能或仍有手牌回 empty list）。
+     * 用於他人移走手牌的路徑（過河拆橋、反饋、突襲；順手牽羊因謙遜無法指定陸遜），自己出牌／棄牌的路徑在 Game 內處理。
+     */
+    public static List<DomainEvent> afterLoseHandCard(Game game, Player player) {
+        if (player.getHandSize() != 0) return List.of();
+        int drawCount = drawCountAfterLoseLastHandCard(player);
+        if (drawCount <= 0) return List.of();
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(game.drawCardToPlayer(player, false, drawCount));
+        return events;
+    }
+
     /** 裸衣等：attacker 對 sourceCard 造成傷害的加成點數。 */
     public static int extraDamage(Game game, Player attacker, com.gaas.threeKingdoms.handcard.HandCard sourceCard) {
         int extra = 0;

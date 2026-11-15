@@ -464,13 +464,7 @@ public class Game {
 
     /** 連營 hook：player 手牌歸零時補摸（量由技能決定，無技能則 no-op）。 */
     private void appendDrawIfLostLastHandCard(Player player, List<DomainEvent> events) {
-        if (player.getHandSize() != 0) {
-            return;
-        }
-        int drawCount = SkillEngine.drawCountAfterLoseLastHandCard(player);
-        if (drawCount > 0) {
-            events.add(drawCardToPlayer(player, false, drawCount));
-        }
+        events.addAll(SkillEngine.afterLoseHandCard(this, player));
     }
 
     public void removeCompletedBehaviors() {

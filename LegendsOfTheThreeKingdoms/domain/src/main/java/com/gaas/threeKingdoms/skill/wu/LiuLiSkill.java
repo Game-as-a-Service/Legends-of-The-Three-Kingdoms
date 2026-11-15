@@ -27,7 +27,8 @@ import java.util.Optional;
  *
  * 「距離 1 以內」採順手牽羊同款公式（座位距離 - 大喬-1馬 + 對方+1馬 ≤ 1）。
  * 適用所有殺：普通殺、轉化殺（武聖/龍膽）、丈八蛇矛、方天畫戟（不能轉給已是目標的角色）；
- * AOE 不適用（不是殺）。棄牌限手牌（裝備 follow-up）。
+ * AOE 不適用（不是殺）。棄牌可為手牌或裝備區的牌（裝備 → 進棄牌堆並觸發 afterLoseEquipment，如梟姬）。
+ * 轉移目標的距離以「棄牌前」計算：選目標與棄牌同時宣告，棄 -1 馬不影響本次能轉給誰。
  */
 public class LiuLiSkill implements ChoiceResolvableSkill {
 
@@ -47,7 +48,7 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
 
     /**
      * 成為殺的目標時（由 NormalActiveKillBehavior 在鐵騎、雙股劍、防具之前呼叫）詢問大喬是否發動流離。
-     * 條件：目標是大喬、手上有牌可棄、攻擊範圍內有可轉移的其他角色（非攻擊者，方天畫戟另排除已有目標）。
+     * 條件：目標是大喬、有手牌或裝備可棄、距離 1 內有可轉移的其他角色（非攻擊者，方天畫戟另排除已有目標）。
      */
     public static Optional<List<DomainEvent>> askIfApplicable(Game game, Player damaged, NormalActiveKillBehavior parentBehavior) {
         boolean hasLiuLi = com.gaas.threeKingdoms.skill.registry.SkillRegistry
@@ -58,8 +59,8 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
         if (parentBehavior == null) {
             return Optional.empty();
         }
-        if (damaged.getHandSize() == 0) {
-            return Optional.empty(); // 沒牌可棄
+        if (damaged.getHandSize() == 0 && !damaged.getEquipment().hasAnyEquipment()) {
+            return Optional.empty(); // 沒手牌也沒裝備可棄
         }
         Player attacker = parentBehavior.getBehaviorPlayer();
         boolean hasRedirectTarget = game.getPlayers().stream()
@@ -101,8 +102,23 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
             throw new IllegalArgumentException("Invalid redirect target: " + targetPlayerId);
         }
 
-        HandCard discarded = daQiao.playCard(cardIds.get(0));
-        game.getGraveyard().add(discarded);
+        String discardId = cardIds.get(0);
+        boolean discardFromHand = daQiao.getHand().getCard(discardId).isPresent();
+        if (!discardFromHand && !daQiao.getEquipment().hasThisEquipment(discardId)) {
+            throw new IllegalArgumentException("Card not in hand or equipment: " + discardId);
+        }
+        // 距離已在上方以棄牌前的狀態判定（選目標與棄牌同時宣告）
+        int lostEquipmentCount = 0;
+        if (discardFromHand) {
+            HandCard discarded = daQiao.playCard(discardId);
+            game.getGraveyard().add(discarded);
+        } else {
+            HandCard equipment = daQiao.getEquipment().getAllEquipmentCards().stream()
+                    .filter(c -> c.getId().equals(discardId)).findFirst().orElseThrow();
+            daQiao.getEquipment().removeEquipment(discardId);
+            game.getGraveyard().add(equipment);
+            lostEquipmentCount = 1;
+        }
 
         // 先 pop 本 waiting，redirect 在底下的殺上進行（鬼才 resume 等後續流程預期殺在 top）
         NormalActiveKillBehavior killBehavior = popWaitingAndFindKill(game, waiting);
@@ -111,6 +127,8 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
         events.add(new SkillEffectEvent(SKILL_NAME, daQiao.getId(), true, cardIds, targetPlayerId));
         events.add(game.getGameStatusEvent(String.format(
                 "%s 發動流離，殺轉移給 %s", daQiao.getId(), targetPlayerId)));
+        // 梟姬等「失去裝備」技：棄裝備發動流離也算失去裝備
+        events.addAll(com.gaas.threeKingdoms.skill.registry.SkillEngine.afterLoseEquipment(game, daQiao, lostEquipmentCount));
         events.addAll(killBehavior.redirectTo(newTarget));
         return events;
     }

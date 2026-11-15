@@ -90,6 +90,8 @@ public class DismantleBehavior extends Behavior {
             cards.remove(handCard);
             game.getGraveyard().add(handCard);
             events.add(new DismantleEvent(playerId, targetPlayerId, handCard.getId(), String.format("%s 拆掉了 %s 的手牌 %s", playerGeneralName, targetPlayerGeneralName, handCard.getName())));
+            // 連營：被拆掉最後一張手牌 → 摸牌
+            events.addAll(com.gaas.threeKingdoms.skill.registry.SkillEngine.afterLoseHandCard(game, targetPlayer));
             events.add(game.getGameStatusEvent("過河拆橋效果"));
         } else {
             HandCard card = PlayCard.findById(cardId);
