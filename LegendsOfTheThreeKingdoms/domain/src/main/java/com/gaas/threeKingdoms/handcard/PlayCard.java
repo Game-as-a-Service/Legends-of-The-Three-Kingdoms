@@ -51,7 +51,7 @@ public enum PlayCard {
     BS0023("BS0023", "殺", Suit.SPADE, Rank.TEN),
     SSJ024("SSJ024", "順手牽羊", Suit.SPADE, Rank.J),
     ESQ025("ESQ025", "丈八蛇矛", Suit.SPADE, Rank.Q),
-    ESK026("ESK026", "爪黃飛電", Suit.SPADE, Rank.K),
+    ESK026("ESK026", "大宛", Suit.SPADE, Rank.K),
 
     SHA027("SHA027", "桃園結義", Suit.HEART, Rank.ACE),
     BH2028("BH2028", "閃", Suit.HEART, Rank.TWO),
@@ -304,14 +304,14 @@ public enum PlayCard {
                 .filter(c->c.getCardName().equals("八卦陣"))
                 .anyMatch(c->c.getCardId().equals(cardId));
     }
+    /**
+     * 是否為坐騎（+1 / -1 馬）。依卡牌類別判斷，不靠牌名清單：
+     * 原本以名稱比對，ESK026 大宛被誤命名為「爪黃飛電」才剛好被認成馬，改對名稱就會漏掉。
+     */
     public boolean isMountsCard() {
-        return Arrays.stream(PlayCard.values())
-                .filter(c -> "赤兔".equals(c.getCardName())
-                        || "絕影".equals(c.getCardName())
-                        || "的盧".equals(c.getCardName())
-                        || "紫騂".equals(c.getCardName())
-                        || "爪黃飛電".equals(c.getCardName()))
-                .anyMatch(c -> c.getCardId().equals(this.cardId));
+        HandCard card = findById(this.cardId);
+        return card instanceof com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.PlusMountsCard
+                || card instanceof com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.MinusMountsCard;
     }
 
     public static boolean isSkip(String playType) {
