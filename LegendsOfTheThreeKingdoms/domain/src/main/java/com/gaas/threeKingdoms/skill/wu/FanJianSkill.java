@@ -32,6 +32,8 @@ public class FanJianSkill implements ActivePhaseSkill, ChoiceResolvableSkill {
     public static final String SKILL_NAME = "反間";
     public static final String PARAM_CARD_ID = "FANJIAN_CARD_ID";
     public static final String PARAM_ZHOUYU_ID = "FANJIAN_ZHOUYU_ID";
+    /** 目標可回的 choice：四種花色 */
+    public static final List<String> SUIT_OPTIONS = List.of("SPADE", "HEART", "DIAMOND", "CLUB");
 
     @Override
     public String getGeneralId() {
@@ -68,8 +70,12 @@ public class FanJianSkill implements ActivePhaseSkill, ChoiceResolvableSkill {
         game.updateTopBehavior(waiting);
         game.getCurrentRound().setActivePlayer(target);
 
-        return List.of(new AskSkillEffectEvent(SKILL_NAME, targetPlayerId, List.of(), self.getId()),
-                game.getGameStatusEvent(self.getId() + " 發動反間，" + targetPlayerId + " 選一花色"));
+        // 目標要回的是花色，不是「是否發動」：options 必須帶四種花色（同剛烈的教訓，否則照 options 畫按鈕的前端回不了合法答案）
+        String askMessage = String.format("反間：%s 對 %s 發動反間，請 %s 選擇一種花色（猜錯受到 1 點傷害）",
+                self.getGeneralName(), target.getGeneralName(), target.getGeneralName());
+        return List.of(new AskSkillEffectEvent(SKILL_NAME, targetPlayerId, List.of(), self.getId(),
+                        SUIT_OPTIONS, askMessage),
+                game.getGameStatusEvent(askMessage));
     }
 
     @Override
@@ -94,16 +100,16 @@ public class FanJianSkill implements ActivePhaseSkill, ChoiceResolvableSkill {
 
         List<DomainEvent> events = new ArrayList<>();
         boolean suitMatches = given.getSuit() == guessedSuit;
+        // 前端 log 只顯示事件的 message：結果要寫在 SkillEffectEvent 上（原本只有預設的「反間：X 發動」）
+        String resultMessage = String.format("反間：%s 選擇%s，獲得 %s → %s",
+                target.getGeneralName(), guessedSuit.getDisplayName(), given.judgementDescription(),
+                suitMatches ? "猜中花色，不受傷" : "花色不符，受到 1 點傷害");
         events.add(new SkillEffectEvent(SKILL_NAME, target.getId(), !suitMatches,
-                List.of(cardId), zhouYuId));
+                List.of(cardId), zhouYuId, resultMessage));
         if (!suitMatches) {
             target.damage(1);
-            events.add(game.getGameStatusEvent(String.format(
-                    "反間：%s 猜 %s 不符（%s）→ 受 1 點傷害", target.getId(), guessedSuit, given.getSuit())));
-        } else {
-            events.add(game.getGameStatusEvent(String.format(
-                    "反間：%s 猜中花色 %s，不受傷", target.getId(), guessedSuit)));
         }
+        events.add(game.getGameStatusEvent(resultMessage));
         return events;
     }
 }
