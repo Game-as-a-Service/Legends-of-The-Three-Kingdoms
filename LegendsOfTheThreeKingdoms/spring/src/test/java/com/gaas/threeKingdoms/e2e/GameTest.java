@@ -906,9 +906,40 @@ public class GameTest extends AbstractBaseIntegrationTest {
     }
 
     private void playerCTakeTurnRound3() throws Exception {
+        playerCSkipGuanXingAtTurnStart();
         shouldDrawCardToPlayer(6);
         shouldPlayerFinishAction();
         shouldPlayerCDiscardCardRound3();
+    }
+
+    /**
+     * C（諸葛亮）回合開始先被詢問觀星（判定之前暫停）；happy path 一律 SKIP，牌堆不變，
+     * 之後照原本流程判定 → 摸牌。
+     */
+    private void playerCSkipGuanXingAtTurnStart() throws Exception {
+        Game paused = repository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
+        assertEquals("player-c", paused.getCurrentRoundPlayer().getId());
+        assertEquals(RoundPhase.Judgement, paused.getCurrentRoundPhase(), "觀星詢問中，尚未判定 / 摸牌");
+
+        this.mockMvc.perform(post("/api/games/my-id/player:useSkillEffect")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "playerId": "player-c",
+                                  "skillName": "觀星",
+                                  "choice": "SKIP"
+                                }"""))
+                .andExpect(status().isOk());
+
+        websocketUtil.getValue("player-a");
+        websocketUtil.getValue("player-b");
+        websocketUtil.getValue("player-c");
+        websocketUtil.getValue("player-d");
+
+        Game resumed = repository.findById("my-id")
+                .orElseThrow(() -> new NotFoundException("Game not found"));
+        assertEquals(RoundPhase.Action, resumed.getCurrentRoundPhase());
+        assertTrue(resumed.getTopBehavior().isEmpty());
     }
 
     private void shouldPlayerFinishAction() throws Exception {
@@ -1183,6 +1214,7 @@ public class GameTest extends AbstractBaseIntegrationTest {
     }
 
     private void playerCTakeTurnRound7() throws Exception {
+        playerCSkipGuanXingAtTurnStart();
         shouldPlayerFinishAction();
         playerDiscardCard(List.of("\"BS9009\"", "\"BS8008\"").toArray(new String[0]));
     }

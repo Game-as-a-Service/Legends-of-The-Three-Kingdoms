@@ -15,17 +15,15 @@
     "data" : "",
     "message" : "回合已開始"
   }, {
-    "event" : "JudgementEvent",
-    "data" : "",
-    "message" : "判定結束"
-  }, {
-    "event" : "DrawCardEvent",
+    "event" : "AskSkillEffectEvent",
     "data" : {
-      "size" : 2,
-      "cards" : [ "BH0049", "BHJ037" ],
-      "drawCardPlayerId" : "player-c"
+      "skillName" : "觀星",
+      "playerId" : "player-c",
+      "dataCardIds" : [ "BH0049", "BHJ037", "BH0036", "BS0023" ],
+      "dataPlayerId" : null,
+      "options" : [ "ARRANGE", "SKIP" ]
     },
-    "message" : "玩家摸牌"
+    "message" : "觀星：player-c 回合開始，觀看牌堆頂 4 張並排列（ARRANGE）或不發動（SKIP）"
   } ],
   "data" : {
     "seats" : [ {
@@ -56,8 +54,8 @@
       "roleId" : "Rebel",
       "hp" : 3,
       "hand" : {
-        "size" : 6,
-        "cardIds" : [ "BC9074", "BC8073", "BCJ063", "BC0062", "BH0049", "BHJ037" ]
+        "size" : 4,
+        "cardIds" : [ "BC9074", "BC8073", "BCJ063", "BC0062" ]
       },
       "equipments" : [ "", "", "", "" ],
       "delayScrolls" : [ ]
@@ -74,7 +72,7 @@
       "delayScrolls" : [ ]
     } ],
     "round" : {
-      "roundPhase" : "Action",
+      "roundPhase" : "Judgement",
       "currentRoundPlayer" : "player-c",
       "activePlayer" : "player-c",
       "dyingPlayer" : "",
@@ -82,7 +80,7 @@
     },
     "gamePhase" : "Normal"
   },
-  "message" : "玩家 player-c 抽了 2 張牌",
+  "message" : "觀星：player-c 回合開始，觀看牌堆頂 4 張並排列（ARRANGE）或不發動（SKIP）",
   "gameId" : "my-id",
   "playerId" : "player-c"
 }

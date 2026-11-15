@@ -20,7 +20,7 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Batch 3：制衡 / 苦肉 / 反間 / 結姻 / 仁德 / 觀星（proactive useSkillEffect 分支）。
+ * Batch 3：制衡 / 苦肉 / 反間 / 結姻 / 仁德（proactive useSkillEffect 分支）。
  */
 public class Batch3ActiveSkillsTest extends PassiveSkillTestBase {
 
@@ -161,30 +161,5 @@ public class Batch3ActiveSkillsTest extends PassiveSkillTestBase {
         assertEquals(1, game.getPlayer("player-c").getHandSize());
     }
 
-    // ===== 觀星 =====
-
-    @DisplayName("諸葛亮觀星：觀看 4 張（存活數），重排 2 張回頂、2 張置底")
-    @Test
-    public void guanXingRearrangesDeckTop() {
-        Game game = createGame(General.諸葛亮, General.劉備, General.劉備, General.劉備);
-        Player a = game.getPlayer("player-a");
-        // 控制堆頂 4 張（後 add 先抽）：抽序 = BS8008, BH2028, BS9009, BH3029
-        game.getDeck().add(List.of(new Peach(BH3029), new Kill(BS9009), new Dodge(BH2028), new Kill(BS8008)));
-
-        List<DomainEvent> events = game.playerUseSkillEffect("player-a", "觀星", "ACCEPT", null, null);
-        AskSkillEffectEvent ask = events.stream()
-                .filter(e -> e instanceof AskSkillEffectEvent).map(e -> (AskSkillEffectEvent) e)
-                .findFirst().orElseThrow();
-        assertEquals(List.of(BS8008.getCardId(), BH2028.getCardId(), BS9009.getCardId(), BH3029.getCardId()),
-                ask.getDataCardIds());
-
-        // 重排：BH3029, BS9009 回堆頂；BS8008, BH2028 置底
-        game.playerUseSkillEffect("player-a", "觀星", "ARRANGE",
-                List.of(BH3029.getCardId(), BS9009.getCardId()), null);
-
-        List<HandCard> next = game.getDeck().deal(2);
-        assertEquals(BH3029.getCardId(), next.get(0).getId(), "重排後第一張");
-        assertEquals(BS9009.getCardId(), next.get(1).getId(), "重排後第二張");
-        assertTrue(game.isTopBehaviorEmpty());
-    }
+    // 觀星已改為回合開始詢問，見 GuanXingSkillTest
 }

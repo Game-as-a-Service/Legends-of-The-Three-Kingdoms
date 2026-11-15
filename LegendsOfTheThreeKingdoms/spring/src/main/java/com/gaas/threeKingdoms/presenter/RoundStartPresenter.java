@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.events.*;
 import com.gaas.threeKingdoms.presenter.common.GameDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.PlayerDataViewModel;
 import com.gaas.threeKingdoms.presenter.common.RoundDataViewModel;
+import com.gaas.threeKingdoms.presenter.mapper.DomainEventToViewModelMapper;
 import lombok.*;
 import com.gaas.threeKingdoms.usecase.OthersChoosePlayerGeneralUseCase;
 
@@ -24,7 +25,13 @@ public class RoundStartPresenter implements OthersChoosePlayerGeneralUseCase.Rou
         // 以事件存在與否判斷（選將中 events 只有 GeneralSelectionStatusEvent，issue #237）
         if (ViewModel.getEvent(events, RoundStartEvent.class).isPresent()) {
             viewModels = new ArrayList<>();
-            updateEventToPlayerTakeTurnViewModel(events);
+            if (ViewModel.getEvent(events, DrawCardEvent.class).isPresent()) {
+                updateEventToPlayerTakeTurnViewModel(events);
+            } else {
+                // 回合開始即暫停詢問（觀星 / 洛神 / 裸衣 / 突襲…），尚未摸牌：
+                // 以通用 mapper 推播（含 AskSkillEffectEvent），否則主公第一回合的詢問會遺失
+                updatePausedTurnStartViewModel(events);
+            }
         } else {
             viewModels = Collections.emptyList();
         }
@@ -71,6 +78,32 @@ public class RoundStartPresenter implements OthersChoosePlayerGeneralUseCase.Rou
                     drawCardEvent.getGameId(),
                     viewModel.getId())
             );
+        }
+    }
+
+    private void updatePausedTurnStartViewModel(List<DomainEvent> events) {
+        GameStatusEvent gameStatusEvent = null;
+        for (DomainEvent event : events) {
+            if (event instanceof GameStatusEvent status) {
+                gameStatusEvent = status; // 取最後一個 = 暫停當下的狀態
+            }
+        }
+        if (gameStatusEvent == null) {
+            return;
+        }
+        List<ViewModel<?>> eventViewModels = new DomainEventToViewModelMapper().mapEventsToViewModels(events);
+        List<PlayerDataViewModel> playerDataViewModels = gameStatusEvent.getSeats().stream().map(PlayerDataViewModel::new).toList();
+        RoundDataViewModel roundDataViewModel = new RoundDataViewModel(gameStatusEvent.getRound());
+        for (PlayerDataViewModel viewModel : playerDataViewModels) {
+            GameDataViewModel gameDataViewModel = new GameDataViewModel(
+                    PlayerDataViewModel.hiddenOtherPlayerRoleInformation(playerDataViewModels, viewModel.getId()),
+                    roundDataViewModel, gameStatusEvent.getGamePhase());
+            viewModels.add(new PlayerTakeTurnViewModel(
+                    PlayCardPresenter.personalizeWardViewModels(eventViewModels, events, viewModel.getId()),
+                    gameDataViewModel,
+                    gameStatusEvent.getMessage(),
+                    gameStatusEvent.getGameId(),
+                    viewModel.getId()));
         }
     }
 
