@@ -24,7 +24,7 @@ import java.util.List;
  *      push WaitingSkillEffect(反間) 問目標選花色（牌先暗扣在 params）
  *   2. 目標 choice = SPADE / HEART / DIAMOND / CLUB → 揭示並轉移牌；花色不符 → 目標受 1 傷
  *
- * v1：目標受傷不進瀕死整合（HP 仍會歸零，dying flow follow-up）。
+ * 猜錯的傷害走 Game#dealSkillDamage：來源為周瑜，觸發受傷後技能、HP 歸零進瀕死求桃。
  */
 public class FanJianSkill implements ActivePhaseSkill, ChoiceResolvableSkill {
 
@@ -107,7 +107,12 @@ public class FanJianSkill implements ActivePhaseSkill, ChoiceResolvableSkill {
         events.add(new SkillEffectEvent(SKILL_NAME, target.getId(), !suitMatches,
                 List.of(cardId), zhouYuId, resultMessage));
         if (!suitMatches) {
-            target.damage(1);
+            // 先移除已完成的反間等待：受傷後技能（反饋 / 剛烈 / 遺計）只在 top 為空或相容 behavior 時觸發
+            waiting.setIsOneRound(true);
+            game.removeCompletedBehaviors();
+            events.add(game.getGameStatusEvent(resultMessage));
+            events.addAll(game.dealSkillDamage(zhouYu, target, 1));
+            return events;
         }
         events.add(game.getGameStatusEvent(resultMessage));
         return events;

@@ -112,7 +112,7 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                     return events;
                 } else if (isREBEL(dyingPlayer)) {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
-                    Player lastDamagedPlayer = game.getLastAttacker();
+                    Player lastDamagedPlayer = killerOf(dyingPlayer);
                     events.add(settlementEvent);
                     // 沒有傷害來源（苦肉失去體力、閃電）→ 沒有人能領擊殺反賊的獎勵
                     if (lastDamagedPlayer != null) {
@@ -125,17 +125,18 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     events.add(settlementEvent);
                     // 如果殺忠臣的玩家是主公，則主公棄掉所有的牌
-                    if (isMonarch(game.getLastAttacker())) {
-                        List<HandCard> discardCards = game.getLastAttacker().discardAllCards();
+                    Player killer = killerOf(dyingPlayer);
+                    if (isMonarch(killer)) {
+                        List<HandCard> discardCards = killer.discardAllCards();
 
-                        String message = String.format("主公 %s 殺死忠臣 %s，棄所有的牌", game.getLastAttacker().getGeneralName(), dyingPlayer.getGeneralName());
-                        DomainEvent discardCardEvent = new DiscardEvent(discardCards, message, game.getLastAttacker().getId());
+                        String message = String.format("主公 %s 殺死忠臣 %s，棄所有的牌", killer.getGeneralName(), dyingPlayer.getGeneralName());
+                        DomainEvent discardCardEvent = new DiscardEvent(discardCards, message, killer.getId());
                         game.getGraveyard().add(discardCards);
 
-                        List<EquipmentCard> discardEquipment = game.getLastAttacker().discardAllEquipment();
-                        String messageEquipment = String.format("玩家 %s 棄裝備", game.getLastAttacker().getId());
+                        List<EquipmentCard> discardEquipment = killer.discardAllEquipment();
+                        String messageEquipment = String.format("玩家 %s 棄裝備", killer.getId());
                         List<String> discardEquipmentIds = discardEquipment.stream().map(HandCard::getId).toList();
-                        DomainEvent discardEquipmentEvent = new DiscardEquipmentEvent(game.getLastAttacker().getId(), discardEquipmentIds, messageEquipment);
+                        DomainEvent discardEquipmentEvent = new DiscardEquipmentEvent(killer.getId(), discardEquipmentIds, messageEquipment);
                         // 裝備牌放進棄牌堆
                         List<HandCard> discardEquipmentList = discardEquipment.stream().map(e -> (HandCard) e).toList();
                         game.getGraveyard().add(discardEquipmentList);
@@ -144,7 +145,7 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                         // 梟姬：主公一次棄光裝備區 → 每失去一張摸 2（N 張 → 2N 張）。
                         // 罰則本身已結算完（手牌+裝備都已進棄牌堆），摸到的牌留在手上。
                         events.addAll(SkillEngine.afterLoseEquipment(
-                                game, game.getLastAttacker(), discardEquipment.size()));
+                                game, killer, discardEquipment.size()));
                     }
                     addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
                     addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
@@ -370,6 +371,23 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
 
     public void setPendingDrawOnRevival(int pendingDrawOnRevival) {
         this.pendingDrawOnRevival = pendingDrawOnRevival;
+    }
+
+    /**
+     * 擊殺者（反賊獎勵／主公殺忠臣懲罰的對象）。先依 behavior stack 推算（殺 / 決鬥 / AOE / 借刀）；
+     * 推算不到時（武將技傷害，如反間）退回瀕死時記下的傷害來源。
+     * 傷害來源是死者自己（閃電、苦肉）時沒有擊殺者。
+     */
+    private Player killerOf(Player dyingPlayer) {
+        Player fromStack = game.getLastAttacker();
+        if (fromStack != null) {
+            return fromStack;
+        }
+        if (pendingAttackerPlayerId != null && !pendingAttackerPlayerId.isEmpty()
+                && !pendingAttackerPlayerId.equals(dyingPlayer.getId())) {
+            return game.getPlayer(pendingAttackerPlayerId);
+        }
+        return null;
     }
 
     private boolean isSkip(String playType) {
