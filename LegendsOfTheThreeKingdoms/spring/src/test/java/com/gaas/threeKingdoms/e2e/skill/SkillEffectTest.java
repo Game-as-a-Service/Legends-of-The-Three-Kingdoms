@@ -72,16 +72,16 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
 
     @Test
     public void testGuiCaiReplaceTieQiJudgementAcrossRequests() throws Exception {
-        // Given：A（馬超）殺 B（司馬懿）；鐵騎判定牌疊黑桃（原本生效 B 不能閃）
+        // Given：A（馬超）殺 B（司馬懿）；鐵騎判定牌疊紅心（標準版：紅色生效 → 原本 B 不能閃）
         Player playerA = createPlayer("player-a", 4, General.馬超, HealthStatus.ALIVE, Role.MONARCH,
                 new Kill(BS8008));
         Player playerB = createPlayer("player-b", 4, General.司馬懿, HealthStatus.ALIVE, Role.MINISTER,
-                new Peach(BH3029), new com.gaas.threeKingdoms.handcard.basiccard.Dodge(BH2028));
+                new Kill(BS9009), new com.gaas.threeKingdoms.handcard.basiccard.Dodge(BH2028));
         Player playerC = createPlayer("player-c", 4, General.孫權, HealthStatus.ALIVE, Role.REBEL);
         Player playerD = createPlayer("player-d", 4, General.孫權, HealthStatus.ALIVE, Role.MINISTER);
         Game game = initGame(gameId, Arrays.asList(playerA, playerB, playerC, playerD), playerA);
         Deck deck = new Deck();
-        deck.add(List.of(new Kill(BS9009))); // 鐵騎判定牌：黑桃 → 原本生效
+        deck.add(List.of(new Peach(BH3029))); // 鐵騎判定牌：紅心 → 原本生效
         game.setDeck(deck);
         repository.save(game);
 
@@ -93,14 +93,14 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
         assertFalse(paused.getTopBehavior().isEmpty(), "鬼才詢問中，判定暫停");
         assertEquals(4, paused.getPlayer("player-b").getHP(), "尚未結算");
 
-        // B 發動鬼才：以紅心桃替換判定牌 → 鐵騎不生效 → 照常問閃
+        // B 發動鬼才：以黑桃殺替換判定牌 → 黑色，鐵騎不生效 → 照常問閃
         mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 { "playerId": "player-b",
                                   "skillName": "鬼才",
                                   "choice": "ACCEPT",
-                                  "cardIds": ["BH3029"]
+                                  "cardIds": ["BS9009"]
                                 }"""))
                 .andExpect(status().isOk());
 
@@ -110,7 +110,7 @@ public class SkillEffectTest extends AbstractBaseIntegrationTest {
 
         // Then：鐵騎被鬼才化解，B 無傷
         Game saved = repository.findById(gameId).orElseThrow();
-        assertEquals(4, saved.getPlayer("player-b").getHP(), "替換成紅心 → 鐵騎不生效，閃擋下殺");
+        assertEquals(4, saved.getPlayer("player-b").getHP(), "替換成黑桃 → 鐵騎不生效，閃擋下殺");
         assertEquals(0, saved.getPlayer("player-b").getHandSize(), "替換牌與閃都已打出");
         assertTrue(saved.getGraveyard().contains(BH3029.getCardId()), "替換牌進墓地");
         assertTrue(saved.getTopBehavior().isEmpty());
