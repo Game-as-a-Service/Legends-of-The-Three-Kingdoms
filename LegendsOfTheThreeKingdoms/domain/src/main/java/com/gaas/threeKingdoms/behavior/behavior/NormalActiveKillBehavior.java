@@ -73,7 +73,7 @@ public class NormalActiveKillBehavior extends Behavior
      *    判定牌抽出後過鬼才暫停點；司馬懿介入時暫停，resume 走 {@link #resumeTieQiJudgement}
      * 2. 鐵騎未生效（或沒有鐵騎）→ 照常問防具（八卦陣）或閃（{@link #emitArmorOrDodge}）
      */
-    private void emitTieQiThenArmorOrDodge(List<DomainEvent> events, Player targetPlayer) {
+    protected void emitTieQiThenArmorOrDodge(List<DomainEvent> events, Player targetPlayer) {
         // 流離（目標側，成為殺的目標時）最先：FAQ 大喬先決定是否發動流離，馬超再決定是否發動鐵騎；
         // 也早於八卦陣（原本放在問閃前，目標有八卦陣時根本不會問流離）
         if (!targetPlayer.getId().equals(getParam(PARAM_LIULI_DECIDED_TARGET))) {
@@ -332,6 +332,14 @@ public class NormalActiveKillBehavior extends Behavior
         // FAQ：大喬先決定是否發動流離，之後馬超再決定是否發動鐵騎 → 對新目標先判鐵騎再問防具／閃
         emitTieQiThenArmorOrDodge(events, newTarget);
         return events;
+    }
+
+    /**
+     * 流離能否把這張殺轉移給 candidate（距離／攻擊者等共通條件由 LiuLiSkill 檢查）。
+     * 單一目標的殺沒有額外限制；多目標殺（方天畫戟）override 排除已是目標的角色。
+     */
+    public boolean canLiuLiRedirectTo(Player candidate) {
+        return true;
     }
 
     private boolean isQilinBowSuccess(String playType) {
