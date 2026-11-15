@@ -228,6 +228,9 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                             addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(resumeEvents);
                             return resumeEvents;
                         });
+                    } else if (deferPollingResumeToSkillAsk(dyingPlayer)) {
+                        // 反饋／剛烈／遺計等受傷後技能詢問介入：輪詢的 resume 交給
+                        // WaitingSkillEffectBehavior 收鏈掃描（技能結算完才問下一位），避免兩個詢問同時發出
                     } else {
                         // 一般情況（非曹操，或 JianXiong 沒觸發）— 立即 emit polling resume
                         addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
@@ -394,11 +397,32 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
         return PlayType.SKIP.getPlayType().equals(playType);
     }
 
-    /** 本瀕死是否發生在輪詢型 behavior（南蠻 / 萬箭 / 方天畫戟）之中。 */
-    private boolean isInsidePollingCaller() {
-        return game.peekTopBehaviorSecondElement()
-                .map(b -> b instanceof com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior c && c.isPollingCaller())
-                .orElse(false);
+    /**
+     * 救回後的受傷後技能詢問（WaitingSkillEffectBehavior）若疊在南蠻／萬箭輪詢之上：
+     * 標記詢問結算後要 resume 輪詢，並在輪詢 behavior 記下「從瀕死者之後繼續」（兩者皆 BehaviorData 持久化），
+     * 與一般受傷（非瀕死）時的 deferred-advance 機制相同。回傳 true 表示已 defer，caller 不可再立即問下一位。
+     */
+    private boolean deferPollingResumeToSkillAsk(Player dyingPlayer) {
+        if (game.isTopBehaviorEmpty()
+                || !(game.peekTopBehavior() instanceof WaitingSkillEffectBehavior skillAsk)
+                || skillAsk.isOneRound()) {
+            return false;
+        }
+        java.util.Stack<Behavior> stack = game.getTopBehavior();
+        for (int i = stack.size() - 2; i >= 0; i--) {
+            Behavior under = stack.get(i);
+            if (under instanceof com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior compatible
+                    && compatible.isPollingCaller()) {
+                skillAsk.putParam(WaitingSkillEffectBehavior.PARAM_RESUME_POLLING, "true");
+                under.putParam(com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior.PARAM_DEFERRED_ADVANCE_PLAYER_ID,
+                        dyingPlayer.getId());
+                return true;
+            }
+            if (!under.isOneRound()) {
+                return false; // 中間隔著未完成的其他 behavior，不屬於本輪詢
+            }
+        }
+        return false;
     }
 
     private void replayOnDamagedAfterRevival(Player dyingPlayer, List<DomainEvent> events) {
@@ -420,8 +444,7 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
             // 有傷害來源時仍補觸發受傷後技能（反饋 / 剛烈 / 遺計；奸雄因沒有牌不觸發）。
             // 不補的情況：
             //   - 沒有傷害來源（苦肉失去體力）或來源是自己（閃電）
-            //   - AOE / 方天畫戟輪詢中：被救回後會立即 resume 輪詢，與受傷後技能詢問同時發出會衝突（follow-up）
-            if (attacker == null || attacker.equals(dyingPlayer) || isInsidePollingCaller()) {
+            if (attacker == null || attacker.equals(dyingPlayer)) {
                 return;
             }
         }
