@@ -394,6 +394,13 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
         return PlayType.SKIP.getPlayType().equals(playType);
     }
 
+    /** 本瀕死是否發生在輪詢型 behavior（南蠻 / 萬箭 / 方天畫戟）之中。 */
+    private boolean isInsidePollingCaller() {
+        return game.peekTopBehaviorSecondElement()
+                .map(b -> b instanceof com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior c && c.isPollingCaller())
+                .orElse(false);
+    }
+
     private void replayOnDamagedAfterRevival(Player dyingPlayer, List<DomainEvent> events) {
         Player attacker = (pendingAttackerPlayerId != null && !pendingAttackerPlayerId.isEmpty())
                 ? game.getPlayer(pendingAttackerPlayerId)
@@ -409,7 +416,14 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
             sourceCard = PlayCard.findById(pendingSourceCardId);
         }
         if (sourceCard == null) {
-            return;
+            // 沒有來源牌：技能傷害（反間 / 剛烈 → Game#dealSkillDamage）或轉化殺（武聖 / 龍膽的 VirtualKill）。
+            // 有傷害來源時仍補觸發受傷後技能（反饋 / 剛烈 / 遺計；奸雄因沒有牌不觸發）。
+            // 不補的情況：
+            //   - 沒有傷害來源（苦肉失去體力）或來源是自己（閃電）
+            //   - AOE / 方天畫戟輪詢中：被救回後會立即 resume 輪詢，與受傷後技能詢問同時發出會衝突（follow-up）
+            if (attacker == null || attacker.equals(dyingPlayer) || isInsidePollingCaller()) {
+                return;
+            }
         }
         DamageContext ctx = new DamageContext(dyingPlayer, attacker, sourceCard, 1);
         events.addAll(SkillEngine.onDamaged(game, ctx));
