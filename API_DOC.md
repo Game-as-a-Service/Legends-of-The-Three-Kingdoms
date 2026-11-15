@@ -885,7 +885,6 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 技能 | 限制 | choice | cardIds | targetPlayerId |
 |---|---|---|---|---|
 | 制衡（孫權） | — | `ACCEPT` | 要棄的牌（手牌+裝備 id，≥1）→ 摸等量 | — |
-| 突襲（張遼） | 每回合 1 次 | `ACCEPT` | **目標玩家 id 列表**（1~2 名，借用此欄位） | — |
 | 苦肉（黃蓋） | 無次數限制；HP 1 也可（進瀕死，見下方「苦肉」） | `ACCEPT` | — | — |
 | 反間（周瑜）第一段 | 每回合 1 次 | `ACCEPT` | [要給的手牌 id] | 目標玩家 |
 | 反間 第二段（目標回應） | — | `SPADE`/`HEART`/`DIAMOND`/`CLUB` | — | — |
@@ -949,6 +948,35 @@ POST /api/games/{gameId}/player:useSkillEffect
 **錯誤情境（400）**：
 - 出紅色牌 / 牌不在手 → `IllegalArgumentException`
 - 不想發動：照原本流程出真閃或 `playType: "skip"`
+
+#### 突襲（張遼）摸牌階段詢問
+
+**規則**（身份標準版）：摸牌階段，你可以**放棄摸牌**，改為獲得最多兩名其他角色的各一張手牌。
+
+**詢問**：張遼回合的判定階段結束、摸牌之前，若有任何其他存活角色有手牌，推 `AskSkillEffectEvent`：
+
+```json
+{ "event": "AskSkillEffectEvent",
+  "data": { "skillName": "突襲", "playerId": "張遼的playerId", "options": ["ACCEPT", "SKIP"] },
+  "message": "突襲：張遼 要發動突襲嗎？（放棄摸牌，改為獲得至多兩名其他角色的各一張手牌）" }
+```
+
+沒有任何其他角色有手牌時不能發動，不詢問、直接摸牌。
+
+**回應**：
+
+```json
+POST /api/games/{gameId}/player:useSkillEffect
+{ "playerId": "張遼的playerId", "skillName": "突襲", "choice": "ACCEPT", "cardIds": ["目標1", "目標2"] }
+```
+
+| choice | cardIds | 結果 |
+|---|---|---|
+| `ACCEPT` | **目標玩家 id**（1～2 名，借用此欄位） | 從每名目標拿一張手牌，**不摸牌**，進入出牌階段；`SkillEffectEvent` 的 `dataCardIds` 為拿到的牌、`message` 例「突襲：張遼 放棄摸牌，獲得 甘寧、孫權 各一張手牌」 |
+| `SKIP` | — | 照常摸 2 張 |
+
+`ACCEPT` 的目標不合法時回 400、詢問保留可重新選：不能選自己、不能同一人兩次、最多兩名、目標要存活且有手牌。
+樂不思蜀生效時仍可發動，之後照常跳過出牌階段。
 
 #### 國色（大喬）發動與使用
 
@@ -1054,7 +1082,6 @@ POST /api/games/{gameId}/player:useSkillEffect
   帶的是**同欄位**被換掉的那張（換武器 → 舊武器；欄位原本為空時為 `""`）
 - 反間目標受傷不進瀕死流程（follow-up）
 - 觀星 issue 時機為回合開始；v1 以出牌階段主動發動實作（時機整合 follow-up）
-- 突襲 issue 時機為出牌階段開始；v1 出牌階段任意時點可發動（每回合一次）
 - 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
 - 流離 v1 只攔普通殺（方天畫戟/AOE 轉移 follow-up）；棄牌限手牌
 - 救援採官方標準版語意（桃效果 +1）；issue 原文描述的「可出桃給其」即既有瀕死求桃流程

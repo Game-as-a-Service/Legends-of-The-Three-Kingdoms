@@ -209,6 +209,13 @@ public class Game {
                     events.addAll(luoYiAsk);
                     return events;
                 }
+                // 突襲：摸牌階段可放棄摸牌，改為獲得至多兩名其他角色的各一張手牌（先問張遼）
+                List<DomainEvent> tuXiAsk = SkillEngine.tuXiAskActivation(
+                        this, currentRoundPlayer, contentmentEventSuccess);
+                if (!tuXiAsk.isEmpty()) {
+                    events.addAll(tuXiAsk);
+                    return events;
+                }
                 events.addAll(proceedDrawPhase(currentRoundPlayer, contentmentEventSuccess));
             }
         }
@@ -227,6 +234,20 @@ public class Game {
             events.addAll(finishAction(currentRoundPlayer.getId()));
         } else {
             events.add(getGameStatusEvent(drawCardEvent.getMessage()));
+        }
+        return events;
+    }
+
+    /**
+     * 放棄摸牌（突襲）：不摸牌直接結束摸牌階段。樂不思蜀生效 → 跳過出牌階段，否則進入出牌階段。
+     */
+    public List<DomainEvent> skipDrawPhase(Player currentRoundPlayer, boolean contentmentSuccess, String message) {
+        List<DomainEvent> events = new ArrayList<>();
+        if (contentmentSuccess) {
+            events.addAll(finishAction(currentRoundPlayer.getId()));
+        } else {
+            currentRound.setRoundPhase(RoundPhase.Action);
+            events.add(getGameStatusEvent(message));
         }
         return events;
     }
@@ -253,6 +274,13 @@ public class Game {
                         this, currentRoundPlayer, contentmentSuccess);
                 if (!luoYiAsk.isEmpty()) {
                     events.addAll(luoYiAsk);
+                    return events;
+                }
+                // 突襲：摸牌階段可放棄摸牌，改為獲得至多兩名其他角色的各一張手牌（先問張遼）
+                List<DomainEvent> tuXiAsk = SkillEngine.tuXiAskActivation(
+                        this, currentRoundPlayer, contentmentSuccess);
+                if (!tuXiAsk.isEmpty()) {
+                    events.addAll(tuXiAsk);
                     return events;
                 }
                 events.addAll(proceedDrawPhase(currentRoundPlayer, contentmentSuccess));

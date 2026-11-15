@@ -142,6 +142,37 @@ public final class SkillEngine {
                 game.getGameStatusEvent("裸衣：詢問 " + roundPlayer.getId() + " 是否發動"));
     }
 
+    /**
+     * 突襲：判定階段之後、摸牌之前詢問張遼是否發動（標準版：摸牌階段，可放棄摸牌，改為獲得至多兩名
+     * 其他角色的各一張手牌）。非張遼、或沒有任何其他存活角色有手牌（FAQ：至少要有一名有手牌的角色）→ 回 empty。
+     */
+    public static List<DomainEvent> tuXiAskActivation(Game game, Player roundPlayer, boolean contentmentSuccess) {
+        boolean hasTuXi = skillsOf(roundPlayer).stream()
+                .anyMatch(s -> s instanceof com.gaas.threeKingdoms.skill.wei.TuXiSkill);
+        if (!hasTuXi) {
+            return List.of();
+        }
+        List<String> candidates = game.getSeatingChart().getPlayers().stream()
+                .filter(p -> !p.equals(roundPlayer) && p.getHandSize() > 0)
+                .map(Player::getId).toList();
+        if (candidates.isEmpty()) {
+            return List.of();
+        }
+        var waiting = new com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior(
+                game, roundPlayer, com.gaas.threeKingdoms.skill.wei.TuXiSkill.SKILL_NAME);
+        waiting.putParam(com.gaas.threeKingdoms.skill.wei.TuXiSkill.PARAM_CONTENTMENT_SUCCESS,
+                String.valueOf(contentmentSuccess));
+        game.updateTopBehavior(waiting);
+        game.getCurrentRound().setActivePlayer(roundPlayer);
+        String message = String.format("突襲：%s 要發動突襲嗎？（放棄摸牌，改為獲得至多兩名其他角色的各一張手牌）",
+                roundPlayer.getGeneralName());
+        return List.of(
+                new com.gaas.threeKingdoms.events.AskSkillEffectEvent(
+                        com.gaas.threeKingdoms.skill.wei.TuXiSkill.SKILL_NAME, roundPlayer.getId(),
+                        List.of(), null, com.gaas.threeKingdoms.events.AskSkillEffectEvent.ACCEPT_OR_SKIP, message),
+                game.getGameStatusEvent(message));
+    }
+
     /** 手牌上限（預設 = 當前 HP；HandLimitSkill 可覆寫）。 */
     public static int handCardLimit(Player player) {
         int limit = player.getHP();
