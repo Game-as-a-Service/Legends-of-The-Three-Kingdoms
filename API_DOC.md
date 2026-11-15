@@ -688,10 +688,18 @@ POST /api/games/{gameId}/player:useSkillEffect
 1. 受詢問玩家武將為曹操（WEI001）
 2. 曹操為主公（`role == MONARCH`）
 3. 至少有一個其他存活魏勢力武將（`faction == WEI` && 非曹操本人）
-4. Top behavior 為以下 emitter 之一（實作 `HuJiaCompatibleAskDodgeBehavior`）：
-   - `NormalActiveKillBehavior`（普通殺）
+4. 問閃的 host 為以下 behavior 之一（實作 `HuJiaCompatibleAskDodgeBehavior`）：
+   - `NormalActiveKillBehavior`（普通殺；含轉化殺、丈八蛇矛的殺）
    - `ArrowBarrageBehavior`（萬箭齊發）
    - `HeavenlyDoubleHalberdKillBehavior`（方天畫戟）
+
+**觸發的問閃時機**（以上 host 的所有問閃都會先問護駕）：
+- 殺／萬箭／方天畫戟直接問閃（含流離、鐵騎黑色之後）
+- 八卦陣判定失敗、或曹操放棄發動八卦陣（`useEquipmentEffect` 回 `SKIP`）之後
+- 萬箭：前一位八卦陣成功，輪到曹操
+- 青龍偃月刀追殺（`useGreenDragonCrescentBladeEffect` 回 `KILL`；曹操有八卦陣則先問八卦陣）
+- 雌雄雙股劍結算完接回殺的問閃
+- 萬箭／方天畫戟：前一位瀕死結算完接回輪詢，輪到曹操
 
 **流程**：
 ```
@@ -715,7 +723,8 @@ A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
 - ACCEPT 但 cardId 不是閃 → 400 `IllegalArgumentException`
 - 曹操自己無閃 + 所有 Wei 全 DECLINE → fallback AskDodge(曹操) 後 SKIP 受傷（不影響後續流程）
 - 視為曹操出閃，因此攻擊者的青龍偃月刀 / 貫石斧鏈仍正常觸發
-- v1 範圍：護駕僅在三處 AskDodge emitter（普通殺/萬箭齊發/方天畫戟）攔截；其他二次 AskDodge 場景（八卦陣失敗、青龍鏈、雌雄雙股劍、丈八蛇矛被動殺、瀕死 resume）為 follow-up
+- 二次問閃（八卦陣失敗／放棄、青龍追殺、雌雄雙股劍、萬箭八卦陣成功後輪到曹操、瀕死接回輪詢）同樣會先問護駕（見上方「觸發的問閃時機」）；代閃後由 host 接續原流程（青龍可再追殺、萬箭／方天畫戟推進到下一位）
+- 不在範圍：決鬥／南蠻是問殺，與護駕無關
 
 **備註**：此 API 獨立於 `playCard`。前端在收到 `AskHuJiaEffectEvent` 時應只開啟被詢問玩家的選擇 UI。
 

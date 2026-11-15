@@ -284,7 +284,8 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                 if (isPollingFinishedOrCurrentReactorDead(arrowBarrageBehavior)) return;
                 Player arrowBarrageCurrentReactionPlayer = arrowBarrageBehavior.getCurrentReactionPlayer();
                 if (arrowBarrageBehavior.isInReactionPlayers(arrowBarrageCurrentReactionPlayer.getId())) {
-                    events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
+                    // 接回輪詢的問閃同樣走問閃前介入（護駕）；本瀕死已完成，接手代閃時會一併 pop
+                    events.addAll(SkillEngine.askDodge(game, arrowBarrageCurrentReactionPlayer, arrowBarrageBehavior));
                 }
                 game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
             }

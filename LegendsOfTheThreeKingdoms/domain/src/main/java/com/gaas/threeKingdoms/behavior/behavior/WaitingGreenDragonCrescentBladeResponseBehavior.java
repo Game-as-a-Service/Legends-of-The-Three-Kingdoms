@@ -98,7 +98,8 @@ public class WaitingGreenDragonCrescentBladeResponseBehavior extends Behavior {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
         } else {
-            events.add(new AskDodgeEvent(targetPlayerId));
+            // 青龍追殺的問閃同樣走問閃前介入（護駕）；host 為底下的殺（本 behavior 已完成，會一併 pop）
+            events.addAll(com.gaas.threeKingdoms.skill.registry.SkillEngine.askDodge(game, targetPlayer, normalKill));
         }
 
         events.add(game.getGameStatusEvent("青龍偃月刀發動"));

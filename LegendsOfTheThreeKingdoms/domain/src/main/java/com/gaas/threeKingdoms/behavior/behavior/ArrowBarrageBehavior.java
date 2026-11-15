@@ -246,6 +246,15 @@ public class ArrowBarrageBehavior extends Behavior
         }
     }
 
+    /**
+     * 前一位以八卦陣成功（視為出閃）後輪到 next：currentReactionPlayer 推進到 next 並問閃（含護駕）。
+     * 必須推進 currentReactionPlayer —— next 不出閃時扣血對象取自它（否則會扣到前一位）。
+     */
+    public List<DomainEvent> advanceToAndAskDodge(Player next) {
+        currentReactionPlayer = next;
+        return SkillEngine.askDodge(game, next, this);
+    }
+
     @Override
     public List<DomainEvent> acceptDodgeFromHuJia(String dodgedPlayerId, String weiPlayerId, String dodgeCardId) {
         // dodge 已在 WaitingHuJia 中由 Wei 棄入墓地；這裡推進 polling
