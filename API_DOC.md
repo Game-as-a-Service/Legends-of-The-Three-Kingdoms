@@ -750,7 +750,7 @@ A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
 | 陸遜 WU007 | 謙遜 | 不能成為順手牽羊/樂不思蜀目標 | 順手牽羊或樂不思蜀（含國色轉化）指定陸遜 → 400；南蠻/萬箭/閃電對陸遜照常 |
 | 陸遜 WU007 | 連營 | 失去最後一張手牌 → 摸 1 | 出/棄最後一張牌、或被拆/被拿走最後一張手牌後緊接 DrawCardEvent |
 | 諸葛亮 SHU004 | 空城 | 手牌 0 時不能被殺/決鬥指定 | 指定空手牌諸葛亮 → 400 |
-| 黃月英 SHU007 | 集智 | 使用錦囊 → 摸 1（含無懈可擊） | 出錦囊後緊接 DrawCardEvent；playWardCard（ACTIVE）回應中 PlayCardEvent 後緊接 DrawCardEvent |
+| 黃月英 SHU007 | 集智 | 使用非延時錦囊 → 摸 1（含無懈可擊；樂不思蜀、閃電不觸發） | 出錦囊後緊接 DrawCardEvent；playWardCard（ACTIVE）回應中 PlayCardEvent 後緊接 DrawCardEvent |
 | 黃月英 SHU007 | 奇才 | 使用錦囊無距離限制 | 超距順手牽羊不再 400 |
 | 呂蒙 WU003 | 克己 | 本回合未使用過殺 → 略過棄牌階段 | finishAction 後 NotifyDiscardEvent 棄牌數為 0，直接進下一回合 |
 

@@ -3,7 +3,9 @@ package com.gaas.threeKingdoms.skill;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.scrollcard.Contentment;
 import com.gaas.threeKingdoms.handcard.scrollcard.Dismantle;
+import com.gaas.threeKingdoms.handcard.scrollcard.Lightning;
 import com.gaas.threeKingdoms.handcard.scrollcard.Snatch;
 import com.gaas.threeKingdoms.player.Player;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +32,33 @@ public class HuangYueYingSkillTest extends PassiveSkillTestBase {
 
         // 拆牌互動尚未結束（需 useDismantleEffect），但集智摸牌在使用當下已發生
         assertEquals(1, a.getHandSize(), "出錦囊後 0 + 集智 1 = 1");
+    }
+
+    @DisplayName("黃月英使用樂不思蜀（延時錦囊）→ 集智不觸發")
+    @Test
+    public void huangYueYingDoesNotDrawAfterContentment() {
+        Game game = createGame(General.黃月英, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Contentment(SS6006));
+
+        game.playerPlayCard("player-a", SS6006.getCardId(), "player-b", "active");
+
+        assertTrue(b.hasThisDelayScrollCard(SS6006.getCardId()), "樂不思蜀已放到 b 的判定區");
+        assertEquals(0, a.getHandSize(), "延時錦囊不觸發集智");
+    }
+
+    @DisplayName("黃月英使用閃電（延時錦囊）→ 集智不觸發")
+    @Test
+    public void huangYueYingDoesNotDrawAfterLightning() {
+        Game game = createGame(General.黃月英, General.劉備, General.孫權, General.孫權);
+        Player a = game.getPlayer("player-a");
+        a.getHand().addCardToHand(new Lightning(SSA014));
+
+        game.playerPlayCard("player-a", SSA014.getCardId(), "", "active");
+
+        assertTrue(a.hasThisDelayScrollCard(SSA014.getCardId()), "閃電已放到 a 的判定區");
+        assertEquals(0, a.getHandSize(), "延時錦囊不觸發集智");
     }
 
     @DisplayName("黃月英出殺（非錦囊）→ 集智不觸發")
