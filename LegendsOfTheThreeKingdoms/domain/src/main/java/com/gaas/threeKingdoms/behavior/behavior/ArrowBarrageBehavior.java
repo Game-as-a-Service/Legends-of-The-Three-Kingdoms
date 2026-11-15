@@ -247,12 +247,22 @@ public class ArrowBarrageBehavior extends Behavior
     }
 
     /**
-     * 前一位以八卦陣成功（視為出閃）後輪到 next：currentReactionPlayer 推進到 next 並問閃（含護駕）。
-     * 必須推進 currentReactionPlayer —— next 不出閃時扣血對象取自它（否則會扣到前一位）。
+     * 八卦陣判定成功（視為 dodgedPlayerId 出閃）→ 與出閃同樣推進輪詢：
+     * 下一位依 reactionPlayers 順序（跳過死者／免疫者）；問的順序同一般輪詢（第二階段無懈 → 防具 → 護駕 → 閃）。
+     * 必須推進 currentReactionPlayer —— 下一位不出閃時扣血對象取自它（否則會扣到前一位）；
+     * 沒有下一位 → 萬箭結算完畢。
      */
-    public List<DomainEvent> advanceToAndAskDodge(Player next) {
+    public List<DomainEvent> advanceAfterEightDiagramDodge(String dodgedPlayerId) {
+        Player next = nextAliveReactorAfter(dodgedPlayerId);
+        if (next == null) {
+            isOneRound = true;
+            game.getCurrentRound().setStage(Stage.Normal);
+            game.getCurrentRound().setActivePlayer(game.getCurrentRoundPlayer());
+            return new ArrayList<>();
+        }
+        isOneRound = false;
         currentReactionPlayer = next;
-        return SkillEngine.askDodge(game, next, this);
+        return askNextPlayerOrWard();
     }
 
     @Override

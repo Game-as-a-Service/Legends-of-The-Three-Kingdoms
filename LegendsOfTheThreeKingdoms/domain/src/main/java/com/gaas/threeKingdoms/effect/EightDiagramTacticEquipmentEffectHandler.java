@@ -85,7 +85,7 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
         boolean isOneRoundBehavior = topBehavior.judgeWhetherRemoveTopBehavior();
         topBehavior.setIsOneRound(isOneRoundBehavior && isEightDiagramTacticEffectSuccess);
         if (isEightDiagramTacticEffectSuccess) {
-            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents);
+            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents, playerId);
             addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(domainEvents, playerId);
             addAskGreenDragonCrescentBladeEventIfAttackerHasGDCB(domainEvents);
             addAskStonePiercingAxeEventIfAttackerHasStonePiercingAxe(domainEvents);
@@ -114,16 +114,10 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
         return equipmentPlayType.equals(EquipmentPlayType.SKIP);
     }
 
-    private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events) {
+    private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events, String playerId) {
         Behavior topBehavior = game.peekTopBehavior();
         if (topBehavior instanceof ArrowBarrageBehavior arrowBarrageBehavior) {
-            Player currentReactionPlayer = arrowBarrageBehavior.getCurrentReactionPlayer();
-            currentReactionPlayer =  game.getNextPlayer(currentReactionPlayer);
-            Player arrowBarrageCurrentReactionPlayer = currentReactionPlayer;
-            if (arrowBarrageBehavior.isInReactionPlayers(arrowBarrageCurrentReactionPlayer.getId())) {
-                events.addAll(arrowBarrageBehavior.advanceToAndAskDodge(arrowBarrageCurrentReactionPlayer));
-            }
-            game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
+            events.addAll(arrowBarrageBehavior.advanceAfterEightDiagramDodge(playerId));
         }
     }
 

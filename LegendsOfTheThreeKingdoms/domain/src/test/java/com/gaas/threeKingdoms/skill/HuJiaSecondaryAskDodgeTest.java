@@ -8,6 +8,7 @@ import com.gaas.threeKingdoms.events.AskActivateYinYangSwordsEvent;
 import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskGreenDragonCrescentBladeEffectEvent;
 import com.gaas.threeKingdoms.events.AskHuJiaEffectEvent;
+import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.AskSkillEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.gamephase.Normal;
@@ -208,6 +209,44 @@ public class HuJiaSecondaryAskDodgeTest extends PassiveSkillTestBase {
         List<DomainEvent> afterJianXiong = game.playerUseJianXiongEffect(
                 "player-c", com.gaas.threeKingdoms.events.AskJianXiongEffectEvent.Choice.SKIP);
         assertTrue(asksDodge(afterJianXiong, "player-d"), "曹操結算完輪到 d：" + afterJianXiong);
+    }
+
+    @DisplayName("萬箭：前一位八卦陣成功、輪到有八卦陣的曹操 → 先問曹操八卦陣（不是直接問護駕）；判定失敗才問護駕")
+    @Test
+    public void arrowBarrageEightDiagramSuccessThenCaoCaoWithEightDiagramAsksArmorFirst() {
+        Game game = givenArrowBarrageEightDiagramSuccessThenCaoCao();
+        game.getPlayer("player-c").getEquipment().setArmor(new EightDiagramTactic(EC2067));
+        // 牌堆頂：b 的判定（紅桃，成功）→ c 的判定（黑殺，失敗）
+        game.getDeck().add(List.of(new Kill(BS9009), new Peach(BH4030)));
+        game.playerPlayCard("player-a", SHA040.getCardId(), "player-a", ACTIVE);
+
+        List<DomainEvent> events = game.playerUseEquipment("player-b", ES2015.getCardId(), "player-b", EquipmentPlayType.ACTIVE);
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskPlayEquipmentEffectEvent x && "player-c".equals(x.getPlayerId())),
+                "曹操有八卦陣應先問八卦陣：" + events);
+        assertFalse(asksHuJia(events, "player-c"), "八卦陣尚未判定前不應問護駕");
+        assertEquals("player-c", game.getCurrentRound().getActivePlayer().getId());
+
+        List<DomainEvent> fail = game.playerUseEquipment("player-c", EC2067.getCardId(), "player-c", EquipmentPlayType.ACTIVE);
+        assertTrue(asksHuJia(fail, "player-c"), "曹操八卦陣失敗後才問護駕：" + fail);
+    }
+
+    @DisplayName("萬箭：最後一位八卦陣成功 → 萬箭結算完畢（stack 清空、回到回合玩家）")
+    @Test
+    public void arrowBarrageLastReactorEightDiagramSuccessFinishes() {
+        Game game = createGame(General.甘寧, General.甘寧, General.甘寧, General.甘寧, null);
+        game.getPlayer("player-a").getHand().addCardToHand(new ArrowBarrage(SHA040));
+        game.getPlayer("player-d").getEquipment().setArmor(new EightDiagramTactic(ES2015));
+        game.getDeck().add(List.of(new Peach(BH3029)));
+        game.playerPlayCard("player-a", SHA040.getCardId(), "player-a", ACTIVE);
+        game.playerPlayCard("player-b", "", "player-a", SKIP);
+        game.playerPlayCard("player-c", "", "player-a", SKIP);
+
+        game.playerUseEquipment("player-d", ES2015.getCardId(), "player-d", EquipmentPlayType.ACTIVE);
+
+        assertEquals(4, game.getPlayer("player-d").getHP());
+        assertTrue(game.isTopBehaviorEmpty(), "萬箭應結算完畢：" + game.getTopBehavior());
+        assertEquals("player-a", game.getCurrentRound().getActivePlayer().getId());
     }
 
     // ===== 青龍偃月刀追殺 =====
