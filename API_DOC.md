@@ -1064,7 +1064,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 反饋 / 剛烈 / 遺計在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221 / issue #165 / issue #250：
   受傷 → 詢問 → 詢問鏈收斂後 resume 輪詢，回到原本的 AOE 詢問輪；剛烈兩段式與鬼才巢狀介入亦支援）。
   遺計在輪詢中 `GIVE` 給尚未被詢問的角色也合法（該角色可能因此取得可回應的殺 / 閃）；
-  三者瀕死皆不觸發
+  瀕死求桃期間不詢問；被救回後才補問（`DyingAskPeachBehavior` revival 分支 replay `SkillEngine.onDamaged`），見下一點
 - AOE polling 中瀕死被救回：先補觸發受傷後技能（反饋／剛烈／遺計），技能詢問結算完才繼續問下一位（不會同時發兩個詢問）
 - AOE polling 中被扣死的玩家（含**最後一位**被詢問者）不會再收到 AskKill/AskDodge；
   瀕死結算結束後 `activePlayer` 回到回合玩家。死亡玩家的任何 action 一律 400
@@ -1085,7 +1085,7 @@ POST /api/games/{gameId}/player:useSkillEffect
   v1 自動觸發不詢問（官方為「可以」，摸牌恆有利故不問）
 - 主動換裝被蓋掉的舊裝備會進棄牌堆；`PlayEquipmentCardEvent.deprecatedCardId`
   帶的是**同欄位**被換掉的那張（換武器 → 舊武器；欄位原本為空時為 `""`）
-- 反間目標受傷不進瀕死流程（follow-up）
+- 反間猜錯的傷害來源為周瑜：目標 HP 歸 0 進瀕死求桃，擊殺獎勵／懲罰歸周瑜；存活或被救回則觸發目標的受傷後技能（反饋／剛烈／遺計）
 - 觀星 issue 時機為回合開始；v1 以出牌階段主動發動實作（時機整合 follow-up）
 - 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
 - 流離適用所有殺：普通殺、轉化殺（武聖/龍膽）、丈八蛇矛、方天畫戟。方天畫戟多目標時，輪到大喬才問流離；轉移目標不能是本殺已有的其他目標，新目標取代大喬在輪詢中的位置（順序不變）。AOE 不是殺，不能流離；棄牌限手牌
