@@ -196,6 +196,8 @@ public class BehaviorData {
                         PlayCard.findById(cardId)
                 );
                 restoreKillParams(halberdKill);
+                // 方天畫戟也是 polling caller：受傷後技能結算完才推進輪詢
+                restoreDeferredAdvanceParam(halberdKill);
                 yield halberdKill;
             }
             case "PeachBehavior" -> new PeachBehavior(
