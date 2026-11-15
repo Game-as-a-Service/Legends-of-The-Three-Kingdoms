@@ -570,6 +570,15 @@ public class Game {
         String notifyMessage = String.format("玩家 %s 需要棄 %d 張牌", currentRoundPlayer.getId(), currentRoundPlayerDiscardCount);
         NotifyDiscardEvent notifyDiscardEvent = new NotifyDiscardEvent(notifyMessage, currentRoundPlayerDiscardCount, playerId);
         domainEvents.add(finishActionEvent);
+        // 克己：真的讓玩家少棄了牌才廣播（手牌本來就沒超過上限時，有沒有克己都一樣）
+        int discardWithoutSkill = Math.max(0, currentRoundPlayer.getHandSize() - SkillEngine.handCardLimit(currentRoundPlayer));
+        if (currentRoundPlayerDiscardCount == 0 && discardWithoutSkill > 0
+                && SkillEngine.canSkipDiscardPhase(this, currentRoundPlayer)) {
+            domainEvents.add(new SkillEffectEvent(
+                    com.gaas.threeKingdoms.skill.wu.KeJiSkill.SKILL_NAME, currentRoundPlayer.getId(), true, List.of(), null,
+                    String.format("克己：%s 本回合沒有使用或打出過【殺】，跳過棄牌階段（不用棄 %d 張）",
+                            currentRoundPlayer.getGeneralName(), discardWithoutSkill)));
+        }
         domainEvents.add(notifyDiscardEvent);
 
         if (currentRoundPlayerDiscardCount == 0) {
