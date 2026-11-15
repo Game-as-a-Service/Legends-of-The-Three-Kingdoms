@@ -173,7 +173,7 @@ public class FinishActionPresenter implements FinishActionUseCase.FinishActionPr
         private String playerId;
 
         public GameViewModel(List<ViewModel<?>> viewModels, GameDataViewModel data, String message, String gameId, String playerId) {
-            super(viewModels, data, message);
+            super(viewModels, data, message, playerId);
             this.gameId = gameId;
             this.playerId = playerId;
         }
