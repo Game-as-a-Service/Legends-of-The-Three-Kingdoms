@@ -114,20 +114,17 @@ public class WaitingJiJiangResponseBehavior extends Behavior {
 
     /**
      * 主動出殺 / 借刀殺人：蜀將的殺視為劉備使用 — 牌交到劉備手上後立即由劉備打出，
-     * 完全沿用 playerPlayCard 的殺流程（攻擊範圍、出殺次數、流離 / 鐵騎 / 八卦陣 / 閃 ...）。
+     * 沿用殺的既有流程（出殺次數、流離 / 鐵騎 / 八卦陣 / 閃 ...）。
      * 所有可能 throw 的驗證都在移動牌之前完成，避免 invalid 狀態下半途 mutate。
+     * <p>
+     * 主動出殺不走 playerPlayCard：目標已在發動激將時驗證過（攻擊範圍、空城），
+     * 若代出者正是目標（如諸葛亮交出最後一張殺），重跑 handler 的空城檢查會在牌已移動後 throw。
      */
     private List<DomainEvent> resolveAcceptAsLiuBeiKill(Player shu, HandCard killCard) {
         Player liuBei = game.getPlayer(liuBeiPlayerId);
         Player target = game.getPlayer(targetPlayerId);
-        if (mode == Mode.ACTIVE_KILL) {
-            if (!game.isInAttackRange(liuBei, target)) {
-                throw new IllegalStateException(String.format("%s is not in attack range", targetPlayerId));
-            }
-            if (com.gaas.threeKingdoms.skill.registry.SkillEngine.isImmuneToCard(target, killCard)) {
-                throw new IllegalStateException(String.format(
-                        "%s cannot be targeted by Kill (target immunity skill)", targetPlayerId));
-            }
+        if (mode == Mode.ACTIVE_KILL && !game.isInAttackRange(liuBei, target)) {
+            throw new IllegalStateException(String.format("%s is not in attack range", targetPlayerId));
         }
 
         isOneRound = true;
@@ -139,6 +136,16 @@ public class WaitingJiJiangResponseBehavior extends Behavior {
 
         List<DomainEvent> events = new ArrayList<>();
         events.add(new SkillEffectEvent("激將", shu.getId(), true, List.of(killCard.getId()), liuBeiPlayerId));
+        if (mode == Mode.ACTIVE_KILL) {
+            // 計入劉備本回合出殺次數（次數已於發動時驗證；連弩 / 咆哮不限次）
+            game.getCurrentRound().isPlayedValidCard(killCard.getId());
+            NormalActiveKillBehavior kill = new NormalActiveKillBehavior(game, liuBei,
+                    new ArrayList<>(List.of(targetPlayerId)), liuBei, killCard.getId(),
+                    PlayType.ACTIVE.getPlayType(), killCard);
+            game.updateTopBehavior(kill);
+            events.addAll(kill.playerAction());
+            return events;
+        }
         events.addAll(game.playerPlayCard(liuBeiPlayerId, killCard.getId(), targetPlayerId,
                 PlayType.ACTIVE.getPlayType()));
         return events;

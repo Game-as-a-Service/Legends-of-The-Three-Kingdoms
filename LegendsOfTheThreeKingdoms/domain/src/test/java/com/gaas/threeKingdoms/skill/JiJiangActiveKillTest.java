@@ -163,6 +163,26 @@ public class JiJiangActiveKillTest extends PassiveSkillTestBase {
         assertTrue(own.stream().anyMatch(e -> e instanceof AskDodgeEvent));
     }
 
+    @DisplayName("激將目標即代出者：諸葛亮交出最後一張殺後雖空城，目標已於發動時指定 → 殺照常結算")
+    @Test
+    public void activeJiJiangTargetIsHelperWithKongCheng() {
+        Game game = createGame(General.劉備, General.諸葛亮, General.甘寧, General.甘寧);
+        Player b = game.getPlayer("player-b");
+        b.getHand().addCardToHand(new Kill(BS8008));
+        int hpBefore = b.getHP();
+
+        game.playerUseSkillEffect("player-a", "激將", "ACCEPT", null, "player-b");
+        List<DomainEvent> acceptEvents = game.playerUseSkillEffect("player-b", "激將", "ACCEPT",
+                List.of(BS8008.getCardId()), null);
+
+        assertTrue(acceptEvents.stream().anyMatch(e -> e instanceof AskDodgeEvent
+                && ((AskDodgeEvent) e).getPlayerId().equals("player-b")));
+        assertEquals(0, game.getPlayer("player-a").getHandSize());
+        assertTrue(game.getCurrentRound().isShowKill());
+        game.playerPlayCard("player-b", "", "player-a", PlayType.SKIP.getPlayType());
+        assertEquals(hpBefore - 1, b.getHP());
+    }
+
     // ===== 借刀殺人 =====
 
     /** a = 甘寧（回合玩家，持借刀殺人），b = 劉備主公（裝諸葛連弩），c = 關羽（蜀），d = 甘寧。 */
