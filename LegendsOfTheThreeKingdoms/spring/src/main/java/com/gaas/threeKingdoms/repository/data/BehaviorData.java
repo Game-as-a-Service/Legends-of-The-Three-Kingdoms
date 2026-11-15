@@ -167,14 +167,7 @@ public class BehaviorData {
                         playType,
                         PlayCard.findById(cardId)
                 );
-                // 鐵騎結果 / 流離轉移標記：雌雄雙股劍跨請求結算、鬼才暫停後 resume 都要讀（#209 同型）
-                for (String key : List.of(NormalActiveKillBehavior.PARAM_TIEQI_SUCCESS,
-                        NormalActiveKillBehavior.PARAM_LIULI_REDIRECTED,
-                        NormalActiveKillBehavior.PARAM_LIULI_DECIDED_TARGET)) {
-                    if (params != null && params.get(key) != null) {
-                        kill.putParam(key, params.get(key));
-                    }
-                }
+                restoreKillParams(kill);
                 yield kill;
             }
             case "ViperSpearKillBehavior" -> {
@@ -182,7 +175,7 @@ public class BehaviorData {
                 List<String> discardedCardIds = params != null
                         ? (List<String>) params.get(VIPER_SPEAR_DISCARDED_CARD_IDS)
                         : List.of();
-                yield new ViperSpearKillBehavior(
+                ViperSpearKillBehavior viperSpearKill = new ViperSpearKillBehavior(
                         game,
                         game.getPlayer(behaviorPlayerId),
                         reactionPlayers,
@@ -190,15 +183,21 @@ public class BehaviorData {
                         new VirtualKill(),
                         discardedCardIds
                 );
+                restoreKillParams(viperSpearKill);
+                yield viperSpearKill;
             }
-            case "HeavenlyDoubleHalberdKillBehavior" -> new HeavenlyDoubleHalberdKillBehavior(
-                    game,
-                    game.getPlayer(behaviorPlayerId),
-                    reactionPlayers,
-                    game.getPlayer(currentReactionPlayerId),
-                    cardId,
-                    PlayCard.findById(cardId)
-            );
+            case "HeavenlyDoubleHalberdKillBehavior" -> {
+                HeavenlyDoubleHalberdKillBehavior halberdKill = new HeavenlyDoubleHalberdKillBehavior(
+                        game,
+                        game.getPlayer(behaviorPlayerId),
+                        reactionPlayers,
+                        game.getPlayer(currentReactionPlayerId),
+                        cardId,
+                        PlayCard.findById(cardId)
+                );
+                restoreKillParams(halberdKill);
+                yield halberdKill;
+            }
             case "PeachBehavior" -> new PeachBehavior(
                     game,
                     game.getPlayer(behaviorPlayerId),
@@ -468,6 +467,23 @@ public class BehaviorData {
         String key = com.gaas.threeKingdoms.behavior.JianXiongCompatibleTopBehavior.PARAM_DEFERRED_ADVANCE_PLAYER_ID;
         if (params != null && params.get(key) != null) {
             behavior.putParam(key, params.get(key));
+        }
+    }
+
+    /**
+     * 殺系 behavior（普通殺／丈八蛇矛／方天畫戟）的跨請求狀態：鐵騎結果、流離轉移標記、
+     * 已對流離作出決定的目標。雌雄雙股劍、鬼才暫停、流離放棄後 resume 都要讀（#209 同型）。
+     */
+    private void restoreKillParams(NormalActiveKillBehavior kill) {
+        if (params == null) {
+            return;
+        }
+        for (String key : List.of(NormalActiveKillBehavior.PARAM_TIEQI_SUCCESS,
+                NormalActiveKillBehavior.PARAM_LIULI_REDIRECTED,
+                NormalActiveKillBehavior.PARAM_LIULI_DECIDED_TARGET)) {
+            if (params.get(key) != null) {
+                kill.putParam(key, params.get(key));
+            }
         }
     }
 

@@ -26,8 +26,8 @@ import java.util.Optional;
  *   SKIP：fallback AskDodgeEvent(大喬)
  *
  * 「距離 1 以內」採順手牽羊同款公式（座位距離 - 大喬-1馬 + 對方+1馬 ≤ 1）。
- * v1 範圍：普通殺（NormalActiveKillBehavior 精確類別）；方天畫戟/AOE 轉移 follow-up；
- * 棄牌限手牌（裝備 follow-up）。
+ * 適用所有殺：普通殺、轉化殺（武聖/龍膽）、丈八蛇矛、方天畫戟（不能轉給已是目標的角色）；
+ * AOE 不適用（不是殺）。棄牌限手牌（裝備 follow-up）。
  */
 public class LiuLiSkill implements ChoiceResolvableSkill {
 
@@ -47,7 +47,7 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
 
     /**
      * 成為殺的目標時（由 NormalActiveKillBehavior 在鐵騎、雙股劍、防具之前呼叫）詢問大喬是否發動流離。
-     * 條件：目標是大喬、這是普通殺（v1）、手上有牌可棄、攻擊範圍內有攻擊者以外的其他角色。
+     * 條件：目標是大喬、手上有牌可棄、攻擊範圍內有可轉移的其他角色（非攻擊者，方天畫戟另排除已有目標）。
      */
     public static Optional<List<DomainEvent>> askIfApplicable(Game game, Player damaged, NormalActiveKillBehavior parentBehavior) {
         boolean hasLiuLi = com.gaas.threeKingdoms.skill.registry.SkillRegistry
@@ -55,15 +55,15 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
         if (!hasLiuLi) {
             return Optional.empty();
         }
-        if (parentBehavior == null || parentBehavior.getClass() != NormalActiveKillBehavior.class) {
-            return Optional.empty(); // v1：只攔普通殺
+        if (parentBehavior == null) {
+            return Optional.empty();
         }
         if (damaged.getHandSize() == 0) {
             return Optional.empty(); // 沒牌可棄
         }
         Player attacker = parentBehavior.getBehaviorPlayer();
         boolean hasRedirectTarget = game.getPlayers().stream()
-                .anyMatch(p -> isValidRedirectTarget(game, damaged, attacker, p));
+                .anyMatch(p -> isValidRedirectTarget(game, damaged, attacker, p, parentBehavior));
         if (!hasRedirectTarget) {
             return Optional.empty();
         }
@@ -96,7 +96,8 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
         }
         Player attacker = game.getPlayer(attackerId);
         Player newTarget = game.getPlayer(targetPlayerId);
-        if (!isValidRedirectTarget(game, daQiao, attacker, newTarget)) {
+        if (newTarget == null
+                || !isValidRedirectTarget(game, daQiao, attacker, newTarget, NormalActiveKillBehavior.findIn(game))) {
             throw new IllegalArgumentException("Invalid redirect target: " + targetPlayerId);
         }
 
@@ -120,9 +121,13 @@ public class LiuLiSkill implements ChoiceResolvableSkill {
         return NormalActiveKillBehavior.findIn(game);
     }
 
-    /** 距離 1 以內（順手牽羊公式）、非攻擊者、非大喬本人、存活。 */
-    private static boolean isValidRedirectTarget(Game game, Player daQiao, Player attacker, Player candidate) {
+    /** 距離 1 以內（順手牽羊公式）、非攻擊者、非大喬本人、存活、且這張殺允許（方天畫戟：不能是已有目標）。 */
+    private static boolean isValidRedirectTarget(Game game, Player daQiao, Player attacker, Player candidate,
+                                                 NormalActiveKillBehavior kill) {
         if (candidate.equals(daQiao) || candidate.equals(attacker) || candidate.isAlreadyDeath()) {
+            return false;
+        }
+        if (!kill.canLiuLiRedirectTo(candidate)) {
             return false;
         }
         return game.isInSnatchEffectRange(daQiao, candidate);

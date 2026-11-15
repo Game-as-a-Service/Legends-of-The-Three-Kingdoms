@@ -1,16 +1,12 @@
 package com.gaas.threeKingdoms.behavior.behavior;
 
 import com.gaas.threeKingdoms.Game;
-import com.gaas.threeKingdoms.events.AskDodgeEvent;
-import com.gaas.threeKingdoms.events.AskPlayEquipmentEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.ViperSpearKillTriggerEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.player.Player;
-import com.gaas.threeKingdoms.round.Round;
-import com.gaas.threeKingdoms.round.Stage;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -40,7 +36,6 @@ public class ViperSpearKillBehavior extends NormalActiveKillBehavior {
         // 棄牌已在 Game.playerUseViperSpearKill() 處理
         String targetPlayerId = reactionPlayers.get(0);
         Player targetPlayer = game.getPlayer(targetPlayerId);
-        Round currentRound = game.getCurrentRound();
 
         // 更新 activePlayer 為目標玩家並設定 currentCard（等待出閃/發動防具效果）
         game.updateRoundInformation(targetPlayer, card);
@@ -48,17 +43,9 @@ public class ViperSpearKillBehavior extends NormalActiveKillBehavior {
         List<DomainEvent> events = new ArrayList<>();
         events.add(new ViperSpearKillTriggerEvent(behaviorPlayer.getId(), targetPlayerId, discardedCardIds));
 
-        // 進入閃/防具流程
-        if (isEquipmentHasSpecialEffect(targetPlayer)) {
-            currentRound.setStage(Stage.Wait_Equipment_Effect);
-            events.add(new AskPlayEquipmentEffectEvent(
-                    targetPlayer.getId(),
-                    targetPlayer.getEquipment().getArmor(),
-                    List.of(targetPlayer.getId())
-            ));
-        } else {
-            events.add(new AskDodgeEvent(targetPlayerId));
-        }
+        // 與普通殺同一條流程：流離 → 鐵騎 → 防具／閃（含護駕）
+        // （原本直接問防具或閃，大喬的流離、馬超的鐵騎、曹操的護駕都被跳過）
+        emitTieQiThenArmorOrDodge(events, targetPlayer);
 
         events.add(game.getGameStatusEvent("丈八蛇矛出殺"));
         return events;

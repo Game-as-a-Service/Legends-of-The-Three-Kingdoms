@@ -164,6 +164,16 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
         Player targetPlayer = currentReactionPlayer;
         currentRound.setActivePlayer(targetPlayer);
 
+        // 流離（成為殺的目標時）早於八卦陣：輪到大喬時先問；放棄後由 continueAfterLiuLiDeclined 接回
+        if (!targetPlayer.getId().equals(getParam(PARAM_LIULI_DECIDED_TARGET))) {
+            Optional<List<DomainEvent>> liuLi =
+                    com.gaas.threeKingdoms.skill.wu.LiuLiSkill.askIfApplicable(game, targetPlayer, this);
+            if (liuLi.isPresent()) {
+                events.addAll(liuLi.get());
+                return;
+            }
+        }
+
         if (isEquipmentHasSpecialEffect(targetPlayer)) {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             events.add(new AskPlayEquipmentEffectEvent(
@@ -180,6 +190,35 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
                 events.add(new AskDodgeEvent(targetPlayer.getId()));
             }
         }
+    }
+
+    /** 大喬放棄流離 → 她照常回應這一輪（防具／閃），之後繼續輪詢後面的目標。 */
+    @Override
+    public List<DomainEvent> continueAfterLiuLiDeclined(Player daQiao) {
+        putParam(PARAM_LIULI_DECIDED_TARGET, daQiao.getId());
+        List<DomainEvent> events = new ArrayList<>();
+        askCurrentTargetDodgeOrEquipmentEffect(events);
+        return events;
+    }
+
+    /**
+     * 流離轉移：新目標在目標列表中「取代大喬的位置」（輪詢順序不變），並立刻詢問新目標。
+     * 已是本殺目標的角色不能被選（{@link #canLiuLiRedirectTo}）。
+     */
+    @Override
+    public List<DomainEvent> redirectTo(Player newTarget) {
+        int index = reactionPlayers.indexOf(currentReactionPlayer.getId());
+        reactionPlayers.set(index, newTarget.getId());
+        currentReactionPlayer = newTarget;
+        List<DomainEvent> events = new ArrayList<>();
+        askCurrentTargetDodgeOrEquipmentEffect(events);
+        return events;
+    }
+
+    /** 多目標殺：已在目標列表（含已結算過的）的角色不能再被流離指定。 */
+    @Override
+    public boolean canLiuLiRedirectTo(Player candidate) {
+        return !reactionPlayers.contains(candidate.getId());
     }
 
     @Override
