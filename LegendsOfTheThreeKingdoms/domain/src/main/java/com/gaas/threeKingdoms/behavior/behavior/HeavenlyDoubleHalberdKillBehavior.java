@@ -102,6 +102,7 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
     /**
      * 當前目標吃下這張殺（不出閃，或鐵騎紅色不能出閃）：扣血後推進輪詢；
      * 進入瀕死時下一位的詢問交由 DyingAskPeachBehavior 的 hook 接回。
+     * 受傷後技能（奸雄／反饋／剛烈／遺計）介入時，推進 defer 到技能結算完（mirror 南蠻／萬箭）。
      */
     private void hitCurrentTarget(List<DomainEvent> events, String playerId, String cardId, String playType) {
         Round currentRound = game.getCurrentRound();
@@ -109,29 +110,78 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
         events.addAll(game.getDamagedEvent(playerId, behaviorPlayer.getId(), cardId, card, playType,
                 originalHp, currentReactionPlayer, currentRound, Optional.of(this)));
 
-        boolean isLast = isLastReactionPlayer(playerId);
+        // 奸雄：推進註冊為 callback；callback 經 MongoDB 遺失時由 resumeJianXiongPolling 接回（#209）
+        if (!game.isTopBehaviorEmpty()
+                && game.peekTopBehavior() instanceof WaitingJianXiongResponseBehavior wjx) {
+            wjx.setOnResolved(() -> advanceAfterDamage(playerId));
+            events.add(game.getGameStatusEvent("扣血但還活著"));
+            return;
+        }
+        // 反饋／剛烈／遺計：待推進的目標記在 param（BehaviorData 持久化），
+        // 由 WaitingSkillEffectBehavior.resolveChoice 的收鏈掃描呼叫 resumeJianXiongPolling
+        if (!game.isTopBehaviorEmpty()
+                && game.peekTopBehavior() instanceof WaitingSkillEffectBehavior wse
+                && "true".equals(wse.getParam(WaitingSkillEffectBehavior.PARAM_RESUME_POLLING))) {
+            putParam(PARAM_DEFERRED_ADVANCE_PLAYER_ID, playerId);
+            events.add(game.getGameStatusEvent("扣血但還活著"));
+            return;
+        }
+        events.addAll(advanceAfterDamage(playerId));
+    }
 
+    /**
+     * 目標 damagedPlayerId 結算完後推進輪詢。依「該目標的下一位」計算（而非 currentReactionPlayer），
+     * 瀕死救回後 defer 的 resume 再呼叫一次也不會跳過目標。
+     */
+    private List<DomainEvent> advanceAfterDamage(String damagedPlayerId) {
+        Round currentRound = game.getCurrentRound();
+        List<DomainEvent> events = new ArrayList<>();
+        Player next = nextTargetAfter(damagedPlayerId);
         if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) {
             // 扣血但沒死：繼續詢問下一個目標
-            if (isLast) {
+            if (next == null) {
                 isOneRound = true;
                 currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
             } else {
                 isOneRound = false;
-                advanceToNextTarget();
+                currentReactionPlayer = next;
                 askCurrentTargetDodgeOrEquipmentEffect(events);
             }
             events.add(game.getGameStatusEvent("扣血但還活著"));
         } else {
             // 進入瀕死流程：下一個目標的詢問交由 DyingAskPeachBehavior 的 hook 處理
             events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
-            if (isLast) {
+            if (next == null) {
                 isOneRound = true;
             } else {
                 // 先把 currentReactionPlayer 推進到下一位，DyingAskPeach 結束後會讀取此位置
-                advanceToNextTarget();
+                currentReactionPlayer = next;
             }
         }
+        return events;
+    }
+
+    /** 目標列表中 playerId 之後第一位存活的目標；沒有則 null。 */
+    private Player nextTargetAfter(String playerId) {
+        int index = reactionPlayers.indexOf(playerId);
+        for (int i = index + 1; i < reactionPlayers.size(); i++) {
+            Player candidate = game.getPlayer(reactionPlayers.get(i));
+            if (!candidate.isAlreadyDeath()) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /** 方天畫戟逐一輪詢目標：受傷後技能詢問時保留本 behavior，結算完再推進（同南蠻／萬箭）。 */
+    @Override
+    public boolean isPollingCaller() {
+        return true;
+    }
+
+    @Override
+    public List<DomainEvent> resumeJianXiongPolling(String damagedPlayerId) {
+        return advanceAfterDamage(damagedPlayerId);
     }
 
     /**
