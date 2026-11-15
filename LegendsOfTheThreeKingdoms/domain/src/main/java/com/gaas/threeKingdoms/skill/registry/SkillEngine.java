@@ -60,6 +60,19 @@ public final class SkillEngine {
         return Optional.empty();
     }
 
+    /**
+     * 問閃（含護駕等 AskDodge 前介入）：有技能攔截 → 回傳攔截事件；否則回傳 {@code AskDodgeEvent(target)}。
+     * host 必須是之後能以 {@link com.gaas.threeKingdoms.behavior.HuJiaCompatibleAskDodgeBehavior#acceptDodgeFromHuJia}
+     * 接手「視為打出閃」的 behavior（殺 / 萬箭 / 方天畫戟）。
+     */
+    public static List<DomainEvent> askDodge(Game game, Player target, Behavior host) {
+        Optional<List<DomainEvent>> intercepted = beforeAskDodge(game, target, host);
+        if (intercepted.isPresent()) {
+            return new java.util.ArrayList<>(intercepted.get());
+        }
+        return new java.util.ArrayList<>(List.of(new com.gaas.threeKingdoms.events.AskDodgeEvent(target.getId())));
+    }
+
     // ===== Batch 1 被動/鎖定技 helper =====
 
     private static List<Skill> skillsOf(Player player) {

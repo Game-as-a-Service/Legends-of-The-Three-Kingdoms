@@ -34,9 +34,10 @@ import static com.gaas.threeKingdoms.handcard.PlayCard.isDodgeCard;
  *
  * Stack 隱性假設（ACCEPT 路徑）：本 behavior 是由 {@link com.gaas.threeKingdoms.skill.wei.HuJiaSkill}
  * 在 {@link com.gaas.threeKingdoms.skill.registry.SkillEngine#beforeAskDodge} 內 push 在原 emit AskDodge 的
- * host 之上，因此 pop self 後 stack 第二格必定是該 {@link HuJiaCompatibleAskDodgeBehavior}。若未來有
- * 其他 behavior 在 HuJia push 之後又插入額外行為（堆出 [host, X, WaitingHuJia]），ACCEPT 路徑 peek
- * 到的 parent 會是 X 而非 host → instanceof 檢查會丟例外（已加守門）。新增此類介入時須一併處理。
+ * host 之上。二次問閃（青龍追殺、雌雄雙股劍結算後、萬箭瀕死接回）時 host 與本 behavior 之間可能夾著
+ * 已完成（isOneRound=true）的 behavior（青龍等待、雙股劍等待、瀕死），pop self 時
+ * {@code removeCompletedBehaviors} 會一併 pop，所以 peek 到的仍是 host。若未來有未完成的 behavior
+ * 夾在中間（堆出 [host, X, WaitingHuJia]），ACCEPT 路徑 peek 到的 parent 會是 X → instanceof 守門丟例外。
  */
 @Getter
 public class WaitingHuJiaResponseBehavior extends Behavior {

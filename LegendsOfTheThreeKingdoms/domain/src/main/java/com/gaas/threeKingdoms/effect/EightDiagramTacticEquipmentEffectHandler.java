@@ -2,6 +2,7 @@ package com.gaas.threeKingdoms.effect;
 
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.HuJiaCompatibleAskDodgeBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.ArrowBarrageBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.HeavenlyDoubleHalberdKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
@@ -18,6 +19,7 @@ import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.StonePiercingAxe
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import com.gaas.threeKingdoms.skill.wei.GuiCaiSkill;
 
 import java.util.ArrayList;
@@ -50,7 +52,9 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
             game.peekTopBehavior().setIsOneRound(false);
             GameStatusEvent gameStatusEvent = game.getGameStatusEvent("跳過八卦陣效果");
             SkipEquipmentEffectEvent skipEquipmentEffectEvent = new SkipEquipmentEffectEvent(playerId, cardId);
-            return new ArrayList<>(List.of(gameStatusEvent, skipEquipmentEffectEvent, new AskDodgeEvent(playerId)));
+            List<DomainEvent> events = new ArrayList<>(List.of(gameStatusEvent, skipEquipmentEffectEvent));
+            events.addAll(askDodge(getPlayer(playerId)));
+            return events;
         }
         Player player = getPlayer(playerId);
 
@@ -81,32 +85,39 @@ public class EightDiagramTacticEquipmentEffectHandler extends EquipmentEffectHan
         boolean isOneRoundBehavior = topBehavior.judgeWhetherRemoveTopBehavior();
         topBehavior.setIsOneRound(isOneRoundBehavior && isEightDiagramTacticEffectSuccess);
         if (isEightDiagramTacticEffectSuccess) {
-            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents);
+            addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(domainEvents, playerId);
             addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(domainEvents, playerId);
             addAskGreenDragonCrescentBladeEventIfAttackerHasGDCB(domainEvents);
             addAskStonePiercingAxeEventIfAttackerHasStonePiercingAxe(domainEvents);
         } else {
-            domainEvents.add(new AskDodgeEvent(playerId));
+            // 八卦陣失敗 → 仍需出閃（護駕等問閃前介入照常套用）
+            domainEvents.addAll(askDodge(player));
         }
         GameStatusEvent gameStatusEvent = game.getGameStatusEvent("發動八卦陣效果");
         domainEvents.add(gameStatusEvent);
         return domainEvents;
     }
 
+    /**
+     * 問閃：stack 頂為可接手代閃的 host（殺 / 萬箭 / 方天畫戟）時走 {@link SkillEngine#askDodge}
+     * （護駕等問閃前介入）；否則照舊直接問閃。
+     */
+    private List<DomainEvent> askDodge(Player target) {
+        Behavior top = game.isTopBehaviorEmpty() ? null : game.peekTopBehavior();
+        if (top instanceof HuJiaCompatibleAskDodgeBehavior) {
+            return SkillEngine.askDodge(game, target, top);
+        }
+        return new ArrayList<>(List.of(new AskDodgeEvent(target.getId())));
+    }
+
     private boolean skipEquipmentEffect(EquipmentPlayType equipmentPlayType) {
         return equipmentPlayType.equals(EquipmentPlayType.SKIP);
     }
 
-    private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events) {
+    private void addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(List<DomainEvent> events, String playerId) {
         Behavior topBehavior = game.peekTopBehavior();
         if (topBehavior instanceof ArrowBarrageBehavior arrowBarrageBehavior) {
-            Player currentReactionPlayer = arrowBarrageBehavior.getCurrentReactionPlayer();
-            currentReactionPlayer =  game.getNextPlayer(currentReactionPlayer);
-            Player arrowBarrageCurrentReactionPlayer = currentReactionPlayer;
-            if (arrowBarrageBehavior.isInReactionPlayers(arrowBarrageCurrentReactionPlayer.getId())) {
-                events.add(new AskDodgeEvent(arrowBarrageCurrentReactionPlayer.getId()));
-            }
-            game.getCurrentRound().setActivePlayer(arrowBarrageCurrentReactionPlayer);
+            events.addAll(arrowBarrageBehavior.advanceAfterEightDiagramDodge(playerId));
         }
     }
 
