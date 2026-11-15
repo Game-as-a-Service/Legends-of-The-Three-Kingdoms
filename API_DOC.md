@@ -336,9 +336,15 @@ POST /api/games/{gameId}/player:playCard
 所以前端從 `BorrowedSwordEvent` 拿不到出借刀者 id 時，送空字串 `""` 即可（習慣寫法，同其他 skip 請求）。
 出殺（`playType: "active"`）則相反 — `targetPlayerId` 必填且必須是 `attackTargetPlayerId`。
 
-**注意**：被借刀者手上完全沒有殺（且不能以丈八蛇矛替代）時，系統不詢問、直接自動交出武器 —
+**注意**：被借刀者手上完全沒有殺（且不能以丈八蛇矛替代、也不能發動激將）時，系統不詢問、直接自動交出武器 —
 前端不會收到 `BorrowedSwordEvent`，直接收 `WeaponUsurpationEvent`。有轉化技（龍膽/武聖）時亦可改用
 `player:useSkillEffect` 以轉化牌當殺回應（見 §轉化技）。
+
+**激將（被借刀者為主公劉備、且有其他存活蜀將）**：即使劉備沒有殺也會收到 `BorrowedSwordEvent`。
+劉備可改送 `player:useSkillEffect`（`skillName: "激將"`, `choice: "ACCEPT"`, `cardIds`/`targetPlayerId` 不需帶，
+目標固定為 `attackTargetPlayerId`）→ 依座位順序以 `AskSkillEffectEvent(激將)` 詢問蜀將（回應同 §23 激將）。
+蜀將 ACCEPT → 該殺視為劉備對攻擊目標出殺（廣播 `PlayCardEvent`，playerId = 劉備），進入正常殺 → 閃流程，劉備保留武器；
+全部拒絕 → 劉備有殺：重新廣播 `BorrowedSwordEvent`，劉備自己出殺或 skip；劉備無殺：直接交出武器（`WeaponUsurpationEvent`）。
 
 ---
 
@@ -778,7 +784,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 遺計（郭嘉） | 受傷後（含南蠻/萬箭） | `ACCEPT`（自摸 2）/ `GIVE`（令他人獲得 1）/ `SKIP` | — | GIVE 必填 |
 | 剛烈（夏侯惇）第一段 | 受傷後（含南蠻/萬箭） | `ACCEPT`（判定）/ `SKIP` | — | — |
 | 剛烈 第二段（問傷害來源） | 判定非紅桃後 | `DISCARD` / `DAMAGE` | DISCARD 必填 2 張手牌 | — |
-| 激將（劉備主公技） | 主公劉備被南蠻/決鬥要求出殺時，依座位順序詢問蜀將 | `ACCEPT` / `DECLINE` | ACCEPT 必填 [殺 id]（蜀將手中） | — |
+| 激將（劉備主公技） | 主公劉備需要出殺時（南蠻/決鬥自動觸發；出牌階段主動出殺、借刀殺人由劉備發動，見 §11 與下方「出牌階段主動技」），依座位順序詢問蜀將（`dataPlayerId` = 劉備） | `ACCEPT` / `DECLINE`（`SKIP` 視同 `DECLINE`） | ACCEPT 必填 [殺 id]（蜀將手中） | — |
 | 流離（大喬） | 大喬成為殺目標、被問閃之前 | `ACCEPT` / `SKIP` | ACCEPT 必填 [要棄的牌 id]（手牌或裝備區的牌皆可） | ACCEPT 必填：轉移目標（距離 1 內、非攻擊者；方天畫戟另排除已有目標；距離以棄牌前計算） |
 | 鬼才（司馬懿） | 任意角色判定牌抽出後、生效前（閃電 / 樂不思蜀 / 八卦陣 / 鐵騎 / 剛烈 / 洛神；dataCardIds = [原判定牌]、dataPlayerId = 判定所屬玩家） | `ACCEPT` / `SKIP` | ACCEPT 必填 [替換用手牌 id] | — |
 | 洛神（甄姬） | 甄姬回合開始、延遲錦囊（閃電/樂不思蜀）判定之前（issue #227） | `ACCEPT`（開始判定：黑色收入手牌自動續判、紅色停，不逐輪詢問）/ `SKIP` | — | — |
@@ -894,6 +900,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 反間 第二段（目標回應） | — | `SPADE`/`HEART`/`DIAMOND`/`CLUB` | — | — |
 | 結姻（孫尚香） | 每回合 1 次 | `ACCEPT` | 2 張手牌 id（傷最重者由系統判定） | — |
 | 仁德（劉備） | 回血每回合 1 次 | `ACCEPT` | 要給的手牌 id（≥1；累積 2 張回 1 體力） | 接收者 |
+| 激將（劉備主公技）主動出殺 | 須為主公、有其他存活蜀將；目標須在**劉備**攻擊範圍內、不能是自己；計入劉備本回合出殺次數（已出過殺且無連弩/咆哮 → 拒絕） | `ACCEPT` | — | 殺的目標 |
 | 觀星（諸葛亮）第一段 | 每回合 1 次 | `ACCEPT` | — | — |
 | 觀星 第二段 | — | `ARRANGE` | 回堆頂的順序（未列出 → 置堆底） | — |
 
@@ -1094,7 +1101,10 @@ POST /api/games/{gameId}/player:useSkillEffect
   帶的是**同欄位**被換掉的那張（換武器 → 舊武器；欄位原本為空時為 `""`）
 - 反間猜錯的傷害來源為周瑜：目標 HP 歸 0 進瀕死求桃，擊殺獎勵／懲罰歸周瑜；存活或被救回則觸發目標的受傷後技能（反饋／剛烈／遺計）
 - 觀星 issue 時機為回合開始；v1 以出牌階段主動發動實作（時機整合 follow-up）
-- 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
+- 激將覆蓋南蠻入侵/決鬥的 AskKill（自動攔截）、出牌階段主動出殺、借刀殺人代出殺（後兩者由劉備以 `useSkillEffect(激將, ACCEPT)` 發動）。
+  主動出殺：發動時即驗證目標（劉備的攻擊範圍、空城）與出殺次數；蜀將 ACCEPT 才計入劉備本回合的殺，全部拒絕則不計次數、回到劉備出牌（可再自己出殺）。
+  代出的殺是蜀將那張實體牌（花色點數照原牌，如仁王盾判黑殺），視為劉備使用
+- 激將（含南蠻/決鬥）詢問蜀將的 `AskSkillEffectEvent.options` 為 `["ACCEPT","SKIP"]`；`SKIP` 與 `DECLINE` 等價
 - 流離適用所有殺：普通殺、轉化殺（武聖/龍膽）、丈八蛇矛、方天畫戟。方天畫戟多目標時，輪到大喬才問流離；轉移目標不能是本殺已有的其他目標，新目標取代大喬在輪詢中的位置（順序不變）。AOE 不是殺，不能流離
 - 流離可棄手牌或裝備區的牌（只有裝備、沒有手牌也會問流離）。棄裝備 → 移出裝備區進棄牌堆，視為失去裝備（觸發梟姬等）。轉移目標的距離以棄牌前計算：棄掉 -1 馬仍可轉給原本靠 -1 馬才在距離 1 內的角色
 - 丈八蛇矛的殺與普通殺走同一流程：流離 → 鐵騎 → 八卦陣／閃（含護駕）

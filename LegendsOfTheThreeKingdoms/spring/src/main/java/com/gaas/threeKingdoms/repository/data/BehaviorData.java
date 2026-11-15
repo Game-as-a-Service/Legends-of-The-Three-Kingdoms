@@ -32,6 +32,8 @@ public class BehaviorData {
     private static final String JIJIANG_LIUBEI_ID = "JIJIANG_LIUBEI_ID";
     private static final String JIJIANG_SHU_ORDER = "JIJIANG_SHU_ORDER";
     private static final String JIJIANG_CURRENT_INDEX = "JIJIANG_CURRENT_INDEX";
+    private static final String JIJIANG_MODE = "JIJIANG_MODE";
+    private static final String JIJIANG_TARGET_PLAYER_ID = "JIJIANG_TARGET_PLAYER_ID";
     private static final String SKILL_EFFECT_NAME = "SKILL_EFFECT_NAME";
     private static final String HUJIA_WEI_ORDER = "HUJIA_WEI_ORDER";
     private static final String HUJIA_CURRENT_INDEX = "HUJIA_CURRENT_INDEX";
@@ -441,8 +443,12 @@ public class BehaviorData {
                         ? ((Number) params.get(JIJIANG_CURRENT_INDEX)).intValue() : 0;
                 String liuBeiId = params != null && params.get(JIJIANG_LIUBEI_ID) != null
                         ? (String) params.get(JIJIANG_LIUBEI_ID) : behaviorPlayerId;
+                WaitingJiJiangResponseBehavior.Mode jjMode = params != null && params.get(JIJIANG_MODE) != null
+                        ? WaitingJiJiangResponseBehavior.Mode.valueOf((String) params.get(JIJIANG_MODE))
+                        : WaitingJiJiangResponseBehavior.Mode.ASK_KILL;
+                String jjTarget = params != null ? (String) params.get(JIJIANG_TARGET_PLAYER_ID) : null;
                 yield new com.gaas.threeKingdoms.behavior.behavior.WaitingJiJiangResponseBehavior(
-                        game, game.getPlayer(liuBeiId), shuOrder, jjIndex);
+                        game, game.getPlayer(liuBeiId), shuOrder, jjIndex, jjMode, jjTarget);
             }
             case "WaitingHuJiaResponseBehavior" -> {
                 @SuppressWarnings("unchecked")
@@ -516,6 +522,10 @@ public class BehaviorData {
             params.put(JIJIANG_LIUBEI_ID, jiJiang.getLiuBeiPlayerId());
             params.put(JIJIANG_SHU_ORDER, jiJiang.getShuOrder());
             params.put(JIJIANG_CURRENT_INDEX, jiJiang.getCurrentIndex());
+            params.put(JIJIANG_MODE, jiJiang.getMode().name());
+            if (jiJiang.getTargetPlayerId() != null) {
+                params.put(JIJIANG_TARGET_PLAYER_ID, jiJiang.getTargetPlayerId());
+            }
         } else if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingHuJiaResponseBehavior huJia) {
             params.put(HUJIA_CAOCAO_ID, huJia.getCaoCaoPlayerId());
             params.put(HUJIA_WEI_ORDER, huJia.getWeiOrder());

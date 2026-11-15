@@ -99,7 +99,9 @@ public class BorrowedSwordBehavior extends Behavior {
 
         // B has no Kill (and 不能用丈八蛇矛當殺) → weapon usurpation
         boolean cannotProduceKill = borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill)
-                && !EighteenSpanViperSpearCard.canUseAsKill(borrowedPlayer);
+                && !EighteenSpanViperSpearCard.canUseAsKill(borrowedPlayer)
+                // 激將：主公劉備無殺仍可請蜀將代出
+                && !com.gaas.threeKingdoms.skill.shu.JiJiangSkill.canActivate(game, borrowedPlayer);
         if (cannotProduceKill) {
             WeaponCard targetWeaponCard = borrowedPlayer.getEquipmentWeaponCard();
             borrowedPlayer.getEquipment().setWeapon(null);
