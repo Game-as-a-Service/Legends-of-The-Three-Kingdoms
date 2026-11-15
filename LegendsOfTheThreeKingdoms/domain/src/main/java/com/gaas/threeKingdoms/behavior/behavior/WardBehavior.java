@@ -10,6 +10,7 @@ import com.gaas.threeKingdoms.handcard.scrollcard.Ward;
 import com.gaas.threeKingdoms.player.Player;
 import com.gaas.threeKingdoms.round.Round;
 import com.gaas.threeKingdoms.round.Stage;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import com.gaas.threeKingdoms.utils.MutableTriple;
 import org.apache.commons.lang3.StringUtils;
 
@@ -77,6 +78,13 @@ public class WardBehavior extends Behavior {
                     playType);
 
             domainEvents.add(playCardEvent);
+
+            // 集智：無懈可擊是非延時錦囊 → 使用當下摸牌（在反制詢問／效果結算之前，
+            // 不改 stage / activePlayer；每張無懈各觸發一次，反制鏈中再出也會再摸）
+            int jiZhiDraw = SkillEngine.drawCountAfterScrollUsed(player);
+            if (jiZhiDraw > 0) {
+                domainEvents.add(game.drawCardToPlayer(player, false, jiZhiDraw));
+            }
 
             currentRound.setStage(Stage.Wait_Accept_Ward_Effect);
             setIsOneRound(false);
