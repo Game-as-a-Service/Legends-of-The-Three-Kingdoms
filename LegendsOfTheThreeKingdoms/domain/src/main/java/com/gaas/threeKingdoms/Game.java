@@ -1224,6 +1224,20 @@ public class Game {
             removeCompletedBehaviors();
             return events;
         }
+        if (behavior instanceof BorrowedSwordBehavior borrowedSword
+                && com.gaas.threeKingdoms.skill.shu.JiJiangSkill.SKILL_NAME.equals(skillName)) {
+            // 激將：劉備被借刀殺人要求出殺 → 由蜀將代出
+            Player self = getPlayer(playerId);
+            com.gaas.threeKingdoms.skill.shu.JiJiangSkill jiJiang =
+                    com.gaas.threeKingdoms.skill.registry.SkillRegistry.of(self.getGeneralCard().getGeneralId()).stream()
+                            .filter(sk -> sk instanceof com.gaas.threeKingdoms.skill.shu.JiJiangSkill)
+                            .map(sk -> (com.gaas.threeKingdoms.skill.shu.JiJiangSkill) sk)
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalStateException(playerId + " has no skill 激將"));
+            List<DomainEvent> events = jiJiang.activateForBorrowedSword(this, self, choice, borrowedSword);
+            removeCompletedBehaviors();
+            return events;
+        }
         if (!(behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior waiting)) {
             // 轉化技 response 分支：被殺問閃時當閃打出 / 南蠻決鬥需殺時當殺打出
             if (findConversionSkill(playerId, skillName) != null) {
@@ -1765,7 +1779,9 @@ public class Game {
             //判斷B有沒有殺（或可用丈八蛇矛當殺）；都沒有 → 玩家A取得玩家B當前的武器
             boolean noKillInHand = borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill);
             boolean canUseViperSpear = EighteenSpanViperSpearCard.canUseAsKill(borrowedPlayer);
-            if (noKillInHand && !canUseViperSpear) {
+            // 激將：主公劉備無殺仍可請蜀將代出 → 照樣問 B
+            boolean canUseJiJiang = com.gaas.threeKingdoms.skill.shu.JiJiangSkill.canActivate(this, borrowedPlayer);
+            if (noKillInHand && !canUseViperSpear && !canUseJiJiang) {
                 List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(borrowedPlayerId, currentPlayerId, "",  PlayType.SKIP.getPlayType());
                 removeCompletedBehaviors();
                 return acceptedEvent;
