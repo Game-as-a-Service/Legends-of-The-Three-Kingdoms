@@ -188,6 +188,24 @@ public class Game {
     public List<DomainEvent> playerTakeTurnStartInJudgement(Player currentRoundPlayer) {
         List<DomainEvent> events = new ArrayList<>();
         if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
+            // 觀星：回合開始（準備階段，延遲錦囊判定之前）先詢問諸葛亮排列牌堆頂
+            events.addAll(com.gaas.threeKingdoms.skill.shu.GuanXingSkill.askAtTurnStart(this, currentRoundPlayer));
+            if (!topBehavior.isEmpty()
+                    && topBehavior.peek() instanceof WaitingSkillEffectBehavior) { // 觀星詢問 → 暫停
+                return events;
+            }
+            events.addAll(continueTurnStartAfterGuanXing(currentRoundPlayer));
+        }
+        return events;
+    }
+
+    /**
+     * 回合開始流程中觀星之後的部分：洛神詢問 → 延遲錦囊判定 → 裸衣 / 突襲 → 摸牌。
+     * 觀星 resolve（ARRANGE / SKIP）後由 {@link com.gaas.threeKingdoms.skill.shu.GuanXingSkill} 接回。
+     */
+    public List<DomainEvent> continueTurnStartAfterGuanXing(Player currentRoundPlayer) {
+        List<DomainEvent> events = new ArrayList<>();
+        if (RoundPhase.Judgement.equals(currentRound.getRoundPhase())) {
             // 洛神：回合開始（延遲錦囊判定之前）先詢問甄姬是否發動（issue #227）
             events.addAll(SkillEngine.luoShenAskActivation(this, currentRoundPlayer));
             if (!topBehavior.isEmpty()
@@ -1212,7 +1230,7 @@ public class Game {
                                                   List<String> cardIds, String targetPlayerId) {
         checkGameIsNotOver();
         if (topBehavior.isEmpty()) {
-            // proactive 分支：出牌階段主動發動（轉化技 / 制衡 / 苦肉 / 仁德 / 觀星...）
+            // proactive 分支：出牌階段主動發動（轉化技 / 制衡 / 苦肉 / 仁德...）
             if (findConversionSkill(playerId, skillName) != null) {
                 return applyConversionActive(playerId, skillName, choice, cardIds, targetPlayerId);
             }

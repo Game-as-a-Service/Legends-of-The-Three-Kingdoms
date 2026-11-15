@@ -208,7 +208,8 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
 
                 if (currentRound.getCurrentCard() instanceof Lightning && currentRound.getRoundPhase().equals(RoundPhase.Judgement)) {
                     // 閃電讓玩家死亡 → 被桃救回 → 回到該玩家判定階段繼續流程
-                    events.addAll(game.playerTakeTurnStartInJudgement(currentRound.getCurrentRoundPlayer()));
+                    // 觀星已於回合開始結算過，不可重問 → 從觀星之後接回
+                    events.addAll(game.continueTurnStartAfterGuanXing(currentRound.getCurrentRoundPlayer()));
                     // Lightning 路徑下也可能有 JianXiong replay；交由 replay 接續
                     replayOnDamagedAfterRevival(dyingPlayer, events);
                 } else {

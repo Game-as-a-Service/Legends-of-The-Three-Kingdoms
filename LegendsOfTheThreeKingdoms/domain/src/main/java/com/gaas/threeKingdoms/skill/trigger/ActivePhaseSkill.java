@@ -8,7 +8,7 @@ import com.gaas.threeKingdoms.skill.Skill;
 import java.util.List;
 
 /**
- * 出牌階段主動發動的技能（制衡 / 突襲 / 苦肉 / 反間 / 結姻 / 仁德 / 觀星）。
+ * 出牌階段主動發動的技能（制衡 / 苦肉 / 反間 / 結姻 / 仁德）。觀星改為回合開始詢問，見 GuanXingSkill。
  *
  * 玩家在自己出牌階段（topBehavior 為空時）直接呼叫 `player:useSkillEffect`，
  * Game.playerUseSkillEffect 以 proactive 分支 dispatch 到本 interface。
