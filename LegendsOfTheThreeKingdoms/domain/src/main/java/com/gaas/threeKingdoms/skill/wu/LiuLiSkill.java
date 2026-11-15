@@ -4,14 +4,12 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.NormalActiveKillBehavior;
 import com.gaas.threeKingdoms.behavior.behavior.WaitingSkillEffectBehavior;
-import com.gaas.threeKingdoms.events.AskDodgeEvent;
 import com.gaas.threeKingdoms.events.AskSkillEffectEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.SkillEffectEvent;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
-import com.gaas.threeKingdoms.skill.trigger.BeforeAskDodgeSkill;
 import com.gaas.threeKingdoms.skill.trigger.ChoiceResolvableSkill;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ import java.util.Optional;
  * v1 範圍：普通殺（NormalActiveKillBehavior 精確類別）；方天畫戟/AOE 轉移 follow-up；
  * 棄牌限手牌（裝備 follow-up）。
  */
-public class LiuLiSkill implements BeforeAskDodgeSkill, ChoiceResolvableSkill {
+public class LiuLiSkill implements ChoiceResolvableSkill {
 
     public static final String GENERAL_ID = General.大喬.getGeneralId();
     public static final String SKILL_NAME = "流離";
@@ -47,8 +45,16 @@ public class LiuLiSkill implements BeforeAskDodgeSkill, ChoiceResolvableSkill {
         return SKILL_NAME;
     }
 
-    @Override
-    public Optional<List<DomainEvent>> beforeAskDodge(Game game, Player damaged, Behavior parentBehavior) {
+    /**
+     * 成為殺的目標時（由 NormalActiveKillBehavior 在鐵騎、雙股劍、防具之前呼叫）詢問大喬是否發動流離。
+     * 條件：目標是大喬、這是普通殺（v1）、手上有牌可棄、攻擊範圍內有攻擊者以外的其他角色。
+     */
+    public static Optional<List<DomainEvent>> askIfApplicable(Game game, Player damaged, NormalActiveKillBehavior parentBehavior) {
+        boolean hasLiuLi = com.gaas.threeKingdoms.skill.registry.SkillRegistry
+                .of(damaged.getGeneralCard().getGeneralId()).stream().anyMatch(sk -> sk instanceof LiuLiSkill);
+        if (!hasLiuLi) {
+            return Optional.empty();
+        }
         if (parentBehavior == null || parentBehavior.getClass() != NormalActiveKillBehavior.class) {
             return Optional.empty(); // v1：只攔普通殺
         }
@@ -61,7 +67,6 @@ public class LiuLiSkill implements BeforeAskDodgeSkill, ChoiceResolvableSkill {
         if (!hasRedirectTarget) {
             return Optional.empty();
         }
-
         WaitingSkillEffectBehavior waiting = new WaitingSkillEffectBehavior(game, damaged, SKILL_NAME);
         waiting.putParam(PARAM_ATTACKER_ID, attacker.getId());
         game.updateTopBehavior(waiting);
@@ -76,9 +81,12 @@ public class LiuLiSkill implements BeforeAskDodgeSkill, ChoiceResolvableSkill {
         String attackerId = (String) waiting.getParam(PARAM_ATTACKER_ID);
 
         if ("SKIP".equals(choice)) {
-            // fallback：大喬自己面對這張殺
-            return List.of(new SkillEffectEvent(SKILL_NAME, daQiao.getId(), false, List.of(), attackerId),
-                    new AskDodgeEvent(daQiao.getId()));
+            // 大喬自己承受這張殺：接回殺的流程（鐵騎 → 雌雄雙股劍 → 防具／閃），不是直接問閃
+            NormalActiveKillBehavior kill = popWaitingAndFindKill(game, waiting);
+            List<DomainEvent> events = new ArrayList<>();
+            events.add(new SkillEffectEvent(SKILL_NAME, daQiao.getId(), false, List.of(), attackerId));
+            events.addAll(kill.continueAfterLiuLiDeclined(daQiao));
+            return events;
         }
         if (!"ACCEPT".equals(choice)) {
             throw new IllegalArgumentException("Invalid LiuLi choice: " + choice);
@@ -95,12 +103,8 @@ public class LiuLiSkill implements BeforeAskDodgeSkill, ChoiceResolvableSkill {
         HandCard discarded = daQiao.playCard(cardIds.get(0));
         game.getGraveyard().add(discarded);
 
-        // waiting 已由 Game 設 isOneRound=true 後 pop；redirect 在 parent 上進行
-        Behavior parent = game.peekTopBehaviorSecondElement()
-                .orElseThrow(() -> new IllegalStateException("LiuLi parent behavior missing"));
-        if (!(parent instanceof NormalActiveKillBehavior killBehavior)) {
-            throw new IllegalStateException("LiuLi parent is not NormalActiveKillBehavior");
-        }
+        // 先 pop 本 waiting，redirect 在底下的殺上進行（鬼才 resume 等後續流程預期殺在 top）
+        NormalActiveKillBehavior killBehavior = popWaitingAndFindKill(game, waiting);
 
         List<DomainEvent> events = new ArrayList<>();
         events.add(new SkillEffectEvent(SKILL_NAME, daQiao.getId(), true, cardIds, targetPlayerId));
@@ -110,8 +114,14 @@ public class LiuLiSkill implements BeforeAskDodgeSkill, ChoiceResolvableSkill {
         return events;
     }
 
+    private static NormalActiveKillBehavior popWaitingAndFindKill(Game game, WaitingSkillEffectBehavior waiting) {
+        waiting.setIsOneRound(true);
+        game.removeCompletedBehaviors();
+        return NormalActiveKillBehavior.findIn(game);
+    }
+
     /** 距離 1 以內（順手牽羊公式）、非攻擊者、非大喬本人、存活。 */
-    private boolean isValidRedirectTarget(Game game, Player daQiao, Player attacker, Player candidate) {
+    private static boolean isValidRedirectTarget(Game game, Player daQiao, Player attacker, Player candidate) {
         if (candidate.equals(daQiao) || candidate.equals(attacker) || candidate.isAlreadyDeath()) {
             return false;
         }

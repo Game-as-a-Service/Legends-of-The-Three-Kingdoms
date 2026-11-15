@@ -169,7 +169,8 @@ public class BehaviorData {
                 );
                 // 鐵騎結果 / 流離轉移標記：雌雄雙股劍跨請求結算、鬼才暫停後 resume 都要讀（#209 同型）
                 for (String key : List.of(NormalActiveKillBehavior.PARAM_TIEQI_SUCCESS,
-                        NormalActiveKillBehavior.PARAM_LIULI_REDIRECTED)) {
+                        NormalActiveKillBehavior.PARAM_LIULI_REDIRECTED,
+                        NormalActiveKillBehavior.PARAM_LIULI_DECIDED_TARGET)) {
                     if (params != null && params.get(key) != null) {
                         kill.putParam(key, params.get(key));
                     }

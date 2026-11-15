@@ -39,6 +39,8 @@ public class NormalActiveKillBehavior extends Behavior
 
     /** 鐵騎判定結果（"true"/"false"）：雌雄雙股劍結算完後依此決定直接結算或問閃。BehaviorData 持久化。 */
     public static final String PARAM_TIEQI_SUCCESS = "TIEQI_SUCCESS";
+    /** 已對流離作出決定的目標 id（放棄流離後不再詢問同一人）。BehaviorData 持久化。 */
+    public static final String PARAM_LIULI_DECIDED_TARGET = "LIULI_DECIDED_TARGET";
     /** 本殺目標是否由流離轉移而來（"true"）。BehaviorData 持久化。 */
     public static final String PARAM_LIULI_REDIRECTED = "LIULI_REDIRECTED";
 
@@ -72,6 +74,16 @@ public class NormalActiveKillBehavior extends Behavior
      * 2. 鐵騎未生效（或沒有鐵騎）→ 照常問防具（八卦陣）或閃（{@link #emitArmorOrDodge}）
      */
     private void emitTieQiThenArmorOrDodge(List<DomainEvent> events, Player targetPlayer) {
+        // 流離（目標側，成為殺的目標時）最先：FAQ 大喬先決定是否發動流離，馬超再決定是否發動鐵騎；
+        // 也早於八卦陣（原本放在問閃前，目標有八卦陣時根本不會問流離）
+        if (!targetPlayer.getId().equals(getParam(PARAM_LIULI_DECIDED_TARGET))) {
+            Optional<List<DomainEvent>> liuLi =
+                    com.gaas.threeKingdoms.skill.wu.LiuLiSkill.askIfApplicable(game, targetPlayer, this);
+            if (liuLi.isPresent()) {
+                events.addAll(liuLi.get());
+                return;
+            }
+        }
         if (SkillEngine.hasTieQi(behaviorPlayer)) {
             HandCard judgement = game.drawCardForCardEffect(1).get(0);
             Optional<List<DomainEvent>> paused = com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.tryPause(
@@ -113,6 +125,15 @@ public class NormalActiveKillBehavior extends Behavior
             return;
         }
         emitArmorOrDodge(events, targetPlayer);
+    }
+
+    /** 大喬放棄流離 → 由她自己承受這張殺，接續鐵騎 → 雌雄雙股劍 → 防具／閃。 */
+    public List<DomainEvent> continueAfterLiuLiDeclined(Player daQiao) {
+        putParam(PARAM_LIULI_DECIDED_TARGET, daQiao.getId());
+        game.getCurrentRound().setActivePlayer(daQiao);
+        List<DomainEvent> events = new ArrayList<>();
+        emitTieQiThenArmorOrDodge(events, daQiao);
+        return events;
     }
 
     /**
