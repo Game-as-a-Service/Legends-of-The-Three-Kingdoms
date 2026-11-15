@@ -935,6 +935,36 @@ public class Game {
         return events;
     }
 
+    /**
+     * 武將技造成的傷害（反間等）：有傷害來源、沒有造成傷害的牌。
+     * <ul>
+     *   <li>目標存活 → 觸發受傷後技能（反饋 / 剛烈 / 遺計…；奸雄因沒有牌不觸發）</li>
+     *   <li>HP ≤ 0 → 進入瀕死求桃，並記下傷害來源（擊殺獎勵／懲罰用）</li>
+     * </ul>
+     * 呼叫前，caller 要先移除自己已完成的等待 behavior：受傷後技能只在 top 為空或相容 behavior 時觸發。
+     * 已知限制：被救回後不會補觸發受傷後技能（DyingAskPeachBehavior 的 replay 需要來源牌）。
+     */
+    public List<DomainEvent> dealSkillDamage(Player source, Player target, int amount) {
+        int originalHp = target.getHP();
+        target.damage(amount);
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(createPlayerDamagedEvent(originalHp, target));
+        if (target.isHPGreaterThanZero()) {
+            events.addAll(SkillEngine.onDamaged(this,
+                    new com.gaas.threeKingdoms.skill.context.DamageContext(target, source, null, originalHp - target.getHP())));
+            return events;
+        }
+        this.enterPhase(new GeneralDying(this));
+        currentRound.setDyingPlayer(target);
+        currentRound.setActivePlayer(target);
+        updateTopBehavior(new DyingAskPeachBehavior(this, target, getPlayers().stream().map(Player::getId).toList(),
+                target, null, PlayType.SYSTEM_INTERNAL.getPlayType(), null,
+                null, source == null ? null : source.getId(), null));
+        events.add(createPlayerDyingEvent(target));
+        events.add(createAskPeachEvent(target, target));
+        return events;
+    }
+
     private PlayerDyingEvent createPlayerDyingEvent(Player player) {
         return new PlayerDyingEvent(player.getId());
     }
