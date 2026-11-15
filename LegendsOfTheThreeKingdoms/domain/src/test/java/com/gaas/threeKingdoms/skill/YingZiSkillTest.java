@@ -75,4 +75,38 @@ public class YingZiSkillTest extends PassiveSkillTestBase {
 
         assertEquals(3, game.getCurrentRoundPlayerDiscardCount());
     }
+
+    @DisplayName("周瑜摸牌階段 → 廣播 SkillEffectEvent(英姿)，排在摸牌事件之前")
+    @Test
+    public void zhouYuDrawPhaseAnnouncesYingZi() {
+        Game game = createGame(General.周瑜, General.劉備, General.劉備, General.劉備);
+        Player a = game.getPlayer("player-a");
+
+        java.util.List<com.gaas.threeKingdoms.events.DomainEvent> events = game.proceedDrawPhase(a, false);
+
+        int skillIdx = -1, drawIdx = -1;
+        for (int i = 0; i < events.size(); i++) {
+            if (events.get(i) instanceof com.gaas.threeKingdoms.events.SkillEffectEvent e && "英姿".equals(e.getSkillName())) {
+                skillIdx = i;
+                assertEquals("player-a", e.getPlayerId());
+                assertTrue(e.isAccepted());
+                assertEquals("英姿：周瑜 摸牌階段多摸 1 張牌（共 3 張）", e.getMessage());
+            }
+            if (events.get(i) instanceof com.gaas.threeKingdoms.events.DrawCardEvent) drawIdx = i;
+        }
+        assertTrue(skillIdx >= 0, "要有英姿的 SkillEffectEvent");
+        assertTrue(skillIdx < drawIdx, "英姿事件排在摸牌事件之前");
+        assertEquals(3, a.getHandSize());
+    }
+
+    @DisplayName("非周瑜摸牌階段 → 不廣播英姿")
+    @Test
+    public void nonZhouYuDoesNotAnnounceYingZi() {
+        Game game = createGame(General.劉備, General.劉備, General.劉備, General.劉備);
+
+        java.util.List<com.gaas.threeKingdoms.events.DomainEvent> events =
+                game.proceedDrawPhase(game.getPlayer("player-a"), false);
+
+        assertTrue(events.stream().noneMatch(e -> e instanceof com.gaas.threeKingdoms.events.SkillEffectEvent));
+    }
 }
