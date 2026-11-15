@@ -121,6 +121,9 @@ public class FanKuiSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             if (tookEquipment) {
                 // 梟姬：被取走的是裝備區的牌 → 失去者（傷害來源）摸牌；取手牌不算失去裝備
                 events.addAll(SkillEngine.afterLoseEquipment(game, attacker, 1));
+            } else {
+                // 連營：被取走最後一張手牌 → 失去者（傷害來源）摸牌
+                events.addAll(SkillEngine.afterLoseHandCard(game, attacker));
             }
             events.add(game.getGameStatusEvent(simaYi.getId() + " 發動反饋"));
         } else if ("SKIP".equals(choice)) {
