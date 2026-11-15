@@ -53,14 +53,8 @@ public class WaitingYinYangSwordsResponseBehavior extends Behavior {
             throw new IllegalArgumentException("Invalid YinYangSwords choice: " + choice);
         }
 
-        // Now proceed: check if target has armor with special effect (EightDiagramTactic)
-        Behavior killBehavior = game.peekTopBehaviorSecondElement().orElse(null);
-        if (killBehavior != null && NormalActiveKillBehavior.isEquipmentHasSpecialEffect(targetPlayer)) {
-            game.getCurrentRound().setStage(com.gaas.threeKingdoms.round.Stage.Wait_Equipment_Effect);
-            events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
-        } else {
-            events.add(new AskDodgeEvent(respondingPlayerId));
-        }
+        // 雙股劍結算完 → 交回底下的殺：鐵騎已生效則直接結算，否則問防具／閃
+        events.addAll(NormalActiveKillBehavior.findIn(game).continueAfterYinYangSwords(targetPlayer));
 
         events.add(game.getGameStatusEvent("雌雄雙股劍效果結束"));
         isOneRound = true;

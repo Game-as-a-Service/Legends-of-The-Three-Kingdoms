@@ -61,16 +61,8 @@ public class WaitingYinYangSwordsActivationBehavior extends Behavior {
         return events;
     }
 
+    /** 雙股劍結算完 → 交回底下的殺（依鐵騎結果直接結算或問防具／閃）。 */
     private void addAskDodgeOrEquipmentEffect(List<DomainEvent> events, Player targetPlayer) {
-        game.getCurrentRound().setActivePlayer(targetPlayer);
-        if (NormalActiveKillBehavior.isEquipmentHasSpecialEffect(targetPlayer)) {
-            game.getCurrentRound().setStage(Stage.Wait_Equipment_Effect);
-            events.add(new AskPlayEquipmentEffectEvent(
-                    targetPlayer.getId(),
-                    targetPlayer.getEquipment().getArmor(),
-                    List.of(targetPlayer.getId())));
-        } else {
-            events.add(new AskDodgeEvent(targetPlayer.getId()));
-        }
+        events.addAll(NormalActiveKillBehavior.findIn(game).continueAfterYinYangSwords(targetPlayer));
     }
 }
