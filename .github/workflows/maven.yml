@@ -26,6 +26,9 @@ jobs:
         with:
           java-version: "17"
           distribution: "corretto"
+          # 快取 ~/.m2/repository（key 依所有 pom.xml 計算）：避免每次都從 Maven Central 重抓依賴，
+          # 曾因此被回 429 Too Many Requests 導致 CI 失敗
+          cache: maven
 
       # List Pom.xml
       - name: List LegendsOfTheThreeKingdoms Files
