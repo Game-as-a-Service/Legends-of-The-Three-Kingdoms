@@ -732,16 +732,16 @@ A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
 | 張飛 SHU003 | 咆哮 | 使用殺無次數限制 | 同回合第二張殺不再 400 |
 | 周瑜 WU005 | 英姿 | 摸牌階段 +1（共 3）；手牌上限不變，仍等於當前 HP（身份標準版） | DrawCardEvent 數量 |
 | 陸遜 WU007 | 謙遜 | 不能成為順手牽羊/樂不思蜀目標 | 順手牽羊或樂不思蜀（含國色轉化）指定陸遜 → 400；南蠻/萬箭/閃電對陸遜照常 |
-| 陸遜 WU007 | 連營 | 失去最後一張手牌 → 摸 1 | 出/棄最後一張牌後緊接 DrawCardEvent |
+| 陸遜 WU007 | 連營 | 失去最後一張手牌 → 摸 1 | 出/棄最後一張牌、或被拆/被拿走最後一張手牌後緊接 DrawCardEvent |
 | 諸葛亮 SHU004 | 空城 | 手牌 0 時不能被殺/決鬥指定 | 指定空手牌諸葛亮 → 400 |
-| 黃月英 SHU007 | 集智 | 使用錦囊 → 摸 1 | 出錦囊後緊接 DrawCardEvent |
+| 黃月英 SHU007 | 集智 | 使用錦囊 → 摸 1（含無懈可擊） | 出錦囊後緊接 DrawCardEvent；playWardCard（ACTIVE）回應中 PlayCardEvent 後緊接 DrawCardEvent |
 | 黃月英 SHU007 | 奇才 | 使用錦囊無距離限制 | 超距順手牽羊不再 400 |
 | 呂蒙 WU003 | 克己 | 本回合未使用過殺 → 略過棄牌階段 | finishAction 後 NotifyDiscardEvent 棄牌數為 0，直接進下一回合 |
 
 **v1 範圍備註**：
 - 謙遜依官方標準版實作（順手牽羊 + 樂不思蜀）；issue #192 原文的南蠻/萬箭/閃電已移除，調整時改 `QianXunSkill.isImmune` 即可
-- 連營 v1 覆蓋「自己出牌 / response 出牌 / 棄牌階段」失去最後手牌；被拆/被順走最後一張為 follow-up
-- 集智 v1 自動摸（不問）；無懈可擊（playWardCard 路徑）暫不觸發集智，為 follow-up
+- 連營覆蓋「自己出牌 / response 出牌 / 棄牌階段」以及「被他人移走」失去最後手牌：過河拆橋在 `DismantleEvent` 後、反饋在 `SkillEffectEvent(反饋)` 後、突襲在 `SkillEffectEvent(突襲)` 後緊接陸遜的 `DrawCardEvent`。順手牽羊因謙遜無法指定陸遜。尚未覆蓋：剛烈棄兩張、雌雄雙股劍棄牌、貫石斧／丈八蛇矛棄牌、方天畫戟的殺、無懈可擊、轉化技出牌等其他自己失去手牌的路徑
+- 集智 v1 自動摸（不問）；無懈可擊（playWardCard ACTIVE，含反制鏈中的每一張）也觸發：每張摸 1，於無懈詢問／結算之前摸，不改變 stage 與 activePlayer；SKIP 不摸
 - 克己 v1 自動觸發（保留手牌嚴格有利，不詢問）；「使用過殺」含轉化殺/方天畫戟，不受諸葛連弩/咆哮影響
 
 ---
@@ -1064,7 +1064,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 反饋 / 剛烈 / 遺計在 AOE polling（南蠻 / 萬箭）中可觸發（PR #221 / issue #165 / issue #250：
   受傷 → 詢問 → 詢問鏈收斂後 resume 輪詢，回到原本的 AOE 詢問輪；剛烈兩段式與鬼才巢狀介入亦支援）。
   遺計在輪詢中 `GIVE` 給尚未被詢問的角色也合法（該角色可能因此取得可回應的殺 / 閃）；
-  三者瀕死皆不觸發
+  瀕死求桃期間不詢問；被救回後才補問（`DyingAskPeachBehavior` revival 分支 replay `SkillEngine.onDamaged`），見下一點
 - AOE polling 中瀕死被救回：先補觸發受傷後技能（反饋／剛烈／遺計），技能詢問結算完才繼續問下一位（不會同時發兩個詢問）
 - AOE polling 中被扣死的玩家（含**最後一位**被詢問者）不會再收到 AskKill/AskDodge；
   瀕死結算結束後 `activePlayer` 回到回合玩家。死亡玩家的任何 action 一律 400
@@ -1085,7 +1085,7 @@ POST /api/games/{gameId}/player:useSkillEffect
   v1 自動觸發不詢問（官方為「可以」，摸牌恆有利故不問）
 - 主動換裝被蓋掉的舊裝備會進棄牌堆；`PlayEquipmentCardEvent.deprecatedCardId`
   帶的是**同欄位**被換掉的那張（換武器 → 舊武器；欄位原本為空時為 `""`）
-- 反間目標受傷不進瀕死流程（follow-up）
+- 反間猜錯的傷害來源為周瑜：目標 HP 歸 0 進瀕死求桃，擊殺獎勵／懲罰歸周瑜；存活或被救回則觸發目標的受傷後技能（反饋／剛烈／遺計）
 - 觀星 issue 時機為回合開始；v1 以出牌階段主動發動實作（時機整合 follow-up）
 - 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
 - 流離適用所有殺：普通殺、轉化殺（武聖/龍膽）、丈八蛇矛、方天畫戟。方天畫戟多目標時，輪到大喬才問流離；轉移目標不能是本殺已有的其他目標，新目標取代大喬在輪詢中的位置（順序不變）。AOE 不是殺，不能流離
