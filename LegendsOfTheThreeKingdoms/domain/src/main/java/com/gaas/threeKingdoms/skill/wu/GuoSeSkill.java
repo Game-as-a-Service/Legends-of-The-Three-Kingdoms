@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.skill.trigger.CardConversionSkill;
 
 /**
  * 大喬 (WU006) 國色 — 可將一張方塊牌當樂不思蜀使用（issue #190）。
+ * 來源可為方塊手牌或裝備區的方塊牌。
  */
 public class GuoSeSkill implements CardConversionSkill {
 
@@ -26,5 +27,10 @@ public class GuoSeSkill implements CardConversionSkill {
     @Override
     public boolean canConvert(HandCard source, String as) {
         return AS_CONTENTMENT.equals(as) && source.getSuit() == Suit.DIAMOND;
+    }
+
+    @Override
+    public boolean allowsEquipmentSource() {
+        return true;
     }
 }

@@ -901,14 +901,20 @@ POST /api/games/{gameId}/player:useSkillEffect
 
 | 技能 | choice | cardIds | targetPlayerId | 使用情境 |
 |---|---|---|---|---|
-| 武聖（關羽） | `KILL` | [紅色手牌 id] | 主動殺必填 | 主動出殺（topBehavior 空）或回應南蠻/決鬥（KILL response） |
+| 武聖（關羽） | `KILL` | [紅色手牌或裝備區紅色牌 id] | 主動殺必填 | 主動出殺（topBehavior 空）或回應南蠻/決鬥（KILL response） |
 | 龍膽（趙雲） | `KILL` / `DODGE` | [閃 id] / [殺 id] | 主動殺必填 | 殺↔閃雙向；回應問閃用 DODGE、回應需殺用 KILL；問閃時亦可直接以 `player:playCard` 打出殺，後端自動視為發動龍膽（issue #229） |
 | 傾國（甄姬） | `DODGE` | [黑色手牌 id] | — | 被問閃時（被殺/萬箭/方天畫戟）；亦可直接以 `player:playCard` 打出黑牌，後端自動視為發動傾國（issue #229） |
-| 奇襲（甘寧） | `DISMANTLE` | [黑色手牌 id] | 必填 | 主動；後續走 useDismantleEffect |
-| 國色（大喬） | `CONTENTMENT` | [方塊手牌 id] | 必填 | 主動；牌以樂不思蜀身份進判定區 |
+| 奇襲（甘寧） | `DISMANTLE` | [黑色手牌或裝備區黑色牌 id] | 必填 | 主動；後續走 useDismantleEffect |
+| 國色（大喬） | `CONTENTMENT` | [方塊手牌或裝備區方塊牌 id] | 必填 | 主動；牌以樂不思蜀身份進判定區 |
 
 轉化殺計入出殺次數限制（咆哮/諸葛連弩豁免照常）；轉化牌的目標免疫限制照常套用
 （轉化殺 → 空城；國色轉化的樂不思蜀 → 謙遜）。
+
+**裝備區來源**（武聖 / 奇襲 / 國色；傾國限手牌、龍膽只能轉殺/閃故不適用）：`cardIds` 可帶自己裝備區的牌 id。
+該牌先離開裝備區，再驗證目標 — 攻擊距離、諸葛連弩出殺次數都以**失去該裝備後**計算
+（例：把麒麟弓本身當殺，攻擊距離回到 1；已出過殺時把諸葛連弩本身當殺 → 400）；驗證失敗則裝備原樣留著。
+成功時該牌進棄牌堆（國色則以樂不思蜀身份進目標判定區）並觸發失去裝備 hook（梟姬），
+梟姬的事件排在轉化技 `SkillEffectEvent` 之後、`PlayCardEvent` 之前。
 
 **問閃時的出牌驗證（issue #229）**：被問閃時以 `player:playCard` 打出非閃牌 —
 可轉化（傾國黑牌 / 龍膽殺）→ 自動發動轉化技視為出閃；不可轉化 → 400 明確錯誤（先前會被默默吞掉導致卡住）。
@@ -1001,7 +1007,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 欄位 | 說明 |
 |---|---|
 | `choice` | 固定 `CONTENTMENT`（＝樂不思蜀，程式中的卡牌英文名 `Contentment`；轉化技的 choice 都是「要轉化成的牌」：`KILL` 殺、`DODGE` 閃、`DISMANTLE` 過河拆橋） |
-| `cardIds` | **剛好 1 張**方塊**手牌**（裝備區的方塊牌不行），例：`BD2080`（方塊2 閃） |
+| `cardIds` | **剛好 1 張**方塊牌（手牌或裝備區），例：`BD2080`（方塊2 閃）、`EDK104`（裝備中的紫騂） |
 | `targetPlayerId` | 必填，不可是自己 |
 
 **結算**：
@@ -1018,7 +1024,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 |---|---|---|
 | 不是大喬的行動時機 | `IllegalStateException` | `ActivePlayer is not <playerId> , now ActivePlayer is <id>` |
 | `cardIds` 不是剛好 1 張 | `IllegalArgumentException` | `Conversion requires exactly 1 source card` |
-| 牌不在手上（含裝備區的牌） | `IllegalArgumentException` | `Source card not in hand: <cardId>` |
+| 牌不在手牌也不在裝備區 | `IllegalArgumentException` | `Source card not in hand or equipment: <cardId>` |
 | 不是方塊 | `IllegalArgumentException` | `國色 不能把 <cardId> 當 CONTENTMENT` |
 | 沒帶 `targetPlayerId` | `IllegalArgumentException` | `Conversion active play requires targetPlayerId` |
 | 目標是自己 | `IllegalArgumentException` | `不可以對自己出樂不思蜀` |
@@ -1077,7 +1083,7 @@ POST /api/games/{gameId}/player:useSkillEffect
   主動換裝（武器 / 防具 / ±1 馬）、被反饋取走裝備（取手牌不算）、
   被麒麟弓棄馬（只有一匹直接移除 / 兩匹由攻擊方選一匹）、
   被借刀殺人奪武器（B 選擇不出殺 / B 根本沒有殺兩條）、
-  貫石斧代價棄到裝備區的牌（棄兩張裝備 → 摸 4 張）、制衡棄裝備、
+  貫石斧代價棄到裝備區的牌（棄兩張裝備 → 摸 4 張）、制衡棄裝備、武聖／奇襲／國色以裝備區的牌轉化、
   主公殺死忠臣的罰則棄光裝備（一次失去 N 張 → 摸 2N）。
   麒麟弓與貫石斧的摸牌事件都排在**傷害事件之前**（官方順序是先失去裝備再造成傷害）。
   制衡那條在正常牌局不可達（制衡＝孫權、梟姬＝孫尚香，同一玩家不會兼有），
@@ -1097,7 +1103,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 鬼才覆蓋全部判定路徑：閃電 / 樂不思蜀（皆含 Ward 路徑）/ 八卦陣 / 鐵騎 / 剛烈 / 洛神；
   洛神多張判定牌逐張詢問；同一次判定僅詢問一次（官方 FAQ）
 - 洛神為發動詢問一次（ACCEPT 後黑收自動續判）；判定中每張判定牌仍逐張過鬼才暫停點
-- 武聖/奇襲 v1 限手牌（裝備區紅/黑牌轉化 follow-up）
+- 武聖/奇襲/國色可用裝備區的牌轉化（失去裝備後才算距離、觸發梟姬）；傾國限黑色手牌
 - 轉化殺（武聖/龍膽）對曹操造成傷害 → 奸雄獲得被轉化的真實來源牌（`AskJianXiongEffectEvent.sourceCardIds` 為來源牌 id）；致命傷被救回後補問奸雄亦同
 - 轉化殺的傷害結算以 VirtualKill 進行；事件中 cardId 為來源真實牌
 
