@@ -7,7 +7,7 @@ import com.gaas.threeKingdoms.skill.trigger.CardConversionSkill;
 
 /**
  * 關羽 (SHU002) 武聖 — 可將一張紅色牌當殺使用或打出（issue #174）。
- * v1：紅色「手牌」（紅心/方塊）；裝備區紅牌轉化為 follow-up。
+ * 來源可為紅色手牌或裝備區的紅色牌（紅心/方塊）。
  */
 public class WuShengSkill implements CardConversionSkill {
 
@@ -28,5 +28,10 @@ public class WuShengSkill implements CardConversionSkill {
     public boolean canConvert(HandCard source, String as) {
         return AS_KILL.equals(as)
                 && (source.getSuit() == Suit.HEART || source.getSuit() == Suit.DIAMOND);
+    }
+
+    @Override
+    public boolean allowsEquipmentSource() {
+        return true;
     }
 }

@@ -8,6 +8,11 @@ import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.basiccard.Dodge;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
 import com.gaas.threeKingdoms.handcard.basiccard.Peach;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.RedRabbitHorse;
+import com.gaas.threeKingdoms.handcard.equipmentcard.armorcard.EightDiagramTactic;
+import com.gaas.threeKingdoms.handcard.equipmentcard.mountscard.VioletStallion;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.QilinBowCard;
+import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.RepeatingCrossbowCard;
 import com.gaas.threeKingdoms.handcard.scrollcard.ArrowBarrage;
 import com.gaas.threeKingdoms.handcard.scrollcard.BarbarianInvasion;
 import com.gaas.threeKingdoms.player.Player;
@@ -378,5 +383,130 @@ public class Batch4ConversionSkillsTest extends PassiveSkillTestBase {
         game.playerUseSkillEffect("player-a", "國色", "CONTENTMENT", List.of(BD2080.getCardId()), "player-b");
         assertThrows(IllegalArgumentException.class, () ->
                 game.playerUseSkillEffect("player-a", "國色", "CONTENTMENT", List.of(BDK091.getCardId()), "player-b"));
+    }
+
+    // ===== 裝備區來源（標準版：武聖「紅色牌」、奇襲「黑色牌」、國色「方塊牌」含裝備區） =====
+
+    @DisplayName("武聖：裝備區的紅色武器（麒麟弓）當殺 → 離開裝備區進棄牌堆、目標被問閃，skip 扣 1 血")
+    @Test
+    public void wuShengEquippedRedWeaponAsActiveKill() {
+        Game game = createGame(General.關羽, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setWeapon(new QilinBowCard(EH5031)); // 紅心
+
+        List<DomainEvent> events = game.playerUseSkillEffect(
+                "player-a", "武聖", "KILL", List.of(EH5031.getCardId()), "player-b");
+
+        assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent
+                && ((AskDodgeEvent) e).getPlayerId().equals("player-b")));
+        assertNull(a.getEquipmentWeaponCard(), "麒麟弓離開裝備區");
+        assertEquals(0, a.getHandSize(), "來源牌不會留在手牌");
+        assertTrue(game.getGraveyard().contains(EH5031.getCardId()));
+
+        game.playerPlayCard("player-b", "", "player-a", "skip");
+        assertEquals(3, game.getPlayer("player-b").getHP());
+        assertTrue(game.getTopBehavior().isEmpty());
+    }
+
+    @DisplayName("武聖：把武器本身當殺 → 攻擊距離以失去武器後計算；超出距離時拋例外且武器留在裝備區")
+    @Test
+    public void wuShengEquippedWeaponAsKillUsesRangeWithoutWeapon() {
+        Game game = createGame(General.關羽, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setWeapon(new QilinBowCard(EH5031)); // 攻擊距離 5；拿掉後只剩 1
+
+        // player-c 距離 2：有麒麟弓時在範圍內，但麒麟弓本身被轉化掉後就不在了
+        assertThrows(IllegalStateException.class, () -> game.playerUseSkillEffect(
+                "player-a", "武聖", "KILL", List.of(EH5031.getCardId()), "player-c"));
+
+        assertNotNull(a.getEquipmentWeaponCard(), "驗證失敗要把武器裝回去");
+        assertEquals(EH5031.getCardId(), a.getEquipmentWeaponCard().getId());
+        assertFalse(game.getGraveyard().contains(EH5031.getCardId()));
+        assertEquals(0, a.getHandSize());
+        assertFalse(game.getCurrentRound().isShowKill(), "失敗不算出過殺");
+    }
+
+    @DisplayName("武聖：已出過殺時把諸葛連弩本身當殺 → 連弩已離開，不能再出殺；連弩留在裝備區")
+    @Test
+    public void wuShengEquippedCrossbowAsSecondKillRejected() {
+        Game game = createGame(General.關羽, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        a.getEquipment().setWeapon(new RepeatingCrossbowCard(EDA092)); // 方塊
+        a.getHand().addCardToHand(new Peach(BH3029));
+
+        game.playerUseSkillEffect("player-a", "武聖", "KILL", List.of(BH3029.getCardId()), "player-b");
+        game.playerPlayCard("player-b", "", "player-a", "skip");
+
+        assertThrows(IllegalStateException.class, () -> game.playerUseSkillEffect(
+                "player-a", "武聖", "KILL", List.of(EDA092.getCardId()), "player-b"));
+        assertEquals(EDA092.getCardId(), a.getEquipmentWeaponCard().getId());
+    }
+
+    @DisplayName("武聖：南蠻入侵需殺時把裝備區的紅色 -1 馬（赤兔）當殺打出 → 不扣血、馬進棄牌堆")
+    @Test
+    public void wuShengEquippedRedHorseAsKillResponseToBarbarianInvasion() {
+        Game game = createGame(General.甘寧, General.關羽, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new BarbarianInvasion(SS7007));
+        b.getEquipment().setMinusOne(new RedRabbitHorse(EH5044)); // 紅心
+
+        game.playerPlayCard("player-a", SS7007.getCardId(), "player-a", "active");
+        game.playerUseSkillEffect("player-b", "武聖", "KILL", List.of(EH5044.getCardId()), null);
+
+        assertEquals(4, b.getHP(), "武聖當殺回應南蠻 → 不扣血");
+        assertNull(b.getEquipmentMinusOneMountsCard(), "赤兔離開裝備區");
+        assertTrue(game.getGraveyard().contains(EH5044.getCardId()));
+    }
+
+    @DisplayName("奇襲：裝備區的黑色武器（諸葛連弩）當過河拆橋 → 拆目標裝備、連弩進棄牌堆")
+    @Test
+    public void qiXiEquippedBlackWeaponAsDismantle() {
+        Game game = createGame(General.甘寧, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getEquipment().setWeapon(new RepeatingCrossbowCard(ECA066)); // 梅花
+        b.getEquipment().setWeapon(new QilinBowCard(EH5031));
+
+        game.playerUseSkillEffect("player-a", "奇襲", "DISMANTLE", List.of(ECA066.getCardId()), "player-b");
+        game.useDismantleEffect("player-a", "player-b", EH5031.getCardId(), null);
+
+        assertFalse(b.getEquipment().hasAnyEquipment(), "目標裝備被拆");
+        assertNull(a.getEquipmentWeaponCard(), "連弩離開裝備區");
+        assertEquals(0, a.getHandSize());
+        assertTrue(game.getGraveyard().contains(ECA066.getCardId()));
+        assertTrue(game.getGraveyard().contains(EH5031.getCardId()));
+    }
+
+    @DisplayName("國色：裝備區的方塊 -1 馬（紫騂）當樂不思蜀 → 離開裝備區、進目標判定區（不進棄牌堆）")
+    @Test
+    public void guoSeEquippedDiamondHorseAsContentment() {
+        Game game = createGame(General.大喬, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getEquipment().setMinusOne(new VioletStallion(EDK104)); // 方塊
+
+        game.playerUseSkillEffect("player-a", "國色", "CONTENTMENT", List.of(EDK104.getCardId()), "player-b");
+
+        assertNull(a.getEquipmentMinusOneMountsCard(), "紫騂離開裝備區");
+        assertTrue(b.getDelayScrollCardIds().contains(EDK104.getCardId()), "以樂不思蜀身份進判定區");
+        assertEquals(0, a.getHandSize());
+        assertFalse(game.getGraveyard().contains(EDK104.getCardId()), "在判定區時不可同時在棄牌堆");
+    }
+
+    @DisplayName("傾國限黑色手牌：裝備區的黑色牌不能當閃（行為不變）")
+    @Test
+    public void qingGuoRejectsEquippedBlackCard() {
+        Game game = createGame(General.甘寧, General.甄姬, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getHand().addCardToHand(new Kill(BS8008));
+        b.getEquipment().setArmor(new EightDiagramTactic(ES2015)); // 黑桃 八卦陣
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
+
+        assertThrows(IllegalArgumentException.class, () ->
+                game.playerUseSkillEffect("player-b", "傾國", "DODGE", List.of(ES2015.getCardId()), null));
+        assertEquals(ES2015.getCardId(), b.getEquipment().getArmor().getId(), "八卦陣仍在裝備區");
     }
 }

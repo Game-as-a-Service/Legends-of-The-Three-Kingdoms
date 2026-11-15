@@ -7,6 +7,7 @@ import com.gaas.threeKingdoms.events.SkillEffectEvent;
 import com.gaas.threeKingdoms.generalcard.General;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.player.Player;
+import com.gaas.threeKingdoms.skill.registry.SkillEngine;
 import com.gaas.threeKingdoms.skill.trigger.ChoiceResolvableSkill;
 
 import java.util.ArrayList;
@@ -97,6 +98,10 @@ public class TuXiSkill implements ChoiceResolvableSkill {
         List<DomainEvent> events = new ArrayList<>();
         events.add(new SkillEffectEvent(SKILL_NAME, zhangLiao.getId(), true, takenCardIds,
                 String.join(",", targetIds), message));
+        // 連營：被突襲拿走最後一張手牌 → 摸牌（依張遼選的目標順序結算）
+        for (Player target : targets) {
+            events.addAll(SkillEngine.afterLoseHandCard(game, target));
+        }
         game.getCurrentRound().setActivePlayer(zhangLiao);
         events.addAll(game.skipDrawPhase(zhangLiao, contentmentSuccess, message));
         return events;

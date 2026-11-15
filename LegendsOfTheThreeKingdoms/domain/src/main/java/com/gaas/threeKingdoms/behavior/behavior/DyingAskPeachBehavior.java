@@ -38,6 +38,7 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
      * <p>
      * 若致命傷源自丈八蛇矛（VirtualKill），改用 pendingViperSpearDiscardCardIds
      * 持有兩張棄牌 id，replay 時 JianXiongSkill 透過 DyingAskPeachBehavior 取得。
+     * 轉化殺（武聖 / 龍膽的 VirtualKill）同樣用此欄位帶被轉化的真實來源牌 id。
      */
     private final String pendingSourceCardId;
     private final String pendingAttackerPlayerId;
@@ -434,15 +435,15 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
 
         HandCard sourceCard = null;
         if (pendingViperSpearDiscardCardIds != null && !pendingViperSpearDiscardCardIds.isEmpty()) {
-            // 丈八蛇矛致命攻擊：sourceCard 是 VirtualKill；JianXiongSkill 會透過
-            // DyingAskPeachBehavior 取得 pending 的兩張棄牌 id
-            sourceCard = new VirtualKill();
+            // 丈八蛇矛 / 轉化殺致命攻擊：sourceCard 是 VirtualKill；JianXiongSkill 會透過
+            // DyingAskPeachBehavior 取得 pending 的棄牌 / 真實來源牌 id
+            sourceCard = new VirtualKill(pendingViperSpearDiscardCardIds);
         } else if (pendingSourceCardId != null) {
             // PlayCard.findById 找不到時返 null（非 throw），用 null check 處理
             sourceCard = PlayCard.findById(pendingSourceCardId);
         }
         if (sourceCard == null) {
-            // 沒有來源牌：技能傷害（反間 / 剛烈 → Game#dealSkillDamage）或轉化殺（武聖 / 龍膽的 VirtualKill）。
+            // 沒有來源牌：技能傷害（反間 / 剛烈 → Game#dealSkillDamage）。
             // 有傷害來源時仍補觸發受傷後技能（反饋 / 剛烈 / 遺計；奸雄因沒有牌不觸發）。
             // 不補的情況：
             //   - 沒有傷害來源（苦肉失去體力）或來源是自己（閃電）
