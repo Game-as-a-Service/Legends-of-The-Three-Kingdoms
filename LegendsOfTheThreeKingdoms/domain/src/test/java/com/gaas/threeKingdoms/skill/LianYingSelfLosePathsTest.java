@@ -173,6 +173,31 @@ public class LianYingSelfLosePathsTest extends PassiveSkillTestBase {
         assertEquals(0, drawEventsFor(events, "player-a"));
     }
 
+    @DisplayName("陸遜貫石斧只棄兩張裝備（手牌本來就是 0）→ 沒失去手牌，連營不觸發")
+    @Test
+    public void stonePiercingAxeEquipmentOnlyDoesNotTrigger() {
+        Game game = createGame(General.陸遜, General.甘寧, General.甘寧, General.甘寧);
+        Player a = game.getPlayer("player-a");
+        Player b = game.getPlayer("player-b");
+        a.getEquipment().setWeapon(new StonePiercingAxeCard(ED5083));
+        a.getEquipment().setMinusOne(new RedRabbitHorse(EH5044));
+        a.getHand().addCardToHand(List.of(new Kill(BS8008), new Peach(BH3029)));
+        b.getHand().addCardToHand(new Dodge(BH2028));
+
+        game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", PlayType.ACTIVE.getPlayType());
+        game.playerPlayCard("player-b", BH2028.getCardId(), "player-a", PlayType.ACTIVE.getPlayType());
+        // 讓陸遜發動貫石斧時手牌為 0，只能棄裝備區的兩張
+        a.playCard(BH3029.getCardId());
+        assertEquals(0, a.getHandSize());
+        List<DomainEvent> events = game.playerUseStonePiercingAxeEffect("player-a",
+                AskStonePiercingAxeEffectEvent.Choice.DISCARD_TWO,
+                List.of(ED5083.getCardId(), EH5044.getCardId()));
+
+        assertEquals(3, b.getHP(), "強制命中");
+        assertEquals(0, a.getHandSize(), "沒失去手牌 → 連營不摸");
+        assertEquals(0, drawEventsFor(events, "player-a"));
+    }
+
     // ===== 丈八蛇矛 =====
 
     @DisplayName("陸遜主動用丈八蛇矛把最後兩張手牌當殺 → 連營摸一張，仍問目標出閃")
