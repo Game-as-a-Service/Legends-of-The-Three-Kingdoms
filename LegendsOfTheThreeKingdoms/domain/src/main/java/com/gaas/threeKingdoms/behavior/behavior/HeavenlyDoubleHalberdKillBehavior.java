@@ -70,35 +70,8 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
         Round currentRound = game.getCurrentRound();
 
         if (isSkip(playType)) {
-            int originalHp = currentReactionPlayer.getHP();
-            List<DomainEvent> events = new ArrayList<>(
-                    game.getDamagedEvent(playerId, behaviorPlayer.getId(), cardId, card, playType,
-                            originalHp, currentReactionPlayer, currentRound, Optional.of(this)));
-
-            boolean isLast = isLastReactionPlayer(playerId);
-
-            if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) {
-                // 扣血但沒死：繼續詢問下一個目標
-                if (isLast) {
-                    isOneRound = true;
-                    currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
-                } else {
-                    isOneRound = false;
-                    advanceToNextTarget();
-                    askCurrentTargetDodgeOrEquipmentEffect(events);
-                }
-                events.add(game.getGameStatusEvent("扣血但還活著"));
-            } else {
-                // 進入瀕死流程：下一個目標的詢問交由 DyingAskPeachBehavior 的 hook 處理
-                events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
-                if (isLast) {
-                    isOneRound = true;
-                } else {
-                    // 先把 currentReactionPlayer 推進到下一位，DyingAskPeach 結束後會讀取此位置
-                    advanceToNextTarget();
-                }
-            }
-
+            List<DomainEvent> events = new ArrayList<>();
+            hitCurrentTarget(events, playerId, cardId, playType);
             return events;
         } else if (isDodgeCard(cardId)) {
             // 消耗閃到墓地
@@ -123,6 +96,41 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
             // 不再默默回空 events 造成前端卡住（issue #229）
             throw new IllegalArgumentException(
                     "被詢問出閃時只能出閃、skip 或發動轉化技（傾國/龍膽）：" + cardId);
+        }
+    }
+
+    /**
+     * 當前目標吃下這張殺（不出閃，或鐵騎紅色不能出閃）：扣血後推進輪詢；
+     * 進入瀕死時下一位的詢問交由 DyingAskPeachBehavior 的 hook 接回。
+     */
+    private void hitCurrentTarget(List<DomainEvent> events, String playerId, String cardId, String playType) {
+        Round currentRound = game.getCurrentRound();
+        int originalHp = currentReactionPlayer.getHP();
+        events.addAll(game.getDamagedEvent(playerId, behaviorPlayer.getId(), cardId, card, playType,
+                originalHp, currentReactionPlayer, currentRound, Optional.of(this)));
+
+        boolean isLast = isLastReactionPlayer(playerId);
+
+        if (!game.getGamePhase().getPhaseName().equals("GeneralDying")) {
+            // 扣血但沒死：繼續詢問下一個目標
+            if (isLast) {
+                isOneRound = true;
+                currentRound.setActivePlayer(currentRound.getCurrentRoundPlayer());
+            } else {
+                isOneRound = false;
+                advanceToNextTarget();
+                askCurrentTargetDodgeOrEquipmentEffect(events);
+            }
+            events.add(game.getGameStatusEvent("扣血但還活著"));
+        } else {
+            // 進入瀕死流程：下一個目標的詢問交由 DyingAskPeachBehavior 的 hook 處理
+            events.add(game.getGameStatusEvent("扣血已瀕臨死亡"));
+            if (isLast) {
+                isOneRound = true;
+            } else {
+                // 先把 currentReactionPlayer 推進到下一位，DyingAskPeach 結束後會讀取此位置
+                advanceToNextTarget();
+            }
         }
     }
 
@@ -174,6 +182,42 @@ public class HeavenlyDoubleHalberdKillBehavior extends NormalActiveKillBehavior 
             }
         }
 
+        // 鐵騎（攻擊者側，流離之後、八卦陣之前）：每個目標各判一次；判定牌過鬼才暫停點，
+        // 司馬懿介入時暫停，resume 走 resumeTieQiJudgement（GuiCaiSkill 以 NormalActiveKillBehavior 型別呼叫）
+        if (SkillEngine.hasTieQi(behaviorPlayer)) {
+            HandCard judgement = game.drawCardForCardEffect(1).get(0);
+            Optional<List<DomainEvent>> paused = com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.tryPause(
+                    game, behaviorPlayer, judgement,
+                    com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.TYPE_TIE_QI, "鐵騎",
+                    java.util.Map.of(com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.PARAM_TIEQI_TARGET_ID,
+                            targetPlayer.getId()));
+            if (paused.isPresent()) {
+                events.addAll(paused.get());
+                return;
+            }
+            events.addAll(resumeTieQiJudgement(judgement, targetPlayer));
+            return;
+        }
+        askArmorOrDodge(events, targetPlayer);
+    }
+
+    /** 鐵騎判定結果：紅色 → 當前目標不能出閃也不能發動八卦陣，直接扣血並推進；否則照常問防具／閃。 */
+    @Override
+    public List<DomainEvent> resumeTieQiJudgement(HandCard judgement, Player targetPlayer) {
+        List<DomainEvent> events = new ArrayList<>();
+        boolean[] tieQiSuccess = new boolean[1];
+        events.addAll(SkillEngine.tieQiResolvedEvents(game, behaviorPlayer, targetPlayer, judgement, tieQiSuccess));
+        if (tieQiSuccess[0]) {
+            hitCurrentTarget(events, targetPlayer.getId(), cardId, PlayType.SYSTEM_INTERNAL.getPlayType());
+        } else {
+            game.getCurrentRound().setActivePlayer(targetPlayer);
+            askArmorOrDodge(events, targetPlayer);
+        }
+        return events;
+    }
+
+    private void askArmorOrDodge(List<DomainEvent> events, Player targetPlayer) {
+        Round currentRound = game.getCurrentRound();
         if (isEquipmentHasSpecialEffect(targetPlayer)) {
             currentRound.setStage(Stage.Wait_Equipment_Effect);
             events.add(new AskPlayEquipmentEffectEvent(

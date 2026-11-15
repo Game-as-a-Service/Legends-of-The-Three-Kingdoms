@@ -118,9 +118,6 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                     if (lastDamagedPlayer != null) {
                         events.add(game.drawCardToPlayer(lastDamagedPlayer, false, 3));
                     }
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 } else if (isMINISTER(dyingPlayer)) {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     events.add(settlementEvent);
@@ -147,22 +144,23 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                         events.addAll(SkillEngine.afterLoseEquipment(
                                 game, killer, discardEquipment.size()));
                     }
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 } else {
                     SettlementEvent settlementEvent = new SettlementEvent(dyingPlayer);
                     events.add(settlementEvent);
-                    addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(events);
-                    addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(events);
                 }
 
                 //  需要移除的 Behavior，isOneRound 要設為 true
                 JudgementIfRemoveBehavior();
+                // 先回到 Normal 再接回輪詢：接回時可能立刻再造成傷害（方天畫戟＋鐵騎紅色），
+                // 新的瀕死要能自己進入 GeneralDying，不能被這裡事後蓋回 Normal
                 game.enterPhase(new Normal(game));
-                // 如果 events 包含 askKillEvent 與 askDodgeEvent，則不需要再設定 activePlayer
-                if (events.stream().noneMatch(e -> e instanceof AskKillEvent) && events.stream().noneMatch(e -> e instanceof AskDodgeEvent)) {
+                List<DomainEvent> resumeEvents = new ArrayList<>();
+                addAskKillEventIfCurrentBehaviorIsBarbarianInvasionBehavior(resumeEvents);
+                addAskDodgeEventIfCurrentBehaviorIsArrowBarrageBehavior(resumeEvents);
+                addAskDodgeEventIfCurrentBehaviorIsHeavenlyDoubleHalberdKillBehavior(resumeEvents);
+                events.addAll(resumeEvents);
+                // 輪詢有接回（問殺／問閃，或流離／護駕／鐵騎等其他詢問）→ activePlayer 已由接回的流程設定，不要蓋掉
+                if (resumeEvents.isEmpty()) {
                     if (currentRound.getCurrentRoundPlayer().equals(dyingPlayer)) {
                         List<DomainEvent> newRoundEvent = game.goNextRound(dyingPlayer);
                         events.addAll(newRoundEvent);
@@ -317,6 +315,9 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                 // 最後一個目標已處理完（isOneRound=true），不需要再問下一位
                 if (halberdBehavior.isOneRound()) return;
                 // halberd 在扣血進入瀕死時已將 currentReactionPlayer 推進到下一位
+                // 本瀕死已結束：先移出 stack，讓接回時新疊上的 behavior（流離／鬼才詢問、鐵騎直接扣血造成的新瀕死）
+                // 直接疊在 halberd 上 —— 否則新瀕死的 peekTopBehaviorSecondElement 會看到這個舊瀕死而接不回輪詢
+                game.getTopBehavior().remove(DyingAskPeachBehavior.this);
                 List<DomainEvent> dodgeOrEquipmentEvents = new ArrayList<>();
                 halberdBehavior.askCurrentTargetDodgeOrEquipmentEffect(dodgeOrEquipmentEvents);
                 events.addAll(dodgeOrEquipmentEvents);
