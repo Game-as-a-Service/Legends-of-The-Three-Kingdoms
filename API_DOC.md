@@ -102,6 +102,7 @@ POST /api/games/{gameId}/player:otherChooseGeneral
 - **不帶武將 id** — 身分局非主公暗選，武將由開局的 `InitialEndEvent` 揭曉（主公另有 `MonarchGeneralChosenEvent` 公開亮將）
 - 最後一位選完會先收到 `allSelected: true` 的進度，接著才是 `InitialEndEvent`
 - 前端判斷：`data.pendingPlayerIds.length === 0` = 全員已選；收到 `InitialEndEvent` = 進入牌局
+- 主公回合開始若需先詢問技能（觀星 / 洛神 / 裸衣 / 突襲），開局的回合推播 `events` 只有 `RoundStartEvent` + `AskSkillEffectEvent`（尚無 `JudgementEvent` / `DrawCardEvent`），回應後才判定、摸牌
 - **重整/重連補狀態**：選將階段呼叫 `GET /api/games/{gameId}?playerId=xxx`，推播的 `findGameEvent` 會在 `data.selectionStatus` 帶同一份進度物件（非選將階段為 `null`）
 
 ### 連線狀態廣播 PlayerConnectionStatusEvent（issue #239）
