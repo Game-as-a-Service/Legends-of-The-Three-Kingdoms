@@ -316,25 +316,25 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         assertEquals(4, b.getHP());
     }
 
-    @DisplayName("鬼才 ACCEPT 以紅心替換 → 鐵騎不生效，照常問閃")
+    @DisplayName("鬼才 ACCEPT 以黑色替換紅色判定 → 鐵騎不生效，照常問閃")
     @Test
     public void guiCaiReplaceMakesTieQiFail() {
         Game game = createGame(General.馬超, General.司馬懿, General.孫權, General.孫權);
         Player a = game.getPlayer("player-a");
         Player b = game.getPlayer("player-b");
         a.getHand().addCardToHand(new Kill(BS8008));
-        b.getHand().addCardToHand(List.of(new Peach(BH3029), new Dodge(BH2028)));
+        b.getHand().addCardToHand(List.of(new Kill(BS9009), new Dodge(BH2028)));
 
-        game.getDeck().add(List.of(new Kill(BS9009)));
+        game.getDeck().add(List.of(new Peach(BH4030)));   // 原判定：紅心 → 會生效
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
 
         List<DomainEvent> events = game.playerUseSkillEffect(
-                "player-b", "鬼才", "ACCEPT", List.of(BH3029.getCardId()), null);
+                "player-b", "鬼才", "ACCEPT", List.of(BS9009.getCardId()), null);
 
         assertTrue(events.stream().anyMatch(e -> e instanceof SkillEffectEvent
                         && ((SkillEffectEvent) e).getSkillName().equals("鐵騎")
                         && !((SkillEffectEvent) e).isAccepted()),
-                "替換成紅心 → 鐵騎不生效");
+                "替換成黑桃 → 鐵騎不生效");
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent
                 && ((AskDodgeEvent) e).getPlayerId().equals("player-b")), "照常問閃");
         assertEquals(4, b.getHP());
@@ -345,7 +345,7 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         assertTrue(game.isTopBehaviorEmpty());
     }
 
-    @DisplayName("鬼才 SKIP → 原黑桃判定鐵騎生效，目標不能閃直接扣血")
+    @DisplayName("鬼才 SKIP → 原紅色判定鐵騎生效，目標不能閃直接扣血")
     @Test
     public void guiCaiSkipTieQiSuccessDamagesTarget() {
         Game game = createGame(General.馬超, General.司馬懿, General.孫權, General.孫權);
@@ -354,7 +354,7 @@ public class GuiCaiSkillTest extends PassiveSkillTestBase {
         a.getHand().addCardToHand(new Kill(BS8008));
         b.getHand().addCardToHand(List.of(new Peach(BH3029), new Dodge(BH2028)));
 
-        game.getDeck().add(List.of(new Kill(BS9009)));
+        game.getDeck().add(List.of(new Peach(BH4030)));   // 判定：紅心 → 生效
         game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
 
         List<DomainEvent> events = game.playerUseSkillEffect("player-b", "鬼才", "SKIP", null, null);

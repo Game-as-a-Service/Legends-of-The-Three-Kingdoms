@@ -403,15 +403,17 @@ public final class SkillEngine {
     public static List<DomainEvent> tieQiResolvedEvents(Game game, Player attacker, Player target,
                                                         com.gaas.threeKingdoms.handcard.HandCard judgement,
                                                         boolean[] successOut) {
-        boolean success = judgement.getSuit() != com.gaas.threeKingdoms.handcard.Suit.HEART;
+        // 標準版鐵騎：判定結果為紅色（紅心／方塊）→ 該角色不能使用閃響應此殺
+        boolean success = judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.HEART
+                || judgement.getSuit() == com.gaas.threeKingdoms.handcard.Suit.DIAMOND;
         successOut[0] = success;
         List<DomainEvent> events = new ArrayList<>();
         // 帶判定結果訊息（使用者回報：只顯示「鐵騎：xxx 發動」看不到判定牌與結果）
         String judgementDesc = judgement.judgementDescription();
         String message = success
-                ? String.format("鐵騎判定：%s → 生效，%s 不能出閃",
+                ? String.format("鐵騎判定：%s → 紅色，生效，%s 不能出閃",
                         judgementDesc, target.getGeneralName())
-                : String.format("鐵騎判定：%s → 紅心，未生效，照常問閃", judgementDesc);
+                : String.format("鐵騎判定：%s → 黑色，未生效，照常問閃", judgementDesc);
         events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
                 com.gaas.threeKingdoms.skill.shu.TieQiSkill.SKILL_NAME,
                 attacker.getId(), success, List.of(judgement.getId()), target.getId(), message));
