@@ -589,6 +589,8 @@ POST /api/games/{gameId}/player:useHeavenlyDoubleHalberdKill
 A (裝備方天畫戟) 呼叫本 API → 棄最後一張殺到墓地
   → 系統發出 HeavenlyDoubleHalberdKillTriggerEvent（含所有目標 id）
   → 依序對每個目標：
+    - 目標是大喬 → 先問流離（AskSkillEffectEvent）
+    - 攻擊者是馬超 → 判鐵騎（SkillEffectEvent）；紅色 → 直接扣血，跳過下面的問閃
     - 目標收 AskDodgeEvent（若有防具先 AskPlayEquipmentEffectEvent）
     - 目標出閃 → 該目標免傷，繼續下一目標
     - 目標不出閃 → 扣血（HP=0 進入瀕死流程；救回後繼續下一目標）
@@ -1087,6 +1089,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 激將 v1 覆蓋南蠻入侵/決鬥的 AskKill；主動出殺與借刀殺人代出為 follow-up
 - 流離適用所有殺：普通殺、轉化殺（武聖/龍膽）、丈八蛇矛、方天畫戟。方天畫戟多目標時，輪到大喬才問流離；轉移目標不能是本殺已有的其他目標，新目標取代大喬在輪詢中的位置（順序不變）。AOE 不是殺，不能流離；棄牌限手牌
 - 丈八蛇矛的殺與普通殺走同一流程：流離 → 鐵騎 → 八卦陣／閃（含護駕）
+- 方天畫戟的殺也判鐵騎：輪到每個目標時各判一次（流離之後、八卦陣之前）；紅色 → 該目標直接扣血（不問閃、不問八卦陣），接著輪到下一位。判定牌同樣可被鬼才替換
 - 救援採官方標準版語意（桃效果 +1）；issue 原文描述的「可出桃給其」即既有瀕死求桃流程
 - 鬼才覆蓋全部判定路徑：閃電 / 樂不思蜀（皆含 Ward 路徑）/ 八卦陣 / 鐵騎 / 剛烈 / 洛神；
   洛神多張判定牌逐張詢問；同一次判定僅詢問一次（官方 FAQ）
