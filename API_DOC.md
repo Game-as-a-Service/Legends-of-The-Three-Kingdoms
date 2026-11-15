@@ -1062,6 +1062,7 @@ POST /api/games/{gameId}/player:useSkillEffect
   受傷 → 詢問 → 詢問鏈收斂後 resume 輪詢，回到原本的 AOE 詢問輪；剛烈兩段式與鬼才巢狀介入亦支援）。
   遺計在輪詢中 `GIVE` 給尚未被詢問的角色也合法（該角色可能因此取得可回應的殺 / 閃）；
   三者瀕死皆不觸發
+- AOE polling 中瀕死被救回：先補觸發受傷後技能（反饋／剛烈／遺計），技能詢問結算完才繼續問下一位（不會同時發兩個詢問）
 - AOE polling 中被扣死的玩家（含**最後一位**被詢問者）不會再收到 AskKill/AskDodge；
   瀕死結算結束後 `activePlayer` 回到回合玩家。死亡玩家的任何 action 一律 400
   （`IllegalStateException: ... is already dead and cannot act`）
