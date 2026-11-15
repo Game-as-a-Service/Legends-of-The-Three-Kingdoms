@@ -163,15 +163,23 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
         return events;
     }
 
-    /** 來源受剛烈 1 點傷害的事件。 */
-    private static List<DomainEvent> sourceDamageEvents(Game game, Player source, String xiaHouId) {
+    /**
+     * 來源受剛烈 1 點傷害：走 Game#dealSkillDamage（傷害來源 = 夏侯惇）—
+     * HP 歸 0 進瀕死求桃、存活則觸發來源的受傷後技能、擊殺獎勵／懲罰歸夏侯惇。
+     * 呼叫前先移除已完成的剛烈等待：受傷後技能只在 top 為空或相容 behavior 時觸發。
+     */
+    private static List<DomainEvent> sourceDamageEvents(Game game, WaitingSkillEffectBehavior waiting,
+                                                        Player source, String xiaHouId) {
         int originalHp = source.getHP();
-        source.damage(1);
+        waiting.setIsOneRound(true);
+        game.removeCompletedBehaviors();
+        List<DomainEvent> damageEvents = game.dealSkillDamage(game.getPlayer(xiaHouId), source, 1);
         String damageMessage = source.getId() + " 受剛烈 1 點傷害（" + originalHp + "→" + source.getHP() + "）";
-        // v1：剛烈反傷不進瀕死流程整合（HP 仍會歸零，但 dying ask 流程為 follow-up）
-        return List.of(
-                new SkillEffectEvent(SKILL_NAME, source.getId(), true, List.of(), xiaHouId, damageMessage),
-                game.getGameStatusEvent(damageMessage));
+        List<DomainEvent> events = new ArrayList<>();
+        events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, List.of(), xiaHouId, damageMessage));
+        events.add(game.getGameStatusEvent(damageMessage));
+        events.addAll(damageEvents);
+        return events;
     }
 
     private List<DomainEvent> resolveSourceChoice(Game game, WaitingSkillEffectBehavior waiting,
@@ -198,7 +206,7 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
                     source.getId() + " 棄兩張手牌回應剛烈"));
             events.add(game.getGameStatusEvent(source.getId() + " 棄兩張手牌回應剛烈"));
         } else {
-            events.addAll(sourceDamageEvents(game, source, xiaHouId));
+            events.addAll(sourceDamageEvents(game, waiting, source, xiaHouId));
         }
         return events;
     }

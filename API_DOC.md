@@ -1065,7 +1065,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 - AOE polling 中被扣死的玩家（含**最後一位**被詢問者）不會再收到 AskKill/AskDodge；
   瀕死結算結束後 `activePlayer` 回到回合玩家。死亡玩家的任何 action 一律 400
   （`IllegalStateException: ... is already dead and cannot act`）
-- 剛烈 DAMAGE 反傷不進瀕死流程整合（follow-up）
+- 剛烈 DAMAGE 反傷為夏侯惇造成的傷害：來源 HP 歸 0 進瀕死求桃、存活則觸發來源的受傷後技能（如司馬懿反饋）、擊殺獎勵／懲罰歸夏侯惇
 - 鐵騎 v1 自動判定（不問）；與雌雄雙股劍同時觸發時，雙股劍先結算再判定鐵騎（官方為武將技先於武器技，follow-up）
 - 梟姬已覆蓋**所有**失去裝備的路徑：被過河拆橋拆裝備、被順手牽羊偷裝備、
   主動換裝（武器 / 防具 / ±1 馬）、被反饋取走裝備（取手牌不算）、
