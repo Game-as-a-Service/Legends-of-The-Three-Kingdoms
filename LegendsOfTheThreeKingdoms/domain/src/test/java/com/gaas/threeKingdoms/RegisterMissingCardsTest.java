@@ -13,6 +13,7 @@ import com.gaas.threeKingdoms.rolecard.Role;
 import com.gaas.threeKingdoms.rolecard.RoleCard;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 import static com.gaas.threeKingdoms.handcard.PlayCard.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,7 +66,7 @@ public class RegisterMissingCardsTest {
         assertTrue(EHK052.isMountsCard());
     }
 
-    @DisplayName("ESK026 爪黃飛電 (FerghanaHorse) findById returns MinusMountsCard and isMountsCard")
+    @DisplayName("ESK026 大宛 (FerghanaHorse) findById returns MinusMountsCard and isMountsCard")
     @Test
     public void testESK026FerghanaHorseFactory() {
         HandCard card = PlayCard.findById("ESK026");
@@ -135,5 +136,24 @@ public class RegisterMissingCardsTest {
         assertEquals(2, playerA.judgeAttackDistance());
         // Without: attack distance = 0(weapon) + 0(minusOne) + 1(base) = 1
         assertEquals(1, playerB.judgeAttackDistance());
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("ESK026 牌名是大宛（-1 馬），不是爪黃飛電；EHK052 才是爪黃飛電（+1 馬）")
+    public void ferghanaHorseHasCorrectName() {
+        assertEquals("大宛", ESK026.getCardName());
+        assertEquals("大宛", PlayCard.findById("ESK026").getName());
+        assertEquals("爪黃飛電", EHK052.getCardName());
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("isMountsCard：6 匹馬都是，其他裝備與基本牌不是")
+    public void isMountsCardCoversAllHorsesByType() {
+        for (PlayCard horse : List.of(EH5044, ES5018, EC5070, EDK104, EHK052, ESK026)) {
+            assertTrue(horse.isMountsCard(), horse.getCardId() + " " + horse.getCardName());
+        }
+        for (PlayCard notHorse : List.of(ES2015, ECA066, BS8008, SH6045)) {
+            assertFalse(notHorse.isMountsCard(), notHorse.getCardId() + " " + notHorse.getCardName());
+        }
     }
 }
