@@ -415,7 +415,7 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
 
     // ===== 鐵騎 =====
 
-    @DisplayName("馬超出殺、鐵騎判定非紅桃 → 目標不能閃，直接扣血")
+    @DisplayName("馬超出殺、鐵騎判定紅色（紅心）→ 目標不能閃，直接扣血")
     @Test
     public void tieQiSuccessSkipsDodge() {
         Game game = createGame(General.馬超, General.劉備, General.孫權, General.孫權);
@@ -424,8 +424,8 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         a.getHand().addCardToHand(new Kill(BS8008));
         b.getHand().addCardToHand(new Dodge(BH2028)); // 有閃也沒用
 
-        // 判定牌：黑桃 → 鐵騎生效
-        game.getDeck().add(List.of(new Kill(BS9009)));
+        // 判定牌：紅心 → 鐵騎生效（標準版：判定為紅色）
+        game.getDeck().add(List.of(new Peach(BH3029)));
         List<DomainEvent> events = game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
 
         assertFalse(events.stream().anyMatch(e -> e instanceof AskDodgeEvent),
@@ -436,20 +436,20 @@ public class Batch2TriggeredSkillsTest extends PassiveSkillTestBase {
         SkillEffectEvent tieQi = events.stream()
                 .filter(e -> e instanceof SkillEffectEvent).map(e -> (SkillEffectEvent) e)
                 .filter(e -> e.getSkillName().equals("鐵騎")).findFirst().orElseThrow();
-        assertTrue(tieQi.getMessage().contains("鐵騎判定") && tieQi.getMessage().contains("黑桃9"),
+        assertTrue(tieQi.getMessage().contains("鐵騎判定") && tieQi.getMessage().contains("紅心3"),
                 "訊息應含判定牌：" + tieQi.getMessage());
-        assertTrue(tieQi.getMessage().contains("生效"), tieQi.getMessage());
+        assertTrue(tieQi.getMessage().contains("紅色，生效"), tieQi.getMessage());
     }
 
-    @DisplayName("馬超出殺、鐵騎判定紅桃 → 照常問閃")
+    @DisplayName("馬超出殺、鐵騎判定黑色（黑桃）→ 照常問閃")
     @Test
     public void tieQiHeartFailsAsksDodge() {
         Game game = createGame(General.馬超, General.劉備, General.孫權, General.孫權);
         Player a = game.getPlayer("player-a");
         a.getHand().addCardToHand(new Kill(BS8008));
 
-        // 判定牌：紅心 → 鐵騎不生效
-        game.getDeck().add(List.of(new Peach(BH3029)));
+        // 判定牌：黑桃 → 鐵騎不生效
+        game.getDeck().add(List.of(new Kill(BS9009)));
         List<DomainEvent> events = game.playerPlayCard("player-a", BS8008.getCardId(), "player-b", "active");
 
         assertTrue(events.stream().anyMatch(e -> e instanceof AskDodgeEvent));

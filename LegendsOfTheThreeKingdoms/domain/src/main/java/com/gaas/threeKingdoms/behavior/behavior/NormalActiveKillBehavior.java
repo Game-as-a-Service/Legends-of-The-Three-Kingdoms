@@ -61,28 +61,21 @@ public class NormalActiveKillBehavior extends Behavior
                     game, behaviorPlayer, Collections.singletonList(targetPlayerId),
                     behaviorPlayer, cardId, PlayType.ACTIVE.getPlayType(), card));
             events.add(new AskActivateYinYangSwordsEvent(behaviorPlayer.getId(), targetPlayerId));
-        } else if (isEquipmentHasSpecialEffect(targetPlayer) && !isAttackerHasBlackPommel(behaviorPlayer)) {
-            currentRound.setStage(Stage.Wait_Equipment_Effect);
-            DomainEvent askPlayEquipmentEffectEvent = new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId()));
-            events.add(askPlayEquipmentEffectEvent);
         } else {
-            // 青釭劍發動：攻擊者有青釭劍且目標有防具時，發出效果事件
-            if (isAttackerHasBlackPommel(behaviorPlayer) && isEquipmentHasSpecialEffect(targetPlayer)) {
-                events.add(new BlackPommelEffectEvent(behaviorPlayer.getId(), targetPlayerId));
-            }
-            emitAskDodgeOrHuJia(events, targetPlayer);
+            emitTieQiThenArmorOrDodge(events, targetPlayer);
         }
         events.add(game.getGameStatusEvent("出牌"));
         return events;
     }
 
     /**
-     * AskDodge 前先讓 SkillEngine 介入：
-     * 1. 鐵騎（攻擊者側）：判定生效 → 目標不能出閃，直接結算傷害
-     *    （判定牌抽出後過鬼才暫停點；司馬懿介入時暫停，resume 走 {@link #resumeTieQiJudgement}）
-     * 2. 護駕（目標側）：主公曹操 → 改問 Wei 武將代閃
+     * 殺指定目標後：
+     * 1. 鐵騎（攻擊者側）**先於防具**：判定紅色 → 目標不能出閃、也不能發動八卦陣，直接結算傷害
+     *    （FAQ：馬超先決定是否發動鐵騎，判定為紅色則對方不能發動八卦陣與使用閃）
+     *    判定牌抽出後過鬼才暫停點；司馬懿介入時暫停，resume 走 {@link #resumeTieQiJudgement}
+     * 2. 鐵騎未生效（或沒有鐵騎）→ 照常問防具（八卦陣）或閃（{@link #emitArmorOrDodge}）
      */
-    private void emitAskDodgeOrHuJia(List<DomainEvent> events, Player targetPlayer) {
+    private void emitTieQiThenArmorOrDodge(List<DomainEvent> events, Player targetPlayer) {
         if (SkillEngine.hasTieQi(behaviorPlayer)) {
             HandCard judgement = game.drawCardForCardEffect(1).get(0);
             Optional<List<DomainEvent>> paused = com.gaas.threeKingdoms.skill.wei.GuiCaiSkill.tryPause(
@@ -96,6 +89,21 @@ public class NormalActiveKillBehavior extends Behavior
             }
             events.addAll(resumeTieQiJudgement(judgement, targetPlayer));
             return;
+        }
+        emitArmorOrDodge(events, targetPlayer);
+    }
+
+    /** 問防具效果（八卦陣）或問閃；青釭劍無視防具時直接問閃。 */
+    private void emitArmorOrDodge(List<DomainEvent> events, Player targetPlayer) {
+        if (isEquipmentHasSpecialEffect(targetPlayer) && !isAttackerHasBlackPommel(behaviorPlayer)) {
+            game.getCurrentRound().setStage(Stage.Wait_Equipment_Effect);
+            events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(),
+                    targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
+            return;
+        }
+        // 青釭劍發動：攻擊者有青釭劍且目標有防具時，發出效果事件
+        if (isAttackerHasBlackPommel(behaviorPlayer) && isEquipmentHasSpecialEffect(targetPlayer)) {
+            events.add(new BlackPommelEffectEvent(behaviorPlayer.getId(), targetPlayer.getId()));
         }
         emitAskDodgeAfterTieQi(events, targetPlayer);
     }
@@ -112,7 +120,7 @@ public class NormalActiveKillBehavior extends Behavior
                     originalHp, targetPlayer, game.getCurrentRound(), Optional.of(this)));
             return events;
         }
-        emitAskDodgeAfterTieQi(events, targetPlayer);
+        emitArmorOrDodge(events, targetPlayer);
         return events;
     }
 
@@ -131,12 +139,8 @@ public class NormalActiveKillBehavior extends Behavior
     }
 
     private void addAskDodgeOrEquipmentEffect(List<DomainEvent> events, Player targetPlayer, Round currentRound) {
-        if (isEquipmentHasSpecialEffect(targetPlayer)) {
-            currentRound.setStage(Stage.Wait_Equipment_Effect);
-            events.add(new AskPlayEquipmentEffectEvent(targetPlayer.getId(), targetPlayer.getEquipment().getArmor(), List.of(targetPlayer.getId())));
-        } else {
-            emitAskDodgeOrHuJia(events, targetPlayer);
-        }
+        // 雌雄雙股劍結算後：鐵騎先於防具（已知限制：官方是武將技先於武器技，這裡雙股劍仍在鐵騎之前）
+        emitTieQiThenArmorOrDodge(events, targetPlayer);
     }
 
     @Override
@@ -253,13 +257,8 @@ public class NormalActiveKillBehavior extends Behavior
         game.getCurrentRound().setActivePlayer(newTarget);
 
         List<DomainEvent> events = new ArrayList<>();
-        if (isEquipmentHasSpecialEffect(newTarget) && !isAttackerHasBlackPommel(behaviorPlayer)) {
-            game.getCurrentRound().setStage(Stage.Wait_Equipment_Effect);
-            events.add(new AskPlayEquipmentEffectEvent(newTarget.getId(),
-                    newTarget.getEquipment().getArmor(), List.of(newTarget.getId())));
-        } else {
-            emitAskDodgeOrHuJia(events, newTarget);
-        }
+        // FAQ：大喬先決定是否發動流離，之後馬超再決定是否發動鐵騎 → 對新目標先判鐵騎再問防具／閃
+        emitTieQiThenArmorOrDodge(events, newTarget);
         return events;
     }
 
