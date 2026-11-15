@@ -19,7 +19,7 @@
     "data" : {
       "skillName" : "觀星",
       "playerId" : "player-c",
-      "dataCardIds" : [ "BH0049", "BHJ037", "BH0036", "BS0023" ],
+      "dataCardIds" : [ ],
       "dataPlayerId" : null,
       "options" : [ "ARRANGE", "SKIP" ]
     },

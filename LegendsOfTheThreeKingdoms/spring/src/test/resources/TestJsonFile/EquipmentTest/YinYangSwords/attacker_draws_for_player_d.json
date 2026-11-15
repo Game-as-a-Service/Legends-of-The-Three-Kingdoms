@@ -3,7 +3,7 @@
     "event" : "DrawCardEvent",
     "data" : {
       "size" : 1,
-      "cards" : [ "BS9009" ],
+      "cards" : [ ],
       "drawCardPlayerId" : "player-a"
     },
     "message" : "玩家摸牌"
