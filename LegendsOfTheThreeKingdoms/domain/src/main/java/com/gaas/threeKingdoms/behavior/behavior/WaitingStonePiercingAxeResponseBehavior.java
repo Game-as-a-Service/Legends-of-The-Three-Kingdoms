@@ -77,12 +77,14 @@ public class WaitingStonePiercingAxeResponseBehavior extends Behavior {
 
         // 棄兩張牌
         int lostEquipmentCount = 0;
+        int lostHandCount = 0;
         for (String discardCardId : discardCardIds) {
             boolean inHand = attackerPlayer.getHand().getCards().stream()
                     .anyMatch(c -> c.getId().equals(discardCardId));
             if (inHand) {
                 HandCard discardedCard = attackerPlayer.playCard(discardCardId);
                 game.getGraveyard().add(discardedCard);
+                lostHandCount++;
             } else {
                 // 裝備區
                 EquipmentCard equipmentCard = attackerPlayer.getEquipment().getAllEquipmentCards().stream()
@@ -96,6 +98,12 @@ public class WaitingStonePiercingAxeResponseBehavior extends Behavior {
         }
 
         events.add(new StonePiercingAxeTriggerEvent(attackerPlayer.getId(), targetPlayerId, discardCardIds));
+
+        // 連營：棄掉的牌含最後一張手牌 → 摸牌。要在梟姬之前判斷（梟姬摸的牌會讓手牌不再是 0）；
+        // 只棄裝備區的牌不算失去手牌。
+        if (lostHandCount > 0) {
+            events.addAll(SkillEngine.afterLoseHandCard(game, attackerPlayer));
+        }
 
         // 梟姬：貫石斧的代價棄到裝備區的牌也算失去裝備（棄兩張裝備 → 摸四張）。
         // 必須在 getDamagedEvent / getGameStatusEvent 之前呼叫（兩者都會快照當下玩家狀態），

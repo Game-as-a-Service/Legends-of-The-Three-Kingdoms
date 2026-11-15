@@ -49,6 +49,8 @@ public class WaitingYinYangSwordsResponseBehavior extends Behavior {
             events.add(new YinYangSwordsEffectEvent(
                     attackerPlayer.getId(), respondingPlayerId,
                     YinYangSwordsEffectEvent.Choice.TARGET_DISCARDS, discardCardId));
+            // 連營：目標棄掉最後一張手牌 → 先摸牌，再接回殺（摸到的閃可以拿來回應）
+            events.addAll(com.gaas.threeKingdoms.skill.registry.SkillEngine.afterLoseHandCard(game, targetPlayer));
         } else {
             throw new IllegalArgumentException("Invalid YinYangSwords choice: " + choice);
         }

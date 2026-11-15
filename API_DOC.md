@@ -748,7 +748,7 @@ A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
 | 張飛 SHU003 | 咆哮 | 使用殺無次數限制 | 同回合第二張殺不再 400 |
 | 周瑜 WU005 | 英姿 | 摸牌階段 +1（共 3）；手牌上限不變，仍等於當前 HP（身份標準版） | DrawCardEvent 數量 |
 | 陸遜 WU007 | 謙遜 | 不能成為順手牽羊/樂不思蜀目標 | 順手牽羊或樂不思蜀（含國色轉化）指定陸遜 → 400；南蠻/萬箭/閃電對陸遜照常 |
-| 陸遜 WU007 | 連營 | 失去最後一張手牌 → 摸 1 | 出/棄最後一張牌、或被拆/被拿走最後一張手牌後緊接 DrawCardEvent |
+| 陸遜 WU007 | 連營 | 失去最後一張手牌 → 摸 1 | 出/棄最後一張牌（含剛烈、雌雄雙股劍、貫石斧、丈八蛇矛、方天畫戟、青龍偃月刀、無懈可擊、主公殺忠臣棄牌）、或被拆/被拿走最後一張手牌後出現 DrawCardEvent |
 | 諸葛亮 SHU004 | 空城 | 手牌 0 時不能被殺/決鬥指定 | 指定空手牌諸葛亮 → 400 |
 | 黃月英 SHU007 | 集智 | 使用非延時錦囊 → 摸 1（含無懈可擊；樂不思蜀、閃電不觸發） | 出錦囊後緊接 DrawCardEvent；playWardCard（ACTIVE）回應中 PlayCardEvent 後緊接 DrawCardEvent |
 | 黃月英 SHU007 | 奇才 | 使用錦囊無距離限制 | 超距順手牽羊不再 400 |
@@ -756,7 +756,7 @@ A 對曹操 (B) 出殺（或萬箭齊發/方天畫戟瞄到曹操）
 
 **v1 範圍備註**：
 - 謙遜依官方標準版實作（順手牽羊 + 樂不思蜀）；issue #192 原文的南蠻/萬箭/閃電已移除，調整時改 `QianXunSkill.isImmune` 即可
-- 連營覆蓋「自己出牌 / response 出牌 / 棄牌階段」以及「被他人移走」失去最後手牌：過河拆橋在 `DismantleEvent` 後、反饋在 `SkillEffectEvent(反饋)` 後、突襲在 `SkillEffectEvent(突襲)` 後緊接陸遜的 `DrawCardEvent`。順手牽羊因謙遜無法指定陸遜。尚未覆蓋：剛烈棄兩張、雌雄雙股劍棄牌、貫石斧／丈八蛇矛棄牌、方天畫戟的殺、無懈可擊、轉化技出牌等其他自己失去手牌的路徑
+- 連營覆蓋「自己出牌 / response 出牌 / 棄牌階段」以及「被他人移走」失去最後手牌：過河拆橋在 `DismantleEvent` 後、反饋在 `SkillEffectEvent(反饋)` 後、突襲在 `SkillEffectEvent(突襲)` 後緊接陸遜的 `DrawCardEvent`。順手牽羊因謙遜無法指定陸遜。自己失去手牌的其他路徑：剛烈棄兩張在 `SkillEffectEvent(剛烈)` 後；雌雄雙股劍棄牌在 `YinYangSwordsEffectEvent` 後、問閃之前（摸到的閃可用來回應）；貫石斧在 `StonePiercingAxeTriggerEvent` 後、傷害事件之前（只棄裝備區的牌不算失去手牌；連營先於梟姬判斷）；青龍偃月刀追殺在 `GreenDragonCrescentBladeTriggerEvent` 後；無懈可擊在該無懈的 `PlayCardEvent` 後、無懈鏈結算之前；主公殺忠臣在 `DiscardEvent`／`DiscardEquipmentEvent` 後；丈八蛇矛（主動／被動）與方天畫戟多目標比照一般出殺，`DrawCardEvent` 排在該 API 回傳事件的最後。轉化技 response（龍膽、傾國）、流離、制衡等陸遜沒有的技能路徑不處理
 - 集智 v1 自動摸（不問）；無懈可擊（playWardCard ACTIVE，含反制鏈中的每一張）也觸發：每張摸 1，於無懈詢問／結算之前摸，不改變 stage 與 activePlayer；SKIP 不摸
 - 克己 v1 自動觸發（保留手牌嚴格有利，不詢問）；「使用過殺」含轉化殺/方天畫戟，不受諸葛連弩/咆哮影響
 

@@ -204,6 +204,8 @@ public class GangLieSkill implements OnDamagedSkill, ChoiceResolvableSkill {
             }
             events.add(new SkillEffectEvent(SKILL_NAME, source.getId(), true, cardIds, xiaHouId,
                     source.getId() + " 棄兩張手牌回應剛烈"));
+            // 連營：傷害來源棄掉最後兩張手牌 → 摸牌
+            events.addAll(SkillEngine.afterLoseHandCard(game, source));
             events.add(game.getGameStatusEvent(source.getId() + " 棄兩張手牌回應剛烈"));
         } else {
             events.addAll(sourceDamageEvents(game, waiting, source, xiaHouId));

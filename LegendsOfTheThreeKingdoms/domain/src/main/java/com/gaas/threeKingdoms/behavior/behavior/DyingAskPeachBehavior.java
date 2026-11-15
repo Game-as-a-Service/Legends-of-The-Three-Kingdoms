@@ -140,6 +140,10 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
                         game.getGraveyard().add(discardEquipmentList);
 
                         events.addAll(List.of(discardCardEvent, discardEquipmentEvent));
+                        // 連營：主公棄光手牌（原本有手牌才算失去）→ 摸牌；在梟姬之前判斷
+                        if (!discardCards.isEmpty()) {
+                            events.addAll(SkillEngine.afterLoseHandCard(game, killer));
+                        }
                         // 梟姬：主公一次棄光裝備區 → 每失去一張摸 2（N 張 → 2N 張）。
                         // 罰則本身已結算完（手牌+裝備都已進棄牌堆），摸到的牌留在手上。
                         events.addAll(SkillEngine.afterLoseEquipment(
