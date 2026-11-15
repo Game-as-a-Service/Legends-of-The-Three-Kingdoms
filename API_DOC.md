@@ -798,7 +798,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 流離（大喬） | 大喬成為殺目標、被問閃之前 | `ACCEPT` / `SKIP` | ACCEPT 必填 [要棄的牌 id]（手牌或裝備區的牌皆可） | ACCEPT 必填：轉移目標（距離 1 內、非攻擊者；方天畫戟另排除已有目標；距離以棄牌前計算） |
 | 鬼才（司馬懿） | 任意角色判定牌抽出後、生效前（閃電 / 樂不思蜀 / 八卦陣 / 鐵騎 / 剛烈 / 洛神；dataCardIds = [原判定牌]、dataPlayerId = 判定所屬玩家） | `ACCEPT` / `SKIP` | ACCEPT 必填 [替換用手牌 id] | — |
 | 洛神（甄姬） | 甄姬回合開始、延遲錦囊（閃電/樂不思蜀）判定之前（issue #227） | `ACCEPT`（開始判定：黑色收入手牌自動續判、紅色停，不逐輪詢問）/ `SKIP` | — | — |
-| 觀星（諸葛亮） | 諸葛亮回合開始（準備階段）、延遲錦囊判定之前；`dataCardIds` = 牌堆頂 X 張（X = 存活角色數，上限 5，第一張 = 堆頂），`options` = `["ARRANGE","SKIP"]` | `ARRANGE` / `SKIP`（不發動，牌堆不變） | ARRANGE：回堆頂的順序（第一張 = 下一張被抽；未列出 → 依原順序置堆底；可為空 = 全置底） | — |
+| 觀星（諸葛亮） | 諸葛亮回合開始（準備階段）、延遲錦囊判定之前；`dataCardIds` = 牌堆頂 X 張（X = 存活角色數，上限 5，第一張 = 堆頂；**只有諸葛亮本人收到 id，其他玩家為 `[]`**，張數見 `message`），`options` = `["ARRANGE","SKIP"]`；ARRANGE 結果 `SkillEffectEvent.dataCardIds` = 回堆頂順序，同樣只推給諸葛亮 | `ARRANGE` / `SKIP`（不發動，牌堆不變） | ARRANGE：回堆頂的順序（第一張 = 下一張被抽；未列出 → 依原順序置堆底；可為空 = 全置底） | — |
 | 裸衣（許褚） | 許褚回合開始、判定階段之後、摸牌之前（原自動觸發改主動） | `ACCEPT`（少摸一張、本回合殺/決鬥傷害 +1）/ `SKIP`（正常摸牌無加成） | — | — |
 | 護駕（曹操主公技）發動詢問 | 主公曹操被要求出閃、且有其他存活魏將時（issue #217） | `ACCEPT`（開始魏將輪詢，見 §21）/ `SKIP`（自己出閃） | — | — |
 
@@ -1110,6 +1110,7 @@ POST /api/games/{gameId}/player:useSkillEffect
   帶的是**同欄位**被換掉的那張（換武器 → 舊武器；欄位原本為空時為 `""`）
 - 反間猜錯的傷害來源為周瑜：目標 HP 歸 0 進瀕死求桃，擊殺獎勵／懲罰歸周瑜；存活或被救回則觸發目標的受傷後技能（反饋／剛烈／遺計）
 - 觀星改為回合開始（準備階段，延遲錦囊判定之前）詢問，不再能於出牌階段主動發動；ARRANGE / SKIP 後接續判定 → 摸牌（觀看的牌會先於判定與摸牌被使用）
+- 觀星觀看的牌（`AskSkillEffectEvent` / ARRANGE 結果 `SkillEffectEvent` 的 `dataCardIds`）與接續摸到的牌只推給諸葛亮本人，其他玩家收到同一個 event 但 id 為 `[]`
 - 激將覆蓋南蠻入侵/決鬥的 AskKill（自動攔截）、出牌階段主動出殺、借刀殺人代出殺（後兩者由劉備以 `useSkillEffect(激將, ACCEPT)` 發動）。
   主動出殺：發動時即驗證目標（劉備的攻擊範圍、空城）與出殺次數；蜀將 ACCEPT 才計入劉備本回合的殺，全部拒絕則不計次數、回到劉備出牌（可再自己出殺）。
   代出的殺是蜀將那張實體牌（花色點數照原牌，如仁王盾判黑殺），視為劉備使用
@@ -1168,7 +1169,7 @@ Stack trace 僅記錄於 server log。
 | `PlayCardEvent` | 有人出牌 | playCard |
 | `PlayWardCardEvent` | 有人出無懈可擊 | playWardCard |
 | `GameStatusEvent` | 遊戲狀態更新（每次操作都附帶） | 所有 API |
-| `DrawCardEvent` | 玩家摸牌 | finishAction / playCard |
+| `DrawCardEvent` | 玩家摸牌（`cards` 只有摸牌者本人看得到，其他玩家為 `[]`、看 `size`） | finishAction / playCard / useSkillEffect 等 |
 | `DiscardEvent` | 玩家棄牌 | discardCards |
 
 ### 需要玩家回應的事件
