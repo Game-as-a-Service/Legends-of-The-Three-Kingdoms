@@ -4,6 +4,7 @@ import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.behavior.behavior.*;
+import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayCard;
 import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
