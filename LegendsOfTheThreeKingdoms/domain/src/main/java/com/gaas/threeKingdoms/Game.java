@@ -389,9 +389,15 @@ public class Game {
                     }
                 }
             }
+            boolean respondingWithKill = actingPlayer.getHand().getCard(cardId)
+                    .map(c -> c instanceof Kill).orElse(false);
             List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(playerId, targetPlayerId, cardId, playType);
             //  確認topBehavior是否有需要pop掉的behavior
             removeCompletedBehaviors();
+            // 克己「使用或打出過殺」：回合玩家回應時打出殺（如自己出決鬥後輪流出殺）也要算
+            if (respondingWithKill && actingPlayer.getHand().getCard(cardId).isEmpty()) {
+                markKillPlayedIfCurrentRoundPlayer(actingPlayer);
+            }
             // 連營：response 出牌（出閃/出殺）失去最後一張手牌 → 摸牌
             if (acceptedEvent != null && handSizeBefore > 0 && actingPlayer.getHandSize() == 0
                     && SkillEngine.drawCountAfterLoseLastHandCard(actingPlayer) > 0) {
@@ -994,6 +1000,14 @@ public class Game {
         seatingChart = new SeatingChart(new ArrayList<>(players));
     }
 
+    /** 克己「本回合使用或打出過殺」：只記錄回合玩家自己的殺（其他人打出的殺與本回合無關）。 */
+    private void markKillPlayedIfCurrentRoundPlayer(Player player) {
+        if (currentRound.getCurrentRoundPlayer() != null
+                && currentRound.getCurrentRoundPlayer().getId().equals(player.getId())) {
+            currentRound.setKillPlayedThisTurn(true);
+        }
+    }
+
     public void removeDyingPlayer(Player player) {
         seatingChart.getPlayers().remove(player);
         player.setHealthStatus(HealthStatus.DEATH);
@@ -1324,6 +1338,8 @@ public class Game {
                 // 南蠻入侵 / 決鬥需要殺 — 走 ViperSpear 的 virtual kill response 通道
                 HandCard discarded = self.playCard(sourceId);
                 graveyard.add(discarded);
+                // 轉化殺打出也算「打出過殺」（克己）
+                markKillPlayedIfCurrentRoundPlayer(self);
                 List<DomainEvent> events = new ArrayList<>();
                 events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
                         skillName, playerId, true, List.of(sourceId), null));
