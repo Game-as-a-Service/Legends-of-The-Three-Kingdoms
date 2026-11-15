@@ -652,6 +652,7 @@ B 對曹操出殺（或丈八蛇矛攻擊）→ 曹操不出閃、扣血未死
 - **致命傷被救回後仍可發動**：曹操受致命傷進入瀕死，被桃救回 → DyingAskPeachBehavior 在 revival 分支 replay `SkillEngine.onDamaged`，奸雄正常觸發
   - 一般傷害：pendingSourceCardId 帶 sourceCard.id，replay 時 PlayCard.findById 重建
   - 丈八蛇矛 (VirtualKill) 致命：pendingViperSpearDiscardCardIds 帶兩張棄牌 id，replay 時 JianXiongSkill 取得 DyingAskPeachBehavior 上的 pending discards → ACCEPT 拿兩張棄牌
+  - 轉化殺（武聖/龍膽，VirtualKill）致命：同一欄位 pendingViperSpearDiscardCardIds 帶被轉化的真實來源牌 id → ACCEPT 拿該來源牌
 - 一次 DamageEvent 只觸發 1 次（多點傷害不重複觸發）
 - 若 ACCEPT 時 sourceCard 已不在棄牌堆（被其他效果先取走）→ throw `IllegalStateException`
 - AOE polling 整合：BarbarianInvasion / ArrowBarrage 的 polling 流程偵測 WaitingJX 介入後，將 polling-advance 註冊為 callback 由 WaitingJX.resolveChoice 在 isOneRound=true 之前 resume，確保 stack 與 activePlayer 一致
@@ -1096,7 +1097,8 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 鬼才覆蓋全部判定路徑：閃電 / 樂不思蜀（皆含 Ward 路徑）/ 八卦陣 / 鐵騎 / 剛烈 / 洛神；
   洛神多張判定牌逐張詢問；同一次判定僅詢問一次（官方 FAQ）
 - 洛神為發動詢問一次（ACCEPT 後黑收自動續判）；判定中每張判定牌仍逐張過鬼才暫停點
-- 武聖/奇襲 v1 限手牌（裝備區紅/黑牌轉化 follow-up）；轉化殺的奸雄取牌為 follow-up
+- 武聖/奇襲 v1 限手牌（裝備區紅/黑牌轉化 follow-up）
+- 轉化殺（武聖/龍膽）對曹操造成傷害 → 奸雄獲得被轉化的真實來源牌（`AskJianXiongEffectEvent.sourceCardIds` 為來源牌 id）；致命傷被救回後補問奸雄亦同
 - 轉化殺的傷害結算以 VirtualKill 進行；事件中 cardId 為來源真實牌
 
 ---

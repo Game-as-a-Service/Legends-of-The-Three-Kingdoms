@@ -29,6 +29,7 @@ import java.util.List;
  * 取牌規則（FAQ）：
  *   - 一般殺 / 武器觸發殺 / 決鬥 / 閃電判定 / 南蠻入侵 / 萬箭齊發 → 獲得 sourceCard 本身
  *   - 丈八蛇矛攻擊 → 獲得攻擊者棄掉的兩張手牌（VirtualKill 不算）
+ *   - 轉化殺（武聖 / 龍膽）→ 獲得被轉化的真實來源牌（{@link VirtualKill#getSourceCardIds()}）
  *   - 致命傷被救回 → DyingAskPeachBehavior revival 分支 replay；ViperSpear 致命走兩張棄牌特例
  *   - 多點傷害整次只觸發 1 次
  *
@@ -74,6 +75,7 @@ public class JianXiongSkill implements OnDamagedSkill {
         // 決定要拿哪些牌：
         //   - 丈八蛇矛 alive (VirtualKill + ViperSpearKillBehavior) → 兩張棄牌
         //   - 丈八蛇矛 致命 + revive (VirtualKill + DyingAskPeachBehavior) → 兩張棄牌（從 pending 取）
+        //   - 轉化殺 (VirtualKill.sourceCardIds) → 真實來源牌；致命 + revive 同樣從 pending 取
         //   - 其他（普通殺 / 錦囊 / 一般武器觸發殺）→ sourceCard 本身
         List<String> takeIds;
         if (sourceCard instanceof VirtualKill) {
@@ -82,6 +84,9 @@ public class JianXiongSkill implements OnDamagedSkill {
             } else if (top instanceof DyingAskPeachBehavior dying
                     && dying.getPendingViperSpearDiscardCardIds() != null) {
                 takeIds = dying.getPendingViperSpearDiscardCardIds();
+            } else if (!((VirtualKill) sourceCard).getSourceCardIds().isEmpty()) {
+                // 轉化殺（武聖 / 龍膽）：獲得被轉化的真實來源牌
+                takeIds = ((VirtualKill) sourceCard).getSourceCardIds();
             } else {
                 return List.of();
             }

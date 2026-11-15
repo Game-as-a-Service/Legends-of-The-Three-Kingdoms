@@ -922,6 +922,9 @@ public class Game {
                     Behavior topAtDamage = behavior.orElse(null);
                     if (topAtDamage instanceof ViperSpearKillBehavior viper) {
                         pendingViperSpearDiscardCardIds = viper.getDiscardedCardIds();
+                    } else if (!((VirtualKill) card).getSourceCardIds().isEmpty()) {
+                        // 轉化殺（武聖 / 龍膽）：沿用同一欄位帶真實來源牌，救回後奸雄取這些牌
+                        pendingViperSpearDiscardCardIds = ((VirtualKill) card).getSourceCardIds();
                     }
                 } else {
                     pendingSourceCardId = card.getId();
@@ -1296,7 +1299,7 @@ public class Game {
                 // card = VirtualKill（傷害結算用），cardId = 來源牌（事件顯示真實牌、手牌→墓地）
                 NormalActiveKillBehavior killBehavior = new NormalActiveKillBehavior(
                         this, self, new ArrayList<>(List.of(targetPlayerId)), self,
-                        sourceId, PlayType.ACTIVE.getPlayType(), new VirtualKill());
+                        sourceId, PlayType.ACTIVE.getPlayType(), new VirtualKill(List.of(sourceId)));
                 updateTopBehavior(killBehavior);
                 List<DomainEvent> events = new ArrayList<>();
                 events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
