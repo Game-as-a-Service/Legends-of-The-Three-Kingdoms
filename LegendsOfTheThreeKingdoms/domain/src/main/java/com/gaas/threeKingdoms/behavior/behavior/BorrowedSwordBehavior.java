@@ -3,6 +3,7 @@ package com.gaas.threeKingdoms.behavior.behavior;
 import com.gaas.threeKingdoms.Game;
 import com.gaas.threeKingdoms.UserCommand;
 import com.gaas.threeKingdoms.behavior.Behavior;
+import com.gaas.threeKingdoms.behavior.VirtualKillResponseSource;
 import com.gaas.threeKingdoms.events.BorrowedSwordEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
@@ -10,6 +11,7 @@ import com.gaas.threeKingdoms.events.WeaponUsurpationEvent;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
+import com.gaas.threeKingdoms.handcard.basiccard.VirtualKill;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard;
 import com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.WeaponCard;
 import com.gaas.threeKingdoms.player.Player;
@@ -74,18 +76,29 @@ public class BorrowedSwordBehavior extends Behavior {
     }
 
     @Override
-    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill,
+                                                       List<String> discardedCardIds, VirtualKillResponseSource source) {
         // targetPlayerId 已由 validateBeforeVirtualKillResponse 驗證過
         Player attacker = game.getPlayer(playerId);
         Player target = game.getPlayer(targetPlayerId);
 
-        // 棄牌已在 Game 處理；改 push ViperSpearKillBehavior，讓 C 進入閃 / 防具流程
-        // 與 active path 一致：BorrowedSword(oneRound=true) 留在底，等 ViperSpearKill 解析完畢一併 pop
-        Behavior behavior = new ViperSpearKillBehavior(
-                game, attacker, List.of(targetPlayerId), target, virtualKill, discardedCardIds);
+        // 棄牌已在 Game 處理；push 殺 behavior，讓 C 進入閃 / 防具流程
+        // 與 active path 一致：BorrowedSword(oneRound=true) 留在底，等殺解析完畢一併 pop
         isOneRound = true;
+        if (source.isViperSpear()) {
+            Behavior behavior = new ViperSpearKillBehavior(
+                    game, attacker, List.of(targetPlayerId), target, virtualKill, discardedCardIds);
+            game.updateTopBehavior(behavior);
+            return behavior.playerAction();
+        }
+        // 轉化殺（武聖 / 龍膽）：同主動轉化殺 — cardId = 來源牌（事件顯示真實牌），
+        // card = 帶來源牌 id 的 VirtualKill（奸雄取來源牌；BehaviorData 依 cardId 還原）
+        String sourceCardId = discardedCardIds.get(0);
+        NormalActiveKillBehavior behavior = new NormalActiveKillBehavior(
+                game, attacker, new ArrayList<>(List.of(targetPlayerId)), attacker,
+                sourceCardId, PlayType.ACTIVE.getPlayType(), new VirtualKill(List.of(sourceCardId)));
         game.updateTopBehavior(behavior);
-        return behavior.playerAction();
+        return behavior.playerActionWithCardAlreadyPlayed(source.statusMessage(game, playerId));
     }
 
     @Override

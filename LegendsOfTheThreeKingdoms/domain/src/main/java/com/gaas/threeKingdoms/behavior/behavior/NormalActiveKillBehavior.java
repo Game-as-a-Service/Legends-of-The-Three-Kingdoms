@@ -54,15 +54,26 @@ public class NormalActiveKillBehavior extends Behavior
         Player targetPlayer = game.getPlayer(targetPlayerId);
 
         playerPlayCard(behaviorPlayer, game.getPlayer(targetPlayerId), cardId);
+        return announceKill(targetPlayer, "出牌");
+    }
 
-        Round currentRound = game.getCurrentRound();
+    /**
+     * 同 {@link #playerAction}，但牌已由呼叫端棄入墓地（借刀殺人被要求出殺時以武聖 / 龍膽轉化：
+     * 來源牌在 Game 層已打出），只更新回合資訊（currentCard = 帶來源牌的 VirtualKill）後走一般殺的事件與流程。
+     */
+    public List<DomainEvent> playerActionWithCardAlreadyPlayed(String statusMessage) {
+        Player targetPlayer = game.getPlayer(reactionPlayers.get(0));
+        game.updateRoundInformation(targetPlayer, card);
+        return announceKill(targetPlayer, statusMessage);
+    }
 
+    private List<DomainEvent> announceKill(Player targetPlayer, String statusMessage) {
         List<DomainEvent> events = new ArrayList<>();
-        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayerId, cardId, playType));
+        events.add(new PlayCardEvent("出牌", behaviorPlayer.getId(), targetPlayer.getId(), cardId, playType));
 
         // 鐵騎（武將技）→ 雌雄雙股劍（武器技）→ 防具／閃（FAQ：先發動武將技能，後發動武器技能）
         emitTieQiThenArmorOrDodge(events, targetPlayer);
-        events.add(game.getGameStatusEvent("出牌"));
+        events.add(game.getGameStatusEvent(statusMessage));
         return events;
     }
 

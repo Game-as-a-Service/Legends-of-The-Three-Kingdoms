@@ -5,7 +5,7 @@ import com.gaas.threeKingdoms.behavior.Behavior;
 import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
-import com.gaas.threeKingdoms.events.ViperSpearKillTriggerEvent;
+import com.gaas.threeKingdoms.behavior.VirtualKillResponseSource;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.player.Player;
@@ -186,12 +186,13 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
     }
 
     @Override
-    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
-        // 棄牌已在 Game.playerUseViperSpearKill() 處理；此處僅推進 reaction 狀態
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill,
+                                                       List<String> discardedCardIds, VirtualKillResponseSource source) {
+        // 棄牌已在 Game 層處理；此處僅推進 reaction 狀態
         // BarbarianInvasion 不使用 targetPlayerId — 回應對象固定為入侵者 (behaviorPlayer)
         return advanceAfterKillResponse(playerId,
-                playerId + "用丈八蛇矛出殺",
-                List.of(new ViperSpearKillTriggerEvent(playerId, behaviorPlayer.getId(), discardedCardIds)));
+                source.statusMessage(game, playerId),
+                List.of(source.killEvent(playerId, behaviorPlayer.getId(), discardedCardIds)));
     }
 
     private List<DomainEvent> advanceAfterKillResponse(String playerId, String statusMessage, List<DomainEvent> insertEvents) {

@@ -936,6 +936,10 @@ POST /api/games/{gameId}/player:useSkillEffect
 **問閃時的出牌驗證（issue #229）**：被問閃時以 `player:playCard` 打出非閃牌 —
 可轉化（傾國黑牌 / 龍膽殺）→ 自動發動轉化技視為出閃；不可轉化 → 400 明確錯誤（先前會被默默吞掉導致卡住）。
 
+**回應需殺（南蠻 / 決鬥 / 借刀殺人）的事件**：`SkillEffectEvent(武聖/龍膽)` 之後是來源牌的
+`PlayCardEvent`（`playerId` = 轉化者、`cardId` = 來源牌、`targetPlayerId` = 南蠻使用者 / 決鬥對手 / 借刀殺人的攻擊目標、
+`playType` = `active`），遊戲訊息如「趙雲 發動龍膽出殺」。不會發 `ViperSpearKillTriggerEvent`（只屬於丈八蛇矛）。
+
 #### 傾國（甄姬）發動與使用
 
 **條件**：甄姬（`WEI007`）**被問閃時**（被殺、萬箭齊發、方天畫戟 — 收到 `AskDodgeEvent` 或成為問閃對象），手上有黑色（黑桃/梅花）手牌。傾國沒有事前的 `AskSkillEffectEvent` 詢問 — 由前端在問閃 UI 直接提供黑牌作為出閃選項。
@@ -1115,6 +1119,8 @@ POST /api/games/{gameId}/player:useSkillEffect
 - 激將覆蓋南蠻入侵/決鬥的 AskKill（自動攔截）、出牌階段主動出殺、借刀殺人代出殺（後兩者由劉備以 `useSkillEffect(激將, ACCEPT)` 發動）。
   主動出殺：發動時即驗證目標（劉備的攻擊範圍、空城）與出殺次數；蜀將 ACCEPT 才計入劉備本回合的殺，全部拒絕則不計次數、回到劉備出牌（可再自己出殺）。
   代出的殺是蜀將那張實體牌（花色點數照原牌，如仁王盾判黑殺），視為劉備使用
+  南蠻/決鬥代出：`SkillEffectEvent(激將)` 之後是該殺的 `PlayCardEvent`（`playerId` = 劉備、`cardId` = 蜀將的殺、
+  `targetPlayerId` = 南蠻使用者 / 決鬥對手），遊戲訊息「劉備 以激將打出 殺」；不會發 `ViperSpearKillTriggerEvent`
 - 激將（含南蠻/決鬥）詢問蜀將的 `AskSkillEffectEvent.options` 為 `["ACCEPT","SKIP"]`；`SKIP` 與 `DECLINE` 等價
 - 流離適用所有殺：普通殺、轉化殺（武聖/龍膽）、丈八蛇矛、方天畫戟。方天畫戟多目標時，輪到大喬才問流離；轉移目標不能是本殺已有的其他目標，新目標取代大喬在輪詢中的位置（順序不變）。AOE 不是殺，不能流離
 - 流離可棄手牌或裝備區的牌（只有裝備、沒有手牌也會問流離）。棄裝備 → 移出裝備區進棄牌堆，視為失去裝備（觸發梟姬等）。轉移目標的距離以棄牌前計算：棄掉 -1 馬仍可轉給原本靠 -1 馬才在距離 1 內的角色
@@ -1187,7 +1193,7 @@ Stack trace 僅記錄於 server log。
 | `AskYinYangSwordsEffectEvent` | 雌雄雙股劍效果：目標選擇棄牌或讓攻擊者摸牌（攻擊者選 ACTIVATE 後才出現） | useYinYangSwordsEffect |
 | `AskGreenDragonCrescentBladeEffectEvent` | 青龍偃月刀效果：攻擊者選擇是否再出一張殺 | useGreenDragonCrescentBladeEffect |
 | `AskStonePiercingAxeEffectEvent` | 貫石斧效果：攻擊者選擇是否棄兩張牌強制命中 | useStonePiercingAxeEffect |
-| `ViperSpearKillTriggerEvent` | 丈八蛇矛發動：攻擊者棄兩張牌作為虛擬殺使用（通知事件，無需回應） | useViperSpearKill |
+| `ViperSpearKillTriggerEvent` | 丈八蛇矛發動：攻擊者棄兩張牌作為虛擬殺使用（通知事件，無需回應）；只在真的用丈八蛇矛時發，武聖/龍膽/激將回應需殺走 `PlayCardEvent` | useViperSpearKill |
 | `AskJianXiongEffectEvent` | 奸雄發動：曹操選擇是否獲得造成傷害的牌（含 `playerId`、`sourceCardIds : List<String>`） | useJianXiongEffect |
 | `AskHuJiaEffectEvent` | 護駕：詢問魏將是否代主公曹操出閃（含 `playerId`、`caoCaoPlayerId`、`dodgeCardIdsInHand`） | useHuJiaEffect |
 | `AskSkillEffectEvent` | 通用武將技詢問（含 `skillName`、`playerId`、`dataCardIds`、`dataPlayerId`、`options`）— 反饋/遺計/剛烈/反間/觀星/激將/流離等。**`options` = 本次可回的 choice，按鈕照它畫**（多為 `["ACCEPT","SKIP"]`，剛烈第二段為 `["DISCARD","DAMAGE"]`）；`message` 是該次詢問的真正問題，直接顯示 | useSkillEffect |

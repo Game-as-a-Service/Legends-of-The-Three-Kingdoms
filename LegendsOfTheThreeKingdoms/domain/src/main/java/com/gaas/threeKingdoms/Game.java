@@ -1505,7 +1505,7 @@ public class Game {
                 return events;
             }
             case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_KILL -> {
-                // 南蠻入侵 / 決鬥需要殺 — 走 ViperSpear 的 virtual kill response 通道
+                // 南蠻入侵 / 決鬥 / 借刀殺人需要殺 — 走 virtual kill response 通道（事件為來源牌的 PlayCardEvent）
                 List<DomainEvent> events = new ArrayList<>();
                 // 借刀殺人帶攻擊目標 → 「對 X 使用」；南蠻 / 決鬥沒有目標 → 「打出」
                 Player killTarget = targetPlayerId == null ? null : players.stream()
@@ -1516,7 +1516,8 @@ public class Game {
                 events.addAll(discardConversionSource(self, sourceId, equipmentSource));
                 // 轉化殺打出也算「打出過殺」（克己）
                 markKillPlayedIfCurrentRoundPlayer(self);
-                events.addAll(top.acceptVirtualKillResponse(playerId, targetPlayerId, new VirtualKill(), List.of(sourceId)));
+                events.addAll(top.acceptVirtualKillResponse(playerId, targetPlayerId, new VirtualKill(), List.of(sourceId),
+                        com.gaas.threeKingdoms.behavior.VirtualKillResponseSource.conversion(skillName)));
                 removeCompletedBehaviors();
                 return events;
             }
@@ -1689,7 +1690,8 @@ public class Game {
         // 交給對應 behavior 處理：advance reaction state / push ViperSpearKillBehavior（BorrowedSword）
         VirtualKill virtualKill = new VirtualKill();
         List<DomainEvent> events = new ArrayList<>(
-                top.acceptVirtualKillResponse(attacker.getId(), targetPlayerId, virtualKill, discardCardIds));
+                top.acceptVirtualKillResponse(attacker.getId(), targetPlayerId, virtualKill, discardCardIds,
+                        com.gaas.threeKingdoms.behavior.VirtualKillResponseSource.VIPER_SPEAR));
         removeCompletedBehaviors();
         // 連營：被動丈八蛇矛棄掉最後兩張手牌 → 摸牌
         appendDrawIfLostLastHandCard(attacker, events);
