@@ -3,7 +3,7 @@
     "event" : "PlayCardEvent",
     "data" : {
       "playerId" : "player-c",
-      "targetPlayerId" : "player-a",
+      "targetPlayerId" : "player-b",
       "cardId" : "BDJ089",
       "playType" : "active"
     },

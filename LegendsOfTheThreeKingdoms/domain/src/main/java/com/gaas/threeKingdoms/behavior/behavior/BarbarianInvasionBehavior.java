@@ -177,7 +177,8 @@ public class BarbarianInvasionBehavior extends Behavior implements com.gaas.thre
             playerPlayCardNotUpdateActivePlayer(game.getPlayer(playerId), cardId);
             return advanceAfterKillResponse(playerId,
                     playerId + "出殺",
-                    List.of(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType)));
+                    // 回應南蠻的殺「對象」固定是南蠻使用者；不採用前端帶的 targetPlayerId（前端曾誤帶 round.dyingPlayer）
+                    List.of(new PlayCardEvent("出牌", playerId, behaviorPlayer.getId(), cardId, playType)));
         } else {
             //TODO:怕有其他效果或殺的其他case
         }
