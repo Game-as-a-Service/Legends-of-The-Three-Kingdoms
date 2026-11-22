@@ -36,7 +36,7 @@ public class DomainEventToViewModelMapper {
                             playerDamagedEvent.getPlayerId(),
                             playerDamagedEvent.getFrom(),
                             playerDamagedEvent.getTo()
-                    )
+                    ), playerDamagedEvent.getMessage()
             );
         });
 
@@ -98,7 +98,7 @@ public class DomainEventToViewModelMapper {
             return new PlayCardPresenter.PlayerDyingViewModel(
                     new PlayCardPresenter.PlayerDyingDataViewModel(
                             playerDyingEvent.getPlayerId()
-                    )
+                    ), playerDyingEvent.getMessage()
             );
         });
 
@@ -107,7 +107,7 @@ public class DomainEventToViewModelMapper {
             return new PlayCardPresenter.AskPeachViewModel(
                     new PlayCardPresenter.AskPeachDataViewModel(
                             askPeachEvent.getPlayerId(), askPeachEvent.getDyingPlayerId()
-                    )
+                    ), askPeachEvent.getMessage()
             );
         });
 

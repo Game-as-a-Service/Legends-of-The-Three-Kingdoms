@@ -35,20 +35,20 @@
       "from" : 3,
       "to" : 0
     },
-    "message" : "扣血"
+    "message" : "劉備 扣 3 點血"
   }, {
     "event" : "PlayerDyingEvent",
     "data" : {
       "playerId" : "player-a"
     },
-    "message" : "玩家已瀕臨死亡"
+    "message" : "劉備 已瀕臨死亡"
   }, {
     "event" : "AskPeachEvent",
     "data" : {
       "playerId" : "player-a",
       "dyingPlayerId" : "player-a"
     },
-    "message" : "要求玩家出桃"
+    "message" : "要求 劉備 出桃（救 劉備）"
   } ],
   "data" : {
     "seats" : [ {

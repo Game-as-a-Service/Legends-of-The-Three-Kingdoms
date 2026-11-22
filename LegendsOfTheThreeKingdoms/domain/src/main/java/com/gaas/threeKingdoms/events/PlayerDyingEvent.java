@@ -1,14 +1,15 @@
 package com.gaas.threeKingdoms.events;
 
+import com.gaas.threeKingdoms.player.Player;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 public class PlayerDyingEvent extends DomainEvent {
 
     private final String playerId;
-    public PlayerDyingEvent(String playerId) {
-        super("PlayerDyingEvent", "玩家已瀕臨死亡");
-        this.playerId = playerId;
+
+    public PlayerDyingEvent(Player player) {
+        super("PlayerDyingEvent", String.format("%s 已瀕臨死亡", player.getGeneralName()));
+        this.playerId = player.getId();
     }
 }

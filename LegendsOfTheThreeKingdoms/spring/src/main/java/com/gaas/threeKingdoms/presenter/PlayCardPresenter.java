@@ -129,8 +129,8 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
 
     @Data
     public static class PlayerDamagedViewModel extends ViewModel<PlayerDamagedDataViewModel> {
-        public PlayerDamagedViewModel(PlayerDamagedDataViewModel data) {
-            super("PlayerDamagedEvent", data, "扣血");
+        public PlayerDamagedViewModel(PlayerDamagedDataViewModel data, String message) {
+            super("PlayerDamagedEvent", data, message);
         }
     }
 
@@ -145,8 +145,8 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
 
     @Data
     public static class PlayerDyingViewModel extends ViewModel<PlayerDyingDataViewModel> {
-        public PlayerDyingViewModel(PlayerDyingDataViewModel data) {
-            super("PlayerDyingEvent", data, "玩家已瀕臨死亡");
+        public PlayerDyingViewModel(PlayerDyingDataViewModel data, String message) {
+            super("PlayerDyingEvent", data, message);
         }
     }
 
@@ -159,8 +159,8 @@ public class PlayCardPresenter implements PlayCardUseCase.PlayCardPresenter<List
 
     @Data
     public static class AskPeachViewModel extends ViewModel<AskPeachDataViewModel> {
-        public AskPeachViewModel(AskPeachDataViewModel data) {
-            super("AskPeachEvent", data, "要求玩家出桃");
+        public AskPeachViewModel(AskPeachDataViewModel data, String message) {
+            super("AskPeachEvent", data, message);
         }
     }
 
