@@ -776,6 +776,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | choice | String | 選擇值，依技能而定 |
 | cardIds | List\<String\>? | 選擇的牌（依技能） |
 | targetPlayerId | String? | 選擇的目標（依技能） |
+| targetPlayerIds | List\<String\>? | 選填，**目前只有仁德支援**：與 `cardIds` 逐張對應的接收者（第 i 張給第 i 位），一次發動分給多人。帶了就不看 `targetPlayerId`；其他技能帶此欄位會回 400 |
 
 **觸發時機**：收到 `AskSkillEffectEvent`（內含 skillName / playerId / dataCardIds / dataPlayerId / **options**）後呼叫。
 回應後廣播 `SkillEffectEvent`（accepted + data）。
@@ -910,7 +911,7 @@ POST /api/games/{gameId}/player:useSkillEffect
 | 反間（周瑜）第一段 | 每回合 1 次 | `ACCEPT` | [要給的手牌 id] | 目標玩家 |
 | 反間 第二段（目標回應） | — | `SPADE`/`HEART`/`DIAMOND`/`CLUB` | — | — |
 | 結姻（孫尚香） | 每回合 1 次 | `ACCEPT` | 2 張手牌 id（傷最重者由系統判定） | — |
-| 仁德（劉備） | 回血每回合 1 次 | `ACCEPT` | 要給的手牌 id（≥1；累積 2 張回 1 體力） | 接收者 |
+| 仁德（劉備） | 回血每回合 1 次；可多次發動 | `ACCEPT` | 要給的手牌 id（≥1；本回合累積 2 張回 1 體力） | 接收者（全部給同一人）；或改帶 `targetPlayerIds` 逐張指定、一次分給多人。全部驗證通過才給牌；每位接收者一則 `SkillEffectEvent`（`dataPlayerId` = 接收者，`dataCardIds` = 給他的牌） |
 | 激將（劉備主公技）主動出殺 | 須為主公、有其他存活蜀將；目標須在**劉備**攻擊範圍內、不能是自己；計入劉備本回合出殺次數（已出過殺且無連弩/咆哮 → 拒絕） | `ACCEPT` | — | 殺的目標 |
 
 ### 轉化牌技（choice = 轉化目標型別）

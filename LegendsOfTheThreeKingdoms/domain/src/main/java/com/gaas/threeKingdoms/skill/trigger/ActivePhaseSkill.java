@@ -18,4 +18,17 @@ public interface ActivePhaseSkill extends Skill {
 
     List<DomainEvent> activate(Game game, Player self, String choice,
                                List<String> cardIds, String targetPlayerId);
+
+    /**
+     * 帶逐張接收者的版本（targetPlayerIds 與 cardIds 逐張對應）。預設不支援：帶了 targetPlayerIds 就拒絕，
+     * 沒帶則走原本的 {@link #activate(Game, Player, String, List, String)}。仁德 override。
+     */
+    default List<DomainEvent> activate(Game game, Player self, String choice,
+                                       List<String> cardIds, String targetPlayerId,
+                                       List<String> targetPlayerIds) {
+        if (targetPlayerIds != null && !targetPlayerIds.isEmpty()) {
+            throw new IllegalArgumentException(getSkillName() + " 不支援 targetPlayerIds（逐張指定接收者）");
+        }
+        return activate(game, self, choice, cardIds, targetPlayerId);
+    }
 }

@@ -1228,14 +1228,27 @@ public class Game {
 
     public List<DomainEvent> playerUseSkillEffect(String playerId, String skillName, String choice,
                                                   List<String> cardIds, String targetPlayerId) {
+        return playerUseSkillEffect(playerId, skillName, choice, cardIds, targetPlayerId, null);
+    }
+
+    /**
+     * @param targetPlayerIds 選填：與 cardIds 逐張對應的接收者（目前僅出牌階段主動技使用，如仁德一次分給多人）；
+     *                        其他技能帶了會被拒絕
+     */
+    public List<DomainEvent> playerUseSkillEffect(String playerId, String skillName, String choice,
+                                                  List<String> cardIds, String targetPlayerId,
+                                                  List<String> targetPlayerIds) {
         checkGameIsNotOver();
+        boolean hasPerCardTargets = targetPlayerIds != null && !targetPlayerIds.isEmpty();
         if (topBehavior.isEmpty()) {
             // proactive 分支：出牌階段主動發動（轉化技 / 制衡 / 苦肉 / 仁德...）
             if (findConversionSkill(playerId, skillName) != null) {
+                rejectPerCardTargets(hasPerCardTargets, skillName);
                 return applyConversionActive(playerId, skillName, choice, cardIds, targetPlayerId);
             }
-            return activatePhaseSkill(playerId, skillName, choice, cardIds, targetPlayerId);
+            return activatePhaseSkill(playerId, skillName, choice, cardIds, targetPlayerId, targetPlayerIds);
         }
+        rejectPerCardTargets(hasPerCardTargets, skillName);
         Behavior behavior = topBehavior.peek();
         if (behavior instanceof com.gaas.threeKingdoms.behavior.behavior.WaitingJiJiangResponseBehavior jiJiang) {
             List<DomainEvent> events = jiJiang.resolveChoice(playerId, choice, cardIds);
@@ -1502,8 +1515,15 @@ public class Game {
         return SkillEngine.afterLoseEquipment(this, self, 1);
     }
 
+    private static void rejectPerCardTargets(boolean hasPerCardTargets, String skillName) {
+        if (hasPerCardTargets) {
+            throw new IllegalArgumentException(skillName + " 不支援 targetPlayerIds（逐張指定接收者）");
+        }
+    }
+
     private List<DomainEvent> activatePhaseSkill(String playerId, String skillName, String choice,
-                                                 List<String> cardIds, String targetPlayerId) {
+                                                 List<String> cardIds, String targetPlayerId,
+                                                 List<String> targetPlayerIds) {
         checkIsCurrentRoundValid(playerId);
         Player self = getPlayer(playerId);
         com.gaas.threeKingdoms.skill.trigger.ActivePhaseSkill skill =
@@ -1514,7 +1534,7 @@ public class Game {
                         .findFirst()
                         .orElseThrow(() -> new IllegalStateException(
                                 String.format("%s has no active skill named %s", playerId, skillName)));
-        List<DomainEvent> events = skill.activate(this, self, choice, cardIds, targetPlayerId);
+        List<DomainEvent> events = skill.activate(this, self, choice, cardIds, targetPlayerId, targetPlayerIds);
         removeCompletedBehaviors();
         return events;
     }
