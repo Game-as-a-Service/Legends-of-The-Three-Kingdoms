@@ -107,8 +107,9 @@ public class WaitingJiJiangResponseBehavior extends Behavior {
         Behavior parent = game.peekTopBehavior();
         List<DomainEvent> events = new ArrayList<>();
         events.add(new SkillEffectEvent("激將", shuPlayerId, true, List.of(killCardId), liuBeiPlayerId));
-        // 視為劉備打出殺 — 走南蠻/決鬥既有的 virtual kill response 通道
-        events.addAll(parent.acceptVirtualKillResponse(liuBeiPlayerId, null, new VirtualKill(), List.of(killCardId)));
+        // 視為劉備打出殺 — 走南蠻/決鬥既有的 virtual kill response 通道（事件為該殺的 PlayCardEvent，出牌者記為劉備）
+        events.addAll(parent.acceptVirtualKillResponse(liuBeiPlayerId, null, new VirtualKill(), List.of(killCardId),
+                com.gaas.threeKingdoms.behavior.VirtualKillResponseSource.JI_JIANG));
         return events;
     }
 

@@ -6,7 +6,7 @@ import com.gaas.threeKingdoms.events.AskKillEvent;
 import com.gaas.threeKingdoms.events.DomainEvent;
 import com.gaas.threeKingdoms.events.DuelEvent;
 import com.gaas.threeKingdoms.events.PlayCardEvent;
-import com.gaas.threeKingdoms.events.ViperSpearKillTriggerEvent;
+import com.gaas.threeKingdoms.behavior.VirtualKillResponseSource;
 import com.gaas.threeKingdoms.handcard.HandCard;
 import com.gaas.threeKingdoms.handcard.PlayType;
 import com.gaas.threeKingdoms.handcard.basiccard.Kill;
@@ -94,12 +94,13 @@ public class DuelBehavior extends Behavior implements com.gaas.threeKingdoms.beh
     }
 
     @Override
-    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill, List<String> discardedCardIds) {
-        // 棄牌已在 Game.playerUseViperSpearKill() 處理
+    public List<DomainEvent> acceptVirtualKillResponse(String playerId, String targetPlayerId, HandCard virtualKill,
+                                                       List<String> discardedCardIds, VirtualKillResponseSource source) {
+        // 棄牌已在 Game 層處理
         // Duel 不使用 targetPlayerId — 對手由 reactionPlayers 推導
         String otherPlayerId = reactionPlayers.stream().filter(id -> !id.equals(playerId)).findFirst().get();
         return swapToOtherDuelist(playerId, otherPlayerId,
-                new ViperSpearKillTriggerEvent(playerId, otherPlayerId, discardedCardIds));
+                source.killEvent(playerId, otherPlayerId, discardedCardIds));
     }
 
     private List<DomainEvent> swapToOtherDuelist(String playerId, String otherPlayerId, DomainEvent killEvent) {
