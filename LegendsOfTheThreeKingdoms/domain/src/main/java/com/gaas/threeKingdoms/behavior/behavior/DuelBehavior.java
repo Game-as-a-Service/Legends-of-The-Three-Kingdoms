@@ -135,9 +135,9 @@ public class DuelBehavior extends Behavior implements com.gaas.threeKingdoms.beh
         return events;
     }
 
+    /** 殺／丈八蛇矛／激將／龍膽、武聖等轉化技任一可出殺 → 照常問殺（不能出 → 直接扣血）。 */
     private boolean canRespondWithKill(Player player) {
-        return player.getHand().hasTypeInHand(Kill.class)
-                || EighteenSpanViperSpearCard.canUseAsKill(player);
+        return com.gaas.threeKingdoms.skill.registry.SkillEngine.canProduceKill(game, player);
     }
 
     @Override

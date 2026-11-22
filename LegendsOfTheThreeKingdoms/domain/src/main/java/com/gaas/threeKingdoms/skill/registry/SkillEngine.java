@@ -446,4 +446,29 @@ public final class SkillEngine {
         events.addAll(afterJudgement(game, attacker, judgement));
         return events;
     }
+
+    /**
+     * 此角色能否打出一張殺（借刀殺人／決鬥判斷「無殺可出」時用）：
+     * 手牌有殺、丈八蛇矛（兩張手牌當殺）、激將（主公劉備請蜀將代出），
+     * 或任一轉化技能把手牌（技能允許時含裝備區）轉成殺（龍膽：閃、武聖：紅色牌）。
+     * 原本只看殺與丈八蛇矛，趙雲只有閃時借刀殺人直接被奪武器、決鬥直接扣血，沒有機會發動龍膽。
+     */
+    public static boolean canProduceKill(Game game, Player player) {
+        if (player.getHand().getCards().stream().anyMatch(c -> c instanceof com.gaas.threeKingdoms.handcard.basiccard.Kill)) {
+            return true;
+        }
+        if (com.gaas.threeKingdoms.handcard.equipmentcard.weaponcard.EighteenSpanViperSpearCard.canUseAsKill(player)) {
+            return true;
+        }
+        if (com.gaas.threeKingdoms.skill.shu.JiJiangSkill.canActivate(game, player)) {
+            return true;
+        }
+        String asKill = com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_KILL;
+        return SkillRegistry.of(player.getGeneralCard().getGeneralId()).stream()
+                .filter(sk -> sk instanceof com.gaas.threeKingdoms.skill.trigger.CardConversionSkill)
+                .map(sk -> (com.gaas.threeKingdoms.skill.trigger.CardConversionSkill) sk)
+                .anyMatch(conv -> player.getHand().getCards().stream().anyMatch(c -> conv.canConvert(c, asKill))
+                        || (conv.allowsEquipmentSource() && player.getEquipment().getAllEquipmentCards().stream()
+                                .anyMatch(c -> conv.canConvert(c, asKill))));
+    }
 }

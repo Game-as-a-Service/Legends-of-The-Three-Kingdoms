@@ -337,9 +337,10 @@ POST /api/games/{gameId}/player:playCard
 所以前端從 `BorrowedSwordEvent` 拿不到出借刀者 id 時，送空字串 `""` 即可（習慣寫法，同其他 skip 請求）。
 出殺（`playType: "active"`）則相反 — `targetPlayerId` 必填且必須是 `attackTargetPlayerId`。
 
-**注意**：被借刀者手上完全沒有殺（且不能以丈八蛇矛替代、也不能發動激將）時，系統不詢問、直接自動交出武器 —
-前端不會收到 `BorrowedSwordEvent`，直接收 `WeaponUsurpationEvent`。有轉化技（龍膽/武聖）時亦可改用
-`player:useSkillEffect` 以轉化牌當殺回應（見 §轉化技）。
+**注意**：被借刀者**無法出殺**時，系統不詢問、直接自動交出武器 —
+前端不會收到 `BorrowedSwordEvent`，直接收 `WeaponUsurpationEvent`。「能出殺」包含：手牌有殺、丈八蛇矛（兩張手牌當殺）、
+激將、轉化技（龍膽：手牌有閃；武聖：手牌或裝備區有紅色牌）。有轉化技時以 `player:useSkillEffect` 用轉化牌當殺回應（見 §轉化技）。
+決鬥同理：被詢問者無法出殺才直接扣血，否則收到 `AskKillEvent`（可用龍膽／武聖／激將回應）。
 
 **激將（被借刀者為主公劉備、且有其他存活蜀將）**：即使劉備沒有殺也會收到 `BorrowedSwordEvent`。
 劉備可改送 `player:useSkillEffect`（`skillName: "激將"`, `choice: "ACCEPT"`, `cardIds`/`targetPlayerId` 不需帶，
