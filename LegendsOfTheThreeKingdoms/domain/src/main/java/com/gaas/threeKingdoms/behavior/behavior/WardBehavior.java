@@ -210,8 +210,12 @@ public class WardBehavior extends Behavior {
         }
         // 奇數：清掉所有的 WardBehavior ，並且不發動任何 behavior 效果。
         // 偶數：清掉所有的 WardBehavior ，發動 stack 中除了 WardBehavior 外第一個遇到的 behavior 效果，發動這個效果可以另外開一隻 doBehaviorAction 的 api。
+        // 效果發動後若已改為等待防具回應（萬箭第二階段：下一位有八卦陣 → 問八卦陣），結尾不可蓋回 Normal，
+        // 否則八卦陣 handler 檢查 stage 失敗回 400，玩家卡住
+        boolean keepEquipmentStage = false;
         if (wardBehaviorSize % 2 == 0) {
             domainEvents.addAll(firstNotWardBehavior.doBehaviorAction()); // 相信這裡會幫我們設定好 activePlayer
+            keepEquipmentStage = game.getCurrentRound().getStage() == Stage.Wait_Equipment_Effect;
             // Check if doBehaviorAction created a new Ward challenge (e.g., Phase 2 Ward for BarbarianInvasion)
             if (!game.getTopBehavior().isEmpty() && game.getTopBehavior().peek() instanceof WardBehavior) {
                 game.removeCompletedBehaviors();
@@ -237,7 +241,7 @@ public class WardBehavior extends Behavior {
         }
         System.out.println("wardBehaviorSize "+wardBehaviorSize);
 
-        game.getCurrentRound().setStage(Stage.Normal);
+        game.getCurrentRound().setStage(keepEquipmentStage ? Stage.Wait_Equipment_Effect : Stage.Normal);
         System.out.println("activePlayer 1 "+activePlayer);
         game.getCurrentRound().setActivePlayer(activePlayer);
         game.removeCompletedBehaviors();
