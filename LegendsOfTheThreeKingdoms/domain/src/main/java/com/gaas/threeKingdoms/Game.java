@@ -1009,15 +1009,15 @@ public class Game {
     }
 
     private PlayerDyingEvent createPlayerDyingEvent(Player player) {
-        return new PlayerDyingEvent(player.getId());
+        return new PlayerDyingEvent(player);
     }
 
     private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
-        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
+        return new AskPeachEvent(player, dyingPlayer);
     }
 
     private PlayerDamagedEvent createPlayerDamagedEvent(int originalHp, Player damagedPlayer) {
-        return new PlayerDamagedEvent(damagedPlayer.getId(), originalHp, damagedPlayer.getHP());
+        return new PlayerDamagedEvent(damagedPlayer, originalHp, damagedPlayer.getHP());
     }
 
     public Stack<Behavior> getTopBehavior() {

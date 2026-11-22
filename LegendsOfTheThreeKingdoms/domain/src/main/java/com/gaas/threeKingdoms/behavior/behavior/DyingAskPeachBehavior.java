@@ -376,7 +376,7 @@ public class DyingAskPeachBehavior extends Behavior implements com.gaas.threeKin
     }
 
     private AskPeachEvent createAskPeachEvent(Player player, Player dyingPlayer) {
-        return new AskPeachEvent(player.getId(), dyingPlayer.getId());
+        return new AskPeachEvent(player, dyingPlayer);
     }
 
 

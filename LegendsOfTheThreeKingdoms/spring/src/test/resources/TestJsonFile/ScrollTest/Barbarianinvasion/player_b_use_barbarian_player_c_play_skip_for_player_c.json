@@ -15,20 +15,20 @@
       "from" : 1,
       "to" : 0
     },
-    "message" : "扣血"
+    "message" : "甘寧 扣 1 點血"
   }, {
     "event" : "PlayerDyingEvent",
     "data" : {
       "playerId" : "player-c"
     },
-    "message" : "玩家已瀕臨死亡"
+    "message" : "甘寧 已瀕臨死亡"
   }, {
     "event" : "AskPeachEvent",
     "data" : {
       "playerId" : "player-c",
       "dyingPlayerId" : "player-c"
     },
-    "message" : "要求玩家出桃"
+    "message" : "要求 甘寧 出桃（救 甘寧）"
   } ],
   "data" : {
     "seats" : [ {

@@ -15,7 +15,7 @@
       "from" : 3,
       "to" : 2
     },
-    "message" : "扣血"
+    "message" : "甘寧 扣 1 點血"
   }, {
     "event" : "AskKillEvent",
     "data" : {

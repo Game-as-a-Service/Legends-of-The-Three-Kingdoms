@@ -1,17 +1,17 @@
 package com.gaas.threeKingdoms.events;
 
+import com.gaas.threeKingdoms.player.Player;
 import lombok.Getter;
 
 @Getter
-public class AskPeachEvent extends DomainEvent{
+public class AskPeachEvent extends DomainEvent {
 
-    private String playerId;
-    private String dyingPlayerId;
+    private final String playerId;
+    private final String dyingPlayerId;
 
-    public AskPeachEvent(String playerId, String dyingPlayerId) {
-        super("AskPeachEvent", "要求玩家出桃");
-        this.playerId = playerId;
-        this.dyingPlayerId = dyingPlayerId;
+    public AskPeachEvent(Player player, Player dyingPlayer) {
+        super("AskPeachEvent", String.format("要求 %s 出桃（救 %s）", player.getGeneralName(), dyingPlayer.getGeneralName()));
+        this.playerId = player.getId();
+        this.dyingPlayerId = dyingPlayer.getId();
     }
-
 }
