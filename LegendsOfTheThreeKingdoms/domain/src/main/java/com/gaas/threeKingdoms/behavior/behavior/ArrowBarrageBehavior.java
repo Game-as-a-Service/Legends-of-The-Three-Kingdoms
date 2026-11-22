@@ -202,7 +202,8 @@ public class ArrowBarrageBehavior extends Behavior
                 game.getCurrentRound().setActivePlayer(currentReactionPlayer);
             }
             events.add(game.getGameStatusEvent(playerId + "出閃"));
-            events.add(new PlayCardEvent("出牌", playerId, targetPlayerId, cardId, playType));
+            // 回應萬箭的閃「對象」固定是萬箭使用者；不採用前端帶的 targetPlayerId
+            events.add(new PlayCardEvent("出牌", playerId, behaviorPlayer.getId(), cardId, playType));
             if (!isLastPlayer) {
                 events.addAll(askNextPlayerOrWard());
             }
