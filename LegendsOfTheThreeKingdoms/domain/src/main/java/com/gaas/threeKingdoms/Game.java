@@ -1349,7 +1349,8 @@ public class Game {
 
         List<DomainEvent> events = new ArrayList<>();
         events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
-                skillName, playerId, true, List.of(sourceId), targetPlayerId));
+                skillName, playerId, true, List.of(sourceId), targetPlayerId,
+                conversionMessage(self, skillName, source, as, target)));
         if (equipmentSource != null) {
             // 各 behavior 的 playerAction 都從手牌取出 cardId（→ 棄牌堆 / 判定區），
             // 已離開裝備區的來源牌先放進手牌，交給 behavior 照原流程取走
@@ -1385,6 +1386,24 @@ public class Game {
         events.addAll(behavior.playerAction());
         removeCompletedBehaviors();
         return events;
+    }
+
+    /**
+     * 轉化技 SkillEffectEvent 的訊息：寫出武將名、來源牌與轉化後的牌，
+     * 例「趙雲 發動龍膽，將 紅心2 閃 當 殺 對 甘寧 使用」/「甄姬 發動傾國，將 黑桃5 殺 當 閃 打出」。
+     * （原本是預設的「龍膽：playerId 發動」，看不出把哪張牌當成什麼）
+     */
+    private String conversionMessage(Player self, String skillName, HandCard source, String as, Player target) {
+        String convertedName = switch (as) {
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_KILL -> "殺";
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_DODGE -> "閃";
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_DISMANTLE -> "過河拆橋";
+            case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_CONTENTMENT -> "樂不思蜀";
+            default -> as;
+        };
+        String usage = target == null ? "打出" : String.format("對 %s 使用", target.getGeneralName());
+        return String.format("%s 發動%s，將 %s 當 %s %s",
+                self.getGeneralName(), skillName, source.judgementDescription(), convertedName, usage);
     }
 
     /** 主動轉化的目標合法性（裝備區來源此時已離開裝備區）。 */
@@ -1478,7 +1497,8 @@ public class Game {
                 // 來源牌棄到墓地，視為打出閃（與護駕代閃同一個 host hook）
                 List<DomainEvent> events = new ArrayList<>();
                 events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
-                        skillName, playerId, true, List.of(sourceId), null));
+                        skillName, playerId, true, List.of(sourceId), null,
+                        conversionMessage(self, skillName, source, as, null)));
                 events.addAll(discardConversionSource(self, sourceId, equipmentSource));
                 events.addAll(dodgeHost.acceptDodgeFromHuJia(playerId, playerId, sourceId));
                 removeCompletedBehaviors();
@@ -1487,8 +1507,12 @@ public class Game {
             case com.gaas.threeKingdoms.skill.trigger.CardConversionSkill.AS_KILL -> {
                 // 南蠻入侵 / 決鬥需要殺 — 走 ViperSpear 的 virtual kill response 通道
                 List<DomainEvent> events = new ArrayList<>();
+                // 借刀殺人帶攻擊目標 → 「對 X 使用」；南蠻 / 決鬥沒有目標 → 「打出」
+                Player killTarget = targetPlayerId == null ? null : players.stream()
+                        .filter(p -> p.getId().equals(targetPlayerId)).findFirst().orElse(null);
                 events.add(new com.gaas.threeKingdoms.events.SkillEffectEvent(
-                        skillName, playerId, true, List.of(sourceId), null));
+                        skillName, playerId, true, List.of(sourceId), null,
+                        conversionMessage(self, skillName, source, as, killTarget)));
                 events.addAll(discardConversionSource(self, sourceId, equipmentSource));
                 // 轉化殺打出也算「打出過殺」（克己）
                 markKillPlayedIfCurrentRoundPlayer(self);
