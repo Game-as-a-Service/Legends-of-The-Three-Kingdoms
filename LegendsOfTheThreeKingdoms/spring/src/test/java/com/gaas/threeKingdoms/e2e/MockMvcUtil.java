@@ -211,6 +211,22 @@ public class MockMvcUtil {
                         }""", playerId, skillName, choice, cardIdsJson, targetJson)));
     }
 
+    /** 仁德一次分給多人：targetPlayerIds 與 cardIds 逐張對應。 */
+    public ResultActions useSkillEffectWithTargets(String gameId, String playerId, String skillName, String choice,
+                                                   java.util.List<String> cardIds, java.util.List<String> targetPlayerIds) throws Exception {
+        java.util.function.Function<java.util.List<String>, String> json = l -> l == null ? "null"
+                : "[" + l.stream().map(id -> "\"" + id + "\"").collect(java.util.stream.Collectors.joining(",")) + "]";
+        return this.mockMvc.perform(post("/api/games/" + gameId + "/player:useSkillEffect")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        { "playerId": "%s",
+                          "skillName": "%s",
+                          "choice": "%s",
+                          "cardIds": %s,
+                          "targetPlayerIds": %s
+                        }""", playerId, skillName, choice, json.apply(cardIds), json.apply(targetPlayerIds))));
+    }
+
     public ResultActions chooseHorse(String gameId, String currentPlayerId, String cardId) throws Exception {
         return this.mockMvc.perform(post("/api/games/" + gameId + "/player:chooseHorseCard")
                 .contentType(MediaType.APPLICATION_JSON)

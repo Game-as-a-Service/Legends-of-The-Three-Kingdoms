@@ -26,7 +26,7 @@ public class UseSkillEffectUseCase {
                 .orElseThrow(() -> new NotFoundException("Game not found"));
         List<DomainEvent> events = game.playerUseSkillEffect(
                 request.playerId, request.skillName, request.choice,
-                request.cardIds, request.targetPlayerId);
+                request.cardIds, request.targetPlayerId, request.targetPlayerIds);
         gameRepository.save(game);
         presenter.renderEvents(events);
     }
@@ -40,6 +40,7 @@ public class UseSkillEffectUseCase {
         private String choice;            // ACCEPT / SKIP / 技能自訂（GIVE / DISCARD / DAMAGE ...）
         private List<String> cardIds;     // 可為 null
         private String targetPlayerId;    // 可為 null
+        private List<String> targetPlayerIds; // 可為 null：與 cardIds 逐張對應的接收者（仁德）
     }
 
     public interface UseSkillEffectPresenter<T> {
