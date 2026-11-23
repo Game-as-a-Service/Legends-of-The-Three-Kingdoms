@@ -1847,12 +1847,8 @@ public class Game {
                 return events;
             }
 
-            //判斷B有沒有殺（或可用丈八蛇矛當殺）；都沒有 → 玩家A取得玩家B當前的武器
-            boolean noKillInHand = borrowedPlayer.getHand().getCards().stream().noneMatch(card -> card instanceof Kill);
-            boolean canUseViperSpear = EighteenSpanViperSpearCard.canUseAsKill(borrowedPlayer);
-            // 激將：主公劉備無殺仍可請蜀將代出 → 照樣問 B
-            boolean canUseJiJiang = com.gaas.threeKingdoms.skill.shu.JiJiangSkill.canActivate(this, borrowedPlayer);
-            if (noKillInHand && !canUseViperSpear && !canUseJiJiang) {
+            //判斷B能不能出殺（殺／丈八蛇矛／激將／龍膽、武聖等轉化技）；都不能 → 玩家A取得玩家B當前的武器
+            if (!SkillEngine.canProduceKill(this, borrowedPlayer)) {
                 List<DomainEvent> acceptedEvent = behavior.responseToPlayerAction(borrowedPlayerId, currentPlayerId, "",  PlayType.SKIP.getPlayType());
                 removeCompletedBehaviors();
                 return acceptedEvent;
